@@ -86,6 +86,10 @@ class OrderTicket(Base):
     guardrails_hard_block = Column(Boolean, default=False)
     guardrails_summary = Column(JSON, nullable=True)          # top issues list
 
+    hindsight_status = Column(String, default="PENDING")      # PENDING, DONE, UNAVAILABLE
+    hindsight_outcome_label = Column(String, nullable=True)   # WIN, LOSS, BE, NONE
+    hindsight_realized_r = Column(Float, nullable=True)
+
     setup_packet = relationship("Packet", foreign_keys=[setup_packet_id])
     risk_packet = relationship("Packet", foreign_keys=[risk_packet_id])
 
@@ -114,3 +118,18 @@ class GuardrailsLog(Base):
     guardrails_version = Column(String, default="2.0.0")
     result_json = Column(JSON, nullable=False)  # full GuardrailsResult JSON
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+class HindsightOutcomeLog(Base):
+    __tablename__ = "hindsight_outcome_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    ticket_id = Column(String, ForeignKey("order_tickets.ticket_id"), nullable=False, index=True)
+    computed_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    outcome_label = Column(String, nullable=False) # WIN, LOSS, BE, NONE
+    realized_r = Column(Float, nullable=False)
+    first_hit = Column(String, nullable=False) # SL, TP1, TP2, NONE
+    time_to_hit_min = Column(Integer, nullable=True)
+    notes = Column(Text, nullable=True)
+    policy_hash = Column(String, nullable=True)
+
+    ticket = relationship("OrderTicket", foreign_keys=[ticket_id])
