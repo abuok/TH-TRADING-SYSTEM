@@ -57,3 +57,6 @@ demo: run-all
 
 dashboard:
 	python services/dashboard/main.py
+
+orchestrate:
+	python services/orchestration/main.py

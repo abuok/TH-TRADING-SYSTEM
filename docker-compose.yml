@@ -93,5 +93,20 @@ services:
       - redis
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
+  orchestration:
+    build:
+      context: .
+      dockerfile: infra/Dockerfile.service
+    ports:
+      - "8006:8000"
+    volumes:
+      - ./services/orchestration:/app
+      - ./shared:/app/shared
+    env_file: .env
+    depends_on:
+      - postgres
+      - redis
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
 volumes:
   postgres_data:

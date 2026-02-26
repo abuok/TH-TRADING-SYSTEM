@@ -11,8 +11,8 @@ from typing import List, Optional
 sys.path.append(os.getcwd())
 
 import shared.database.session as db_session
-from shared.database.models import Packet, IncidentLog, KillSwitch
-from services.dashboard.logic import get_service_health, get_dashboard_data, get_tickets
+from shared.database.models import Packet, IncidentLog, KillSwitch, SessionBriefing
+from services.dashboard.logic import get_service_health, get_dashboard_data, get_tickets, get_briefings, get_latest_briefing
 from shared.logic.sessions import get_nairobi_time
 
 app = FastAPI(title="Operator Dashboard")
@@ -88,16 +88,70 @@ async def dashboard_reports(request: Request):
 
 @app.get("/dashboard/reports/{filename}")
 async def get_report(filename: str):
-    # Simple redirect to static file
     if not filename.endswith(".html"):
         raise HTTPException(status_code=400, detail="Invalid report format")
-    
     report_path = os.path.join("artifacts", filename)
     if not os.path.exists(report_path):
         raise HTTPException(status_code=404, detail="Report not found")
-        
     from fastapi.responses import FileResponse
     return FileResponse(report_path)
+
+
+@app.get("/dashboard/tickets", response_class=HTMLResponse)
+async def tickets(request: Request, pair: Optional[str] = None):
+    ticket_list = await get_tickets(pair)
+    return templates.TemplateResponse("tickets.html", {
+        "request": request,
+        "active_page": "tickets",
+        "tickets": ticket_list,
+        "selected_pair": pair,
+    })
+
+
+@app.get("/dashboard/briefings", response_class=HTMLResponse)
+async def dashboard_briefings(request: Request, db: Session = Depends(db_session.get_db)):
+    briefing_list = get_briefings(db)
+    latest = get_latest_briefing(db)
+    return templates.TemplateResponse("briefings.html", {
+        "request": request,
+        "active_page": "briefings",
+        "briefings": briefing_list,
+        "latest": latest,
+    })
+
+
+@app.get("/dashboard/briefings/{briefing_id}", response_class=HTMLResponse)
+async def dashboard_briefing_detail(briefing_id: str, request: Request, db: Session = Depends(db_session.get_db)):
+    record = db.query(SessionBriefing).filter(
+        SessionBriefing.briefing_id == briefing_id
+    ).first()
+    if not record:
+        raise HTTPException(status_code=404, detail="Briefing not found")
+    # Read the pre-rendered HTML artifact if it exists
+    html_content = None
+    if record.html_path and os.path.exists(record.html_path):
+        with open(record.html_path, encoding="utf-8") as f:
+            html_content = f.read()
+    return templates.TemplateResponse("briefing_detail.html", {
+        "request": request,
+        "active_page": "briefings",
+        "record": record,
+        "html_content": html_content,
+    })
+
+
+@app.get("/dashboard/briefings/{briefing_id}/print", response_class=HTMLResponse)
+async def briefing_print_view(briefing_id: str, db: Session = Depends(db_session.get_db)):
+    """Returns raw HTML artifact for print — no nav chrome."""
+    record = db.query(SessionBriefing).filter(
+        SessionBriefing.briefing_id == briefing_id
+    ).first()
+    if not record:
+        raise HTTPException(status_code=404, detail="Briefing not found")
+    if record.html_path and os.path.exists(record.html_path):
+        with open(record.html_path, encoding="utf-8") as f:
+            return HTMLResponse(f.read())
+    raise HTTPException(status_code=404, detail="HTML artifact not found")
 
 @app.get("/health")
 async def health_check():

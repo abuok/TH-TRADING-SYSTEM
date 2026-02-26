@@ -46,9 +46,13 @@ You can monitor the system in real-time via the Operator Dashboard:
 1. Open [http://localhost:8005/dashboard](http://localhost:8005/dashboard).
 2. **Overview**: View health status of all 5 microservices, active kill switches, and latest signals.
 3. **Incidents**: Review governance logs and service failures.
-4. **Technical**: Detailed view of the latest technical setups detected.
-5. **Risk**: Audit trail of every ALLOW/BLOCK decision and its primary reason.
-6. **Reports**: Access generated daily performance reports.
+4. **Tickets Tab**: View human-reviewable trade plans.
+   - Every "Execute-Ready" setup automatically generates a ticket.
+   - Use "Copy MT5" to get a pre-formatted trade plan note.
+   - Blocked setups show the risk rejection reason (e.g., "Daily loss limit reached").
+5. **Technical**: Detailed view of the latest technical setups detected.
+6. **Risk**: Audit trail of every ALLOW/BLOCK decision and its primary reason.
+7. **Reports**: Access generated daily performance reports.
 
 ## Failure-Mode Simulations (Hardening V1)
 

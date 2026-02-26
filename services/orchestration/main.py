@@ -1,18 +1,36 @@
-from fastapi import FastAPI, Depends, HTTPException, Query
+"""
+services/orchestration/main.py
+Orchestration Service API — tickets + briefings.
+"""
+import asyncio
+import logging
+from fastapi import FastAPI, Depends, HTTPException, Query, BackgroundTasks
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from sqlalchemy import and_
+from typing import List, Optional, Dict, Any
 from datetime import datetime, date, timezone
 
 import shared.database.session as db_session
-from shared.database.models import OrderTicket, Packet
+from shared.database.models import OrderTicket, Packet, SessionBriefing
 from shared.logic.trading_logic import generate_order_ticket
+from shared.logic.briefing import assemble_briefing, persist_briefing
+from shared.logic.sessions import get_nairobi_time, get_session_label, TradingSessions
+from shared.logic.notifications import NotificationService, ConsoleNotificationAdapter
 from shared.types.packets import TechnicalSetupPacket, RiskApprovalPacket
 from shared.types.trading import OrderTicketSchema
 import httpx
 
-app = FastAPI(title="Orchestration Service API")
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("OrchestrationAPI")
 
-# Dependency
+app = FastAPI(title="Orchestration Service API")
+notifier = NotificationService([ConsoleNotificationAdapter()])
+
+
+# ──────────────────────────────────────────────
+# DB dependency
+# ──────────────────────────────────────────────
+
 def get_db():
     db = db_session.SessionLocal()
     try:
@@ -20,100 +38,241 @@ def get_db():
     finally:
         db.close()
 
+
+# ──────────────────────────────────────────────
+# Startup — initialise DB and start scheduler
+# ──────────────────────────────────────────────
+
+@app.on_event("startup")
+async def startup():
+    db_session.init_db()
+    asyncio.create_task(briefing_scheduler())
+
+
+async def briefing_scheduler(interval_minutes: int = 30):
+    """
+    Runs a briefing job every `interval_minutes` during active sessions.
+    Pre-session briefing on first entry; intraday deltas afterwards.
+    """
+    generated_sessions: set = set()
+    while True:
+        now = get_nairobi_time()
+        label = get_session_label(now)
+        t = now.time()
+        is_active = (
+            TradingSessions.is_in_range(t, *TradingSessions.LONDON_RANGE) or
+            TradingSessions.is_in_range(t, *TradingSessions.NY_RANGE)
+        )
+        if is_active:
+            session_key = f"{now.date()}-{label}"
+            is_delta = session_key in generated_sessions
+            try:
+                db = db_session.SessionLocal()
+                pack = assemble_briefing(db, now_nairobi=now, is_delta=is_delta)
+                record = persist_briefing(pack, db)
+                generated_sessions.add(session_key)
+                db.close()
+
+                # Console notification summary
+                top_windows = "; ".join(
+                    str(w.get("label", w))
+                    for w in pack.market_context.no_trade_windows[:2]
+                ) or "None"
+                pair_summaries = []
+                for po in pack.pair_overviews:
+                    t_info = ""
+                    if po.latest_ticket:
+                        t_info = f" [{po.latest_ticket.status}]"
+                    pair_summaries.append(f"{po.pair}: {po.bias}{t_info}")
+
+                msg = (
+                    f"{'🔄 DELTA' if pack.is_delta else '🌅 PRE-SESSION'} BRIEFING | "
+                    f"{pack.session_label} {pack.date} | "
+                    f"No-trade: {top_windows} | "
+                    + " | ".join(pair_summaries)
+                )
+                notifier.notify(msg, level="INFO")
+                logger.info(f"Briefing generated: {pack.briefing_id}")
+            except Exception as e:
+                logger.error(f"Briefing scheduler error: {e}")
+        await asyncio.sleep(interval_minutes * 60)
+
+
+# ──────────────────────────────────────────────
+# Health
+# ──────────────────────────────────────────────
+
 @app.get("/health")
 def health():
     return {"status": "healthy", "service": "orchestration"}
 
+
+# ──────────────────────────────────────────────
+# Briefing endpoints
+# ──────────────────────────────────────────────
+
+@app.post("/briefings/generate")
+async def generate_briefing_now(
+    is_delta: bool = False, db: Session = Depends(get_db)
+) -> Dict[str, Any]:
+    """Manually trigger a briefing generation."""
+    now = get_nairobi_time()
+    pack = assemble_briefing(db, now_nairobi=now, is_delta=is_delta)
+    record = persist_briefing(pack, db)
+    return {"briefing_id": record.briefing_id, "html_path": record.html_path}
+
+
+@app.get("/briefings/latest")
+async def get_latest_briefing(db: Session = Depends(get_db)) -> Dict[str, Any]:
+    record = db.query(SessionBriefing).order_by(
+        SessionBriefing.created_at.desc()
+    ).first()
+    if not record:
+        raise HTTPException(status_code=404, detail="No briefings found")
+    return {
+        "briefing_id": record.briefing_id,
+        "session_label": record.session_label,
+        "date": str(record.date),
+        "is_delta": record.is_delta,
+        "html_path": record.html_path,
+        "created_at": record.created_at.isoformat(),
+    }
+
+
+@app.get("/briefings")
+async def list_briefings(
+    limit: int = 20, db: Session = Depends(get_db)
+) -> List[Dict[str, Any]]:
+    records = db.query(SessionBriefing).order_by(
+        SessionBriefing.created_at.desc()
+    ).limit(limit).all()
+    return [
+        {
+            "briefing_id": r.briefing_id,
+            "session_label": r.session_label,
+            "date": str(r.date),
+            "is_delta": r.is_delta,
+            "html_path": r.html_path,
+            "created_at": r.created_at.isoformat(),
+        }
+        for r in records
+    ]
+
+
+@app.get("/briefings/{briefing_id}")
+async def get_briefing(briefing_id: str, db: Session = Depends(get_db)) -> Dict[str, Any]:
+    record = db.query(SessionBriefing).filter(
+        SessionBriefing.briefing_id == briefing_id
+    ).first()
+    if not record:
+        raise HTTPException(status_code=404, detail="Briefing not found")
+    return {
+        "briefing_id": record.briefing_id,
+        "session_label": record.session_label,
+        "date": str(record.date),
+        "is_delta": record.is_delta,
+        "html_path": record.html_path,
+        "data": record.data,
+        "created_at": record.created_at.isoformat(),
+    }
+
+
+# ──────────────────────────────────────────────
+# Ticket endpoints
+# ──────────────────────────────────────────────
+
 @app.post("/tickets/generate", response_model=OrderTicketSchema)
 async def generate_ticket(pair: str, db: Session = Depends(get_db)):
-    """
-    Finds the latest TechnicalSetupPacket + RiskApprovalPacket for a pair
-    and generates a human-reviewable OrderTicket.
-    """
-    # 1. Fetch latest setup
+    """Finds the latest setup + risk packet for a pair and creates an OrderTicket."""
     setup_db = db.query(Packet).filter(
-        and_(Packet.packet_type == "TechnicalSetupPacket", Packet.data['asset_pair'].as_string() == pair)
+        and_(
+            Packet.packet_type == "TechnicalSetupPacket",
+            Packet.data["asset_pair"].as_string() == pair,
+        )
     ).order_by(Packet.created_at.desc()).first()
-    
+
     if not setup_db:
         raise HTTPException(status_code=404, detail=f"No technical setup found for {pair}")
-    
-    # 2. Fetch latest risk decision for this pair
+
     risk_db = db.query(Packet).filter(
-        and_(Packet.packet_type == "RiskApprovalPacket", Packet.data['asset_pair'].as_string() == pair)
+        and_(
+            Packet.packet_type == "RiskApprovalPacket",
+            Packet.data["asset_pair"].as_string() == pair,
+        )
     ).order_by(Packet.created_at.desc()).first()
-    
+
     if not risk_db:
         raise HTTPException(status_code=404, detail="No risk decision found for this setup.")
 
-    # Convert DB data to models
     setup_packet = TechnicalSetupPacket(**setup_db.data)
     risk_packet = RiskApprovalPacket(**risk_db.data)
 
-    # 3. Generate ticket
     ticket = generate_order_ticket(setup_packet, risk_packet, db)
-    
-    # Update IDs for traceability
     ticket.setup_packet_id = setup_db.id
     ticket.risk_packet_id = risk_db.id
     db.commit()
-    
-    # 4. Notify Journal Service
+
     try:
         async with httpx.AsyncClient() as client:
             await client.post(
                 "http://localhost:8004/log/ticket",
-                json=OrderTicketSchema.model_validate(ticket, from_attributes=True).model_dump(mode='json'),
-                params={"setup_id": setup_db.id, "risk_decision_id": risk_db.id}
+                json=OrderTicketSchema.model_validate(ticket, from_attributes=True).model_dump(mode="json"),
+                params={"setup_id": setup_db.id, "risk_decision_id": risk_db.id},
             )
     except Exception as e:
-        print(f"Failed to log ticket to Journal: {e}")
-    
+        logger.warning(f"Failed to log ticket to Journal: {e}")
+
     return ticket
+
 
 @app.get("/tickets/latest", response_model=OrderTicketSchema)
 async def get_latest_ticket(pair: str, db: Session = Depends(get_db)):
-    ticket = db.query(OrderTicket).filter(OrderTicket.pair == pair).order_by(OrderTicket.created_at.desc()).first()
+    ticket = db.query(OrderTicket).filter(
+        OrderTicket.pair == pair
+    ).order_by(OrderTicket.created_at.desc()).first()
     if not ticket:
         raise HTTPException(status_code=404, detail=f"No tickets found for {pair}")
     return ticket
 
+
 @app.get("/tickets", response_model=List[OrderTicketSchema])
-async def list_tickets(date_str: Optional[str] = Query(None, alias="date"), db: Session = Depends(get_db)):
+async def list_tickets(
+    date_str: Optional[str] = Query(None, alias="date"),
+    db: Session = Depends(get_db),
+):
     query = db.query(OrderTicket)
     if date_str:
         try:
             d = datetime.strptime(date_str, "%Y-%m-%d").date()
-            query = query.filter(db.func.date(OrderTicket.created_at) == d)
+            query = query.filter(
+                db.func.date(OrderTicket.created_at) == d
+            )
         except ValueError:
-            raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
-    
+            raise HTTPException(status_code=400, detail="Use YYYY-MM-DD")
     return query.order_by(OrderTicket.created_at.desc()).all()
+
 
 @app.patch("/tickets/{ticket_id}/status", response_model=OrderTicketSchema)
 async def update_ticket_status(ticket_id: str, status: str, db: Session = Depends(get_db)):
-    """Manual update: TAKEN / NOT_TAKEN."""
-    if status not in ["TAKEN", "NOT_TAKEN", "PENDING"]:
-        raise HTTPException(status_code=400, detail="Invalid status. Use TAKEN, NOT_TAKEN, or PENDING")
-        
-    ticket = db.query(OrderTicket).filter(OrderTicket.ticket_id == ticket_id).first()
+    """Manual status update: TAKEN / NOT_TAKEN / PENDING."""
+    if status not in ("TAKEN", "NOT_TAKEN", "PENDING"):
+        raise HTTPException(status_code=400, detail="Use TAKEN, NOT_TAKEN, or PENDING")
+    ticket = db.query(OrderTicket).filter(
+        OrderTicket.ticket_id == ticket_id
+    ).first()
     if not ticket:
         raise HTTPException(status_code=404, detail="Ticket not found")
-        
     ticket.status = status
     db.commit()
     db.refresh(ticket)
-    
-    # Notify Journal of status change
+
     try:
         async with httpx.AsyncClient() as client:
             await client.post(
                 "http://localhost:8004/log/ticket",
-                json=OrderTicketSchema.model_validate(ticket, from_attributes=True).model_dump(mode='json')
+                json=OrderTicketSchema.model_validate(ticket, from_attributes=True).model_dump(mode="json"),
             )
     except Exception as e:
-        print(f"Failed to update ticket in Journal: {e}")
-        
-    return ticket
+        logger.warning(f"Failed to update ticket in Journal: {e}")
 
-from sqlalchemy import and_
+    return ticket

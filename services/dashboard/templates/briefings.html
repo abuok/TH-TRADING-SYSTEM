@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="header-section">
+    <div class="header-title">
+        <h1>Session Briefings</h1>
+        <p>Daily and intraday briefing packs — Africa/Nairobi time</p>
+    </div>
+    {% if latest %}
+    <div>
+        <a href="/dashboard/briefings/{{ latest.briefing_id }}" class="btn btn-primary">View Latest</a>
+    </div>
+    {% endif %}
+</div>
+
+{% if not briefings %}
+<div class="card" style="text-align:center;padding:4rem;">
+    <h2 style="color:var(--text-muted);">No Briefings Yet</h2>
+    <p>Briefings are generated automatically at the start of London and NY sessions,<br>
+        or can be triggered via <code>POST /briefings/generate</code>.</p>
+</div>
+{% else %}
+<div class="grid" style="grid-template-columns:1fr;">
+    {% for b in briefings %}
+    {% set session_color = {"LONDON": "#10b981", "NEW YORK": "#f59e0b", "ASIA": "#6366f1"}.get(b.session_label,
+    "#64748b") %}
+    <div class="card animate-fade"
+        style="border-left:4px solid {{ session_color }};display:flex;justify-content:space-between;align-items:center;padding:1.2rem 1.5rem;">
+        <div>
+            <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.4rem;">
+                <span style="font-size:1.1rem;font-weight:700;">{{ b.session_label }}</span>
+                {% if b.is_delta %}
+                <span class="badge" style="background:#7c3aed;">DELTA</span>
+                {% else %}
+                <span class="badge badge-info">PRE-SESSION</span>
+                {% endif %}
+                <span style="color:var(--text-muted);font-size:0.8rem;">{{ b.date }}</span>
+            </div>
+            <p style="font-size:0.8rem;color:var(--text-muted);margin:0;">
+                {{ b.briefing_id }} &mdash;
+                {{ b.created_at.strftime('%H:%M:%S') }} EAT
+            </p>
+        </div>
+        <div style="display:flex;gap:0.75rem;">
+            <a href="/dashboard/briefings/{{ b.briefing_id }}" class="btn btn-secondary">View</a>
+            <a href="/dashboard/briefings/{{ b.briefing_id }}/print" target="_blank" class="btn btn-secondary">🖨
+                Print</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

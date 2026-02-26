@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, JSON, DateTime, ForeignKey, Float
+from sqlalchemy import Column, Integer, String, JSON, DateTime, ForeignKey, Float, Boolean, Date
 from sqlalchemy.orm import declarative_base, relationship
 from datetime import datetime, timezone
 
@@ -72,3 +72,15 @@ class OrderTicket(Base):
 
     setup_packet = relationship("Packet", foreign_keys=[setup_packet_id])
     risk_packet = relationship("Packet", foreign_keys=[risk_packet_id])
+
+class SessionBriefing(Base):
+    __tablename__ = "session_briefings"
+
+    id = Column(Integer, primary_key=True, index=True)
+    briefing_id = Column(String, unique=True, index=True, nullable=False)
+    session_label = Column(String, nullable=False)  # ASIA, LONDON, NEW YORK, OUTSIDE
+    date = Column(Date, nullable=False)
+    is_delta = Column(Boolean, default=False)  # False = pre-session, True = intraday
+    html_path = Column(String, nullable=True)  # relative path under artifacts/briefings/
+    data = Column(JSON, nullable=False)         # full BriefingPack JSON
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))

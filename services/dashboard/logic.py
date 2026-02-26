@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text, desc
 
 import shared.database.session as db_session
-from shared.database.models import Packet, KillSwitch, IncidentLog, OrderTicket
+from shared.database.models import Packet, KillSwitch, IncidentLog, OrderTicket, SessionBriefing
 from shared.logic.sessions import get_nairobi_time, get_session_label
 from shared.types.trading import OrderTicketSchema
 
@@ -114,3 +114,18 @@ async def get_tickets(pair: Optional[str] = None) -> List[OrderTicketSchema]:
         return [OrderTicketSchema.model_validate(t, from_attributes=True) for t in tickets]
     finally:
         db.close()
+
+
+def get_briefings(db: Session, limit: int = 30) -> List[Dict[str, Any]]:
+    """Return briefing metadata for the list view."""
+    records = db.query(SessionBriefing).order_by(
+        SessionBriefing.created_at.desc()
+    ).limit(limit).all()
+    return records
+
+
+def get_latest_briefing(db: Session) -> Optional[Dict[str, Any]]:
+    """Return the most recent briefing record, or None."""
+    return db.query(SessionBriefing).order_by(
+        SessionBriefing.created_at.desc()
+    ).first()

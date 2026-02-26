@@ -15,8 +15,13 @@ To run the full end-to-end demo locally:
    ```
    *This will start the services via Docker, wait for initialization, and run the E2E demo script.*
 
-3. **Access Dashboard**:
-   Open [http://localhost:8005/dashboard](http://localhost:8005/dashboard) in your browser.
+### 5. Operator Dashboard Monitoring
+You can monitor the system in real-time via the Operator Dashboard:
+1. Open [http://localhost:8005/dashboard](http://localhost:8005/dashboard).
+2. **Overview**: View health status of all 5 microservices, active kill switches, and recent activity.
+3. **Tickets Tab**: View human-reviewable trade plans.
+   - Use the "Copy MT5" or "Copy cTrader" buttons to get platform-specific notes.
+   - Plans blocked by risk are highlighted in red with explicit reasons.
 
 ## Project Structure
 - `services/`: Specialized microservices (Ingestion, Technical, Risk, Journal, Orchestration).

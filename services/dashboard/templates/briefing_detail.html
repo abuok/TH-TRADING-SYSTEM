@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="header-section">
+    <div class="header-title">
+        <h1>Briefing: {{ record.session_label }} — {{ record.date }}</h1>
+        <p style="color:var(--text-muted);font-size:0.85rem;">
+            {{ record.briefing_id }}
+            {% if record.is_delta %}
+            &nbsp;<span class="badge" style="background:#7c3aed;">DELTA</span>
+            {% else %}
+            &nbsp;<span class="badge badge-info">PRE-SESSION</span>
+            {% endif %}
+            &nbsp;| Generated: {{ record.created_at.strftime('%Y-%m-%d %H:%M:%S') }} EAT
+        </p>
+    </div>
+    <div style="display:flex;gap:0.75rem;">
+        <a href="/dashboard/briefings" class="btn btn-secondary">← All Briefings</a>
+        <a href="/dashboard/briefings/{{ record.briefing_id }}/print" target="_blank" class="btn btn-primary">🖨 Print /
+            PDF</a>
+    </div>
+</div>
+
+{% if html_content %}
+<div class="card" style="padding:0;overflow:hidden;">
+    {# Embed the pre-rendered briefing HTML inside an iframe for clean print isolation #}
+    <iframe id="briefing-frame" src="/dashboard/briefings/{{ record.briefing_id }}/print"
+        style="width:100%;border:none;min-height:80vh;background:#0f172a;" title="Briefing Pack"></iframe>
+</div>
+{% else %}
+{# Fallback: render key metadata from DB JSON #}
+{% set d = record.data %}
+<div class="card animate-fade">
+    <h2 class="sub-header">System Status</h2>
+    {% set sys = d.get("system_status", {}) %}
+    <p><strong>Kill Switches:</strong>
+        {% if sys.get("active_kill_switches") %}
+        {{ sys["active_kill_switches"] | join(", ") }}
+        {% else %}
+        <span style="color:var(--accent-green);">None</span>
+        {% endif %}
+    </p>
+    {% if sys.get("last_incident_summary") %}
+    <p><strong>Last Incident:</strong>
+        <span style="color:var(--accent-red);">[{{ sys.last_incident_severity }}]</span>
+        {{ sys.last_incident_summary }}
+    </p>
+    {% endif %}
+</div>
+
+<div class="card animate-fade">
+    <h2 class="sub-header">Pair Overviews</h2>
+    {% for po in d.get("pair_overviews", []) %}
+    <div style="border:1px solid var(--border-color);border-radius:8px;padding:1rem;margin-bottom:1rem;">
+        <h3>{{ po.pair }}
+            <span style="font-size:0.85rem;color:var(--text-muted);">{{ po.bias }}</span>
+        </h3>
+        {% if po.latest_ticket %}
+        <p><strong>Latest Ticket:</strong>
+            {{ po.latest_ticket.status }} | {{ po.latest_ticket.direction }}
+            @ {{ "%.5f" | format(po.latest_ticket.entry_price) }}
+            | {{ "%.1f" | format(po.latest_ticket.rr_tp1) }}R
+        </p>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+<div class="card animate-fade">
+    <h2 class="sub-header">Operator Actions</h2>
+    {% for action in d.get("operator_actions", []) %}
+    <div style="padding:0.5rem 0;border-bottom:1px solid var(--border-color);">
+        <span class="badge
+            {% if action.priority == 'HIGH' %}badge-danger
+            {% elif action.priority == 'MEDIUM' %}badge-warning
+            {% else %}badge-info{% endif %}">{{ action.priority }}</span>
+        <strong>{{ action.category }}</strong> — {{ action.description }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<script>
+    // Auto-resize iframe to content height
+    const iframe = document.getElementById("briefing-frame");
+    if (iframe) {
+        iframe.onload = function () {
+            try {
+                iframe.style.minHeight = iframe.contentWindow.document.body.scrollHeight + "px";
+            } catch (e) { }
+        };
+    }
+</script>
+{% endblock %}
