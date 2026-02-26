@@ -113,5 +113,109 @@ def list_kill_switches():
     finally:
         db.close()
 
+import json
+from datetime import datetime
+import yaml
+
+from shared.types.research import CounterfactualConfig
+from services.research.simulator import run_replay
+from services.research.reporting import save_json, generate_html_report
+
+# Add Research sub-app
+research_app = typer.Typer(help="Historical replay research tools")
+app.add_typer(research_app, name="research")
+
+@research_app.command("run")
+def research_run(
+    pair: str,
+    date_from: str, 
+    date_to: str,
+    csv_path: str,
+    timeframe: str = "15m",
+    variants_file: str = typer.Option(None, "--variants", help="YAML file with CounterfactualConfigs")
+):
+    """Run a historical replay and generate reports."""
+    try:
+        dt_from = datetime.fromisoformat(date_from)
+        dt_to = datetime.fromisoformat(date_to)
+    except ValueError:
+        console.print("[red]Invalid date format. Use YYYY-MM-DD or ISO 8601[/red]")
+        raise typer.Exit(1)
+        
+    variants = {"baseline": CounterfactualConfig()}
+    if variants_file and os.path.exists(variants_file):
+        with open(variants_file, "r") as f:
+            raw = yaml.safe_load(f)
+            for k, v in raw.items():
+                variants[k] = CounterfactualConfig(**v)
+                
+    with console.status(f"[bold green]Running replay on {pair} from {dt_from.date()} to {dt_to.date()}...[/]"):
+        try:
+            result = run_replay(csv_path, pair, timeframe, dt_from, dt_to, variants)
+        except Exception as e:
+            console.print(f"[red]Replay failed: {e}[/red]")
+            raise typer.Exit(1)
+            
+    json_path = save_json(result)
+    html_path = generate_html_report(result)
+    
+    console.print(f"[green]✔ Replay completed successfully![/green]")
+    console.print(f"Run ID: [bold]{result.run_id}[/bold]")
+    console.print(f"JSON Output: {json_path}")
+    console.print(f"HTML Report: {html_path}")
+
+@research_app.command("list")
+def research_list():
+    """List historical research runs from the artifacts directory."""
+    if not os.path.exists("artifacts/research"):
+        console.print("[yellow]No research runs found (artifacts/research missing).[/yellow]")
+        return
+        
+    files = [f for f in os.listdir("artifacts/research") if f.endswith(".json")]
+    if not files:
+        console.print("[yellow]No research runs found.[/yellow]")
+        return
+        
+    table = Table(title="Recent Research Runs")
+    table.add_column("Run ID")
+    table.add_column("Pair")
+    table.add_column("Dates")
+    table.add_column("Variants")
+    
+    for fname in sorted(files, reverse=True)[:10]:
+        with open(os.path.join("artifacts/research", fname), "r") as f:
+            data = json.load(f)
+            run_id = data.get("run_id", "Unknown")
+            pair = data.get("pair", "Unknown")
+            dates = f"{data.get('start_date', '')[:10]} -> {data.get('end_date', '')[:10]}"
+            v_count = len(data.get("variants", {}))
+            table.add_row(run_id, pair, dates, str(v_count))
+            
+    console.print(table)
+
+@research_app.command("show")
+def research_show(run_id: str):
+    """Show high-level metrics for a specific run ID."""
+    filepath = f"artifacts/research/{run_id}.json"
+    if not os.path.exists(filepath):
+        console.print(f"[red]Run {run_id} not found at {filepath}[/red]")
+        raise typer.Exit(1)
+        
+    with open(filepath, "r") as f:
+        data = json.load(f)
+        
+    console.print(f"\n[bold cyan]Run Summary: {run_id}[/bold cyan]")
+    console.print(f"Pair: {data.get('pair')}")
+    console.print(f"Dates: {data.get('start_date')} to {data.get('end_date')}\n")
+    
+    for v_name, v_data in data.get("variants", {}).items():
+        m = v_data.get("metrics", {})
+        console.print(f"[bold]{v_name.upper()}[/bold]")
+        console.print(f"  Trades Executed / Total:  {m.get('executed_trades')} / {m.get('total_trades')} ({m.get('blocked_trades')} blocked)")
+        console.print(f"  Win Rate:                 [green]{m.get('win_rate_pct')}%[/green]")
+        console.print(f"  Expectancy (R):           {m.get('expectancy_r')}R")
+        console.print(f"  Max Drawdown (R):         [red]-{m.get('max_drawdown_r')}R[/red]")
+        console.print(f"  Total R:                  [bold]{m.get('total_r')}R[/bold]\n")
+
 if __name__ == "__main__":
     app()

@@ -96,6 +96,34 @@ async def get_report(filename: str):
     from fastapi.responses import FileResponse
     return FileResponse(report_path)
 
+@app.get("/dashboard/research", response_class=HTMLResponse)
+async def dashboard_research(request: Request):
+    runs = []
+    import json
+    if os.path.exists("artifacts/research"):
+        files = [f for f in os.listdir("artifacts/research") if f.endswith(".json")]
+        for f in sorted(files, reverse=True):
+            try:
+                with open(os.path.join("artifacts/research", f), "r") as rfile:
+                    data = json.load(rfile)
+                    runs.append(data)
+            except Exception:
+                pass
+
+    return templates.TemplateResponse("research.html", {
+        "request": request,
+        "active_page": "research",
+        "runs": runs
+    })
+
+@app.get("/dashboard/research/{run_id}", response_class=HTMLResponse)
+async def research_report_view(run_id: str):
+    report_path = os.path.join("artifacts", "research", f"{run_id}.html")
+    from fastapi.responses import FileResponse
+    if not os.path.exists(report_path):
+        raise HTTPException(status_code=404, detail="Research report not found")
+    return FileResponse(report_path)
+
 
 @app.get("/dashboard/tickets", response_class=HTMLResponse)
 async def tickets(request: Request, pair: Optional[str] = None):

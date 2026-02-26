@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="header-section">
+    <div class="header-title">
+        <h1>Research Mode</h1>
+        <p>Historical counterfactual replays and policy simulations.</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Available Simulation Runs</h2>
+        <span class="badge badge-info">{{ runs | length }} runs generated</span>
+    </div>
+
+    {% if runs | length == 0 %}
+    <p style="color: var(--text-muted);">No research runs found. Use the CLI to generate a historical simulation:</p>
+    <div
+        style="background: rgba(13, 17, 23, 0.8); padding: 1rem; border-radius: 8px; margin-top: 1rem; font-family: monospace;">
+        python infra/cli.py research run XAUUSD 2026-01-01 2026-01-31 ./data.csv --variants eq.yaml
+    </div>
+    {% else %}
+    <table>
+        <thead>
+            <tr>
+                <th>Run ID</th>
+                <th>Pair</th>
+                <th>Date Range</th>
+                <th>Variants</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in runs %}
+            <tr>
+                <td style="font-family: monospace;">{{ r.run_id }}</td>
+                <td><span class="badge badge-warning">{{ r.pair }}</span></td>
+                <td>{{ r.start_date[:10] }} &rarr; {{ r.end_date[:10] }}</td>
+                <td>{{ r.variants | length }} strategies</td>
+                <td>
+                    <a href="/dashboard/research/{{ r.run_id }}"
+                        style="color: var(--accent-blue); text-decoration: none; font-weight: 600;">View Report
+                        &rarr;</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+</div>
+{% endblock %}
