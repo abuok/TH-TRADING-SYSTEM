@@ -48,7 +48,8 @@ cli-runs:
 tech-scan:
 	python services/technical/replay.py scan
 
-demo: run-all
-	@echo "Waiting for services to start..."
-	@sleep 10
 	python services/orchestration/demo.py
+	@echo "Demo complete. Open dashboard: http://localhost:8005/dashboard"
+
+dashboard:
+	python services/dashboard/main.py
