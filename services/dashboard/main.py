@@ -342,5 +342,48 @@ async def api_close_ticket(ticket_id: str, payload: ClosePayload, db: Session = 
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+# --- Hindsight Evaluation Endpoints ---
+from services.research.hindsight import run_hindsight_for_date, get_hindsight_summary, generate_hindsight_report
+
+@app.post("/api/hindsight/run")
+async def api_hindsight_run(date_str: str, db: Session = Depends(db_session.get_db)):
+    # Simple hardcode for demonstration. Normally map string -> path.
+    csv_path = "./data.csv"
+    if not os.path.exists(csv_path):
+        return {"error": "CSV data not found for deterministic hindsight."}
+        
+    res = run_hindsight_for_date(db, date_str, csv_path)
+    report_path = generate_hindsight_report(db, date_str)
+    return {
+        "status": "success", 
+        "processed": res.get("processed"), 
+        "report_generated": bool(report_path)
+    }
+
+@app.get("/api/hindsight/summary")
+async def api_hindsight_summary(date_str: str, db: Session = Depends(db_session.get_db)):
+    return get_hindsight_summary(db, date_str)
+
+@app.get("/dashboard/hindsight", response_class=HTMLResponse)
+async def dashboard_hindsight(request: Request, date_str: Optional[str] = None, db: Session = Depends(db_session.get_db)):
+    date_val = date_str or datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    summary = get_hindsight_summary(db, date_val)
+    
+    parsed_date = datetime.strptime(date_val, "%Y-%m-%d").date()
+    # Get the tickets that have hindsight done for this date
+    tickets = db.query(OrderTicket).filter(
+        func.date(OrderTicket.created_at) == parsed_date,
+        OrderTicket.hindsight_status == "DONE"
+    ).all()
+    
+    return templates.TemplateResponse("hindsight.html", {
+        "request": request,
+        "active_page": "hindsight",
+        "date_str": date_val,
+        "summary": summary,
+        "tickets": tickets
+    })
+
+if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8005)

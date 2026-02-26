@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}Hindsight Scoring - TH V1{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header & Controls -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-3xl font-bold tracking-tight">Hindsight Scoring</h1>
+            <p class="text-muted-foreground mt-1">Review deterministic simulated outcomes of skipped and expired
+                tickets.</p>
+        </div>
+
+        <form id="dateForm" class="flex gap-2">
+            <input type="date" id="datePicker" name="date_str" value="{{ date_str }}"
+                class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+            <button type="submit"
+                class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
+                Load Date
+            </button>
+            <button type="button" onclick="runHindsight()"
+                class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-secondary text-secondary-foreground hover:bg-secondary/80 h-10 px-4 py-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    class="mr-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="lucide lucide-play">
+                    <polygon points="6 3 20 12 6 21 6 3" />
+                </svg>
+                Run Batch
+            </button>
+        </form>
+    </div>
+
+    {% if summary.total == 0 %}
+    <div class="rounded-lg border bg-card text-card-foreground shadow-sm p-6 text-center text-muted-foreground">
+        No hindsight evaluations found for {{ date_str }}. Click "Run Batch" to check for pending skipped/expired
+        tickets.
+    </div>
+    {% else %}
+
+    <!-- Top Level Stats -->
+    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div class="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
+            <div class="font-medium text-sm text-muted-foreground">Total Evaluated</div>
+            <div class="text-3xl font-bold mt-2">{{ summary.total }}</div>
+        </div>
+
+        {% if summary.costliest_miss %}
+        <div
+            class="col-span-3 rounded-lg border bg-card text-card-foreground shadow-sm p-6 border-l-4 border-l-orange-500 bg-orange-50/10">
+            <div class="font-medium text-sm text-orange-600 dark:text-orange-400">Costliest Missed Opportunity</div>
+            <div class="flex items-center gap-4 mt-2">
+                <div class="text-2xl font-bold text-orange-500">+{{ summary.costliest_miss.missed_r }} R</div>
+                <div class="text-sm">
+                    Ticket <b>{{ summary.costliest_miss.ticket_id }}</b> was skipped due to
+                    <span class="px-2 py-1 text-xs rounded bg-secondary capitalize">{{ summary.costliest_miss.reason
+                        }}</span>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Breakdown Table -->
+    <div class="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
+        <div class="p-6 border-b">
+            <h3 class="font-semibold text-lg">Skip Reasons Breakdown</h3>
+            <p class="text-sm text-muted-foreground">Aggregate hypothetical outcomes mapped by human skip bias.</p>
+        </div>
+        <div class="p-0">
+            <table class="w-full text-sm text-left">
+                <thead class="bg-muted/50 text-muted-foreground">
+                    <tr>
+                        <th class="px-6 py-3 font-medium">Skip Reason</th>
+                        <th class="px-6 py-3 font-medium text-center">Count</th>
+                        <th class="px-6 py-3 font-medium text-right">Win Rate</th>
+                        <th class="px-6 py-3 font-medium text-right">Avg Imaginary Output (R)</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y">
+                    {% for item in summary.reasons %}
+                    <tr class="hover:bg-muted/50 transition-colors">
+                        <td class="px-6 py-4 font-medium capitalize">{{ item.reason.replace("_", " ") }}</td>
+                        <td class="px-6 py-4 text-center">{{ item.count }}</td>
+                        <td
+                            class="px-6 py-4 text-right {% if item.win_rate > 50 %}text-green-600{% elif item.win_rate < 30 %}text-red-600{% endif %}">
+                            {{ item.win_rate }}%
+                        </td>
+                        <td
+                            class="px-6 py-4 text-right font-medium {% if item.avg_r > 0 %}text-green-600{% elif item.avg_r < 0 %}text-red-600{% endif %}">
+                            {{ "{:+.2f}".format(item.avg_r) }} R
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Tickets List -->
+    <div class="space-y-4">
+        <h3 class="font-semibold text-lg mt-8">Evaluated Tickets</h3>
+
+        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {% for t in tickets %}
+            <div
+                class="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden transition-all hover:shadow-md">
+                <div class="p-4 border-b flex justify-between items-center bg-muted/20">
+                    <div class="font-mono text-sm font-bold">{{ t.ticket_id }}</div>
+
+                    {% set badge_color = 'bg-gray-100 text-gray-800' %}
+                    {% if t.hindsight_outcome_label == 'WIN' %}
+                    {% set badge_color = 'bg-green-100 text-green-800 border-green-200' %}
+                    {% elif t.hindsight_outcome_label == 'LOSS' %}
+                    {% set badge_color = 'bg-red-100 text-red-800 border-red-200' %}
+                    {% elif t.hindsight_outcome_label == 'BE' %}
+                    {% set badge_color = 'bg-yellow-100 text-yellow-800 border-yellow-200' %}
+                    {% endif %}
+
+                    <span
+                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border {{ badge_color }}">
+                        HINDSIGHT: {{ t.hindsight_outcome_label }}
+                    </span>
+                </div>
+
+                <div class="p-4 space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-sm text-muted-foreground">Original Status</span>
+                        <span class="text-sm font-medium">{{ t.status }}</span>
+                    </div>
+                    {% if t.skip_reason %}
+                    <div class="flex justify-between">
+                        <span class="text-sm text-muted-foreground">Skip Bias</span>
+                        <span class="text-sm font-medium border px-1.5 py-0.5 rounded text-xs bg-secondary">{{
+                            t.skip_reason }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="flex justify-between items-center pt-2 border-t">
+                        <span class="text-sm text-muted-foreground">Imaginary Net</span>
+                        <span
+                            class="font-bold {% if t.hindsight_realized_r > 0 %}text-green-600{% elif t.hindsight_realized_r < 0 %}text-red-600{% endif %}">
+                            {{ "{:+.2f}".format(t.hindsight_realized_r) }} R
+                        </span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% endif %}
+</div>
+
+<script>
+    async function runHindsight() {
+        const dateInput = document.getElementById('datePicker').value;
+        if (!dateInput) return;
+
+        try {
+            const response = await fetch(`/api/hindsight/run?date_str=${dateInput}`, {
+                method: 'POST'
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                alert(`Hindsight batch complete. Processed ${data.processed} tickets.`);
+                window.location.reload();
+            } else {
+                console.error('Failed to run batch hindsight');
+                alert('Error running Hindsight batch job.');
+            }
+        } catch (err) {
+            console.error('Error:', err);
+        }
+    }
+</script>
+{% endblock %}

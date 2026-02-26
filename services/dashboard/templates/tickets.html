@@ -31,6 +31,25 @@
                     style="margin-bottom: 0.5rem;">
                     {{ ticket.status }}
                 </span>
+
+                {% if ticket.hindsight_status == 'DONE' and ticket.hindsight_outcome_label %}
+                {% set hs_color = '#e2e8f0' %}
+                {% set hs_text = '#1e293b' %}
+                {% if ticket.hindsight_outcome_label == 'WIN' %}
+                {% set hs_color = '#dcfce7' %}{% set hs_text = '#166534' %}
+                {% elif ticket.hindsight_outcome_label == 'LOSS' %}
+                {% set hs_color = '#fee2e2' %}{% set hs_text = '#991b1b' %}
+                {% elif ticket.hindsight_outcome_label == 'BE' %}
+                {% set hs_color = '#fef3c7' %}{% set hs_text = '#92400e' %}
+                {% endif %}
+                <span class="badge"
+                    style="margin-bottom: 0.5rem; background: {{ hs_color }}; color: {{ hs_text }}; border: 1px solid currentColor;">
+                    HINDSIGHT: {{ ticket.hindsight_outcome_label }}
+                    {% if ticket.hindsight_realized_r %}({{ "{:+.2f}".format(ticket.hindsight_realized_r) }}R){% endif
+                    %}
+                </span>
+                {% endif %}
+
                 <h2 style="margin: 0;">{{ ticket.pair }} | {{ ticket.direction }}</h2>
                 <p style="font-size: 0.85rem; color: var(--text-muted);">Ticket ID: {{ ticket.ticket_id }} | Created: {{
                     ticket.created_at.strftime('%Y-%m-%d %H:%M:%S') }} EAT</p>
