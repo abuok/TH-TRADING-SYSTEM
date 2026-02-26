@@ -27,19 +27,19 @@ def analyze_variant(
     
     # Calculate Deltas
     er_delta = variant_metrics.expectancy_r - baseline_metrics.expectancy_r
-    dd_delta = variant_metrics.max_drawdown_r - baseline_metrics.max_drawdown_r # Negative is better
+    dd_delta = variant_metrics.max_drawdown_r - baseline_metrics.max_drawdown_r # Positive means DD got closer to 0 (improved)
     win_rate_delta = variant_metrics.win_rate_pct - baseline_metrics.win_rate_pct
     
     recco_id = f"rec_{uuid.uuid4().hex[:6]}"
     
-    # 1. High Confidence: Expectancy UP, Drawdown DOWN, Volume Stable
-    if er_delta > 0.05 and dd_delta <= 0.0 and retention >= min_volume_retention:
+    # 1. High Confidence: Expectancy UP, Drawdown UP (towards 0), Volume Stable
+    if er_delta > 0.05 and dd_delta >= 0.0 and retention >= min_volume_retention:
         return Recommendation(
             id=recco_id,
             title=f"Adopt {variant_name} settings",
             change_type="threshold",
             proposed_change=f"Apply configuration from variant '{variant_name}'",
-            expected_impact=f"Improves expectancy by +{er_delta:.2f}R and reduces drawdown by {abs(dd_delta):.2f}R, while retaining {retention*100:.0f}% of trades.",
+            expected_impact=f"Improves expectancy by +{er_delta:.2f}R and reduces drawdown by {dd_delta:.2f}R, while retaining {retention*100:.0f}% of trades.",
             confidence="HIGH",
             rationale="Clear improvement in risk-adjusted returns without collapsing signal volume.",
             caveats="Ensure the historical window used is representative of current market regimes."
@@ -58,14 +58,14 @@ def analyze_variant(
             caveats=f"Severe volume reduction ({100 - retention*100:.0f}% drop) may cause plateau periods."
         )
         
-    # 3. Medium Confidence: Drawdown Significantly DOWN, Expectancy Flat/Slight DOWN
-    if dd_delta < -1.0 and er_delta >= -0.1 and retention >= 0.5:
+    # 3. Medium Confidence: Drawdown Significantly UP (towards 0), Expectancy Flat/Slight DOWN
+    if dd_delta > 1.0 and er_delta >= -0.1 and retention >= 0.5:
         return Recommendation(
             id=recco_id,
             title=f"Risk dampener via {variant_name}",
             change_type="threshold",
             proposed_change=f"Configure '{variant_name}' logic to arrest drawdowns.",
-            expected_impact=f"Saves {abs(dd_delta):.1f}R in max drawdown at a slight cost to expectancy ({er_delta:.2f}R).",
+            expected_impact=f"Saves {dd_delta:.1f}R in max drawdown at a slight cost to expectancy ({er_delta:.2f}R).",
             confidence="MEDIUM",
             rationale="Capital preservation strategy optimized for limiting tail-risk strings of losses.",
             caveats="Will filter out some winning trades."
