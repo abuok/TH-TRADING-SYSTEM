@@ -9,7 +9,7 @@
 
 <div class="grid">
     <!-- Macro Context Card -->
-    <div class="card" style="grid-column: 1 / -1;">
+    <div class="card util-e86cdd">
         <div class="card-header">
             <h2>🌍 Overall Market Context</h2>
             {% if movers %}
@@ -20,29 +20,29 @@
         </div>
 
         {% if movers %}
-        <div class="sub-grid" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="sub-grid util-3d7b39">
             {% for sym, proxy in movers.data.get('proxies', {}).items() %}
-            <div style="background: rgba(13, 17, 23, 0.5); padding: 1rem; border-radius: 8px;">
+            <div class="util-6d283c">
                 <div class="sub-header">{{ sym }}</div>
                 <div class="metric-value">{{ proxy.current_value }}</div>
 
                 {% set delta = proxy.delta_pct %}
                 {% if delta %}
                 {% if delta > 0 %}
-                <div style="color: var(--accent-green); font-size: 0.85rem; font-weight: 700;">+{{ delta }}%</div>
-                {% elif delta < 0 %} <div style="color: var(--accent-red); font-size: 0.85rem; font-weight: 700;">{{
+                <div class="util-7c6444">+{{ delta }}%</div>
+                {% elif delta < 0 %} <div class="util-d5d76a">{{
                     delta }}%
             </div>
             {% else %}
-            <div style="color: var(--text-muted); font-size: 0.85rem; font-weight: 700;">0.0%</div>
+            <div class="util-dd3ab0">0.0%</div>
             {% endif %}
             {% else %}
-            <div style="color: var(--text-muted); font-size: 0.85rem;">No prev data</div>
+            <div class="util-d77719">No prev data</div>
             {% endif %}
         </div>
         {% endfor %}
     </div>
-    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 1rem;">
+    <p class="util-e4f16d">
         Generated {{ movers.created_at.strftime('%H:%M:%S') }} EAT
     </p>
     {% endif %}
@@ -69,51 +69,50 @@
     </div>
 
     {% if latest %}
-    <div style="margin-bottom: 1.5rem;">
+    <div class="util-d3297f">
         <div class="sub-header">Bias Score</div>
-        <div style="display: flex; align-items: baseline; gap: 1rem;">
-            <div class="metric-value" style="font-size: 2.5rem;">{{ latest.data.bias_score | round(1) }}</div>
-            <div style="font-size: 0.85rem; color: var(--text-muted);">Conf: <strong>{{ latest.data.confidence_label
+        <div class="util-475a51">
+            <div class="metric-value util-3f60e0">{{ latest.data.bias_score | round(1) }}</div>
+            <div class="util-acb67b">Conf: <strong>{{ latest.data.confidence_label
                     }}</strong></div>
         </div>
-        <div
-            style="width: 100%; height: 6px; background: #333; border-radius: 3px; margin-top: 0.5rem; overflow: hidden; position: relative;">
+        <div class="util-d63a21">
             {% set pct = ((latest.data.bias_score + 5) / 10) * 100 %}
             {% set bar_col = 'var(--accent-green)' if latest.data.bias_score > 0 else ('var(--accent-red)' if
             latest.data.bias_score < 0 else 'var(--text-muted)' ) %} <div
                 style="position: absolute; left: 0; top: 0; height: 100%; width: {{ pct }}%; background: {{ bar_col }};">
         </div>
         <!-- Zero line marker -->
-        <div style="position: absolute; left: 50%; top: 0; height: 100%; width: 2px; background: #fff;"></div>
+        <div class="util-a311f0"></div>
     </div>
 </div>
 
 <div class="sub-header">Key Drivers</div>
-<ul class="list-unstyled" style="margin-bottom: 1.5rem;">
+<ul class="list-unstyled util-d3297f">
     {% for drv in latest.data.get('drivers', []) %}
-    <li class="event-item"
-        style="border-left-color: {% if drv.impact > 0 %}var(--accent-green){% elif drv.impact < 0 %}var(--accent-red){% else %}var(--text-muted){% endif %};">
+    <li 
+        style="border-left-color: {% if drv.impact > 0 %}var(--accent-green){% elif drv.impact < 0 %}var(--accent-red){% else %}var(--text-muted){% endif %};" class="event-item">
         <div class="event-title">{{ drv.text }}</div>
         <div class="event-meta">Impact: {{ drv.impact }}</div>
     </li>
     {% else %}
-    <li style="color: var(--text-muted); font-size: 0.85rem;">No explicit drivers detected.</li>
+    <li class="util-d77719">No explicit drivers detected.</li>
     {% endfor %}
 </ul>
 
 <div class="safety-window">
     <div class="safety-header">Invalidation Criteria</div>
-    <div class="safety-meta" style="color: #e2e8f0; margin-top: 0.25rem;">
+    <div class="safety-meta util-b843c1">
         {{ latest.data.get('invalidation_criteria', 'N/A') }}
     </div>
 </div>
 
-<p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 1rem; text-align: right;">
+<p class="util-89d2e5">
     Updated {{ latest.created_at.strftime('%H:%M:%S') }} EAT
 </p>
 
 {% else %}
-<p style="color: var(--text-muted);">No recent fundamentals packets found for {{ pair }}.</p>
+<p class="util-7abb3a">No recent fundamentals packets found for {{ pair }}.</p>
 {% endif %}
 </div>
 {% endfor %}

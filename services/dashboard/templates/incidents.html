@@ -1,17 +1,17 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div style="margin-bottom: 2rem;">
+<div class="util-257995">
     <h1>System Incidents</h1>
-    <p style="color: var(--text-muted);">Audit trail of governance events and service failures</p>
+    <p class="util-7abb3a">Audit trail of governance events and service failures</p>
 </div>
 
 <div class="card">
-    <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+    <div class="util-17295e">
         <span class="badge badge-info">Filters:</span>
-        <a href="?severity=ERROR" class="nav-link" style="font-size: 0.75rem;">ERROR</a>
-        <a href="?severity=WARNING" class="nav-link" style="font-size: 0.75rem;">WARNING</a>
-        <a href="?" class="nav-link" style="font-size: 0.75rem;">CLEAR</a>
+        <a href="?severity=ERROR" class="nav-link util-af89d6">ERROR</a>
+        <a href="?severity=WARNING" class="nav-link util-af89d6">WARNING</a>
+        <a href="?" class="nav-link util-af89d6">CLEAR</a>
     </div>
 
     <table>
@@ -29,18 +29,18 @@
             <tr>
                 <td>{{ incident.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
                 <td><span class="badge badge-info">{{ incident.component }}</span></td>
-                <td style="font-family: monospace; font-size: 0.85rem;">{{ incident.error_code }}</td>
+                <td class="util-9a7094">{{ incident.error_code }}</td>
                 <td>
                     <span class="badge badge-{{ 'danger' if incident.severity == 'ERROR' else 'warning' }}">
                         {{ incident.severity }}
                     </span>
                 </td>
-                <td style="font-size: 0.9rem;">{{ incident.message }}</td>
+                <td class="util-33dd45">{{ incident.message }}</td>
             </tr>
             {% endfor %}
             {% if not incidents %}
             <tr>
-                <td colspan="5" style="text-align: center; color: var(--text-muted);">No incidents found.</td>
+                <td colspan="5" class="util-01a995">No incidents found.</td>
             </tr>
             {% endif %}
         </tbody>

@@ -7,28 +7,26 @@
         <p>Human-reviewable execution plans and platform notes</p>
     </div>
     <div class="header-clock">
-        <form action="/dashboard/tickets" method="get" style="display: flex; gap: 0.5rem;">
-            <input type="text" name="pair" placeholder="Filter by Pair (e.g. XAUUSD)" value="{{ selected_pair or '' }}"
-                style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); color: white; padding: 0.5rem; border-radius: 4px;">
-            <button type="submit" class="btn btn-primary" style="padding: 0.5rem 1rem;">Filter</button>
+        <form action="/dashboard/tickets" method="get" class="util-5fa1c6">
+            <input type="text" name="pair" placeholder="Filter by Pair (e.g. XAUUSD)" value="{{ selected_pair or '' }}" class="util-922919">
+            <button type="submit" class="btn btn-primary util-0cf5a0">Filter</button>
         </form>
     </div>
 </div>
 
-<div class="grid" style="grid-template-columns: 1fr;">
+<div class="grid util-eb0595">
     {% if not tickets %}
-    <div class="card" style="text-align: center; padding: 4rem;">
-        <h2 style="color: var(--text-muted);">No Tickets Found</h2>
+    <div class="card util-228776">
+        <h2 class="util-7abb3a">No Tickets Found</h2>
         <p>Generate a ticket via the Orchestrator API to see it here.</p>
     </div>
     {% else %}
     {% for ticket in tickets %}
-    <div class="card animate-fade"
-        style="margin-bottom: 2rem; border-left: 4px solid {{ 'var(--accent-green)' if ticket.status != 'BLOCKED' else 'var(--accent-red)' }};">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+    <div 
+        style="margin-bottom: 2rem; border-left: 4px solid {{ 'var(--accent-green)' if ticket.status != 'BLOCKED' else 'var(--accent-red)' }};" class="card animate-fade">
+        <div class="util-f9eb53">
             <div>
-                <span class="badge {{ 'badge-success' if ticket.status != 'BLOCKED' else 'badge-danger' }}"
-                    style="margin-bottom: 0.5rem;">
+                <span class="badge {{ 'badge-success' if ticket.status != 'BLOCKED' else 'badge-danger' }} util-ac79cc">
                     {{ ticket.status }}
                 </span>
 
@@ -42,61 +40,60 @@
                 {% elif ticket.hindsight_outcome_label == 'BE' %}
                 {% set hs_color = '#fef3c7' %}{% set hs_text = '#92400e' %}
                 {% endif %}
-                <span class="badge"
-                    style="margin-bottom: 0.5rem; background: {{ hs_color }}; color: {{ hs_text }}; border: 1px solid currentColor;">
+                <span 
+                    style="margin-bottom: 0.5rem; background: {{ hs_color }}; color: {{ hs_text }}; border: 1px solid currentColor;" class="badge">
                     HINDSIGHT: {{ ticket.hindsight_outcome_label }}
                     {% if ticket.hindsight_realized_r %}({{ "{:+.2f}".format(ticket.hindsight_realized_r) }}R){% endif
                     %}
                 </span>
                 {% endif %}
 
-                <h2 style="margin: 0;">{{ ticket.pair }} | {{ ticket.direction }}</h2>
-                <p style="font-size: 0.85rem; color: var(--text-muted);">Ticket ID: {{ ticket.ticket_id }} | Created: {{
+                <h2 class="util-e2b74b">{{ ticket.pair }} | {{ ticket.direction }}</h2>
+                <p class="util-acb67b">Ticket ID: {{ ticket.ticket_id }} | Created: {{
                     ticket.created_at.strftime('%Y-%m-%d %H:%M:%S') }} EAT</p>
             </div>
-            <div style="text-align: right;">
-                <div class="metric-value" style="font-size: 1.5rem;">{{ ticket.lot_size }} Lots</div>
-                <div style="font-size: 0.85rem; color: var(--text-muted);">Risk: ${{ ticket.risk_usd }} ({{
+            <div class="util-7851db">
+                <div class="metric-value util-fa415b">{{ ticket.lot_size }} Lots</div>
+                <div class="util-acb67b">Risk: ${{ ticket.risk_usd }} ({{
                     ticket.risk_pct }}%)</div>
             </div>
         </div>
 
         {% if ticket.status == 'BLOCKED' %}
-        <div
-            style="background: rgba(235, 87, 87, 0.1); border: 1px solid var(--accent-red); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
-            <strong style="color: var(--accent-red);">BLOCK REASON:</strong> {{ ticket.block_reason }}
+        <div class="util-587325">
+            <strong class="util-b0323b">BLOCK REASON:</strong> {{ ticket.block_reason }}
         </div>
         {% endif %}
 
-        <div class="grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
-            <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 8px; text-align: center;">
+        <div class="grid util-0f1e43">
+            <div class="util-a93da3">
                 <div class="metric-label">Entry ({{ ticket.entry_type }})</div>
-                <div style="font-size: 1.25rem; font-weight: 700;">{{ "%.5f" | format(ticket.entry_price) }}</div>
+                <div class="util-9cf61f">{{ "%.5f" | format(ticket.entry_price) }}</div>
             </div>
-            <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 8px; text-align: center;">
+            <div class="util-a93da3">
                 <div class="metric-label">Stop Loss</div>
-                <div style="font-size: 1.25rem; font-weight: 700; color: var(--accent-red);">{{ "%.5f" |
+                <div class="util-db7b32">{{ "%.5f" |
                     format(ticket.stop_loss) }}</div>
             </div>
-            <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 8px; text-align: center;">
+            <div class="util-a93da3">
                 <div class="metric-label">Take Profit ({{ "%.1f" | format(ticket.rr_tp1) }}R)</div>
-                <div style="font-size: 1.25rem; font-weight: 700; color: var(--accent-green);">{{ "%.5f" |
+                <div class="util-9f1b10">{{ "%.5f" |
                     format(ticket.take_profit_1) }}</div>
             </div>
         </div>
 
-        <div style="border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
+        <div class="util-f67a91">
             <h3 class="sub-header">Platform Notes (Copy to Clipboard)</h3>
-            <div style="display: flex; gap: 1rem;">
-                <button class="btn btn-secondary"
-                    onclick="copyText('mt5-{{ ticket.ticket_id }}', 'MT5 Plan Copied!')">Copy MT5</button>
-                <button class="btn btn-secondary"
-                    onclick="copyText('ctrader-{{ ticket.ticket_id }}', 'cTrader Plan Copied!')">Copy cTrader</button>
-                <button class="btn btn-secondary" onclick="copyText('json-{{ ticket.ticket_id }}', 'JSON Copied!')">Copy
+            <div class="util-0ba205">
+                <button 
+                    onclick="copyText('mt5-{{ ticket.ticket_id }}', 'MT5 Plan Copied!')" class="btn btn-secondary">Copy MT5</button>
+                <button 
+                    onclick="copyText('ctrader-{{ ticket.ticket_id }}', 'cTrader Plan Copied!')" class="btn btn-secondary">Copy cTrader</button>
+                <button  onclick="copyText('json-{{ ticket.ticket_id }}', 'JSON Copied!')" class="btn btn-secondary">Copy
                     JSON</button>
             </div>
 
-            <div style="display: none;">
+            <div class="util-224b51">
                 <textarea id="mt5-{{ ticket.ticket_id }}">{{ ticket.to_mt5_note() }}</textarea>
                 <textarea id="ctrader-{{ ticket.ticket_id }}">{{ ticket.to_ctrader_note() }}</textarea>
                 <textarea id="json-{{ ticket.ticket_id }}">{{ ticket.model_dump_json(indent=2) }}</textarea>

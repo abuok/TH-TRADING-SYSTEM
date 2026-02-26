@@ -4,17 +4,17 @@
 <div class="header-section">
     <div class="header-title">
         <h1>Briefing: {{ record.session_label }} — {{ record.date }}</h1>
-        <p style="color:var(--text-muted);font-size:0.85rem;">
+        <p class="util-79c561">
             {{ record.briefing_id }}
             {% if record.is_delta %}
-            &nbsp;<span class="badge" style="background:#7c3aed;">DELTA</span>
+            &nbsp;<span class="badge util-1c08ee">DELTA</span>
             {% else %}
             &nbsp;<span class="badge badge-info">PRE-SESSION</span>
             {% endif %}
             &nbsp;| Generated: {{ record.created_at.strftime('%Y-%m-%d %H:%M:%S') }} EAT
         </p>
     </div>
-    <div style="display:flex;gap:0.75rem;">
+    <div class="util-3f184f">
         <a href="/dashboard/briefings" class="btn btn-secondary">← All Briefings</a>
         <a href="/dashboard/briefings/{{ record.briefing_id }}/print" target="_blank" class="btn btn-primary">🖨 Print /
             PDF</a>
@@ -22,10 +22,10 @@
 </div>
 
 {% if html_content %}
-<div class="card" style="padding:0;overflow:hidden;">
+<div class="card util-a1c1c4">
     {# Embed the pre-rendered briefing HTML inside an iframe for clean print isolation #}
     <iframe id="briefing-frame" src="/dashboard/briefings/{{ record.briefing_id }}/print"
-        style="width:100%;border:none;min-height:80vh;background:#0f172a;" title="Briefing Pack"></iframe>
+         title="Briefing Pack" class="util-bc4f53"></iframe>
 </div>
 {% else %}
 {# Fallback: render key metadata from DB JSON #}
@@ -37,12 +37,12 @@
         {% if sys.get("active_kill_switches") %}
         {{ sys["active_kill_switches"] | join(", ") }}
         {% else %}
-        <span style="color:var(--accent-green);">None</span>
+        <span class="util-20f3a9">None</span>
         {% endif %}
     </p>
     {% if sys.get("last_incident_summary") %}
     <p><strong>Last Incident:</strong>
-        <span style="color:var(--accent-red);">[{{ sys.last_incident_severity }}]</span>
+        <span class="util-49d8b4">[{{ sys.last_incident_severity }}]</span>
         {{ sys.last_incident_summary }}
     </p>
     {% endif %}
@@ -51,9 +51,9 @@
 <div class="card animate-fade">
     <h2 class="sub-header">Pair Overviews</h2>
     {% for po in d.get("pair_overviews", []) %}
-    <div style="border:1px solid var(--border-color);border-radius:8px;padding:1rem;margin-bottom:1rem;">
+    <div class="util-dabd12">
         <h3>{{ po.pair }}
-            <span style="font-size:0.85rem;color:var(--text-muted);">{{ po.bias }}</span>
+            <span class="util-1e8514">{{ po.bias }}</span>
         </h3>
         {% if po.latest_ticket %}
         <p><strong>Latest Ticket:</strong>
@@ -69,11 +69,8 @@
 <div class="card animate-fade">
     <h2 class="sub-header">Operator Actions</h2>
     {% for action in d.get("operator_actions", []) %}
-    <div style="padding:0.5rem 0;border-bottom:1px solid var(--border-color);">
-        <span class="badge
-            {% if action.priority == 'HIGH' %}badge-danger
-            {% elif action.priority == 'MEDIUM' %}badge-warning
-            {% else %}badge-info{% endif %}">{{ action.priority }}</span>
+    <div class="util-146b08">
+        <span class="badge {% if action.priority == 'HIGH' %}badge-danger elif 'MEDIUM' %}badge-warning else %}badge-info{% endif %}">{{ action.priority }}</span>
         <strong>{{ action.category }}</strong> — {{ action.description }}
     </div>
     {% endfor %}

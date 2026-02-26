@@ -24,6 +24,9 @@ templates = Jinja2Templates(directory="services/dashboard/templates")
 if os.path.exists("artifacts"):
     app.mount("/dashboard/reports/static", StaticFiles(directory="artifacts"), name="reports_static")
 
+if os.path.exists("services/dashboard/static"):
+    app.mount("/static", StaticFiles(directory="services/dashboard/static"), name="static")
+
 @app.get("/dashboard", response_class=HTMLResponse)
 async def dashboard_overview(request: Request, db: Session = Depends(db_session.get_db)):
     health, response_times = await get_service_health()

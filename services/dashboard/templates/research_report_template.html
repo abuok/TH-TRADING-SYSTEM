@@ -9,38 +9,38 @@
     </div>
 </div>
 
-<div class="card" style="margin-bottom: 2rem;">
+<div class="card util-257995">
     <div class="card-header">
         <h2>Run Configuration</h2>
         <span class="badge badge-info">{{ run.timeframes | join(', ') }}</span>
     </div>
-    <div class="sub-grid" style="grid-template-columns: repeat(4, 1fr);">
+    <div class="sub-grid util-c7c9ce">
         <div>
             <div class="sub-header">Pair</div>
-            <div class="metric-value" style="font-size: 1.25rem;">{{ run.pair }}</div>
+            <div class="metric-value util-14fa87">{{ run.pair }}</div>
         </div>
         <div>
             <div class="sub-header">Start Date</div>
-            <div class="metric-value" style="font-size: 1.25rem;">{{ run.start_date.strftime('%Y-%m-%d') }}</div>
+            <div class="metric-value util-14fa87">{{ run.start_date.strftime('%Y-%m-%d') }}</div>
         </div>
         <div>
             <div class="sub-header">End Date</div>
-            <div class="metric-value" style="font-size: 1.25rem;">{{ run.end_date.strftime('%Y-%m-%d') }}</div>
+            <div class="metric-value util-14fa87">{{ run.end_date.strftime('%Y-%m-%d') }}</div>
         </div>
         <div>
             <div class="sub-header">Variant Count</div>
-            <div class="metric-value" style="font-size: 1.25rem;">{{ variants | length }}</div>
+            <div class="metric-value util-14fa87">{{ variants | length }}</div>
         </div>
     </div>
 </div>
 
 
-<div class="card" style="margin-bottom: 2rem;">
+<div class="card util-257995">
     <div class="card-header">
         <h2>Metrics Comparison (Counterfactuals)</h2>
     </div>
-    <div style="overflow-x: auto;">
-        <table style="min-width: 800px;">
+    <div class="util-b56181">
+        <table class="util-62edd4">
             <thead>
                 <tr>
                     <th>Variant Name</th>
@@ -57,21 +57,19 @@
                 <tr>
                     <td>
                         <strong>{{ name | capitalize }}</strong>
-                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                        <div class="util-0fdd45">
                             Min Score: {{ variant.config.min_setup_score or 'N/A' }}<br>
                             Hard Block Disp: {{ variant.config.hard_block_displacement or 'N/A' }}<br>
                             Dup Window: {{ variant.config.duplicate_suppression_minutes or '60' }}m
                         </div>
                     </td>
                     <td>
-                        <span
-                            class="{% if variant.metrics.win_rate_pct >= 50 %}text-success{% else %}text-danger{% endif %}"
-                            style="font-weight: 700;">
+                        <span class="{% if variant.metrics.win_rate_pct >= 50 %}text-success{% else %}text-danger{% endif %} util-be8e63">
                             {{ variant.metrics.win_rate_pct }}%
                         </span>
                     </td>
                     <td>{{ variant.metrics.expectancy_r }} R</td>
-                    <td style="color: var(--accent-red);">{{ variant.metrics.max_drawdown_r }} R</td>
+                    <td class="util-b0323b">{{ variant.metrics.max_drawdown_r }} R</td>
                     <td>{{ variant.metrics.profit_factor }}</td>
                     <td>
                         <span
@@ -79,8 +77,7 @@
                             {% if variant.metrics.total_r > 0 %}+{% endif %}{{ variant.metrics.total_r }} R
                         </span>
                     </td>
-                    <td>{{ variant.metrics.executed_trades }} / {{ variant.metrics.total_trades }} <span
-                            style="font-size: 0.75rem; color: var(--text-muted);">({{ variant.metrics.blocked_trades }}
+                    <td>{{ variant.metrics.executed_trades }} / {{ variant.metrics.total_trades }} <span class="util-bc3433">({{ variant.metrics.blocked_trades }}
                             blocked)</span></td>
                 </tr>
                 {% endfor %}
@@ -92,16 +89,15 @@
 
 <h2>Variant Trade Logs (Sample)</h2>
 {% for name, variant in run.variants.items() %}
-<div class="card" style="margin-bottom: 1.5rem; background: rgba(13, 17, 23, 0.4);">
-    <div class="card-header"
-        style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1rem;">
-        <h3 style="font-size: 1.1rem; color: var(--accent-blue);">{{ name | capitalize }} Trades</h3>
+<div class="card util-403ca8">
+    <div class="card-header util-092eea">
+        <h3 class="util-7dc956">{{ name | capitalize }} Trades</h3>
     </div>
 
     {% if variant.trades | length == 0 %}
-    <p style="color: var(--text-muted);">No setups triggered.</p>
+    <p class="util-7abb3a">No setups triggered.</p>
     {% else %}
-    <div style="max-height: 400px; overflow-y: auto;">
+    <div class="util-f4d939">
         <table>
             <thead>
                 <tr>
@@ -116,10 +112,9 @@
             <tbody>
                 {% for t in variant.trades[-20:] %}
                 <tr>
-                    <td style="font-family: monospace; font-size: 0.85rem;">{{ t.ticket_id }}</td>
+                    <td class="util-9a7094">{{ t.ticket_id }}</td>
                     <td>
-                        <span
-                            class="badge {% if t.direction == 'LONG' %}badge-success{% else %}badge-danger{% endif %}">{{
+                        <span class="badge {% if t.direction == 'LONG' %}badge-success{% else %}badge-danger{% endif %}">{{
                             t.direction }}</span>
                     </td>
                     <td>
@@ -130,13 +125,13 @@
                         {% elif t.status == 'BE' %}
                         <span class="badge badge-warning">{{ t.status }}</span>
                         {% elif t.status == 'BLOCKED' %}
-                        <span class="badge" style="background: rgba(139, 148, 158, 0.2); color: var(--text-muted);">{{
+                        <span class="badge util-1ee668">{{
                             t.status }}</span>
                         {% else %}
                         <span class="badge badge-info">{{ t.status }}</span>
                         {% endif %}
                     </td>
-                    <td style="font-size: 0.85rem; color: var(--text-muted);">{{ t.exit_time.strftime('%m-%d %H:%M') if
+                    <td class="util-acb67b">{{ t.exit_time.strftime('%m-%d %H:%M') if
                         t.exit_time else '-' }}</td>
                     <td>
                         <strong
@@ -145,12 +140,11 @@
                         </strong>
                     </td>
                     <td>
-                        <span
-                            class="badge {% if t.guardrails_status == 'PASS' %}badge-success{% else %}badge-danger{% endif %}">
+                        <span class="badge {% if t.guardrails_status == 'PASS' %}badge-success{% else %}badge-danger{% endif %}">
                             {{ t.guardrails_status }}
                         </span>
                         {% if t.block_reason %}
-                        <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.25rem;">{{ t.block_reason
+                        <div class="util-31ccc7">{{ t.block_reason
                             | truncate(30) }}</div>
                         {% endif %}
                     </td>
@@ -159,7 +153,7 @@
             </tbody>
         </table>
         {% if variant.trades|length > 20 %}
-        <p style="text-align: center; color: var(--text-muted); font-size: 0.85rem; margin-top: 1rem;">
+        <p class="util-0cc7c6">
             Showing last 20 of {{ variant.trades|length }} trades... See raw JSON for full log.
         </p>
         {% endif %}

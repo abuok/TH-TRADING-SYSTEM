@@ -78,7 +78,7 @@
     <div class="container">
         <div class="header">
             <h1>Calibration Findings: {{ report.pair }}</h1>
-            <p style="color: #8b949e;">Report ID: {{ report.report_id }} | Generated: {{
+            <p class="util-33e95d">Report ID: {{ report.report_id }} | Generated: {{
                 report.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
             <p><strong>Date Range:</strong> {{ report.date_range }} | <strong>Timeframes:</strong> {{ report.timeframe
                 }}</p>
@@ -88,23 +88,22 @@
         <h2>Policy Recommendations</h2>
         {% if report.recommendations %}
         {% for rec in report.recommendations %}
-        <div class="card"
-            style="border-left: 4px solid {% if rec.confidence == 'HIGH' %}#238636{% elif rec.confidence == 'MEDIUM' %}#d29922{% else %}#da3633{% endif %};">
+        <div 
+            style="border-left: 4px solid {% if rec.confidence == 'HIGH' %}#238636{% elif rec.confidence == 'MEDIUM' %}#d29922{% else %}#da3633{% endif %};" class="card">
             <h3>[{{ rec.change_type | upper }}] {{ rec.title }}</h3>
             <p>
-                <span
-                    class="badge {% if rec.confidence == 'HIGH' %}badge-success{% elif rec.confidence == 'MEDIUM' %}badge-warn{% else %}badge-danger{% endif %}">{{
+                <span class="badge {% if rec.confidence == 'HIGH' %}badge-success{% elif 'MEDIUM' %}badge-warn{% else %}badge-danger{% endif %}">{{
                     rec.confidence }}</span>
             </p>
             <p><strong>Proposed Change:</strong> {{ rec.proposed_change }}</p>
             <p><strong>Expected Impact:</strong> {{ rec.expected_impact }}</p>
             <p><strong>Rationale:</strong> {{ rec.rationale }}</p>
-            <p style="color: #8b949e;"><em>Caveat: {{ rec.caveats }}</em></p>
+            <p class="util-33e95d"><em>Caveat: {{ rec.caveats }}</em></p>
         </div>
         {% endfor %}
         {% else %}
         <div class="card">
-            <p style="text-align: center; color: #8b949e;">No meaningful improvements found over the baseline policy in
+            <p class="util-2de1c7">No meaningful improvements found over the baseline policy in
                 the tested variants.</p>
         </div>
         {% endif %}

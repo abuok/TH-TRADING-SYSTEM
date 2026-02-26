@@ -14,34 +14,34 @@
 </div>
 
 {% if not briefings %}
-<div class="card" style="text-align:center;padding:4rem;">
-    <h2 style="color:var(--text-muted);">No Briefings Yet</h2>
+<div class="card util-d2bc99">
+    <h2 class="util-697a24">No Briefings Yet</h2>
     <p>Briefings are generated automatically at the start of London and NY sessions,<br>
         or can be triggered via <code>POST /briefings/generate</code>.</p>
 </div>
 {% else %}
-<div class="grid" style="grid-template-columns:1fr;">
+<div class="grid util-6b19d8">
     {% for b in briefings %}
     {% set session_color = {"LONDON": "#10b981", "NEW YORK": "#f59e0b", "ASIA": "#6366f1"}.get(b.session_label,
     "#64748b") %}
-    <div class="card animate-fade"
-        style="border-left:4px solid {{ session_color }};display:flex;justify-content:space-between;align-items:center;padding:1.2rem 1.5rem;">
+    <div 
+        style="border-left:4px solid {{ session_color }};display:flex;justify-content:space-between;align-items:center;padding:1.2rem 1.5rem;" class="card animate-fade">
         <div>
-            <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.4rem;">
-                <span style="font-size:1.1rem;font-weight:700;">{{ b.session_label }}</span>
+            <div class="util-127af0">
+                <span class="util-fbd352">{{ b.session_label }}</span>
                 {% if b.is_delta %}
-                <span class="badge" style="background:#7c3aed;">DELTA</span>
+                <span class="badge util-1c08ee">DELTA</span>
                 {% else %}
                 <span class="badge badge-info">PRE-SESSION</span>
                 {% endif %}
-                <span style="color:var(--text-muted);font-size:0.8rem;">{{ b.date }}</span>
+                <span class="util-e91b5f">{{ b.date }}</span>
             </div>
-            <p style="font-size:0.8rem;color:var(--text-muted);margin:0;">
+            <p class="util-99dbd5">
                 {{ b.briefing_id }} &mdash;
                 {{ b.created_at.strftime('%H:%M:%S') }} EAT
             </p>
         </div>
-        <div style="display:flex;gap:0.75rem;">
+        <div class="util-3f184f">
             <a href="/dashboard/briefings/{{ b.briefing_id }}" class="btn btn-secondary">View</a>
             <a href="/dashboard/briefings/{{ b.briefing_id }}/print" target="_blank" class="btn btn-secondary">🖨
                 Print</a>

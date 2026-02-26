@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div style="margin-bottom: 2rem;">
+<div class="util-257995">
     <h1>Risk Decisions</h1>
-    <p style="color: var(--text-muted);">Audit log of ALLOW/BLOCK decisions from the Risk Engine</p>
+    <p class="util-7abb3a">Audit log of ALLOW/BLOCK decisions from the Risk Engine</p>
 </div>
 
 <div class="card">
@@ -21,14 +21,14 @@
             {% for decision in decisions %}
             <tr>
                 <td>{{ decision.created_at.strftime('%H:%M:%S') }}</td>
-                <td style="font-weight: 700;">{{ decision.data.asset_pair }}</td>
+                <td class="util-be8e63">{{ decision.data.asset_pair }}</td>
                 <td>
                     <span class="badge badge-{{ 'success' if decision.data.action == 'ALLOW' else 'danger' }}">
                         {{ decision.data.action }}
                     </span>
                 </td>
-                <td style="font-size: 0.9rem; color: var(--text-muted);">{{ decision.data.reason }}</td>
-                <td style="font-family: monospace; font-size: 0.8rem;">{{ decision.data.trade_id or '-' }}</td>
+                <td class="util-eec58d">{{ decision.data.reason }}</td>
+                <td class="util-acf620">{{ decision.data.trade_id or '-' }}</td>
             </tr>
             {% endfor %}
         </tbody>

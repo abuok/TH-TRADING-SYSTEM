@@ -38,20 +38,17 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     {% if report.recommendations|length > 0 %}
-                    <span
-                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-900 text-green-200">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-900 text-green-200">
                         {{ report.recommendations|length }} Found
                     </span>
                     {% else %}
-                    <span
-                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-700 text-gray-300">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-700 text-gray-300">
                         0 Found
                     </span>
                     {% endif %}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <a href="/dashboard/calibration/{{ report.report_id }}"
-                        class="text-indigo-400 hover:text-indigo-300">View Findings</a>
+                    <a href="/dashboard/calibration/{{ report.report_id }}" class="text-indigo-400 hover:text-indigo-300">View Findings</a>
                 </td>
             </tr>
             {% endfor %}

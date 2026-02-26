@@ -8,6 +8,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@400;600;800&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
     <style>
         :root {
             --bg-color: #0a0c10;
@@ -84,6 +85,10 @@
             color: var(--text-primary);
         }
 
+        .nav-link-queue {
+            border-bottom: 2px solid #e2b714;
+        }
+
         .container {
             max-width: 1400px;
             margin: 2rem auto;
@@ -92,6 +97,7 @@
 
         .card {
             background: var(--card-bg);
+            -webkit-backdrop-filter: var(--glass-blur);
             backdrop-filter: var(--glass-blur);
             border: 1px solid var(--border-color);
             border-radius: 12px;
@@ -339,8 +345,8 @@
             <a href="/dashboard/setups" class="nav-link {% if active_page == 'setups' %}active{% endif %}">Technical</a>
             <a href="/dashboard/risk" class="nav-link {% if active_page == 'risk' %}active{% endif %}">Risk</a>
             <a href="/dashboard/tickets" class="nav-link {% if active_page == 'tickets' %}active{% endif %}">Tickets</a>
-            <a href="/dashboard/queue" class="nav-link {% if active_page == 'queue' %}active{% endif %}"
-                style="border-bottom: 2px solid #e2b714;">Review Queue</a>
+            <a href="/dashboard/queue"
+                class="nav-link nav-link-queue {% if active_page == 'queue' %}active{% endif %}">Review Queue</a>
             <a href="/dashboard/briefings"
                 class="nav-link {% if active_page == 'briefings' %}active{% endif %}">Briefings</a>
             <a href="/dashboard/research"

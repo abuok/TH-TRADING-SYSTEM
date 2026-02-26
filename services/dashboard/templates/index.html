@@ -18,17 +18,17 @@
     <div class="card">
         <div class="card-header">
             <span class="metric-label">{{ service }}</span>
-            <span class="status-dot status-{{ 'healthy' if status == 'healthy' else 'unhealthy' }}"></span>
+            <span class="status-dot status-{{ 'healthy' if status == else 'unhealthy' }}"></span>
         </div>
         <div class="metric-value">{{ status | upper }}</div>
-        <div class="clock-label" style="margin-top: 0.5rem;">
+        <div class="clock-label util-f8a732">
             Response: {{ response_times.get(service, 'N/A') }}ms
         </div>
     </div>
     {% endfor %}
 </div>
 
-<div class="grid" style="grid-template-columns: 2fr 1fr;">
+<div class="grid util-5bfe03">
     <!-- Market Context & Kill Switches -->
     <div class="card">
         <h2>Market & Governance</h2>
@@ -38,14 +38,14 @@
                 {% if kill_switches %}
                 <ul class="list-unstyled">
                     {% for ks in kill_switches %}
-                    <li style="margin-bottom: 0.5rem;">
+                    <li class="util-ac79cc">
                         <span class="badge badge-danger">{{ ks.switch_type }}</span>
-                        <span style="font-size: 0.85rem;">{{ ks.target or 'GLOBAL' }}</span>
+                        <span class="util-e7992d">{{ ks.target or 'GLOBAL' }}</span>
                     </li>
                     {% endfor %}
                 </ul>
                 {% else %}
-                <p style="font-size: 0.85rem; color: var(--accent-green);">SYSTEM ARMED: No Active Kill Switches</p>
+                <p class="util-ff6795">SYSTEM ARMED: No Active Kill Switches</p>
                 {% endif %}
             </div>
             <div>
@@ -58,7 +58,7 @@
                 </div>
                 {% endfor %}
                 {% else %}
-                <p style="font-size: 0.85rem; color: var(--text-muted);">No high-impact events detected.</p>
+                <p class="util-acb67b">No high-impact events detected.</p>
                 {% endif %}
             </div>
         </div>
@@ -100,7 +100,7 @@
             <tbody>
                 {% for setup in latest_setups %}
                 <tr>
-                    <td style="font-weight: 600;">{{ setup.asset_pair }}</td>
+                    <td class="util-db1172">{{ setup.asset_pair }}</td>
                     <td><span class="badge badge-info">{{ setup.stage }}</span></td>
                     <td>{{ "%.1f" | format(setup.score|float) }}</td>
                     <td>
@@ -134,7 +134,7 @@
                             {{ decision.action }}
                         </span>
                     </td>
-                    <td style="font-size: 0.85rem; color: var(--text-muted);">{{ decision.reason }}</td>
+                    <td class="util-acb67b">{{ decision.reason }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -156,14 +156,14 @@
         <tbody>
             {% for incident in latest_incidents %}
             <tr>
-                <td style="font-size: 0.85rem;">{{ incident.created_at.strftime('%H:%M:%S') }}</td>
+                <td class="util-e7992d">{{ incident.created_at.strftime('%H:%M:%S') }}</td>
                 <td><span class="badge badge-info">{{ incident.component }}</span></td>
                 <td>
                     <span class="badge badge-{{ 'danger' if incident.severity == 'ERROR' else 'warning' }}">
                         {{ incident.severity }}
                     </span>
                 </td>
-                <td style="font-size: 0.85rem; color: var(--text-muted);">{{ incident.message }}</td>
+                <td class="util-acb67b">{{ incident.message }}</td>
             </tr>
             {% endfor %}
         </tbody>

@@ -15,9 +15,8 @@
     </div>
 
     {% if runs | length == 0 %}
-    <p style="color: var(--text-muted);">No research runs found. Use the CLI to generate a historical simulation:</p>
-    <div
-        style="background: rgba(13, 17, 23, 0.8); padding: 1rem; border-radius: 8px; margin-top: 1rem; font-family: monospace;">
+    <p class="util-7abb3a">No research runs found. Use the CLI to generate a historical simulation:</p>
+    <div class="util-92633f">
         python infra/cli.py research run XAUUSD 2026-01-01 2026-01-31 ./data.csv --variants eq.yaml
     </div>
     {% else %}
@@ -34,13 +33,12 @@
         <tbody>
             {% for r in runs %}
             <tr>
-                <td style="font-family: monospace;">{{ r.run_id }}</td>
+                <td class="util-3bd722">{{ r.run_id }}</td>
                 <td><span class="badge badge-warning">{{ r.pair }}</span></td>
                 <td>{{ r.start_date[:10] }} &rarr; {{ r.end_date[:10] }}</td>
                 <td>{{ r.variants | length }} strategies</td>
                 <td>
-                    <a href="/dashboard/research/{{ r.run_id }}"
-                        style="color: var(--accent-blue); text-decoration: none; font-weight: 600;">View Report
+                    <a href="/dashboard/research/{{ r.run_id }}" class="util-48a7b5">View Report
                         &rarr;</a>
                 </td>
             </tr>
