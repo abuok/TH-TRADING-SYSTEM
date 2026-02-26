@@ -124,6 +124,34 @@ async def research_report_view(run_id: str):
         raise HTTPException(status_code=404, detail="Research report not found")
     return FileResponse(report_path)
 
+@app.get("/dashboard/calibration", response_class=HTMLResponse)
+async def dashboard_calibration(request: Request):
+    reports = []
+    import json
+    if os.path.exists("artifacts/research"):
+        files = [f for f in os.listdir("artifacts/research") if f.startswith("cal_") and f.endswith(".json")]
+        for f in sorted(files, reverse=True):
+            try:
+                with open(os.path.join("artifacts/research", f), "r") as rfile:
+                    data = json.load(rfile)
+                    reports.append(data)
+            except Exception:
+                pass
+
+    return templates.TemplateResponse("calibration.html", {
+        "request": request,
+        "active_page": "calibration",
+        "reports": reports
+    })
+
+@app.get("/dashboard/calibration/{report_id}", response_class=HTMLResponse)
+async def calibration_report_view(report_id: str):
+    report_path = os.path.join("artifacts", "research", f"{report_id}.html")
+    from fastapi.responses import FileResponse
+    if not os.path.exists(report_path):
+        raise HTTPException(status_code=404, detail="Calibration report not found")
+    return FileResponse(report_path)
+
 
 @app.get("/dashboard/tickets", response_class=HTMLResponse)
 async def tickets(request: Request, pair: Optional[str] = None):

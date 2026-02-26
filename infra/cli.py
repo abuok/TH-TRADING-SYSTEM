@@ -119,7 +119,23 @@ import yaml
 
 from shared.types.research import CounterfactualConfig
 from services.research.simulator import run_replay
-from services.research.reporting import save_json, generate_html_report
+from services.research.reporting import save_research_run, load_research_run, save_calibration_report, compile_calibration_html
+from services.research.calibration import generate_calibration_report
+
+def save_json(result):
+    return save_research_run(result)
+
+def generate_html_report(result):
+    from jinja2 import Environment, FileSystemLoader
+    import os
+    env = Environment(loader=FileSystemLoader(os.path.join("services", "dashboard", "templates")))
+    template = env.get_template("research_report_template.html")
+    html_content = template.render(result=result, now=datetime.now())
+    os.makedirs(os.path.join("artifacts", "research"), exist_ok=True)
+    filepath = os.path.join("artifacts", "research", f"{result.run_id}.html")
+    with open(filepath, "w", encoding="utf-8") as f:
+        f.write(html_content)
+    return filepath
 
 # Add Research sub-app
 research_app = typer.Typer(help="Historical replay research tools")
@@ -158,6 +174,36 @@ def research_run(
             
     json_path = save_json(result)
     html_path = generate_html_report(result)
+    
+    console.print(f"\n[green]Success![/] Saved {result.run_id} to {json_path}")
+    console.print(f"HTML Report: {html_path}")
+
+@research_app.command("calibrate")
+def research_calibrate(
+    run_id: str,
+    baseline: str = typer.Option("baseline", "--baseline", "-b", help="Name of the variant to use as baseline")
+):
+    """Generate a Policy Calibration pack from a historical replay run."""
+    try:
+        run_res = load_research_run(run_id)
+        
+        with console.status(f"[bold green]Generating calibration for {run_id}...[/]"):
+            report = generate_calibration_report([run_res], baseline_name=baseline)
+            json_path = save_calibration_report(report)
+            html_path = compile_calibration_html(report)
+            
+        console.print(f"\n[green]Calibration Pack Generated for {report.pair}![/]")
+        num_recs = len(report.recommendations)
+        console.print(f"Found [cyan]{num_recs}[/] statistical recommendations.")
+        console.print(f"JSON Output: {json_path}")
+        console.print(f"HTML Output: {html_path}")
+        
+    except FileNotFoundError:
+        console.print(f"[red]Could not find run_id '{run_id}'. Run 'python infra/cli.py research list' to see available runs.[/red]")
+        raise typer.Exit(1)
+    except Exception as e:
+        console.print(f"[red]Calibration failed: {e}[/red]")
+        raise typer.Exit(1)
     
     console.print(f"[green]✔ Replay completed successfully![/green]")
     console.print(f"Run ID: [bold]{result.run_id}[/bold]")
