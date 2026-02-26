@@ -12,7 +12,7 @@ from shared.types.packets import (
     RiskApprovalPacket, 
     DecisionPacket
 )
-from shared.database.session import SessionLocal, init_db
+import shared.database.session as db_session
 from shared.database.models import Packet as DBPacket, Run as DBRun
 from shared.logic.notifications import NotificationService, ConsoleNotificationAdapter
 from shared.logic.governance import GovernanceEngine
@@ -30,7 +30,7 @@ class Orchestrator:
         self.detectors: Dict[str, PHXDetector] = {}
         self.notifier = notifier or NotificationService([ConsoleNotificationAdapter()])
         
-        self.db = SessionLocal()
+        self.db = db_session.SessionLocal()
         self.governance = GovernanceEngine(self.db)
         
         # Idempotency / De-dup tracking
@@ -49,7 +49,7 @@ class Orchestrator:
     def start_run(self):
         """Create a new run entry in the database."""
         try:
-            db = SessionLocal()
+            db = db_session.SessionLocal()
             run_uid = f"run_{datetime.now().timestamp()}"
             new_run = DBRun(run_id=run_uid, status="running")
             db.add(new_run)
@@ -160,7 +160,7 @@ class Orchestrator:
             logger.warning("No active run_id, skipping persistence.")
             return
         try:
-            db = SessionLocal()
+            db = db_session.SessionLocal()
             # Ensure data is JSON serializable (handling datetime, etc.)
             if hasattr(packet, 'model_dump'):
                 data = packet.model_dump(mode='json')
@@ -252,5 +252,5 @@ async def main():
     logger.info("End of Session. Finalizing Reports...")
 
 if __name__ == "__main__":
-    init_db()
+    db_session.init_db()
     asyncio.run(main())

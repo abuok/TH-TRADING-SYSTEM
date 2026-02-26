@@ -1,12 +1,3 @@
-import os
-from sqlalchemy.orm import sessionmaker
-
-# Force in-memory SQLite BEFORE any other imports
-os.environ["DATABASE_URL"] = "sqlite:///:memory:"
-import shared.database.session as session
-session.engine = session.get_engine("sqlite:///:memory:")
-session.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=session.engine)
-
 import pytest
 import asyncio
 from datetime import datetime, timezone, timedelta
