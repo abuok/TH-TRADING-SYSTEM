@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=trading_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  ingestion:
+    build:
+      context: .
+      dockerfile: infra/Dockerfile.service
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./services/ingestion:/app
+      - ./shared:/app/shared
+    env_file: .env
+    depends_on:
+      - postgres
+      - redis
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  technical:
+    build:
+      context: .
+      dockerfile: infra/Dockerfile.service
+    ports:
+      - "8002:8000"
+    volumes:
+      - ./services/technical:/app
+      - ./shared:/app/shared
+    env_file: .env
+    depends_on:
+      - postgres
+      - redis
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  risk:
+    build:
+      context: .
+      dockerfile: infra/Dockerfile.service
+    ports:
+      - "8003:8000"
+    volumes:
+      - ./services/risk:/app
+      - ./shared:/app/shared
+    env_file: .env
+    depends_on:
+      - postgres
+      - redis
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  journal:
+    build:
+      context: .
+      dockerfile: infra/Dockerfile.service
+    ports:
+      - "8004:8000"
+    volumes:
+      - ./services/journal:/app
+      - ./shared:/app/shared
+    env_file: .env
+    depends_on:
+      - postgres
+      - redis
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+volumes:
+  postgres_data:

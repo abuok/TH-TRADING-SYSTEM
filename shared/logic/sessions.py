@@ -1,0 +1,59 @@
+from datetime import time, datetime
+from typing import List, Dict, Tuple
+from shared.types.packets import Candle
+import pytz
+
+class TradingSessions:
+    # Nairobi is UTC+3
+    # Standard Session Ranges (Nairobi Time)
+    ASIA_RANGE = (time(3, 0), time(12, 0))
+    LONDON_OPEN_WINDOW = (time(11, 0), time(14, 0))
+    LONDON_RANGE = (time(11, 0), time(20, 0))
+    NY_WINDOW = (time(16, 0), time(19, 0))
+    NY_RANGE = (time(16, 0), time(1, 0)) # Note: Crosses midnight
+
+    @staticmethod
+    def is_in_range(t: time, start: time, end: time) -> bool:
+        if start <= end:
+            return start <= t <= end
+        else: # Crosses midnight
+            return t >= start or t <= end
+
+    @classmethod
+    def get_session_candles(cls, candles: List[Candle], session_range: Tuple[time, time]) -> List[Candle]:
+        start, end = session_range
+        session_candles = []
+        for candle in candles:
+            # Assumes candle.timestamp is already in Nairobi time or we convert it
+            # For this logic, we assume the input candles are normalized to the target TZ
+            if cls.is_in_range(candle.timestamp.time(), start, end):
+                session_candles.append(candle)
+        return session_candles
+
+    @classmethod
+    def get_high_low(cls, candles: List[Candle]) -> Dict[str, float]:
+        if not candles:
+            return {}
+        return {
+            "high": max(c.high for c in candles),
+            "low": min(c.low for c in candles)
+        }
+
+    @classmethod
+    def compute_all_levels(cls, candles: List[Candle]) -> Dict[str, float]:
+        """Compute High/Low for Asia and London sessions."""
+        asia_candles = cls.get_session_candles(candles, cls.ASIA_RANGE)
+        london_candles = cls.get_session_candles(candles, cls.LONDON_RANGE)
+        
+        asia_hl = cls.get_high_low(asia_candles)
+        london_hl = cls.get_high_low(london_candles)
+        
+        levels = {}
+        if asia_hl:
+            levels["asia_high"] = asia_hl["high"]
+            levels["asia_low"] = asia_hl["low"]
+        if london_hl:
+            levels["london_high"] = london_hl["high"]
+            levels["london_low"] = london_hl["low"]
+            
+        return levels

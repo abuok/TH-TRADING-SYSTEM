@@ -1,0 +1,22 @@
+[
+    {
+        "id": "hist-001",
+        "symbol": "XAUUSD",
+        "direction": "LONG",
+        "entry": 2025.10,
+        "sl": 2020.10,
+        "tp": 2040.10,
+        "timestamp": "2024-01-01T10:00:00+03:00",
+        "strategy": "Historical_Trend"
+    },
+    {
+        "id": "hist-002",
+        "symbol": "GBPJPY",
+        "direction": "SHORT",
+        "entry": 190.50,
+        "sl": 191.00,
+        "tp": 189.00,
+        "timestamp": "2024-01-01T11:30:00+03:00",
+        "strategy": "Historical_Reversal"
+    }
+]

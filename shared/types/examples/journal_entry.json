@@ -1,0 +1,12 @@
+{
+    "schema_version": "1.0.0",
+    "timestamp": "2026-02-26T13:49:00Z",
+    "event_type": "TRADE_EXECUTION_COMPLETED",
+    "service_name": "execution_engine",
+    "message": "Market sell order for 10.5 SOL executed at 145.2",
+    "metadata": {
+        "order_id": "ORD-123",
+        "tx_hash": "0xABC123..."
+    },
+    "level": "INFO"
+}

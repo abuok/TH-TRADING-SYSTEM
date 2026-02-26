@@ -1,0 +1,12 @@
+{
+    "schema_version": "1.0.0",
+    "timestamp": "2026-02-26T13:45:00Z",
+    "source": "Coinbase",
+    "asset_pair": "BTC/USD",
+    "price": 64500.5,
+    "volume_24h": 1200500.0,
+    "metrics": {
+        "volatility_index": 0.45,
+        "rsi_14h": 58.2
+    }
+}

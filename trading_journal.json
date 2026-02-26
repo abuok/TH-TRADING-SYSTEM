@@ -1,0 +1,152 @@
+[
+    {
+        "timestamp": "2026-02-26T16:35:01.375514",
+        "signal": {
+            "id": "99771575",
+            "symbol": "XAUUSD",
+            "direction": "LONG",
+            "entry": 2031.13,
+            "sl": 2026.13,
+            "tp": 2046.13,
+            "timestamp": "2026-02-26T16:35:01.371555+03:00",
+            "strategy": "V1_Breakout"
+        },
+        "score": {
+            "signal_id": "99771575",
+            "confidence_score": 64.6,
+            "metadata": {
+                "atr": 15.2,
+                "volume_delta": "UP",
+                "session_volatility": "HIGH"
+            }
+        },
+        "risk": {
+            "signal_id": "99771575",
+            "decision": "APPROVE",
+            "reason": "All checks passed.",
+            "max_drawdown_check": true,
+            "session_check": true
+        },
+        "final_status": "ACCEPTED (SIMULATED)"
+    },
+    {
+        "timestamp": "2026-02-26T16:35:01.381141",
+        "signal": {
+            "id": "c926dfc3",
+            "symbol": "GBPJPY",
+            "direction": "SHORT",
+            "entry": 189.45,
+            "sl": 189.95,
+            "tp": 187.95,
+            "timestamp": "2026-02-26T16:35:01.380905+03:00",
+            "strategy": "V1_Breakout"
+        },
+        "score": {
+            "signal_id": "c926dfc3",
+            "confidence_score": 70.24,
+            "metadata": {
+                "atr": 0.45,
+                "volume_delta": "UP",
+                "session_volatility": "HIGH"
+            }
+        },
+        "risk": {
+            "signal_id": "c926dfc3",
+            "decision": "APPROVE",
+            "reason": "All checks passed.",
+            "max_drawdown_check": true,
+            "session_check": true
+        },
+        "final_status": "ACCEPTED (SIMULATED)"
+    },
+    {
+        "timestamp": "2026-02-26T16:35:01.415051",
+        "signal": {
+            "id": "9edc37cf",
+            "symbol": "XAUUSD",
+            "direction": "LONG",
+            "entry": 2031.48,
+            "sl": 2026.48,
+            "tp": 2046.48,
+            "timestamp": "2026-02-26T16:35:01.414841+03:00",
+            "strategy": "V1_Breakout"
+        },
+        "score": {
+            "signal_id": "9edc37cf",
+            "confidence_score": 64.93,
+            "metadata": {
+                "atr": 15.2,
+                "volume_delta": "UP",
+                "session_volatility": "HIGH"
+            }
+        },
+        "risk": {
+            "signal_id": "9edc37cf",
+            "decision": "APPROVE",
+            "reason": "All checks passed.",
+            "max_drawdown_check": true,
+            "session_check": true
+        },
+        "final_status": "ACCEPTED (SIMULATED)"
+    },
+    {
+        "timestamp": "2026-02-26T16:35:52.675312",
+        "signal": {
+            "id": "hist-001",
+            "symbol": "XAUUSD",
+            "direction": "LONG",
+            "entry": 2025.1,
+            "sl": 2020.1,
+            "tp": 2040.1,
+            "timestamp": "2024-01-01T10:00:00+03:00",
+            "strategy": "Historical_Trend"
+        },
+        "score": {
+            "signal_id": "hist-001",
+            "confidence_score": 72.26,
+            "metadata": {
+                "atr": 15.2,
+                "volume_delta": "UP",
+                "session_volatility": "HIGH"
+            }
+        },
+        "risk": {
+            "signal_id": "hist-001",
+            "decision": "APPROVE",
+            "reason": "All checks passed.",
+            "max_drawdown_check": true,
+            "session_check": true
+        },
+        "final_status": "ACCEPTED (SIMULATED)"
+    },
+    {
+        "timestamp": "2026-02-26T16:35:52.994543",
+        "signal": {
+            "id": "hist-002",
+            "symbol": "GBPJPY",
+            "direction": "SHORT",
+            "entry": 190.5,
+            "sl": 191.0,
+            "tp": 189.0,
+            "timestamp": "2024-01-01T11:30:00+03:00",
+            "strategy": "Historical_Reversal"
+        },
+        "score": {
+            "signal_id": "hist-002",
+            "confidence_score": 77.33,
+            "metadata": {
+                "atr": 0.45,
+                "volume_delta": "UP",
+                "session_volatility": "HIGH"
+            }
+        },
+        "risk": {
+            "signal_id": "hist-002",
+            "decision": "APPROVE",
+            "reason": "All checks passed.",
+            "max_drawdown_check": true,
+            "session_check": true
+        },
+        "final_status": "ACCEPTED (SIMULATED)"
+    }
+]

@@ -1,0 +1,10 @@
+{
+    "schema_version": "1.0.0",
+    "timestamp": "2026-02-26T13:47:00Z",
+    "asset_pair": "SOL/USDT",
+    "strategy_name": "Breakout_V1",
+    "entry_price": 145.2,
+    "stop_loss": 142.5,
+    "take_profit": 155.0,
+    "timeframe": "4h"
+}
