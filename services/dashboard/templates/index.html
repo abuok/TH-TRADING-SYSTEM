@@ -1,15 +1,14 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem;">
-    <div>
-        <h1 style="font-size: 2.5rem; color: #fff;">System Overview</h1>
-        <p style="color: var(--text-muted);">Real-time pulse of the Trading Engine</p>
+<div class="header-section">
+    <div class="header-title">
+        <h1>System Overview</h1>
+        <p>Real-time pulse of the Trading Engine</p>
     </div>
-    <div style="text-align: right;">
-        <div id="clock" style="font-size: 1.5rem; font-weight: 800; font-family: 'Outfit'; color: var(--accent-blue);">
-            --:--:--</div>
-        <div style="font-size: 0.85rem; color: var(--text-muted);">{{ now_nairobi_str }} | {{ session_label }}</div>
+    <div class="header-clock">
+        <div id="clock" class="clock-display">--:--:--</div>
+        <div class="clock-label">{{ now_nairobi_str }} | {{ session_label }}</div>
     </div>
 </div>
 
@@ -17,12 +16,12 @@
 <div class="grid">
     {% for service, status in health.items() %}
     <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <div class="card-header">
             <span class="metric-label">{{ service }}</span>
             <span class="status-dot status-{{ 'healthy' if status == 'healthy' else 'unhealthy' }}"></span>
         </div>
         <div class="metric-value">{{ status | upper }}</div>
-        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">
+        <div class="clock-label" style="margin-top: 0.5rem;">
             Response: {{ response_times.get(service, 'N/A') }}ms
         </div>
     </div>
@@ -32,12 +31,12 @@
 <div class="grid" style="grid-template-columns: 2fr 1fr;">
     <!-- Market Context & Kill Switches -->
     <div class="card">
-        <h2 style="margin-bottom: 1.5rem;">Market & Governance</h2>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+        <h2>Market & Governance</h2>
+        <div class="sub-grid">
             <div>
-                <h3 style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">ACTIVE KILL SWITCHES</h3>
+                <h3 class="sub-header">ACTIVE KILL SWITCHES</h3>
                 {% if kill_switches %}
-                <ul style="list-style: none;">
+                <ul class="list-unstyled">
                     {% for ks in kill_switches %}
                     <li style="margin-bottom: 0.5rem;">
                         <span class="badge badge-danger">{{ ks.switch_type }}</span>
@@ -50,14 +49,12 @@
                 {% endif %}
             </div>
             <div>
-                <h3 style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">UPCOMING EVENTS (24H)</h3>
+                <h3 class="sub-header">UPCOMING EVENTS (24H)</h3>
                 {% if events %}
                 {% for event in events %}
-                <div
-                    style="margin-bottom: 0.75rem; border-left: 2px solid var(--accent-orange); padding-left: 0.75rem;">
-                    <div style="font-size: 0.85rem; font-weight: 600;">{{ event.event }}</div>
-                    <div style="font-size: 0.75rem; color: var(--text-muted);">{{ event.time }} | {{ event.currency }}
-                    </div>
+                <div class="event-item">
+                    <div class="event-title">{{ event.event }}</div>
+                    <div class="event-meta">{{ event.time }} | {{ event.currency }}</div>
                 </div>
                 {% endfor %}
                 {% else %}
@@ -69,18 +66,18 @@
 
     <!-- No Trade Windows -->
     <div class="card">
-        <h2 style="margin-bottom: 1.5rem;">Safety Windows</h2>
+        <h2>Safety Windows</h2>
         {% if no_trade_windows %}
         {% for window in no_trade_windows %}
-        <div style="margin-bottom: 1rem; background: rgba(210, 153, 77, 0.1); border-radius: 8px; padding: 0.75rem;">
-            <div style="font-size: 0.85rem; font-weight: 700; color: var(--accent-orange);">NO TRADE</div>
-            <div style="font-size: 0.75rem;">{{ window.start }} - {{ window.end }}</div>
+        <div class="safety-window">
+            <div class="safety-header">NO TRADE</div>
+            <div class="safety-meta">{{ window.start }} - {{ window.end }}</div>
         </div>
         {% endfor %}
         {% else %}
-        <div style="background: rgba(63, 185, 80, 0.1); border-radius: 8px; padding: 0.75rem;">
-            <div style="font-size: 0.85rem; font-weight: 700; color: var(--accent-green);">CLEAR SKIES</div>
-            <div style="font-size: 0.75rem;">No active restrictions</div>
+        <div class="clear-window">
+            <div class="clear-header">CLEAR SKIES</div>
+            <div class="safety-meta">No active restrictions</div>
         </div>
         {% endif %}
     </div>
@@ -90,7 +87,7 @@
 <div class="grid">
     <!-- Latest Setups -->
     <div class="card">
-        <h2 style="margin-bottom: 1rem;">Latest Setups</h2>
+        <h2>Latest Setups</h2>
         <table>
             <thead>
                 <tr>
@@ -119,7 +116,7 @@
 
     <!-- Latest Decisions -->
     <div class="card">
-        <h2 style="margin-bottom: 1rem;">Recent Risk Decisions</h2>
+        <h2>Recent Risk Decisions</h2>
         <table>
             <thead>
                 <tr>
@@ -146,7 +143,7 @@
 </div>
 
 <div class="card">
-    <h2 style="margin-bottom: 1rem;">Recent Incidents (Last 10)</h2>
+    <h2>Recent Incidents (Last 10)</h2>
     <table>
         <thead>
             <tr>

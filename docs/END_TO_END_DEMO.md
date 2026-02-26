@@ -41,6 +41,15 @@ You should see colored console notifications from the `ConsoleNotificationAdapte
 - **HTML Report**: Check `artifacts/daily_report.html` for the performance summary.
 - **Database**: Use `make cli-packets` to view persisted decision packets in the DB.
 
+### 5. Operator Dashboard Monitoring
+You can monitor the system in real-time via the Operator Dashboard:
+1. Open [http://localhost:8005/dashboard](http://localhost:8005/dashboard).
+2. **Overview**: View health status of all 5 microservices, active kill switches, and latest signals.
+3. **Incidents**: Review governance logs and service failures.
+4. **Technical**: Detailed view of the latest technical setups detected.
+5. **Risk**: Audit trail of every ALLOW/BLOCK decision and its primary reason.
+6. **Reports**: Access generated daily performance reports.
+
 ## Failure-Mode Simulations (Hardening V1)
 
 ### 1. Kill Switch Simulation

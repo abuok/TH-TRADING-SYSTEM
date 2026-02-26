@@ -57,3 +57,18 @@ class TradingSessions:
             levels["london_low"] = london_hl["low"]
             
         return levels
+
+def get_nairobi_time() -> datetime:
+    """Returns the current time in Africa/Nairobi."""
+    return datetime.now(pytz.timezone("Africa/Nairobi"))
+
+def get_session_label(now_nairobi: datetime) -> str:
+    """Returns a label for the current trading session."""
+    t = now_nairobi.time()
+    if TradingSessions.is_in_range(t, *TradingSessions.LONDON_RANGE):
+        return "LONDON"
+    if TradingSessions.is_in_range(t, *TradingSessions.NY_RANGE):
+        return "NEW YORK"
+    if TradingSessions.is_in_range(t, *TradingSessions.ASIA_RANGE):
+        return "ASIA"
+    return "OUTSIDE"

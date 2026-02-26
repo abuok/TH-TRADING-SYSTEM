@@ -9,6 +9,7 @@ help:
 	@echo "  lint      : Run linters (black, isort, flake8)"
 	@echo "  test      : Run tests"
 	@echo "  demo      : Run E2E demo (requires Docker)"
+	@echo "  dashboard : Run dashboard locally (port 8005)"
 
 install:
 	pip install -r requirements.txt
@@ -48,6 +49,9 @@ cli-runs:
 tech-scan:
 	python services/technical/replay.py scan
 
+demo: run-all
+	@echo "Waiting for services to start..."
+	@sleep 10
 	python services/orchestration/demo.py
 	@echo "Demo complete. Open dashboard: http://localhost:8005/dashboard"
 

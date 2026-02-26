@@ -15,6 +15,9 @@ To run the full end-to-end demo locally:
    ```
    *This will start the services via Docker, wait for initialization, and run the E2E demo script.*
 
+3. **Access Dashboard**:
+   Open [http://localhost:8005/dashboard](http://localhost:8005/dashboard) in your browser.
+
 ## Project Structure
 - `services/`: Specialized microservices (Ingestion, Technical, Risk, Journal, Orchestration).
 - `shared/`: Logic, data types, and database utilities shared across services.

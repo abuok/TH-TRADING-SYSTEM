@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title | default("Antigravity Operator Dashboard") }}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@400;600;800&display=swap"
+        rel="stylesheet">
     <style>
         :root {
             --bg-color: #0a0c10;
@@ -33,7 +36,9 @@
             overflow-x: hidden;
         }
 
-        h1, h2, h3 {
+        h1,
+        h2,
+        h3 {
             font-family: 'Outfit', sans-serif;
             font-weight: 700;
         }
@@ -44,6 +49,7 @@
             align-items: center;
             padding: 1rem 2rem;
             background: rgba(13, 17, 23, 0.8);
+            -webkit-backdrop-filter: var(--glass-blur);
             backdrop-filter: var(--glass-blur);
             border-bottom: 1px solid var(--border-color);
             position: sticky;
@@ -73,7 +79,8 @@
             transition: color 0.3s ease;
         }
 
-        .nav-link:hover, .nav-link.active {
+        .nav-link:hover,
+        .nav-link.active {
             color: var(--text-primary);
         }
 
@@ -113,10 +120,25 @@
             text-transform: uppercase;
         }
 
-        .badge-success { background: rgba(63, 185, 80, 0.2); color: var(--accent-green); }
-        .badge-danger { background: rgba(248, 81, 73, 0.2); color: var(--accent-red); }
-        .badge-warning { background: rgba(210, 153, 77, 0.2); color: var(--accent-orange); }
-        .badge-info { background: rgba(88, 166, 255, 0.2); color: var(--accent-blue); }
+        .badge-success {
+            background: rgba(63, 185, 80, 0.2);
+            color: var(--accent-green);
+        }
+
+        .badge-danger {
+            background: rgba(248, 81, 73, 0.2);
+            color: var(--accent-red);
+        }
+
+        .badge-warning {
+            background: rgba(210, 153, 77, 0.2);
+            color: var(--accent-orange);
+        }
+
+        .badge-info {
+            background: rgba(88, 166, 255, 0.2);
+            color: var(--accent-blue);
+        }
 
         table {
             width: 100%;
@@ -124,7 +146,8 @@
             margin-top: 1rem;
         }
 
-        th, td {
+        th,
+        td {
             text-align: left;
             padding: 1rem;
             border-bottom: 1px solid var(--border-color);
@@ -145,8 +168,15 @@
             margin-right: 0.5rem;
         }
 
-        .status-healthy { background: var(--accent-green); box-shadow: 0 0 8px var(--accent-green); }
-        .status-unhealthy { background: var(--accent-red); box-shadow: 0 0 8px var(--accent-red); }
+        .status-healthy {
+            background: var(--accent-green);
+            box-shadow: 0 0 8px var(--accent-green);
+        }
+
+        .status-unhealthy {
+            background: var(--accent-red);
+            box-shadow: 0 0 8px var(--accent-red);
+        }
 
         .metric-value {
             font-size: 1.5rem;
@@ -169,24 +199,141 @@
 
         /* Animations */
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .animate-fade {
             animation: fadeIn 0.5s ease forwards;
         }
+
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 2rem;
+        }
+
+        .header-title h1 {
+            font-size: 2.5rem;
+            color: #fff;
+        }
+
+        .header-title p {
+            color: var(--text-muted);
+        }
+
+        .header-clock {
+            text-align: right;
+        }
+
+        .clock-display {
+            font-size: 1.5rem;
+            font-weight: 800;
+            font-family: 'Outfit';
+            color: var(--accent-blue);
+        }
+
+        .clock-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .card h2 {
+            margin-bottom: 1.5rem;
+        }
+
+        .sub-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .sub-header {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+        }
+
+        .event-item {
+            margin-bottom: 0.75rem;
+            border-left: 2px solid var(--accent-orange);
+            padding-left: 0.75rem;
+        }
+
+        .event-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .event-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .safety-window {
+            margin-bottom: 1rem;
+            background: rgba(210, 153, 77, 0.1);
+            border-radius: 8px;
+            padding: 0.75rem;
+        }
+
+        .safety-header {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--accent-orange);
+        }
+
+        .safety-meta {
+            font-size: 0.75rem;
+        }
+
+        .clear-window {
+            background: rgba(63, 185, 80, 0.1);
+            border-radius: 8px;
+            padding: 0.75rem;
+        }
+
+        .clear-header {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--accent-green);
+        }
+
+        .list-unstyled {
+            list-style: none;
+        }
     </style>
 </head>
+
 <body>
     <nav class="navbar">
         <a href="/dashboard" class="navbar-brand">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+            </svg>
             ANTIGRAVITY
         </a>
         <div class="nav-links">
             <a href="/dashboard" class="nav-link {% if active_page == 'overview' %}active{% endif %}">Overview</a>
-            <a href="/dashboard/incidents" class="nav-link {% if active_page == 'incidents' %}active{% endif %}">Incidents</a>
+            <a href="/dashboard/incidents"
+                class="nav-link {% if active_page == 'incidents' %}active{% endif %}">Incidents</a>
             <a href="/dashboard/setups" class="nav-link {% if active_page == 'setups' %}active{% endif %}">Technical</a>
             <a href="/dashboard/risk" class="nav-link {% if active_page == 'risk' %}active{% endif %}">Risk</a>
             <a href="/dashboard/reports" class="nav-link {% if active_page == 'reports' %}active{% endif %}">Reports</a>
@@ -201,4 +348,5 @@
         &copy; 2026 Antigravity Trading Systems | Nairobi/Africa Timezone
     </footer>
 </body>
+
 </html>
