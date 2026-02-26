@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem;">
+    <div>
+        <h1 style="font-size: 2.5rem; color: #fff;">System Overview</h1>
+        <p style="color: var(--text-muted);">Real-time pulse of the Trading Engine</p>
+    </div>
+    <div style="text-align: right;">
+        <div id="clock" style="font-size: 1.5rem; font-weight: 800; font-family: 'Outfit'; color: var(--accent-blue);">
+            --:--:--</div>
+        <div style="font-size: 0.85rem; color: var(--text-muted);">{{ now_nairobi_str }} | {{ session_label }}</div>
+    </div>
+</div>
+
+<!-- Health Cards -->
+<div class="grid">
+    {% for service, status in health.items() %}
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <span class="metric-label">{{ service }}</span>
+            <span class="status-dot status-{{ 'healthy' if status == 'healthy' else 'unhealthy' }}"></span>
+        </div>
+        <div class="metric-value">{{ status | upper }}</div>
+        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">
+            Response: {{ response_times.get(service, 'N/A') }}ms
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="grid" style="grid-template-columns: 2fr 1fr;">
+    <!-- Market Context & Kill Switches -->
+    <div class="card">
+        <h2 style="margin-bottom: 1.5rem;">Market & Governance</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+            <div>
+                <h3 style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">ACTIVE KILL SWITCHES</h3>
+                {% if kill_switches %}
+                <ul style="list-style: none;">
+                    {% for ks in kill_switches %}
+                    <li style="margin-bottom: 0.5rem;">
+                        <span class="badge badge-danger">{{ ks.switch_type }}</span>
+                        <span style="font-size: 0.85rem;">{{ ks.target or 'GLOBAL' }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p style="font-size: 0.85rem; color: var(--accent-green);">SYSTEM ARMED: No Active Kill Switches</p>
+                {% endif %}
+            </div>
+            <div>
+                <h3 style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">UPCOMING EVENTS (24H)</h3>
+                {% if events %}
+                {% for event in events %}
+                <div
+                    style="margin-bottom: 0.75rem; border-left: 2px solid var(--accent-orange); padding-left: 0.75rem;">
+                    <div style="font-size: 0.85rem; font-weight: 600;">{{ event.event }}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">{{ event.time }} | {{ event.currency }}
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <p style="font-size: 0.85rem; color: var(--text-muted);">No high-impact events detected.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- No Trade Windows -->
+    <div class="card">
+        <h2 style="margin-bottom: 1.5rem;">Safety Windows</h2>
+        {% if no_trade_windows %}
+        {% for window in no_trade_windows %}
+        <div style="margin-bottom: 1rem; background: rgba(210, 153, 77, 0.1); border-radius: 8px; padding: 0.75rem;">
+            <div style="font-size: 0.85rem; font-weight: 700; color: var(--accent-orange);">NO TRADE</div>
+            <div style="font-size: 0.75rem;">{{ window.start }} - {{ window.end }}</div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div style="background: rgba(63, 185, 80, 0.1); border-radius: 8px; padding: 0.75rem;">
+            <div style="font-size: 0.85rem; font-weight: 700; color: var(--accent-green);">CLEAR SKIES</div>
+            <div style="font-size: 0.75rem;">No active restrictions</div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Data Tables -->
+<div class="grid">
+    <!-- Latest Setups -->
+    <div class="card">
+        <h2 style="margin-bottom: 1rem;">Latest Setups</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Pair</th>
+                    <th>Stage</th>
+                    <th>Score</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for setup in latest_setups %}
+                <tr>
+                    <td style="font-weight: 600;">{{ setup.asset_pair }}</td>
+                    <td><span class="badge badge-info">{{ setup.stage }}</span></td>
+                    <td>{{ "%.1f" | format(setup.score|float) }}</td>
+                    <td>
+                        <span class="badge badge-{{ 'success' if setup.is_fresh else 'warning' }}">
+                            {{ 'Fresh' if setup.is_fresh else 'Stale' }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Latest Decisions -->
+    <div class="card">
+        <h2 style="margin-bottom: 1rem;">Recent Risk Decisions</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Pair</th>
+                    <th>Action</th>
+                    <th>Reason</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for decision in latest_decisions %}
+                <tr>
+                    <td>{{ decision.asset_pair }}</td>
+                    <td>
+                        <span class="badge badge-{{ 'success' if decision.action == 'ALLOW' else 'danger' }}">
+                            {{ decision.action }}
+                        </span>
+                    </td>
+                    <td style="font-size: 0.85rem; color: var(--text-muted);">{{ decision.reason }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card">
+    <h2 style="margin-bottom: 1rem;">Recent Incidents (Last 10)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Component</th>
+                <th>Severity</th>
+                <th>Message</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for incident in latest_incidents %}
+            <tr>
+                <td style="font-size: 0.85rem;">{{ incident.created_at.strftime('%H:%M:%S') }}</td>
+                <td><span class="badge badge-info">{{ incident.component }}</span></td>
+                <td>
+                    <span class="badge badge-{{ 'danger' if incident.severity == 'ERROR' else 'warning' }}">
+                        {{ incident.severity }}
+                    </span>
+                </td>
+                <td style="font-size: 0.85rem; color: var(--text-muted);">{{ incident.message }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function updateClock() {
+        const now = new Date();
+        const options = { timeZone: 'Africa/Nairobi', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+        const timeStr = new Intl.DateTimeFormat('en-GB', options).format(now);
+        document.getElementById('clock').textContent = timeStr;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+</script>
+{% endblock %}
