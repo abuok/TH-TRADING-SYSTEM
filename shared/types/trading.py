@@ -1,6 +1,22 @@
 from datetime import datetime, timezone
 from typing import Optional, List
+from enum import Enum
 from pydantic import BaseModel, Field
+
+class SkipReasonEnum(str, Enum):
+    NEWS_WINDOW = "NEWS_WINDOW"
+    STALE = "STALE"
+    SPREAD_TOO_HIGH = "SPREAD_TOO_HIGH"
+    LOW_SCORE = "LOW_SCORE"
+    FUNDAMENTALS_CONFLICT = "FUNDAMENTALS_CONFLICT"
+    ALREADY_MOVED = "ALREADY_MOVED"
+    MAX_RISK_REACHED = "MAX_RISK_REACHED"
+    PERSONAL_RULE = "PERSONAL_RULE"
+
+class TicketOutcomeEnum(str, Enum):
+    WIN = "WIN"
+    LOSS = "LOSS"
+    BE = "BE"
 
 class OrderTicketSchema(BaseModel):
     ticket_id: str
@@ -22,6 +38,17 @@ class OrderTicketSchema(BaseModel):
     block_reason: Optional[str] = None
     idempotency_key: str
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    expires_at: Optional[datetime] = None
+    reviewed_at: Optional[datetime] = None
+    closed_at: Optional[datetime] = None
+    review_decision: Optional[str] = None
+    skip_reason: Optional[SkipReasonEnum] = None
+    notes: Optional[str] = None
+    manual_entry_price: Optional[float] = None
+    manual_exit_price: Optional[float] = None
+    manual_outcome_r: Optional[float] = None
+    manual_outcome_label: Optional[TicketOutcomeEnum] = None
+    manual_screenshot_ref: Optional[str] = None
 
     def to_mt5_note(self) -> str:
         """Formats the ticket as a plain text note for MT5."""

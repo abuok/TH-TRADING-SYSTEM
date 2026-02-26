@@ -70,6 +70,18 @@ class OrderTicket(Base):
     idempotency_key = Column(String, unique=True, index=True, nullable=False)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
+    expires_at = Column(DateTime(timezone=True), nullable=True)
+    reviewed_at = Column(DateTime(timezone=True), nullable=True)
+    closed_at = Column(DateTime(timezone=True), nullable=True)
+    review_decision = Column(String, nullable=True) # APPROVE, SKIP
+    skip_reason = Column(String, nullable=True)
+    notes = Column(Text, nullable=True)
+    manual_entry_price = Column(Float, nullable=True)
+    manual_exit_price = Column(Float, nullable=True)
+    manual_outcome_r = Column(Float, nullable=True)
+    manual_outcome_label = Column(String, nullable=True) # WIN, LOSS, BE
+    manual_screenshot_ref = Column(String, nullable=True)
+
     guardrails_score = Column(Integer, nullable=True)         # 0–100
     guardrails_hard_block = Column(Boolean, default=False)
     guardrails_summary = Column(JSON, nullable=True)          # top issues list
