@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <h1>Technical Setups</h1>
+    <p style="color: var(--text-muted);">Real-time monitoring of PHX setup detections</p>
+</div>
+
+<div class="card">
+    <table>
+        <thead>
+            <tr>
+                <th>Time (UTC)</th>
+                <th>Asset Pair</th>
+                <th>Stage</th>
+                <th>Score</th>
+                <th>Bias</th>
+                <th>Freshness</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for setup in setups %}
+            <tr>
+                <td>{{ setup.created_at.strftime('%H:%M:%S') }}</td>
+                <td style="font-weight: 700;">{{ setup.data.asset_pair }}</td>
+                <td><span class="badge badge-info">{{ setup.data.stage }}</span></td>
+                <td>{{ setup.data.score }}</td>
+                <td>{{ setup.data.bias }}</td>
+                <td>
+                    <span class="badge badge-{{ 'success' if setup.is_fresh else 'warning' }}">
+                        {{ 'Fresh' if setup.is_fresh else 'Stale' }}
+                    </span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <h1>System Incidents</h1>
+    <p style="color: var(--text-muted);">Audit trail of governance events and service failures</p>
+</div>
+
+<div class="card">
+    <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+        <span class="badge badge-info">Filters:</span>
+        <a href="?severity=ERROR" class="nav-link" style="font-size: 0.75rem;">ERROR</a>
+        <a href="?severity=WARNING" class="nav-link" style="font-size: 0.75rem;">WARNING</a>
+        <a href="?" class="nav-link" style="font-size: 0.75rem;">CLEAR</a>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Time (UTC)</th>
+                <th>Component</th>
+                <th>Code</th>
+                <th>Severity</th>
+                <th>Message</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for incident in incidents %}
+            <tr>
+                <td>{{ incident.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                <td><span class="badge badge-info">{{ incident.component }}</span></td>
+                <td style="font-family: monospace; font-size: 0.85rem;">{{ incident.error_code }}</td>
+                <td>
+                    <span class="badge badge-{{ 'danger' if incident.severity == 'ERROR' else 'warning' }}">
+                        {{ incident.severity }}
+                    </span>
+                </td>
+                <td style="font-size: 0.9rem;">{{ incident.message }}</td>
+            </tr>
+            {% endfor %}
+            {% if not incidents %}
+            <tr>
+                <td colspan="5" style="text-align: center; color: var(--text-muted);">No incidents found.</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
