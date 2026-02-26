@@ -12,7 +12,8 @@ sys.path.append(os.getcwd())
 
 import shared.database.session as db_session
 from shared.database.models import Packet, IncidentLog, KillSwitch
-from services.dashboard.logic import get_service_health, get_dashboard_data
+from services.dashboard.logic import get_service_health, get_dashboard_data, get_tickets
+from shared.logic.sessions import get_nairobi_time
 
 app = FastAPI(title="Operator Dashboard")
 

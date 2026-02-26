@@ -45,3 +45,30 @@ class IncidentLog(Base):
     message = Column(String, nullable=False)
     context = Column(JSON)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+class OrderTicket(Base):
+    __tablename__ = "order_tickets"
+
+    id = Column(Integer, primary_key=True, index=True)
+    ticket_id = Column(String, unique=True, index=True, nullable=False)
+    setup_packet_id = Column(Integer, ForeignKey("packets.id"), nullable=False)
+    risk_packet_id = Column(Integer, ForeignKey("packets.id"), nullable=False)
+    pair = Column(String, nullable=False)
+    direction = Column(String, nullable=False) # BUY, SELL
+    entry_type = Column(String, default="MARKET") # MARKET, LIMIT
+    entry_price = Column(Float, nullable=False)
+    stop_loss = Column(Float, nullable=False)
+    take_profit_1 = Column(Float, nullable=False)
+    take_profit_2 = Column(Float, nullable=True)
+    lot_size = Column(Float, nullable=False)
+    risk_usd = Column(Float, nullable=False)
+    risk_pct = Column(Float, nullable=False)
+    rr_tp1 = Column(Float, nullable=False)
+    rr_tp2 = Column(Float, nullable=True)
+    status = Column(String, default="PENDING") # PENDING, TAKEN, NOT_TAKEN, BLOCKED
+    block_reason = Column(String, nullable=True)
+    idempotency_key = Column(String, unique=True, index=True, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+    setup_packet = relationship("Packet", foreign_keys=[setup_packet_id])
+    risk_packet = relationship("Packet", foreign_keys=[risk_packet_id])

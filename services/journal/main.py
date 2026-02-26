@@ -3,8 +3,9 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import func, text
 import shared.database.session as db_session
-from .models import JournalSetup, JournalRiskDecision, JournalTradeOutcome
+from .models import JournalSetup, JournalRiskDecision, JournalTradeOutcome, JournalTicket
 from shared.types.packets import TechnicalSetupPacket, RiskApprovalPacket
+from shared.types.trading import OrderTicketSchema
 from typing import List, Optional
 from datetime import datetime, timedelta, timezone
 
@@ -107,6 +108,19 @@ def log_outcome(setup_id: int, is_win: bool, r_multiple: float, pnl: float, note
         
     db.commit()
     return {"status": "outcome_logged"}
+
+@app.post("/log/ticket")
+def log_ticket(ticket: OrderTicketSchema, setup_id: Optional[int] = None, risk_decision_id: Optional[int] = None, db: Session = Depends(db_session.get_db)):
+    db_ticket = JournalTicket(
+        ticket_id=ticket.ticket_id,
+        setup_id=setup_id,
+        risk_decision_id=risk_decision_id,
+        status=ticket.status,
+        plan_snapshot=ticket.model_dump()
+    )
+    db.add(db_ticket)
+    db.commit()
+    return {"status": "ticket_logged"}
 
 @app.get("/report/daily", response_class=HTMLResponse)
 def daily_report(db: Session = Depends(db_session.get_db)):

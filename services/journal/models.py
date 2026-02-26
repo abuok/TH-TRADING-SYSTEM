@@ -41,3 +41,14 @@ class JournalTradeOutcome(Base):
     pnl = Column(Float)
     timestamp = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     notes = Column(String, nullable=True)
+
+class JournalTicket(Base):
+    __tablename__ = "journal_tickets"
+
+    id = Column(Integer, primary_key=True, index=True)
+    ticket_id = Column(String, index=True)
+    setup_id = Column(Integer, ForeignKey("journal_setups.id"), nullable=True)
+    risk_decision_id = Column(Integer, ForeignKey("journal_risk_decisions.id"), nullable=True)
+    status = Column(String)
+    timestamp = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    plan_snapshot = Column(JSON)

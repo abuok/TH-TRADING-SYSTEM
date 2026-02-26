@@ -2,13 +2,14 @@ import asyncio
 import httpx
 import time
 from datetime import datetime, timezone, timedelta
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import text, desc
 
 import shared.database.session as db_session
-from shared.database.models import Packet, KillSwitch, IncidentLog
+from shared.database.models import Packet, KillSwitch, IncidentLog, OrderTicket
 from shared.logic.sessions import get_nairobi_time, get_session_label
+from shared.types.trading import OrderTicketSchema
 
 SERVICES = {
     "Ingestion": "http://localhost:8001/health",
@@ -60,7 +61,7 @@ def get_dashboard_data(db: Session):
     no_trade_windows = []
     if latest_context and "high_impact_events" in latest_context.data:
         events = latest_context.data.get("high_impact_events", [])[:5]
-        no_trade_windows = latest_context.data.get("no_trade_windows", [])
+        no_trade_windows = latest_context.get("no_trade_windows", [])
     
     # 3. Latest 10 Setups
     setup_packets = db.query(Packet).filter(Packet.packet_type == "TechnicalSetupPacket").order_by(Packet.created_at.desc()).limit(10).all()
@@ -98,3 +99,18 @@ def get_dashboard_data(db: Session):
         "latest_decisions": latest_decisions,
         "latest_incidents": latest_incidents
     }
+
+async def get_tickets(pair: Optional[str] = None) -> List[OrderTicketSchema]:
+    """Fetches order tickets, optionally filtered by pair."""
+    db = db_session.SessionLocal()
+    try:
+        query = db.query(OrderTicket)
+        if pair:
+            query = query.filter(OrderTicket.pair == pair)
+        
+        tickets = query.order_by(OrderTicket.created_at.desc()).limit(50).all()
+        
+        # Convert to schemas with formatters
+        return [OrderTicketSchema.model_validate(t, from_attributes=True) for t in tickets]
+    finally:
+        db.close()
