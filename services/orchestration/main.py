@@ -15,6 +15,7 @@ from shared.database.models import OrderTicket, Packet, SessionBriefing
 from shared.logic.trading_logic import generate_order_ticket
 from shared.logic.briefing import assemble_briefing, persist_briefing
 from shared.logic.guardrails import GuardrailsEngine
+from shared.logic.fundamentals_engine import evaluate_fundamentals
 from shared.logic.sessions import get_nairobi_time, get_session_label, TradingSessions
 from shared.logic.notifications import NotificationService, ConsoleNotificationAdapter
 from shared.types.packets import TechnicalSetupPacket, RiskApprovalPacket
@@ -49,7 +50,52 @@ def get_db():
 @app.on_event("startup")
 async def startup():
     db_session.init_db()
+    asyncio.create_task(fundamentals_scheduler())
     asyncio.create_task(briefing_scheduler())
+
+async def fundamentals_scheduler(interval_minutes: int = 30):
+    """
+    Runs a fundamentals background job every `interval_minutes` to re-score
+    XAUUSD and GBPJPY bias based on the latest proxy movements.
+    """
+    while True:
+        try:
+            db = next(get_db())
+            _run_fundamentals_generation(db)
+            db.close()
+        except Exception as e:
+            logger.error(f"Fundamentals generator error: {e}")
+        await asyncio.sleep(interval_minutes * 60)
+
+def _run_fundamentals_generation(db: Session, now: Optional[datetime] = None):
+    now = now or get_nairobi_time()
+    
+    # 1. Fetch latest market context to get proxies and events
+    ctx_db = db.query(Packet).filter(
+        Packet.packet_type == "MarketContextPacket"
+    ).order_by(Packet.created_at.desc()).first()
+    
+    if not ctx_db:
+        logger.warning("No MarketContextPacket available for fundamentals evaluation")
+        return
+        
+    movers, pair_packets = evaluate_fundamentals(ctx_db.data, now)
+    
+    # Save movers
+    db.add(Packet(
+        packet_type="MarketMoversPacket",
+        created_at=movers.created_at,
+        data=movers.model_dump(mode="json")
+    ))
+    
+    # Save pair packets as PairBiasPacket replacement
+    for p in pair_packets:
+        db.add(Packet(
+            packet_type="PairFundamentalsPacket",
+            created_at=p.created_at,
+            data=p.model_dump(mode="json")
+        ))
+    db.commit()
 
 
 async def briefing_scheduler(interval_minutes: int = 30):
@@ -119,10 +165,18 @@ async def generate_briefing_now(
     is_delta: bool = False, db: Session = Depends(get_db)
 ) -> Dict[str, Any]:
     """Manually trigger a briefing generation."""
+    _run_fundamentals_generation(db) # Ensure valid fundamentals before briefing
     now = get_nairobi_time()
     pack = assemble_briefing(db, now_nairobi=now, is_delta=is_delta)
     record = persist_briefing(pack, db)
     return {"briefing_id": record.briefing_id, "html_path": record.html_path}
+
+
+@app.post("/fundamentals/generate")
+async def generate_fundamentals_now(db: Session = Depends(get_db)):
+    """Manually trigger a fundamentals evaluation."""
+    _run_fundamentals_generation(db)
+    return {"status": "generated"}
 
 
 @app.get("/briefings/latest")

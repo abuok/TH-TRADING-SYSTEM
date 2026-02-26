@@ -11,7 +11,7 @@ from typing import List, Optional
 sys.path.append(os.getcwd())
 
 import shared.database.session as db_session
-from shared.database.models import Packet, IncidentLog, KillSwitch, SessionBriefing
+from shared.database.models import Packet, IncidentLog, KillSwitch, SessionBriefing, GuardrailsLog
 from services.dashboard.logic import get_service_health, get_dashboard_data, get_tickets, get_briefings, get_latest_briefing
 from shared.logic.sessions import get_nairobi_time
 
@@ -156,6 +156,56 @@ async def briefing_print_view(briefing_id: str, db: Session = Depends(db_session
 @app.get("/health")
 async def health_check():
     return {"status": "healthy", "service": "dashboard"}
+
+@app.get("/dashboard/fundamentals", response_class=HTMLResponse)
+async def dashboard_fundamentals(request: Request, db: Session = Depends(db_session.get_db)):
+    # Latest movers sync
+    movers = db.query(Packet).filter(
+        Packet.packet_type == "MarketMoversPacket"
+    ).order_by(Packet.created_at.desc()).first()
+
+    # Get latest pair bias for XAUUSD and GBPJPY
+    pairs_data = {}
+    for pair in ["XAUUSD", "GBPJPY"]:
+        recent = db.query(Packet).filter(
+            Packet.packet_type == "PairFundamentalsPacket",
+            Packet.data["asset_pair"].as_string() == pair
+        ).order_by(Packet.created_at.desc()).limit(10).all()
+        pairs_data[pair] = recent
+
+    return templates.TemplateResponse("fundamentals.html", {
+        "request": request,
+        "active_page": "fundamentals",
+        "movers": movers,
+        "pairs_data": pairs_data
+    })
+
+@app.get("/dashboard/guardrails/{setup_id}", response_class=HTMLResponse)
+async def guardrails_detail(
+    setup_id: str, request: Request, db: Session = Depends(db_session.get_db)
+):
+    """Display guardrails rule checks for a specific setup packet."""
+    # Try to resolve as int (DB id) first, fallback to pair string search
+    try:
+        setup_packet_id = int(setup_id)
+        record = db.query(GuardrailsLog).filter(
+            GuardrailsLog.setup_packet_id == setup_packet_id
+        ).order_by(GuardrailsLog.created_at.desc()).first()
+    except ValueError:
+        record = db.query(GuardrailsLog).filter(
+            GuardrailsLog.pair == setup_id
+        ).order_by(GuardrailsLog.created_at.desc()).first()
+
+    result = record.result_json if record else None
+    pair = record.pair if record else setup_id
+
+    return templates.TemplateResponse("guardrails_detail.html", {
+        "request": request,
+        "active_page": "setups",
+        "setup_id": setup_id,
+        "pair": pair,
+        "result": result,
+    })
 
 if __name__ == "__main__":
     import uvicorn

@@ -194,3 +194,25 @@ def weekly_report(db: Session = Depends(db_session.get_db)):
     avg_r = sum(o.r_multiple for o in outcomes) / len(outcomes) if outcomes else 0
     
     return f"<h1>Weekly Summary</h1><p>Total PnL: ${total_pnl:.2f}</p><p>Avg R-multiple: {avg_r:.2f}</p>"
+
+
+@app.post("/log/guardrails", status_code=201)
+async def log_guardrails(payload: dict, db: Session = Depends(db_session.get_db)):
+    """
+    Persist a GuardrailsResult to the guardrails_logs table.
+    Called by the Orchestrator after each evaluation.
+    """
+    from shared.database.models import GuardrailsLog
+    record = GuardrailsLog(
+        setup_packet_id=payload.get("setup_packet_id"),
+        ticket_id=payload.get("ticket_id"),
+        pair=payload.get("pair", "UNKNOWN"),
+        discipline_score=payload.get("discipline_score", 0),
+        hard_block=payload.get("hard_block", False),
+        primary_block_reason=payload.get("primary_block_reason"),
+        guardrails_version=payload.get("guardrails_version", "2.0.0"),
+        result_json=payload,
+    )
+    db.add(record)
+    db.commit()
+    return {"status": "logged", "pair": record.pair, "score": record.discipline_score}

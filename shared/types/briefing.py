@@ -59,6 +59,9 @@ class PairOverview(BaseModel):
     pair: str            # e.g. "XAUUSD"
     bias: str = "unknown"  # BULLISH / BEARISH / NEUTRAL / unknown
     bias_score: Optional[float] = None
+    bias_confidence: str = "UNKNOWN"
+    bias_invalidation: str = "N/A"
+    bias_drivers: List[Dict[str, Any]] = Field(default_factory=list)
     key_levels: Dict[str, float] = Field(default_factory=dict)
     setup_count_by_stage: Dict[str, int] = Field(default_factory=dict)
     top_setups: List[SetupSummary] = Field(default_factory=list)

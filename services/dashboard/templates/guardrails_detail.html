@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="header-section">
+    <div class="header-title">
+        <h1>Guardrails Detail</h1>
+        <p>Setup: {{ setup_id }} — {{ pair }}</p>
+    </div>
+    <a href="/dashboard/setups" class="btn btn-secondary">← Setups</a>
+</div>
+
+{% if not result %}
+<div class="card" style="text-align:center;padding:3rem;">
+    <h2 style="color:var(--text-muted);">No Guardrails Record Found</h2>
+    <p>Guardrails are generated when a setup is evaluated via the Orchestrator.</p>
+</div>
+{% else %}
+{% set score = result.discipline_score %}
+{% set hard = result.hard_block %}
+{% set score_color = "#ef4444" if score < 60 else ("#f59e0b" if score < 80 else "#10b981" ) %} <!-- Score Banner -->
+    <div class="card animate-fade"
+        style="border-left:4px solid {{ score_color }};display:flex;justify-content:space-between;align-items:center;padding:1.5rem;">
+        <div>
+            <div style="font-size:2.5rem;font-weight:800;color:{{ score_color }};">{{ score }}<span
+                    style="font-size:1rem;color:var(--text-muted);">/100</span></div>
+            <p style="margin:0;color:var(--text-muted);">Discipline Score</p>
+        </div>
+        <div style="display:flex;gap:1rem;align-items:center;">
+            <div style="text-align:center;">
+                <div style="color:#10b981;font-size:1.5rem;font-weight:700;">{{ result.rule_checks |
+                    selectattr("status","equalto","PASS") | list | length }}</div>
+                <div style="font-size:0.75rem;color:var(--text-muted);">PASS</div>
+            </div>
+            <div style="text-align:center;">
+                <div style="color:#f59e0b;font-size:1.5rem;font-weight:700;">{{ result.rule_checks |
+                    selectattr("status","equalto","WARN") | list | length }}</div>
+                <div style="font-size:0.75rem;color:var(--text-muted);">WARN</div>
+            </div>
+            <div style="text-align:center;">
+                <div style="color:#ef4444;font-size:1.5rem;font-weight:700;">{{ result.rule_checks |
+                    selectattr("status","equalto","FAIL") | list | length }}</div>
+                <div style="font-size:0.75rem;color:var(--text-muted);">FAIL</div>
+            </div>
+        </div>
+        <div>
+            {% if hard %}
+            <span class="badge badge-danger" style="font-size:1rem;padding:0.5rem 1rem;">⛔ HARD BLOCK</span>
+            {% else %}
+            <span class="badge badge-success" style="font-size:1rem;padding:0.5rem 1rem;">✅ ALLOWED</span>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if hard and result.primary_block_reason %}
+    <div class="card" style="border:1px solid #ef4444;background:#1a0a0a;padding:1rem;margin-bottom:1rem;">
+        <strong style="color:#ef4444;">⛔ Block Reason:</strong>
+        <p style="margin:0.25rem 0 0;color:#fca5a5;">{{ result.primary_block_reason }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Rule Checks Table -->
+    <div class="card animate-fade">
+        <h2 class="sub-header">Rule Evaluations</h2>
+        <table style="width:100%;border-collapse:collapse;">
+            <thead>
+                <tr style="color:var(--text-muted);font-size:0.8rem;text-transform:uppercase;letter-spacing:1px;">
+                    <th style="text-align:left;padding:0.5rem;">Rule</th>
+                    <th style="text-align:left;padding:0.5rem;">Name</th>
+                    <th style="text-align:center;padding:0.5rem;">Status</th>
+                    <th style="text-align:right;padding:0.5rem;">Deduction</th>
+                    <th style="text-align:left;padding:0.5rem;">Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for check in result.rule_checks %}
+                {% set s_color = "#10b981" if check.status == "PASS" else ("#f59e0b" if check.status == "WARN" else
+                "#ef4444") %}
+                <tr style="border-top:1px solid var(--border-color);">
+                    <td style="padding:0.75rem 0.5rem;font-family:monospace;font-size:0.85rem;">{{ check.id }}</td>
+                    <td style="padding:0.75rem 0.5rem;font-size:0.875rem;">{{ check.name }}</td>
+                    <td style="padding:0.75rem 0.5rem;text-align:center;">
+                        <span class="badge" style="background:{{ s_color }};">{{ check.status }}</span>
+                    </td>
+                    <td style="padding:0.75rem 0.5rem;text-align:right;color:{{ s_color }};">
+                        {% if check.deduction > 0 %}−{{ check.deduction }}{% else %}&mdash;{% endif %}
+                    </td>
+                    <td style="padding:0.75rem 0.5rem;font-size:0.8rem;color:var(--text-muted);max-width:400px;">{{
+                        check.details }}</td>
+                </tr>
+                {% if check.evidence_refs %}
+                <tr style="border-top:none;">
+                    <td colspan="5" style="padding:0 0.5rem 0.75rem 2.5rem;">
+                        <div style="display:flex;flex-wrap:wrap;gap:0.4rem;">
+                            {% for ev in check.evidence_refs %}
+                            <span
+                                style="background:#0f172a;border:1px solid #334155;border-radius:6px;padding:2px 8px;font-size:0.75rem;font-family:monospace;">
+                                {{ ev.key }}: <strong>{{ ev.value }}</strong>
+                            </span>
+                            {% endfor %}
+                        </div>
+                    </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Metadata -->
+    <div class="card animate-fade" style="font-size:0.8rem;color:var(--text-muted);">
+        <strong>Evaluated:</strong> {{ result.created_at }}&nbsp;EAT &nbsp;|&nbsp;
+        <strong>Version:</strong> {{ result.guardrails_version }} &nbsp;|&nbsp;
+        <strong>Pair:</strong> {{ result.pair }}
+    </div>
+    {% endif %}
+    {% endblock %}

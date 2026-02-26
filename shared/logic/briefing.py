@@ -113,27 +113,27 @@ def _build_pair_overview(pair: str, db: Session) -> PairOverview:
     warnings: List[StaleWarning] = []
     has_stale = False
 
-    # ── Bias ──────────────────────────────────────────────────────────
+    # ── Bias (from Fundamentals) ──────────────────────────────────────
     bias_packet = db.query(Packet).filter(
-        Packet.packet_type == "PairBiasPacket",
+        Packet.packet_type == "PairFundamentalsPacket",
         Packet.data["asset_pair"].as_string() == pair
     ).order_by(Packet.created_at.desc()).first()
 
-    bias, bias_score = "unknown", None
+    bias, bias_score, conf, inval, drvs = "unknown", None, "UNKNOWN", "N/A", []
     if bias_packet:
-        score = bias_packet.data.get("bias_score", 0)
+        d = bias_packet.data
+        score = d.get("bias_score", 0)
         bias_score = score
-        if score > 0.2:
-            bias = "BULLISH"
-        elif score < -0.2:
-            bias = "BEARISH"
-        else:
-            bias = "NEUTRAL"
+        bias = d.get("bias_label", "unknown")
+        conf = d.get("confidence_label", "UNKNOWN")
+        inval = d.get("invalidation_criteria", "N/A")
+        drvs = d.get("drivers", [])
+        
         if _is_stale(bias_packet.created_at, TTL_RISK):
             has_stale = True
-            warnings.append(StaleWarning(field="bias", reason=f"PairBiasPacket is older than {TTL_RISK//3600}h"))
+            warnings.append(StaleWarning(field="bias", reason=f"PairFundamentalsPacket is older than {TTL_RISK//3600}h"))
     else:
-        warnings.append(StaleWarning(field="bias", reason="No PairBiasPacket found"))
+        warnings.append(StaleWarning(field="bias", reason="No PairFundamentalsPacket found"))
 
     # ── Key levels (from latest market context or setup levels) ───────
     key_levels: Dict[str, float] = {}
@@ -198,6 +198,9 @@ def _build_pair_overview(pair: str, db: Session) -> PairOverview:
         latest_ticket=latest_ticket,
         has_stale_data=has_stale,
         stale_warnings=warnings,
+        bias_confidence=conf,
+        bias_drivers=drvs,
+        bias_invalidation=inval
     )
 
 

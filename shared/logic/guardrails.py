@@ -259,24 +259,25 @@ def _rule_displacement_quality(
             directional = 0  # hasn't reached displacement yet
 
     ratio = directional / total if total > 0 else 0.0
+    ratio_r = round(ratio, 2)   # avoid float precision issues at boundary (e.g. 0.6666... vs 0.67)
     evidence = [
         EvidenceRef(ref_type="metric", key="displacement_directional_candles",
                     value=directional, description=f"Out of {total}"),
         EvidenceRef(ref_type="metric", key="displacement_ratio",
-                    value=round(ratio, 2)),
+                    value=ratio_r),
     ]
 
-    if ratio >= min_ratio:
+    if ratio_r >= min_ratio:
         return RuleCheck(
             id="GR-D01", name="Displacement Quality",
             status="PASS",
-            details=f"{directional}/{total} displacement candles are directional ({ratio:.0%} ≥ {min_ratio:.0%}).",
+            details=f"{directional}/{total} displacement candles are directional ({ratio_r:.0%} ≥ {min_ratio:.0%}).",
             is_mandatory=hard, deduction=0, evidence_refs=evidence,
         )
     return RuleCheck(
         id="GR-D01", name="Displacement Quality",
         status="FAIL" if hard else "WARN",
-        details=f"Only {directional}/{total} displacement candles are directional ({ratio:.0%} < {min_ratio:.0%}).",
+        details=f"Only {directional}/{total} displacement candles are directional ({ratio_r:.0%} < {min_ratio:.0%}).",
         is_mandatory=hard,
         deduction=cfg["score_deduction_fail"] if hard else cfg["score_deduction_warn"],
         evidence_refs=evidence,
