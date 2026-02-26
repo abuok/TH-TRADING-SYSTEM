@@ -3,7 +3,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import func, text
 import shared.database.session as db_session
-from .models import JournalSetup, JournalRiskDecision, JournalTradeOutcome, JournalTicket
+from .models import JournalSetup, JournalRiskDecision, JournalTradeOutcome, JournalTicket, JournalTicketTransition
 from shared.types.packets import TechnicalSetupPacket, RiskApprovalPacket
 from shared.types.trading import OrderTicketSchema
 from typing import List, Optional
@@ -121,6 +121,31 @@ def log_ticket(ticket: OrderTicketSchema, setup_id: Optional[int] = None, risk_d
     db.add(db_ticket)
     db.commit()
     return {"status": "ticket_logged"}
+
+@app.post("/log/ticket_transition")
+def log_ticket_transition(
+    ticket_id: str, 
+    transition_type: str, 
+    details: dict,
+    db: Session = Depends(db_session.get_db)
+):
+    # Idempotency check: don't log the same transition twice
+    existing = db.query(JournalTicketTransition).filter(
+        JournalTicketTransition.ticket_id == ticket_id,
+        JournalTicketTransition.transition_type == transition_type
+    ).first()
+    
+    if existing:
+        return {"status": "already_logged"}
+
+    db_transition = JournalTicketTransition(
+        ticket_id=ticket_id,
+        transition_type=transition_type,
+        details_json=details
+    )
+    db.add(db_transition)
+    db.commit()
+    return {"status": "transition_logged"}
 
 @app.get("/report/daily", response_class=HTMLResponse)
 def daily_report(db: Session = Depends(db_session.get_db)):

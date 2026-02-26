@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="header-section">
+    <h1>Manual Review Queue</h1>
+    <p>Incoming setups requiring operator approval before execution or expiry.</p>
+</div>
+
+<div class="dashboard-grid" style="grid-template-columns: 1fr 3fr;">
+    <!-- Left Column: Daily Stats -->
+    <div class="stats" style="display: flex; flex-direction: column; gap: 1rem;">
+        <div class="stat-card" style="margin-right: 0; margin-bottom: 0;">
+            <h3>My Decisions Today</h3>
+            <p id="stats-approved" style="color: var(--success-color);">Approve: 0</p>
+            <p id="stats-skipped" style="color: var(--warning-color);">Skip: 0</p>
+            <p id="stats-expired" style="color: var(--danger-color);">Expired: 0</p>
+            <hr style="border-color: var(--border-color); margin: 0.5rem 0;">
+            <p id="stats-closed" style="color: #aaa; font-size: 0.9em;">Closed Outcomes: 0</p>
+            <p id="stats-avgr" style="color: #aaa; font-size: 0.9em;">Avg R: 0.0</p>
+        </div>
+    </div>
+
+    <!-- Right Column: The Queue -->
+    <div>
+        <div id="queue-container">
+            <p>Loading queue...</p>
+        </div>
+    </div>
+</div>
+
+<!-- skip modal -->
+<div id="skipModal" class="modal"
+    style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="card" style="width: 400px; max-width: 90vw;">
+        <div class="card-header">
+            <h3>Skip Ticket</h3>
+            <span class="badge badge-warning" id="skip-ticket-id"></span>
+        </div>
+        <div class="card-body">
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem;">Reason</label>
+                <select id="skip-reason" class="badge"
+                    style="width: 100%; padding: 0.5rem; background: var(--bg-tertiary);">
+                    <option value="NEWS_WINDOW">News Window</option>
+                    <option value="STALE">Stale / Too Late</option>
+                    <option value="SPREAD_TOO_HIGH">Spread Too High</option>
+                    <option value="LOW_SCORE">Low Discipline Score</option>
+                    <option value="FUNDAMENTALS_CONFLICT">Fundamentals Conflict</option>
+                    <option value="ALREADY_MOVED">Already Moved</option>
+                    <option value="MAX_RISK_REACHED">Max Risk Reached</option>
+                    <option value="PERSONAL_RULE">Personal Rule</option>
+                </select>
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem;">Notes (Optional)</label>
+                <textarea id="skip-notes" rows="3"
+                    style="width: 100%; background: var(--bg-tertiary); color: var(--text-primary); padding: 0.5rem; border: 1px solid var(--border-color);"></textarea>
+            </div>
+            <div style="margin-top: 1rem; display: flex; gap: 0.5rem; justify-content: flex-end;">
+                <button onclick="closeModal('skipModal')" class="badge" style="cursor: pointer;">Cancel</button>
+                <button onclick="submitSkip()" class="badge badge-warning" style="cursor: pointer;">Confirm
+                    Skip</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentSkipId = null;
+
+    async function fetchStats() {
+        try {
+            const res = await fetch('/api/tickets/stats');
+            const data = await res.json();
+            document.getElementById('stats-approved').innerText = `Approve: ${data.approved}`;
+            document.getElementById('stats-skipped').innerText = `Skip: ${data.skipped}`;
+            document.getElementById('stats-expired').innerText = `Expired: ${data.expired}`;
+            document.getElementById('stats-closed').innerText = `Closed Outcomes: ${data.closed}`;
+            document.getElementById('stats-avgr').innerText = `Avg R: ${data.avg_r}`;
+        } catch (e) {
+            console.error("Stats Error:", e);
+        }
+    }
+
+    async function fetchQueue() {
+        try {
+            const res = await fetch('/api/tickets/queue');
+            const tickets = await res.json();
+            const container = document.getElementById('queue-container');
+
+            if (tickets.length === 0) {
+                container.innerHTML = `<div class="card"><p style="text-align: center; color: #888; margin: 2rem 0;">No tickets currently in review.</p></div>`;
+                return;
+            }
+
+            let html = '';
+            tickets.forEach(t => {
+                const isBlocked = t.guardrails_hard_block || (t.block_reason && t.block_reason.includes('BLOCK'));
+                const blockWarning = isBlocked ? `<div class="badge badge-danger" style="margin-bottom: 1rem;">Blocked: ${t.block_reason}</div>` : '';
+
+                const scoreColor = t.guardrails_score >= 80 ? 'success' : (t.guardrails_score >= 50 ? 'warning' : 'danger');
+
+                html += `
+                <div class="card" id="card-${t.ticket_id}" style="margin-bottom: 1rem; border-left: 4px solid var(--warning-color);">
+                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div>
+                            <h3 style="margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                                ${t.pair} 
+                                <span class="badge ${t.direction === 'BUY' ? 'badge-success' : 'badge-danger'}">${t.direction}</span>
+                            </h3>
+                            <p style="margin: 0.2rem 0 0 0; font-size: 0.8em; color: #888;">${t.ticket_id} | Discp: <span class="badge badge-${scoreColor}">${t.guardrails_score || 'N/A'}</span></p>
+                        </div>
+                        <div style="text-align: right;">
+                            <span class="badge" style="background: rgba(226, 183, 20, 0.1); color: var(--warning-color); border: 1px solid var(--warning-color);" data-expiry="${t.expires_at}" id="timer-${t.ticket_id}">Expires...</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        ${blockWarning}
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; font-family: monospace; font-size: 0.9em;">
+                            <div>
+                                <div style="color: #888;">Entry</div>
+                                <div>${t.entry_price}</div>
+                            </div>
+                            <div>
+                                <div style="color: #888;">Stop Loss</div>
+                                <div>${t.stop_loss}</div>
+                            </div>
+                            <div>
+                                <div style="color: #888;">Take Profit 1</div>
+                                <div>${t.take_profit_1} (${t.rr_tp1.toFixed(2)}R)</div>
+                            </div>
+                            <div>
+                                <div style="color: #888;">Risk</div>
+                                <div>$${t.risk_usd.toFixed(2)} (${t.lot_size} Lots)</div>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; gap: 0.5rem; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                            <button onclick="openSkipModal('${t.ticket_id}')" class="badge" style="cursor: pointer; padding: 0.5rem 1rem; background: rgba(255,255,255,0.05);">Skip</button>
+                            <button onclick="approveTicket('${t.ticket_id}')" class="badge badge-success" style="cursor: pointer; padding: 0.5rem 1rem;">Approve Plan</button>
+                        </div>
+                    </div>
+                </div>
+                `;
+            });
+            container.innerHTML = html;
+            startTimers();
+        } catch (e) {
+            console.error("Queue Error:", e);
+        }
+    }
+
+    function startTimers() {
+        setInterval(() => {
+            const now = new Date();
+            document.querySelectorAll('[data-expiry]').forEach(el => {
+                const expiry = new Date(el.getAttribute('data-expiry'));
+                const diff = Math.floor((expiry - now) / 1000);
+
+                if (diff <= 0) {
+                    el.innerText = "EXPIRED";
+                    el.style.color = "var(--danger-color)";
+                    el.style.borderColor = "var(--danger-color)";
+                    // Optionally automatically remove card after a few seconds or rely on refresh
+                } else {
+                    const m = Math.floor(diff / 60);
+                    const s = diff % 60;
+                    el.innerText = `Exp: ${m}m ${s.toString().padStart(2, '0')}s`;
+                }
+            });
+        }, 1000);
+    }
+
+    async function approveTicket(id) {
+        try {
+            const res = await fetch(`/api/tickets/${id}/approve`, { method: 'POST' });
+            if (res.ok) {
+                document.getElementById(`card-${id}`).remove();
+                fetchStats();
+            } else {
+                alert("Failed to approve ticket");
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    function openSkipModal(id) {
+        currentSkipId = id;
+        document.getElementById('skip-ticket-id').innerText = id;
+        document.getElementById('skipModal').style.display = 'flex';
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+        currentSkipId = null;
+    }
+
+    async function submitSkip() {
+        if (!currentSkipId) return;
+        const reason = document.getElementById('skip-reason').value;
+        const notes = document.getElementById('skip-notes').value;
+
+        try {
+            const res = await fetch(`/api/tickets/${currentSkipId}/skip`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ reason, notes })
+            });
+
+            if (res.ok) {
+                document.getElementById(`card-${currentSkipId}`).remove();
+                closeModal('skipModal');
+                fetchStats();
+            } else {
+                alert("Failed to skip ticket");
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    // Initial load
+    fetchStats();
+    fetchQueue();
+    // Auto-refresh queue every 20 seconds
+    setInterval(() => {
+        fetchQueue();
+        fetchStats();
+    }, 20000);
+</script>
+{% endblock %}

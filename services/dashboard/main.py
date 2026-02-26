@@ -263,6 +263,84 @@ async def guardrails_detail(
         "result": result,
     })
 
-if __name__ == "__main__":
+@app.get("/dashboard/queue", response_class=HTMLResponse)
+async def dashboard_queue(request: Request):
+    return templates.TemplateResponse("queue.html", {
+        "request": request,
+        "active_page": "queue",
+    })
+
+# --- Manual Review Queue Endpoints ---
+from pydantic import BaseModel
+from shared.types.trading import SkipReasonEnum, TicketOutcomeEnum
+from services.tickets.queue_logic import approve_ticket, skip_ticket, close_ticket, auto_expire_tickets
+
+class SkipPayload(BaseModel):
+    reason: SkipReasonEnum
+    notes: Optional[str] = None
+
+class ClosePayload(BaseModel):
+    outcome: TicketOutcomeEnum
+    exit_price: Optional[float] = None
+    realized_r: Optional[float] = None
+    screenshot_ref: Optional[str] = None
+
+@app.get("/api/tickets/queue")
+async def get_review_queue(db: Session = Depends(db_session.get_db)):
+    auto_expire_tickets(db) # Expire stale tickets on load
+    tickets = db.query(OrderTicket).filter(
+        OrderTicket.status == "IN_REVIEW"
+    ).order_by(
+        OrderTicket.expires_at.asc(),
+        OrderTicket.guardrails_score.desc()
+    ).all()
+    return tickets
+
+@app.get("/api/tickets/stats")
+async def get_queue_stats(date_str: Optional[str] = None, db: Session = Depends(db_session.get_db)):
+    d = datetime.strptime(date_str, "%Y-%m-%d").date() if date_str else datetime.now(timezone.utc).date()
+    # Simple count aggregates
+    query = db.query(OrderTicket).filter(func.date(OrderTicket.created_at) == d)
+    
+    approved = query.filter(OrderTicket.status == "APPROVED").count()
+    skipped = query.filter(OrderTicket.status == "SKIPPED").count()
+    expired = query.filter(OrderTicket.status == "EXPIRED").count()
+    closed_tickets = query.filter(OrderTicket.status == "CLOSED").all()
+    
+    avg_r = sum(t.manual_outcome_r for t in closed_tickets if t.manual_outcome_r) / len(closed_tickets) if closed_tickets else 0
+    
+    return {
+        "date": str(d),
+        "approved": approved,
+        "skipped": skipped,
+        "expired": expired,
+        "closed": len(closed_tickets),
+        "avg_r": round(avg_r, 2)
+    }
+
+@app.post("/api/tickets/{ticket_id}/approve")
+async def api_approve_ticket(ticket_id: str, db: Session = Depends(db_session.get_db)):
+    try:
+        t = approve_ticket(db, ticket_id)
+        return {"status": "success", "ticket": t.ticket_id}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/api/tickets/{ticket_id}/skip")
+async def api_skip_ticket(ticket_id: str, payload: SkipPayload, db: Session = Depends(db_session.get_db)):
+    try:
+        t = skip_ticket(db, ticket_id, payload.reason, payload.notes)
+        return {"status": "success", "ticket": t.ticket_id}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/api/tickets/{ticket_id}/close")
+async def api_close_ticket(ticket_id: str, payload: ClosePayload, db: Session = Depends(db_session.get_db)):
+    try:
+        t = close_ticket(db, ticket_id, payload.outcome, payload.exit_price, payload.realized_r, payload.screenshot_ref)
+        return {"status": "success", "ticket": t.ticket_id}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8005)

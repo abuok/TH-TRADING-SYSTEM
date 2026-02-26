@@ -51,7 +51,7 @@ def generate_order_ticket(
     rr_tp1 = abs(setup.take_profit - setup.entry_price) / dist if dist > 0 else 0.0
     
     # Status: guardrails hard_block takes precedence over risk engine
-    status = "PENDING"
+    status = "IN_REVIEW"
     block_reason = None
     if guardrails and guardrails.hard_block:
         status = "BLOCKED"
@@ -59,6 +59,9 @@ def generate_order_ticket(
     elif risk.status == "BLOCK":
         status = "BLOCKED"
         block_reason = ", ".join(risk.reasons) if risk.reasons else "Risk engine rejected."
+
+    from datetime import timedelta
+    expires_at = datetime.now(timezone.utc) + timedelta(minutes=15) if status == "IN_REVIEW" else None
 
     ticket = OrderTicket(
         ticket_id=f"TKT-{uuid.uuid4().hex[:8].upper()}",
@@ -76,6 +79,7 @@ def generate_order_ticket(
         status=status,
         block_reason=block_reason,
         idempotency_key=idempotency_key,
+        expires_at=expires_at,
         guardrails_score=guardrails.discipline_score if guardrails else None,
         guardrails_hard_block=guardrails.hard_block if guardrails else False,
         guardrails_summary=[

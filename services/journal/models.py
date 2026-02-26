@@ -52,3 +52,12 @@ class JournalTicket(Base):
     status = Column(String)
     timestamp = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     plan_snapshot = Column(JSON)
+
+class JournalTicketTransition(Base):
+    __tablename__ = "journal_ticket_transitions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    ticket_id = Column(String, index=True)
+    transition_type = Column(String, index=True) # APPROVED, SKIPPED, EXPIRED, CLOSED
+    timestamp = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    details_json = Column(JSON, default={})
