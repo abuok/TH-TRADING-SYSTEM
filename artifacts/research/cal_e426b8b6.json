@@ -1,0 +1,27 @@
+{
+  "report_id": "cal_e426b8b6",
+  "created_at": "2026-02-27T01:27:15.064300+03:00",
+  "run_ids": [
+    "res_269bb50d"
+  ],
+  "pair": "XAUUSD",
+  "timeframe": "15m",
+  "date_range": "2026-01-01 to 2026-01-03",
+  "baseline_policy_hash": "-3330982616966866493",
+  "recommendations": [],
+  "evidence_tables": {
+    "Metrics": {
+      "baseline": {
+        "total_trades": 0,
+        "executed_trades": 0,
+        "blocked_trades": 0,
+        "win_rate_pct": 0.0,
+        "avg_r": 0.0,
+        "expectancy_r": 0.0,
+        "max_drawdown_r": 0.0,
+        "profit_factor": 0.0,
+        "total_r": 0.0
+      }
+    }
+  }
+}

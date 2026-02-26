@@ -130,7 +130,7 @@ def generate_html_report(result):
     import os
     env = Environment(loader=FileSystemLoader(os.path.join("services", "dashboard", "templates")))
     template = env.get_template("research_report_template.html")
-    html_content = template.render(result=result, now=datetime.now())
+    html_content = template.render(run=result, now=datetime.now())
     os.makedirs(os.path.join("artifacts", "research"), exist_ok=True)
     filepath = os.path.join("artifacts", "research", f"{result.run_id}.html")
     with open(filepath, "w", encoding="utf-8") as f:
@@ -205,11 +205,6 @@ def research_calibrate(
         console.print(f"[red]Calibration failed: {e}[/red]")
         raise typer.Exit(1)
     
-    console.print(f"[green]✔ Replay completed successfully![/green]")
-    console.print(f"Run ID: [bold]{result.run_id}[/bold]")
-    console.print(f"JSON Output: {json_path}")
-    console.print(f"HTML Report: {html_path}")
-
 @research_app.command("list")
 def research_list():
     """List historical research runs from the artifacts directory."""
