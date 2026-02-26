@@ -5,14 +5,8 @@ from unittest.mock import MagicMock, patch
 
 from services.orchestration.runner import Orchestrator
 from shared.types.packets import MarketContextPacket, TechnicalSetupPacket
-from shared.database.session import SessionLocal, init_db, Base, engine
+import shared.database.session as db_session
 from shared.database.models import KillSwitch, IncidentLog
-
-@pytest.fixture(scope="function")
-def setup_db():
-    init_db()
-    yield
-    Base.metadata.drop_all(bind=engine)
 
 @pytest.fixture
 def risk_config():
@@ -26,8 +20,8 @@ def risk_config():
     }
 
 @pytest.mark.asyncio
-async def test_kill_switch_halt_all(setup_db, risk_config):
-    db = SessionLocal()
+async def test_kill_switch_halt_all(risk_config):
+    db = db_session.SessionLocal()
     # Activate global kill switch
     ks = KillSwitch(switch_type="HALT_ALL", is_active=1)
     db.add(ks)
@@ -40,8 +34,8 @@ async def test_kill_switch_halt_all(setup_db, risk_config):
         assert any("HALTED by kill switch" in call.args[0] for call in mock_logger.warning.call_args_list)
 
 @pytest.mark.asyncio
-async def test_kill_switch_halt_pair(setup_db, risk_config):
-    db = SessionLocal()
+async def test_kill_switch_halt_pair(risk_config):
+    db = db_session.SessionLocal()
     # Activate pair kill switch
     ks = KillSwitch(switch_type="HALT_PAIR", target="BTCUSD", is_active=1)
     db.add(ks)
@@ -53,7 +47,7 @@ async def test_kill_switch_halt_pair(setup_db, risk_config):
         assert any("Pair BTCUSD HALTED by kill switch" in call.args[0] for call in mock_logger.warning.call_args_list)
 
 @pytest.mark.asyncio
-async def test_stale_packet_rejection(setup_db, risk_config):
+async def test_stale_packet_rejection(risk_config):
     orchestrator = Orchestrator(risk_config, dry_run=True)
     
     # Create a stale packet (31 seconds old, TTL is 30)
@@ -69,13 +63,13 @@ async def test_stale_packet_rejection(setup_db, risk_config):
             assert any("Abandoning loop iteration" in call.args[0] for call in mock_logger.error.call_args_list)
     
     # Verify incident was logged to DB
-    db = SessionLocal()
+    db = db_session.SessionLocal()
     incident = db.query(IncidentLog).first()
     assert incident is not None
     assert incident.error_code == "STALE_PACKET"
 
 @pytest.mark.asyncio
-async def test_notif_idempotency(setup_db, risk_config):
+async def test_notif_idempotency(risk_config):
     mock_notifier = MagicMock()
     orchestrator = Orchestrator(risk_config, dry_run=True, notifier=mock_notifier)
     

@@ -46,11 +46,11 @@ async def startup_event():
 @app.get("/health")
 async def health_check():
     try:
-        # Check Redis indirectly via event_bus if possible, or just status
-        # EventBus doesn't have a direct ping but we can assume ok if it initialized
+        # Check Redis indirectly via event_bus if possible
         return {"status": "healthy", "service": "ingestion", "redis": "initialized"}
     except Exception as e:
-        return {"status": "unhealthy", "error": str(e)}, 503
+        from fastapi.responses import JSONResponse
+        return JSONResponse(status_code=503, content={"status": "unhealthy", "error": str(e)})
 
 @app.get("/trigger")
 async def trigger_ingestion(background_tasks: BackgroundTasks):

@@ -1,38 +1,12 @@
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from shared.database.session import get_db, Base
+from shared.database.session import Base
+import shared.database.session as db_session
 from services.journal.main import app
 import pytest
-import os
 
-from sqlalchemy.pool import StaticPool
-
-# Use a shared in-memory SQLite for testing
-SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, 
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool
-)
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-def override_get_db():
-    try:
-        db = TestingSessionLocal()
-        yield db
-    finally:
-        db.close()
-
-app.dependency_overrides[get_db] = override_get_db
+# The conftest.py already handles engine/SessionLocal/Base.metadata.create_all
 
 client = TestClient(app)
-
-@pytest.fixture(scope="module", autouse=True)
-def setup_db():
-    Base.metadata.create_all(bind=engine)
-    yield
-    Base.metadata.drop_all(bind=engine)
 
 def test_log_setup_scoring():
     setup_data = {
@@ -77,3 +51,8 @@ def test_daily_report_enhanced():
     assert "Daily Performance Report" in response.text
     assert "Potential Profit Missed" in response.text
     assert "Actual PnL" in response.text
+
+def test_health_endpoint():
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert response.json()["status"] == "healthy"

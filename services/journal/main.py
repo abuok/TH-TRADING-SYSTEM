@@ -1,7 +1,7 @@
-from fastapi import FastAPI, Depends, Request
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, Depends, Request, Response, status
+from fastapi.responses import HTMLResponse, JSONResponse
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, text
 import shared.database.session as db_session
 from .models import JournalSetup, JournalRiskDecision, JournalTradeOutcome
 from shared.types.packets import TechnicalSetupPacket, RiskApprovalPacket
@@ -18,10 +18,13 @@ notifier = NotificationService([ConsoleNotificationAdapter()])
 def health_check(db: Session = Depends(db_session.get_db)):
     try:
         # Check DB
-        db.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
         return {"status": "healthy", "database": "connected"}
     except Exception as e:
-        return {"status": "unhealthy", "database": str(e)}, 503
+        return JSONResponse(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            content={"status": "unhealthy", "database": str(e)}
+        )
 
 @app.on_event("startup")
 async def startup_event():

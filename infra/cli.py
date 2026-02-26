@@ -1,7 +1,11 @@
 import typer
 import os
-from shared.database.session import SessionLocal
-from shared.database.models import Packet, Run
+import sys
+# Ensure the root directory is in the sys.path for importing shared
+sys.path.append(os.getcwd())
+
+import shared.database.session as db_session
+from shared.database.models import Packet, Run, KillSwitch
 from rich.console import Console
 from rich.table import Table
 
@@ -11,7 +15,7 @@ console = Console()
 @app.command()
 def list_packets(limit: int = 10):
     """List the latest packets from the database."""
-    db = SessionLocal()
+    db = db_session.SessionLocal()
     try:
         packets = db.query(Packet).order_by(Packet.created_at.desc()).limit(limit).all()
         
@@ -44,7 +48,7 @@ def list_packets(limit: int = 10):
 @app.command()
 def list_runs(limit: int = 5):
     """List the latest execution runs."""
-    db = SessionLocal()
+    db = db_session.SessionLocal()
     try:
         runs = db.query(Run).order_by(Run.started_at.desc()).limit(limit).all()
         
@@ -64,9 +68,8 @@ def list_runs(limit: int = 5):
 @app.command()
 def set_kill_switch(switch_type: str, target: str = None):
     """Set a kill switch. Types: HALT_ALL, HALT_PAIR, HALT_SERVICE, HALT_EXECUTION"""
-    db = SessionLocal()
+    db = db_session.SessionLocal()
     try:
-        from shared.database.models import KillSwitch
         ks = KillSwitch(switch_type=switch_type, target=target, is_active=1)
         db.add(ks)
         db.commit()
@@ -77,9 +80,8 @@ def set_kill_switch(switch_type: str, target: str = None):
 @app.command()
 def unset_kill_switch(switch_id: int):
     """Deactivate a kill switch by ID."""
-    db = SessionLocal()
+    db = db_session.SessionLocal()
     try:
-        from shared.database.models import KillSwitch
         ks = db.query(KillSwitch).filter(KillSwitch.id == switch_id).first()
         if ks:
             ks.is_active = 0
@@ -93,9 +95,8 @@ def unset_kill_switch(switch_id: int):
 @app.command()
 def list_kill_switches():
     """List all active and inactive kill switches."""
-    db = SessionLocal()
+    db = db_session.SessionLocal()
     try:
-        from shared.database.models import KillSwitch
         kss = db.query(KillSwitch).all()
         table = Table(title="Kill Switches")
         table.add_column("ID")

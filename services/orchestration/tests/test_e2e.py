@@ -5,14 +5,8 @@ from unittest.mock import MagicMock, patch
 
 from services.orchestration.runner import Orchestrator
 from shared.types.packets import Candle, MarketContextPacket, TechnicalSetupPacket
-from shared.database.session import SessionLocal, init_db, Base, engine
+import shared.database.session as db_session
 from shared.database.models import Packet as DBPacket, Run as DBRun
-
-@pytest.fixture(scope="function")
-def setup_memory_db():
-    init_db()
-    yield
-    Base.metadata.drop_all(bind=engine)
 
 @pytest.fixture
 def risk_config():
@@ -26,7 +20,7 @@ def risk_config():
     }
 
 @pytest.mark.asyncio
-async def test_full_pipeline_acceptance(setup_memory_db, risk_config):
+async def test_full_pipeline_acceptance(risk_config):
     # 1. Initialize Orchestrator in Dry-Run mode
     orchestrator = Orchestrator(risk_config, dry_run=True)
     
@@ -57,7 +51,7 @@ async def test_full_pipeline_acceptance(setup_memory_db, risk_config):
         await orchestrator.live_loop(asset_pair)
 
     # 4. Verify Database Persistence
-    db = SessionLocal()
+    db = db_session.SessionLocal()
     run = db.query(DBRun).first()
     assert run is not None
     assert run.status == "running"

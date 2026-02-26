@@ -41,9 +41,37 @@ You should see colored console notifications from the `ConsoleNotificationAdapte
 - **HTML Report**: Check `artifacts/daily_report.html` for the performance summary.
 - **Database**: Use `make cli-packets` to view persisted decision packets in the DB.
 
-## Automated Acceptance Tests
-To run the E2E flow in a headless, fast mode without Docker:
+## Failure-Mode Simulations (Hardening V1)
+
+### 1. Kill Switch Simulation
+To halt all operations across the stack:
 ```bash
-python -m pytest services/orchestration/tests/test_e2e.py
+python infra/cli.py kill-switch set HALT_ALL
 ```
-This test uses in-memory SQLite and mocks to verify the logic remains deterministic.
+Observe the Orchestrator/Services logs indicating `HALTED by kill switch`. To resume:
+```bash
+python infra/cli.py kill-switch unset HALT_ALL
+```
+
+### 2. Service-Specific Halt
+To stop only the Orchestrator:
+```bash
+python infra/cli.py kill-switch set HALT_SERVICE --target Orchestrator
+```
+
+### 3. Stale Packet Guard
+The Orchestrator will automatically reject packets older than their TTL (e.g., 30s for MarketContext). 
+Verify this by stopping the Ingestion service while keeping the Orchestrator running. After 30s, the Orchestrator will log `Abandoning loop iteration ... due to stale context` and log an `IncidentLog` in the DB.
+
+### 4. Health Checks
+Check the status of any service:
+```bash
+curl http://localhost:8001/health  # Ingestion
+curl http://localhost:8004/health  # Journal
+```
+
+## Automated Hardening Tests
+To verify all reliability features (kill switches, staleness, idempotency):
+```bash
+python -m pytest services/orchestration/tests/test_hardening.py
+```
