@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends, Request
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from shared.database.session import get_db, init_db
+import shared.database.session as db_session
 from .models import JournalSetup, JournalRiskDecision, JournalTradeOutcome
 from shared.types.packets import TechnicalSetupPacket, RiskApprovalPacket
 from typing import List, Optional
@@ -15,7 +15,7 @@ app = FastAPI(title="Journal Service")
 notifier = NotificationService([ConsoleNotificationAdapter()])
 
 @app.get("/health")
-def health_check(db: Session = Depends(get_db)):
+def health_check(db: Session = Depends(db_session.get_db)):
     try:
         # Check DB
         db.execute("SELECT 1")
@@ -25,14 +25,14 @@ def health_check(db: Session = Depends(get_db)):
 
 @app.on_event("startup")
 async def startup_event():
-    init_db()
+    db_session.init_db()
     asyncio.create_task(mark_missed_setups())
 
 async def mark_missed_setups():
     """Background task to mark un-taken setups as MISSED after 15 minutes."""
     while True:
         try:
-            db = SessionLocal()
+            db = db_session.SessionLocal()
             timeout_limit = datetime.now(timezone.utc) - timedelta(minutes=15)
             # Mark PENDING setups older than 15 mins as MISSED
             pending = db.query(JournalSetup).filter(
@@ -53,7 +53,7 @@ def get_score_label(score: float) -> str:
     return "C"
 
 @app.post("/log/setup")
-def log_setup(setup: TechnicalSetupPacket, score: float, db: Session = Depends(get_db)):
+def log_setup(setup: TechnicalSetupPacket, score: float, db: Session = Depends(db_session.get_db)):
     db_setup = JournalSetup(
         request_id=f"setup_{datetime.now().timestamp()}",
         asset_pair=setup.asset_pair,
@@ -73,7 +73,7 @@ def log_setup(setup: TechnicalSetupPacket, score: float, db: Session = Depends(g
     return {"id": db_setup.id, "status": "logged", "label": db_setup.score_label}
 
 @app.post("/log/risk_decision")
-def log_risk_decision(decision: RiskApprovalPacket, setup_id: Optional[int] = None, db: Session = Depends(get_db)):
+def log_risk_decision(decision: RiskApprovalPacket, setup_id: Optional[int] = None, db: Session = Depends(db_session.get_db)):
     db_decision = JournalRiskDecision(
         setup_id=setup_id,
         request_id=decision.request_id,
@@ -87,7 +87,7 @@ def log_risk_decision(decision: RiskApprovalPacket, setup_id: Optional[int] = No
     return {"status": "decision_logged"}
 
 @app.post("/log/outcome")
-def log_outcome(setup_id: int, is_win: bool, r_multiple: float, pnl: float, notes: Optional[str] = None, db: Session = Depends(get_db)):
+def log_outcome(setup_id: int, is_win: bool, r_multiple: float, pnl: float, notes: Optional[str] = None, db: Session = Depends(db_session.get_db)):
     db_outcome = JournalTradeOutcome(
         setup_id=setup_id,
         is_win=is_win,
@@ -106,7 +106,7 @@ def log_outcome(setup_id: int, is_win: bool, r_multiple: float, pnl: float, note
     return {"status": "outcome_logged"}
 
 @app.get("/report/daily", response_class=HTMLResponse)
-def daily_report(db: Session = Depends(get_db)):
+def daily_report(db: Session = Depends(db_session.get_db)):
     notifier.notify("Daily Trading Journal Report is ready for review.", level="SUCCESS")
     today = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
     setups = db.query(JournalSetup).filter(JournalSetup.timestamp >= today).all()
@@ -168,7 +168,7 @@ def daily_report(db: Session = Depends(get_db)):
     return html_content
 
 @app.get("/report/weekly", response_class=HTMLResponse)
-def weekly_report(db: Session = Depends(get_db)):
+def weekly_report(db: Session = Depends(db_session.get_db)):
     now = datetime.now(timezone.utc)
     one_week_ago = now - timedelta(days=7)
     outcomes = db.query(JournalTradeOutcome).filter(JournalTradeOutcome.timestamp >= one_week_ago).all()
