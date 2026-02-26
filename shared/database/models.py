@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, JSON, DateTime, ForeignKey, Float, Boolean, Date
+from sqlalchemy import Column, Integer, String, JSON, DateTime, ForeignKey, Float, Boolean, Date, Text
 from sqlalchemy.orm import declarative_base, relationship
 from datetime import datetime, timezone
 
@@ -70,6 +70,10 @@ class OrderTicket(Base):
     idempotency_key = Column(String, unique=True, index=True, nullable=False)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
+    guardrails_score = Column(Integer, nullable=True)         # 0–100
+    guardrails_hard_block = Column(Boolean, default=False)
+    guardrails_summary = Column(JSON, nullable=True)          # top issues list
+
     setup_packet = relationship("Packet", foreign_keys=[setup_packet_id])
     risk_packet = relationship("Packet", foreign_keys=[risk_packet_id])
 
@@ -83,4 +87,18 @@ class SessionBriefing(Base):
     is_delta = Column(Boolean, default=False)  # False = pre-session, True = intraday
     html_path = Column(String, nullable=True)  # relative path under artifacts/briefings/
     data = Column(JSON, nullable=False)         # full BriefingPack JSON
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+class GuardrailsLog(Base):
+    __tablename__ = "guardrails_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    setup_packet_id = Column(Integer, ForeignKey("packets.id"), nullable=True)
+    ticket_id = Column(String, nullable=True)   # filled when ticket is created
+    pair = Column(String, nullable=False)
+    discipline_score = Column(Integer, nullable=False)
+    hard_block = Column(Boolean, default=False)
+    primary_block_reason = Column(Text, nullable=True)
+    guardrails_version = Column(String, default="2.0.0")
+    result_json = Column(JSON, nullable=False)  # full GuardrailsResult JSON
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))

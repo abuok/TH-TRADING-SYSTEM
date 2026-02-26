@@ -14,10 +14,12 @@ import shared.database.session as db_session
 from shared.database.models import OrderTicket, Packet, SessionBriefing
 from shared.logic.trading_logic import generate_order_ticket
 from shared.logic.briefing import assemble_briefing, persist_briefing
+from shared.logic.guardrails import GuardrailsEngine
 from shared.logic.sessions import get_nairobi_time, get_session_label, TradingSessions
 from shared.logic.notifications import NotificationService, ConsoleNotificationAdapter
 from shared.types.packets import TechnicalSetupPacket, RiskApprovalPacket
 from shared.types.trading import OrderTicketSchema
+from shared.types.guardrails import GuardrailsResult
 import httpx
 
 logging.basicConfig(level=logging.INFO)
@@ -25,6 +27,7 @@ logger = logging.getLogger("OrchestrationAPI")
 
 app = FastAPI(title="Orchestration Service API")
 notifier = NotificationService([ConsoleNotificationAdapter()])
+_guardrails_engine = GuardrailsEngine()
 
 
 # ──────────────────────────────────────────────
@@ -204,10 +207,26 @@ async def generate_ticket(pair: str, db: Session = Depends(get_db)):
     if not risk_db:
         raise HTTPException(status_code=404, detail="No risk decision found for this setup.")
 
+    # Fetch latest market context for news-window check
+    ctx_db = db.query(Packet).filter(
+        Packet.packet_type == "MarketContextPacket"
+    ).order_by(Packet.created_at.desc()).first()
+    context_data = ctx_db.data if ctx_db else {}
+
+    # Run guardrails before ticket generation
+    guardrails_result = _guardrails_engine.evaluate(
+        setup_data=setup_db.data,
+        context_data=context_data,
+        db=db,
+        now_nairobi=get_nairobi_time(),
+        setup_packet_id=setup_db.id,
+    )
+    _guardrails_engine.persist(guardrails_result, db)
+
     setup_packet = TechnicalSetupPacket(**setup_db.data)
     risk_packet = RiskApprovalPacket(**risk_db.data)
 
-    ticket = generate_order_ticket(setup_packet, risk_packet, db)
+    ticket = generate_order_ticket(setup_packet, risk_packet, db, guardrails=guardrails_result)
     ticket.setup_packet_id = setup_db.id
     ticket.risk_packet_id = risk_db.id
     db.commit()
@@ -223,6 +242,48 @@ async def generate_ticket(pair: str, db: Session = Depends(get_db)):
         logger.warning(f"Failed to log ticket to Journal: {e}")
 
     return ticket
+
+
+@app.get("/guardrails/{setup_packet_id}")
+async def get_guardrails(setup_packet_id: int, db: Session = Depends(get_db)) -> Dict[str, Any]:
+    """Look up the most recent guardrails result for a setup packet."""
+    from shared.database.models import GuardrailsLog
+    record = db.query(GuardrailsLog).filter(
+        GuardrailsLog.setup_packet_id == setup_packet_id
+    ).order_by(GuardrailsLog.created_at.desc()).first()
+    if not record:
+        raise HTTPException(status_code=404, detail="No guardrails log found for this setup")
+    return record.result_json
+
+
+@app.post("/guardrails/evaluate")
+async def evaluate_guardrails(
+    pair: str, db: Session = Depends(get_db)
+) -> Dict[str, Any]:
+    """Evaluate guardrails for the latest setup of a pair without generating a ticket."""
+    setup_db = db.query(Packet).filter(
+        and_(
+            Packet.packet_type == "TechnicalSetupPacket",
+            Packet.data["asset_pair"].as_string() == pair,
+        )
+    ).order_by(Packet.created_at.desc()).first()
+    if not setup_db:
+        raise HTTPException(status_code=404, detail=f"No setup found for {pair}")
+
+    ctx_db = db.query(Packet).filter(
+        Packet.packet_type == "MarketContextPacket"
+    ).order_by(Packet.created_at.desc()).first()
+    context_data = ctx_db.data if ctx_db else {}
+
+    result = _guardrails_engine.evaluate(
+        setup_data=setup_db.data,
+        context_data=context_data,
+        db=db,
+        now_nairobi=get_nairobi_time(),
+        setup_packet_id=setup_db.id,
+    )
+    _guardrails_engine.persist(result, db)
+    return result.model_dump(mode="json")
 
 
 @app.get("/tickets/latest", response_model=OrderTicketSchema)

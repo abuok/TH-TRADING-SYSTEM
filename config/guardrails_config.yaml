@@ -1,0 +1,73 @@
+# guardrails_config.yaml
+# PHX v2 Strategy Guardrails Configuration
+# Version-stamped. All thresholds are overridable by environment variables.
+# Environment variable format: GUARDRAILS_<FIELD_UPPER>
+
+guardrails_version: "2.0.0"
+
+# ──────────────────────────────────────────────
+# Session Window Enforcement (Africa/Nairobi = UTC+3)
+# Format: [HH:MM, HH:MM] where end may be < start (crosses midnight)
+# ──────────────────────────────────────────────
+session_windows:
+  LONDON:
+    start: "11:00"
+    end: "20:00"
+  NEW YORK:
+    start: "16:00"
+    end: "01:00"   # crosses midnight
+
+# Rules only run inside these session windows (GR-S01 FAILs outside)
+allowed_sessions: ["LONDON", "NEW YORK"]
+
+# ──────────────────────────────────────────────
+# News Window Enforcement (GR-N01)
+# Buffer around red-folder events (minutes)
+# ──────────────────────────────────────────────
+news_buffer_minutes: 30
+
+# Hard-block during news window? (true = FAIL; false = WARN)
+news_window_hard_block: true
+
+# ──────────────────────────────────────────────
+# PHX Sequence Completeness (GR-P01)
+# Minimum number of PHX stages that must be reached.
+# Stages in order: BIAS(1) SWEEP(2) DISPLACE(3) CHOCH_BOS(4) RETEST(5) TRIGGER(6)
+# ──────────────────────────────────────────────
+phx_min_stages_required: 4        # e.g. must reach CHOCH_BOS
+phx_sequence_hard_block: false    # FAIL = WARN if false; FAIL = hard_block if true
+
+# ──────────────────────────────────────────────
+# Displacement Quality (GR-D01)
+# Fraction of displacement candles that must be directional (e.g. 2/3)
+# ──────────────────────────────────────────────
+displacement_min_candle_ratio: 0.67   # 2 out of 3
+displacement_quality_hard_block: false
+
+# ──────────────────────────────────────────────
+# Minimum Setup Score (GR-SC01)
+# Based on PHXDetector.get_score() (0–100)
+# ──────────────────────────────────────────────
+min_setup_score: 70
+setup_score_hard_block: false   # below threshold → WARN only (not hard block)
+
+# ──────────────────────────────────────────────
+# Risk State Constraints (GR-R01)
+# Linked to live account state (read from DB or env)
+# ──────────────────────────────────────────────
+max_consecutive_losses: 3
+max_daily_loss_pct: 2.0         # % of account balance
+risk_state_hard_block: true     # always a hard block
+
+# ──────────────────────────────────────────────
+# Duplicate Signal Suppression (GR-U01)
+# If same (pair + direction + stage) seen within window: WARN + −5 score
+# ──────────────────────────────────────────────
+duplicate_suppression_window_minutes: 60
+duplicate_suppression_hard_block: false
+
+# ──────────────────────────────────────────────
+# Scoring Deductions
+# ──────────────────────────────────────────────
+score_deduction_fail: 20
+score_deduction_warn: 5

@@ -7,12 +7,14 @@ from sqlalchemy import and_
 
 from shared.database.models import OrderTicket, Packet
 from shared.types.packets import TechnicalSetupPacket, RiskApprovalPacket
+from shared.types.guardrails import GuardrailsResult
 
 def generate_order_ticket(
     setup: TechnicalSetupPacket,
     risk: RiskApprovalPacket,
     db: Session,
-    risk_usd: float = 100.0
+    risk_usd: float = 100.0,
+    guardrails: Optional[GuardrailsResult] = None,
 ) -> OrderTicket:
     """
     Generates an OrderTicket from setup and risk packets.
@@ -48,10 +50,13 @@ def generate_order_ticket(
     # RR Ratios
     rr_tp1 = abs(setup.take_profit - setup.entry_price) / dist if dist > 0 else 0.0
     
-    # Status
+    # Status: guardrails hard_block takes precedence over risk engine
     status = "PENDING"
     block_reason = None
-    if risk.status == "BLOCK":
+    if guardrails and guardrails.hard_block:
+        status = "BLOCKED"
+        block_reason = f"[GUARDRAILS] {guardrails.primary_block_reason or 'Strategy constitution violation'}"
+    elif risk.status == "BLOCK":
         status = "BLOCKED"
         block_reason = ", ".join(risk.reasons) if risk.reasons else "Risk engine rejected."
 
@@ -70,7 +75,13 @@ def generate_order_ticket(
         rr_tp1=rr_tp1,
         status=status,
         block_reason=block_reason,
-        idempotency_key=idempotency_key
+        idempotency_key=idempotency_key,
+        guardrails_score=guardrails.discipline_score if guardrails else None,
+        guardrails_hard_block=guardrails.hard_block if guardrails else False,
+        guardrails_summary=[
+            {"id": i.id, "name": i.name, "status": i.status, "details": i.details}
+            for i in guardrails.top_issues
+        ] if guardrails else None,
     )
     
     db.add(ticket)
