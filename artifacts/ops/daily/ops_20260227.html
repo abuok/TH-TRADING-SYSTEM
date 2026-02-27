@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antigravity Operator Dashboard</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@400;600;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        :root {
+            --bg-color: #0a0c10;
+            --card-bg: rgba(22, 27, 34, 0.7);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --accent-green: #3fb950;
+            --accent-blue: #58a6ff;
+            --accent-red: #f85149;
+            --accent-orange: #d2994d;
+            --text-primary: #c9d1d9;
+            --text-muted: #8b949e;
+            --glass-blur: blur(12px);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background: rgba(13, 17, 23, 0.8);
+            -webkit-backdrop-filter: var(--glass-blur);
+            backdrop-filter: var(--glass-blur);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--accent-green);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--text-primary);
+        }
+
+        .nav-link-queue {
+            border-bottom: 2px solid #e2b714;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            -webkit-backdrop-filter: var(--glass-blur);
+            backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-success {
+            background: rgba(63, 185, 80, 0.2);
+            color: var(--accent-green);
+        }
+
+        .badge-danger {
+            background: rgba(248, 81, 73, 0.2);
+            color: var(--accent-red);
+        }
+
+        .badge-warning {
+            background: rgba(210, 153, 77, 0.2);
+            color: var(--accent-orange);
+        }
+
+        .badge-info {
+            background: rgba(88, 166, 255, 0.2);
+            color: var(--accent-blue);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        .status-dot {
+            height: 10px;
+            width: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+
+        .status-healthy {
+            background: var(--accent-green);
+            box-shadow: 0 0 8px var(--accent-green);
+        }
+
+        .status-unhealthy {
+            background: var(--accent-red);
+            box-shadow: 0 0 8px var(--accent-red);
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .metric-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 2rem;
+        }
+
+        .header-title h1 {
+            font-size: 2.5rem;
+            color: #fff;
+        }
+
+        .header-title p {
+            color: var(--text-muted);
+        }
+
+        .header-clock {
+            text-align: right;
+        }
+
+        .clock-display {
+            font-size: 1.5rem;
+            font-weight: 800;
+            font-family: 'Outfit';
+            color: var(--accent-blue);
+        }
+
+        .clock-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .card h2 {
+            margin-bottom: 1.5rem;
+        }
+
+        .sub-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .sub-header {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+        }
+
+        .event-item {
+            margin-bottom: 0.75rem;
+            border-left: 2px solid var(--accent-orange);
+            padding-left: 0.75rem;
+        }
+
+        .event-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .event-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .safety-window {
+            margin-bottom: 1rem;
+            background: rgba(210, 153, 77, 0.1);
+            border-radius: 8px;
+            padding: 0.75rem;
+        }
+
+        .safety-header {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--accent-orange);
+        }
+
+        .safety-meta {
+            font-size: 0.75rem;
+        }
+
+        .clear-window {
+            background: rgba(63, 185, 80, 0.1);
+            border-radius: 8px;
+            padding: 0.75rem;
+        }
+
+        .clear-header {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--accent-green);
+        }
+
+        .list-unstyled {
+            list-style: none;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="/dashboard" class="navbar-brand">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+            </svg>
+            ANTIGRAVITY
+        </a>
+        <div class="nav-links">
+            <a href="/dashboard" class="nav-link ">Overview</a>
+            <a href="/dashboard/incidents"
+                class="nav-link ">Incidents</a>
+            <a href="/dashboard/fundamentals"
+                class="nav-link ">Fundamentals</a>
+            <a href="/dashboard/setups" class="nav-link ">Technical</a>
+            <a href="/dashboard/risk" class="nav-link ">Risk</a>
+            <a href="/dashboard/tickets" class="nav-link ">Tickets</a>
+            <a href="/dashboard/queue"
+                class="nav-link nav-link-queue ">Review Queue</a>
+            <a href="/dashboard/briefings"
+                class="nav-link ">Briefings</a>
+            <a href="/dashboard/research"
+                class="nav-link ">Research</a>
+            <a href="/dashboard/calibration"
+                class="nav-link ">Calibration</a>
+            <a href="/dashboard/hindsight"
+                class="nav-link ">Hindsight</a>
+            <a href="/dashboard/policies"
+                class="nav-link ">Policies</a>
+            <a href="/dashboard/ops/daily" class="nav-link ">Ops
+                Playbook</a>
+            <a href="/dashboard/action-items" class="nav-link ">Action
+                Items</a>
+            <a href="/dashboard/reports" class="nav-link ">Reports</a>
+        </div>
+    </nav>
+
+    <div class="container animate-fade">
+        
+<div class="header-section">
+    <div class="header-title">
+        <h1>Daily Ops Playbook</h1>
+        <p>System Intelligence & Actionable Insights for 2026-02-27</p>
+    </div>
+    <div class="header-clock">
+        <div class="clock-display">04:25</div>
+        <div class="clock-label">Nairobi (EAT)</div>
+    </div>
+</div>
+
+<div class="grid">
+    <!-- Health Card -->
+    <div class="card animate-fade">
+        <div class="card-header">
+            <h2>System Health</h2>
+            <span class="badge badge-success">
+                STABLE
+            </span>
+        </div>
+        <div class="metric-value">0</div>
+        <div class="metric-label">Recent Incidents (24h)</div>
+    </div>
+
+    <!-- Policy Card -->
+    <div class="card animate-fade" style="animation-delay: 0.1s;">
+        <div class="card-header">
+            <h2>Regime Context</h2>
+            <span class="badge badge-info">0 Switches</span>
+        </div>
+        <div class="list-unstyled">
+            
+        </div>
+    </div>
+
+    <!-- Queue Card -->
+    <div class="card animate-fade" style="animation-delay: 0.2s;">
+        <div class="card-header">
+            <h2>Queue Summary</h2>
+        </div>
+        <div class="sub-grid">
+            <div>
+                <div class="metric-value">0</div>
+                <div class="metric-label">Approved</div>
+            </div>
+            <div>
+                <div class="metric-value">1</div>
+                <div class="metric-label">Skipped/Expired</div>
+            </div>
+        </div>
+        <div class="sub-header" style="margin-top: 1rem;">Top Skip Reasons</div>
+        <ul class="list-unstyled">
+            
+            <li class="event-item" style="border-left-color: var(--accent-orange);">
+                ALREADY_MOVED
+            </li>
+            
+        </ul>
+    </div>
+</div>
+
+<div class="grid">
+    <!-- Hindsight Highlights -->
+    <div class="card animate-fade" style="animation-delay: 0.3s;">
+        <h2>Missed Opportunity (Hindsight)</h2>
+        <div class="sub-grid">
+            <div>
+                <div class="metric-value" style="color: var(--accent-orange);">1</div>
+                <div class="metric-label">Missed Tickets</div>
+            </div>
+            <div>
+                <div class="metric-value" style="color: var(--accent-orange);">+0.00R</div>
+                <div class="metric-label">Estimated Missed R</div>
+            </div>
+        </div>
+        <div class="sub-header" style="margin-top: 1rem;">Winners identified that were not traded.</div>
+    </div>
+
+    <!-- Actionable Checklist -->
+    <div class="card animate-fade" style="animation-delay: 0.4s;">
+        <h2>Action Checklist</h2>
+        <div class="sub-grid">
+            <div>
+                <div class="sub-header" style="color: var(--accent-green);">Do (Best Execution)</div>
+                <ul class="list-unstyled">
+                    
+                    <li class="event-item" style="border-left-color: var(--accent-green);">Monitor news for high-impact red events.</li>
+                    
+                    <li class="event-item" style="border-left-color: var(--accent-green);">Review Manual Review Queue every 4 hours.</li>
+                    
+                    <li class="event-item" style="border-left-color: var(--accent-green);">Ensure hindsight scoring is running for all skipped trades.</li>
+                    
+                </ul>
+            </div>
+            <div>
+                <div class="sub-header" style="color: var(--accent-red);">Don't (Risk Management)</div>
+                <ul class="list-unstyled">
+                    
+                    <li class="event-item" style="border-left-color: var(--accent-red);">Over-leverage during high volatility session openings.</li>
+                    
+                    <li class="event-item" style="border-left-color: var(--accent-red);">Ignore system health warnings (currently STABLE).</li>
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+    </div>
+
+    <footer>
+        &copy; 2026 Antigravity Trading Systems | Nairobi/Africa Timezone
+    </footer>
+</body>
+
+</html>

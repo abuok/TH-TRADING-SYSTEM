@@ -133,7 +133,7 @@ class ReviewEngine:
 
     def _count_switches(self, start, policy_name):
         return self.db.query(PolicySelectionLog).filter(
-            PolicySelectionLog.timestamp >= start,
+            PolicySelectionLog.created_at >= start,
             PolicySelectionLog.policy_name == policy_name
         ).count()
 

@@ -32,17 +32,17 @@ class OpsEngine:
         # Get latest policy per pair
         subquery = self.db.query(
             PolicySelectionLog.pair,
-            func.max(PolicySelectionLog.timestamp).label("max_ts")
+            func.max(PolicySelectionLog.created_at).label("max_ts")
         ).group_by(PolicySelectionLog.pair).subquery()
         
         current_policies = self.db.query(PolicySelectionLog).join(
             subquery,
-            (PolicySelectionLog.pair == subquery.c.pair) & (PolicySelectionLog.timestamp == subquery.c.max_ts)
+            (PolicySelectionLog.pair == subquery.c.pair) & (PolicySelectionLog.created_at == subquery.c.max_ts)
         ).all()
         for p in current_policies:
             latest_policies[p.pair] = p.policy_name
             
-        switches_24h = self.db.query(PolicySelectionLog).filter(PolicySelectionLog.timestamp >= yesterday).count()
+        switches_24h = self.db.query(PolicySelectionLog).filter(PolicySelectionLog.created_at >= yesterday).count()
         
         # 3. Queue Stats
         tickets = self.db.query(OrderTicket).filter(OrderTicket.created_at >= yesterday).all()
