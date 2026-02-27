@@ -64,7 +64,8 @@
                         </div>
                     </td>
                     <td>
-                        <span class="{% if variant.metrics.win_rate_pct >= 50 %}text-success{% else %}text-danger{% endif %} util-be8e63">
+                        <span
+                            class="{% if variant.metrics.win_rate_pct >= 50 %}text-success{% else %}text-danger{% endif %} util-be8e63">
                             {{ variant.metrics.win_rate_pct }}%
                         </span>
                     </td>
@@ -73,11 +74,12 @@
                     <td>{{ variant.metrics.profit_factor }}</td>
                     <td>
                         <span
-                            style="font-weight: 800; color: {% if variant.metrics.total_r > 0 %}var(--accent-green){% elif variant.metrics.total_r < 0 %}var(--accent-red){% else %}var(--text-muted){% endif %};">
+                            class="bold-800 text-{{ 'green' if variant.metrics.total_r > 0 else ('red' if variant.metrics.total_r < 0 else 'muted') }}">
                             {% if variant.metrics.total_r > 0 %}+{% endif %}{{ variant.metrics.total_r }} R
                         </span>
                     </td>
-                    <td>{{ variant.metrics.executed_trades }} / {{ variant.metrics.total_trades }} <span class="util-bc3433">({{ variant.metrics.blocked_trades }}
+                    <td>{{ variant.metrics.executed_trades }} / {{ variant.metrics.total_trades }} <span
+                            class="util-bc3433">({{ variant.metrics.blocked_trades }}
                             blocked)</span></td>
                 </tr>
                 {% endfor %}
@@ -114,7 +116,8 @@
                 <tr>
                     <td class="util-9a7094">{{ t.ticket_id }}</td>
                     <td>
-                        <span class="badge {% if t.direction == 'LONG' %}badge-success{% else %}badge-danger{% endif %}">{{
+                        <span
+                            class="badge {% if t.direction == 'LONG' %}badge-success{% else %}badge-danger{% endif %}">{{
                             t.direction }}</span>
                     </td>
                     <td>
@@ -135,12 +138,13 @@
                         t.exit_time else '-' }}</td>
                     <td>
                         <strong
-                            style="color: {% if t.realized_r > 0 %}var(--accent-green){% elif t.realized_r < 0 %}var(--accent-red){% else %}var(--text-muted){% endif %};">
+                            class="text-{{ 'green' if t.realized_r > 0 else ('red' if t.realized_r < 0 else 'muted') }}">
                             {% if t.realized_r > 0 %}+{% endif %}{{ t.realized_r | round(2) }}R
                         </strong>
                     </td>
                     <td>
-                        <span class="badge {% if t.guardrails_status == 'PASS' %}badge-success{% else %}badge-danger{% endif %}">
+                        <span
+                            class="badge {% if t.guardrails_status == 'PASS' %}badge-success{% else %}badge-danger{% endif %}">
                             {{ t.guardrails_status }}
                         </span>
                         {% if t.block_reason %}

@@ -88,11 +88,13 @@
         <h2>Policy Recommendations</h2>
         {% if report.recommendations %}
         {% for rec in report.recommendations %}
-        <div 
-            style="border-left: 4px solid {% if rec.confidence == 'HIGH' %}#238636{% elif rec.confidence == 'MEDIUM' %}#d29922{% else %}#da3633{% endif %};" class="card">
+        {% set conf_class = 'border-left-green' if rec.confidence == 'HIGH' else ('border-left-orange' if rec.confidence
+        == 'MEDIUM' else 'border-left-red') %}
+        <div class="card {{ conf_class }}">
             <h3>[{{ rec.change_type | upper }}] {{ rec.title }}</h3>
             <p>
-                <span class="badge {% if rec.confidence == 'HIGH' %}badge-success{% elif 'MEDIUM' %}badge-warn{% else %}badge-danger{% endif %}">{{
+                <span
+                    class="badge {% if rec.confidence == 'HIGH' %}badge-success{% elif 'MEDIUM' %}badge-warn{% else %}badge-danger{% endif %}">{{
                     rec.confidence }}</span>
             </p>
             <p><strong>Proposed Change:</strong> {{ rec.proposed_change }}</p>
@@ -123,7 +125,7 @@
                 </thead>
                 <tbody>
                     {% for name, metrics in report.evidence_tables['Metrics'].items() %}
-                    <tr style="{% if name == 'baseline' %}background-color: #21262d; font-weight: bold;{% endif %}">
+                    <tr class="{{ 'bg-baseline' if name == 'baseline' else '' }}">
                         <td>{{ name }}</td>
                         <td>{{ "%.1f"|format(metrics.win_rate_pct) }}%</td>
                         <td>{{ "%.2f"|format(metrics.expectancy_r) }}R</td>

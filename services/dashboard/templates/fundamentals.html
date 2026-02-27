@@ -80,7 +80,7 @@
             {% set pct = ((latest.data.bias_score + 5) / 10) * 100 %}
             {% set bar_col_class = 'bg-success' if latest.data.bias_score > 0 else ('bg-danger' if
             latest.data.bias_score < 0 else 'bg-muted' ) %} <div class="{{ bar_col_class }} fill-absolute"
-                style="width: {{ pct }}%;">
+                style="--pct: {{ pct }}%; width: var(--pct);">
         </div>
         <!-- Zero line marker -->
         <div class="util-a311f0"></div>
