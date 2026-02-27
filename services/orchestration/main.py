@@ -24,7 +24,9 @@ from shared.types.guardrails import GuardrailsResult
 from shared.logic.policy_router import PolicyRouter
 from services.orchestration.logic.ops_engine import OpsEngine
 from services.orchestration.logic.review_engine import ReviewEngine
-from shared.database.models import ActionItem, OpsReportLog
+from services.orchestration.logic.execution_prep_generator import ExecutionPrepGenerator
+from shared.database.models import ActionItem, OpsReportLog, ExecutionPrepLog
+from shared.types.execution_prep import ExecutionPrepSchema
 from shared.logic.logging import setup_production_logging
 from shared.logic.metrics import metrics_registry
 from fastapi.responses import Response

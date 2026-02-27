@@ -168,3 +168,16 @@ class OpsReportLog(Base):
     report_type = Column(String) # daily, weekly
     report_data = Column(JSON) # Full report as JSON
     html_path = Column(String) # Path to the generated HTML
+
+class ExecutionPrepLog(Base):
+    __tablename__ = "execution_prep_logs"
+    id = Column(Integer, primary_key=True)
+    prep_id = Column(String, unique=True, index=True)
+    ticket_id = Column(String, ForeignKey("order_tickets.ticket_id"), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    data = Column(JSON, nullable=False) # Full ExecutionPrepSchema
+    status = Column(String, default="ACTIVE") # ACTIVE, EXPIRED, OVERRIDDEN
+    override_reason = Column(Text, nullable=True)
+
+    ticket = relationship("OrderTicket", foreign_keys=[ticket_id])

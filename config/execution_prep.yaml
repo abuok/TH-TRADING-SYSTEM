@@ -1,0 +1,9 @@
+# config/execution_prep.yaml
+ttl_seconds: 180 # 3 minutes
+price_tolerance_pct: 0.1 # 0.1% max deviation from ticket entry
+max_spread_pips: 3.0
+platforms:
+  mt5:
+    format: "TICKET:{id} {pair} {dir} LOTS:{lot} ENTRY:{entry} SL:{sl} TP:{tp}"
+  ctrader:
+    format: "LIMIT {dir} {pair} {lot} @ {entry} SL:{sl} TP:{tp1}/{tp2}"
