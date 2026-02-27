@@ -80,7 +80,7 @@
             {% set pct = ((latest.data.bias_score + 5) / 10) * 100 %}
             {% set bar_col_class = 'bg-success' if latest.data.bias_score > 0 else ('bg-danger' if
             latest.data.bias_score < 0 else 'bg-muted' ) %} <div class="{{ bar_col_class }} fill-absolute"
-                style="--pct: {{ pct }}%; width: var(--pct);">
+                style="--pct: {{ pct }}%;">
         </div>
         <!-- Zero line marker -->
         <div class="util-a311f0"></div>
@@ -88,15 +88,12 @@
 </div>
 
 <div class="sub-header">Key Drivers</div>
-<ul class="list-unstyled util-d3297f">
-    {%- for drv in latest.data.get('drivers', []) -%}
+<ul class="list-unstyled util-d3297f">{%- for drv in latest.data.get('drivers', []) -%}
     <li class="event-item border-left-{{ 'green' if drv.impact > 0 else ('red' if drv.impact < 0 else 'muted') }}">
         <div class="event-title">{{ drv.text }}</div>
         <div class="event-meta">Impact: {{ drv.impact }}</div>
-    </li>
-    {%- else -%}
-    <li class="util-d77719">No explicit drivers detected.</li>
-    {%- endfor -%}
+    </li>{%- else -%}
+    <li class="util-d77719">No explicit drivers detected.</li>{%- endfor -%}
 </ul>
 
 <div class="safety-window">

@@ -92,9 +92,12 @@
             </div>
 
             <div class="util-224b51">
-                <textarea id="mt5-{{ ticket.ticket_id }}">{{ ticket.to_mt5_note() }}</textarea>
-                <textarea id="ctrader-{{ ticket.ticket_id }}">{{ ticket.to_ctrader_note() }}</textarea>
-                <textarea id="json-{{ ticket.ticket_id }}">{{ ticket.model_dump_json(indent=2) }}</textarea>
+                <textarea id="mt5-{{ ticket.ticket_id }}" title="MT5 Plan Data"
+                    placeholder="MT5 plan data...">{{ ticket.to_mt5_note() }}</textarea>
+                <textarea id="ctrader-{{ ticket.ticket_id }}" title="cTrader Plan Data"
+                    placeholder="cTrader plan data...">{{ ticket.to_ctrader_note() }}</textarea>
+                <textarea id="json-{{ ticket.ticket_id }}" title="Ticket JSON Data"
+                    placeholder="Ticket JSON data...">{{ ticket.model_dump_json(indent=2) }}</textarea>
             </div>
         </div>
     </div>

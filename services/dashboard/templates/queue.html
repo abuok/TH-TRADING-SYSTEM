@@ -33,12 +33,12 @@
     <div class="card util-2aec1d">
         <div class="card-header">
             <h3>Skip Ticket</h3>
-            <span  id="skip-ticket-id" class="badge badge-warning"></span>
+            <span id="skip-ticket-id" class="badge badge-warning"></span>
         </div>
         <div class="card-body">
             <div class="util-4986ec">
-                <label class="util-c1739c">Reason</label>
-                <select id="skip-reason" class="badge util-28de3a">
+                <label class="util-c1739c" for="skip-reason">Reason</label>
+                <select id="skip-reason" class="badge util-28de3a" title="Skip Reason">
                     <option value="NEWS_WINDOW">News Window</option>
                     <option value="STALE">Stale / Too Late</option>
                     <option value="SPREAD_TOO_HIGH">Spread Too High</option>
@@ -50,8 +50,9 @@
                 </select>
             </div>
             <div>
-                <label class="util-c1739c">Notes (Optional)</label>
-                <textarea id="skip-notes" rows="3" class="util-5b64ac"></textarea>
+                <label class="util-c1739c" for="skip-notes">Notes (Optional)</label>
+                <textarea id="skip-notes" rows="3" class="util-5b64ac" title="Skip Notes"
+                    placeholder="Add any additional context..."></textarea>
             </div>
             <div class="util-6d2a0b">
                 <button onclick="closeModal('skipModal')" class="badge util-24b531">Cancel</button>

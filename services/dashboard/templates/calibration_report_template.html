@@ -1,7 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calibration Report: {{ report.report_id }}</title>
     <style>
         body {
@@ -93,13 +95,26 @@
         <div class="card {{ conf_class }}">
             <h3>[{{ rec.change_type | upper }}] {{ rec.title }}</h3>
             <p>
+                <label class="util-c1739c" for="skip-reason-{{ loop.index }}">Reason</label>
+                <select id="skip-reason-{{ loop.index }}" class="badge util-28de3a" title="Skip Reason">
+                    <option value="none" selected disabled>Select a reason</option>
+                    <option value="redundant">Redundant</option>
+                    <option value="low_impact">Low Impact</option>
+                    <option value="risky">Too Risky</option>
+                    <option value="other">Other</option>
+                </select>
                 <span
-                    class="badge {% if rec.confidence == 'HIGH' %}badge-success{% elif 'MEDIUM' %}badge-warn{% else %}badge-danger{% endif %}">{{
+                    class="badge {% if rec.confidence == 'HIGH' %}badge-success{% elif rec.confidence == 'MEDIUM' %}badge-warn{% else %}badge-danger{% endif %}">{{
                     rec.confidence }}</span>
             </p>
             <p><strong>Proposed Change:</strong> {{ rec.proposed_change }}</p>
             <p><strong>Expected Impact:</strong> {{ rec.expected_impact }}</p>
             <p><strong>Rationale:</strong> {{ rec.rationale }}</p>
+            <p>
+                <label class="util-c1739c" for="skip-notes-{{ loop.index }}">Notes (Optional)</label>
+                <textarea id="skip-notes-{{ loop.index }}" rows="3" class="util-5b64ac" title="Skip Notes"
+                    placeholder="Add any additional context..."></textarea>
+            </p>
             <p class="util-33e95d"><em>Caveat: {{ rec.caveats }}</em></p>
         </div>
         {% endfor %}
