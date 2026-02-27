@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="header-section">
+    <div class="header-title">
+        <h1>Weekly Review Pack</h1>
+        <p>Performance Audit & Quality Insights: {{ report.start_date.strftime('%b %d') }} - {{
+            report.end_date.strftime('%b %d, %Y') }}</p>
+    </div>
+    <div class="header-clock">
+        <div class="clock-display">{{ "%.2f"|format(report.total_realized_r) }}R</div>
+        <div class="clock-label">Weekly P/L Proxy</div>
+    </div>
+</div>
+
+<div class="grid">
+    <!-- performance card -->
+    <div class="card animate-fade">
+        <div class="card-header">
+            <h2>Performance Metrics</h2>
+            <span class="badge badge-info">Win Rate: {{ "%.1f"|format(report.win_rate_pct) }}%</span>
+        </div>
+        <div class="sub-grid">
+            <div>
+                <div class="metric-value">{{ "%.2f"|format(report.total_realized_r) }}R</div>
+                <div class="metric-label">Realized R</div>
+            </div>
+            <div>
+                <div class="metric-value" style="color: var(--accent-orange);">{{ "%.2f"|format(report.total_missed_r)
+                    }}R</div>
+                <div class="metric-label">Missed R (Hindsight)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- discipline card -->
+    <div class="card animate-fade" style="animation-delay: 0.1s;">
+        <div class="card-header">
+            <h2>Discipline & Quality</h2>
+        </div>
+        <div class="sub-grid">
+            <div>
+                <div class="metric-value">{{ report.rule_violations_count }}</div>
+                <div class="metric-label">Rule Violations</div>
+            </div>
+            <div>
+                <div class="metric-value">{{ "%.1f"|format(report.avg_guardrails_score) }}</div>
+                <div class="metric-label">Avg Guardrails Score</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- decision quality card -->
+    <div class="card animate-fade" style="animation-delay: 0.2s;">
+        <div class="card-header">
+            <h2>Decision Quality</h2>
+        </div>
+        <table>
+            <tr>
+                <th>Segment</th>
+                <th>Winners</th>
+                <th>Losers</th>
+            </tr>
+            <tr>
+                <td>Approved</td>
+                <td style="color: var(--accent-green);">{{ report.approved_winners }}</td>
+                <td style="color: var(--accent-red);">{{ report.approved_losers }}</td>
+            </tr>
+            <tr>
+                <td>Skipped/Expired</td>
+                <td style="color: var(--accent-green);">{{ report.skipped_winners }}</td>
+                <td style="color: var(--accent-red);">{{ report.skipped_losers }}</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<div class="grid">
+    <!-- insights card -->
+    <div class="card animate-fade" style="animation-delay: 0.3s;">
+        <h2>Top Insights & Mistakes</h2>
+        <div class="sub-grid">
+            <div>
+                <div class="sub-header" style="color: var(--accent-green);">Insights</div>
+                <ul class="list-unstyled">
+                    {% for insight in report.top_insights %}
+                    <li class="event-item" style="border-left-color: var(--accent-green);">{{ insight }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div>
+                <div class="sub-header" style="color: var(--accent-red);">Mistakes</div>
+                <ul class="list-unstyled">
+                    {% for mistake in report.top_mistakes %}
+                    <li class="event-item" style="border-left-color: var(--accent-red);">{{ mistake }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- action items card -->
+    <div class="card animate-fade" style="animation-delay: 0.4s;">
+        <div class="card-header">
+            <h2>Auto-Created Action Items</h2>
+            <a href="/dashboard/action-items" class="badge badge-info" style="text-decoration: none;">View Tracker</a>
+        </div>
+        <ul class="list-unstyled">
+            {% for item in report.created_action_items %}
+            <li class="event-item" style="border-left-color: var(--accent-orange);">{{ item }}</li>
+            {% endfor %}
+            {% if not report.created_action_items %}
+            <li class="event-meta">No critical issues identified this week. Keep going!</li>
+            {% endif %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

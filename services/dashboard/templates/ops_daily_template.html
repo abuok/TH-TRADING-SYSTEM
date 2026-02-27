@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="header-section">
+    <div class="header-title">
+        <h1>Daily Ops Playbook</h1>
+        <p>System Intelligence & Actionable Insights for {{ report.timestamp.strftime('%Y-%m-%d') }}</p>
+    </div>
+    <div class="header-clock">
+        <div class="clock-display">{{ report.timestamp.strftime('%H:%M') }}</div>
+        <div class="clock-label">Nairobi (EAT)</div>
+    </div>
+</div>
+
+<div class="grid">
+    <!-- Health Card -->
+    <div class="card animate-fade">
+        <div class="card-header">
+            <h2>System Health</h2>
+            <span class="badge {% if report.health_status == 'STABLE' %}badge-success{% else %}badge-danger{% endif %}">
+                {{ report.health_status }}
+            </span>
+        </div>
+        <div class="metric-value">{{ report.incident_count }}</div>
+        <div class="metric-label">Recent Incidents (24h)</div>
+    </div>
+
+    <!-- Policy Card -->
+    <div class="card animate-fade" style="animation-delay: 0.1s;">
+        <div class="card-header">
+            <h2>Regime Context</h2>
+            <span class="badge badge-info">{{ report.policy_switches_24h }} Switches</span>
+        </div>
+        <div class="list-unstyled">
+            {% for pair, policy in report.active_policies.items() %}
+            <div class="event-item">
+                <div class="event-title">{{ pair }}</div>
+                <div class="event-meta">Active: {{ policy }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Queue Card -->
+    <div class="card animate-fade" style="animation-delay: 0.2s;">
+        <div class="card-header">
+            <h2>Queue Summary</h2>
+        </div>
+        <div class="sub-grid">
+            <div>
+                <div class="metric-value">{{ report.queue_approvals }}</div>
+                <div class="metric-label">Approved</div>
+            </div>
+            <div>
+                <div class="metric-value">{{ report.queue_skips + report.queue_expires }}</div>
+                <div class="metric-label">Skipped/Expired</div>
+            </div>
+        </div>
+        <div class="sub-header" style="margin-top: 1rem;">Top Skip Reasons</div>
+        <ul class="list-unstyled">
+            {% for reason in report.top_skip_reasons %}
+            <li class="event-item" style="border-left-color: var(--accent-orange);">
+                {{ reason }}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<div class="grid">
+    <!-- Hindsight Highlights -->
+    <div class="card animate-fade" style="animation-delay: 0.3s;">
+        <h2>Missed Opportunity (Hindsight)</h2>
+        <div class="sub-grid">
+            <div>
+                <div class="metric-value" style="color: var(--accent-orange);">{{
+                    report.hindsight_yesterday.total_skipped + report.hindsight_yesterday.total_expired }}</div>
+                <div class="metric-label">Missed Tickets</div>
+            </div>
+            <div>
+                <div class="metric-value" style="color: var(--accent-orange);">+{{
+                    "%.2f"|format(report.hindsight_yesterday.avg_missed_r * (report.hindsight_yesterday.total_skipped +
+                    report.hindsight_yesterday.total_expired)) }}R</div>
+                <div class="metric-label">Estimated Missed R</div>
+            </div>
+        </div>
+        <div class="sub-header" style="margin-top: 1rem;">Winners identified that were not traded.</div>
+    </div>
+
+    <!-- Actionable Checklist -->
+    <div class="card animate-fade" style="animation-delay: 0.4s;">
+        <h2>Action Checklist</h2>
+        <div class="sub-grid">
+            <div>
+                <div class="sub-header" style="color: var(--accent-green);">Do (Best Execution)</div>
+                <ul class="list-unstyled">
+                    {% for item in report.checklist_do %}
+                    <li class="event-item" style="border-left-color: var(--accent-green);">{{ item }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div>
+                <div class="sub-header" style="color: var(--accent-red);">Don't (Risk Management)</div>
+                <ul class="list-unstyled">
+                    {% for item in report.checklist_dont %}
+                    <li class="event-item" style="border-left-color: var(--accent-red);">{{ item }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="header-section">
+    <div class="header-title">
+        <h1>Action Items Tracker</h1>
+        <p>Strategic improvements derived from system audits and weekly reviews.</p>
+    </div>
+</div>
+
+<div class="card animate-fade">
+    <div class="card-header">
+        <h2>Open Action Items</h2>
+        <span class="badge badge-info">{{ items|length }} Items</span>
+    </div>
+
+    {% if not items %}
+    <p class="event-meta">No open action items. The system is operating at peak efficiency.</p>
+    {% else %}
+    <table>
+        <thead>
+            <tr>
+                <th>Created</th>
+                <th>Source</th>
+                <th>Title</th>
+                <th>Severity</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr id="item-{{ item.id }}">
+                <td class="event-meta">{{ item.created_at.strftime('%Y-%m-%d') }}</td>
+                <td><span class="badge">{{ item.source }}</span></td>
+                <td>
+                    <strong>{{ item.title }}</strong>
+                    <div class="event-meta">{{ item.notes }}</div>
+                </td>
+                <td>
+                    <span
+                        class="badge {% if item.severity == 'CRITICAL' %}badge-danger{% elif item.severity == 'WARNING' %}badge-warning{% else %}badge-info{% endif %}">
+                        {{ item.severity }}
+                    </span>
+                </td>
+                <td>
+                    <span class="badge {% if item.status == 'OPEN' %}badge-warning{% else %}badge-success{% endif %}">
+                        {{ item.status }}
+                    </span>
+                </td>
+                <td>
+                    {% if item.status == 'OPEN' %}
+                    <button class="badge badge-success" onclick="markDone({{ item.id }})"
+                        style="cursor: pointer; border: none;">Mark Done</button>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+</div>
+
+<script>
+async def markDone(id) {
+        if (!confirm("Mark this action item as completed?")) return;
+
+        const response = await fetch(`/api/action-items/${id}/done`, {
+            method: 'POST'
+        });
+
+        if (response.ok) {
+            location.reload();
+        } else {
+            alert("Failed to update status.");
+        }
+    }
+</script>
+{% endblock %}

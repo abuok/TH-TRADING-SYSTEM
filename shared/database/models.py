@@ -149,3 +149,22 @@ class PolicySelectionLog(Base):
     reasons = Column(JSON, nullable=False)
     regime_signals = Column(JSON, nullable=False)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+class ActionItem(Base):
+    __tablename__ = "action_items"
+    id = Column(Integer, primary_key=True)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    title = Column(String)
+    severity = Column(String) # INFO, WARNING, ERROR, CRITICAL
+    source = Column(String) # ops, weekly, calibration
+    evidence_links = Column(JSON) # List of strings/URLs
+    status = Column(String, default="OPEN") # OPEN, DONE
+    notes = Column(Text)
+
+class OpsReportLog(Base):
+    __tablename__ = "ops_report_logs"
+    id = Column(Integer, primary_key=True)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    report_type = Column(String) # daily, weekly
+    report_data = Column(JSON) # Full report as JSON
+    html_path = Column(String) # Path to the generated HTML
