@@ -86,6 +86,8 @@ def generate_order_ticket(
             {"id": i.id, "name": i.name, "status": i.status, "details": i.details}
             for i in guardrails.top_issues
         ] if guardrails else None,
+        active_policy_name=guardrails.policy_name if guardrails else None,
+        active_policy_hash=guardrails.policy_hash if guardrails else None,
     )
     
     db.add(ticket)

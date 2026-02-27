@@ -70,6 +70,9 @@ class OrderTicket(Base):
     idempotency_key = Column(String, unique=True, index=True, nullable=False)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
+    active_policy_name = Column(String, nullable=True)
+    active_policy_hash = Column(String, nullable=True)
+
     expires_at = Column(DateTime(timezone=True), nullable=True)
     reviewed_at = Column(DateTime(timezone=True), nullable=True)
     closed_at = Column(DateTime(timezone=True), nullable=True)
@@ -117,6 +120,8 @@ class GuardrailsLog(Base):
     primary_block_reason = Column(Text, nullable=True)
     guardrails_version = Column(String, default="2.0.0")
     result_json = Column(JSON, nullable=False)  # full GuardrailsResult JSON
+    policy_name = Column(String, nullable=True)
+    policy_hash = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 class HindsightOutcomeLog(Base):
@@ -133,3 +138,14 @@ class HindsightOutcomeLog(Base):
     policy_hash = Column(String, nullable=True)
 
     ticket = relationship("OrderTicket", foreign_keys=[ticket_id])
+
+class PolicySelectionLog(Base):
+    __tablename__ = "policy_selection_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    pair = Column(String, nullable=False, index=True)
+    policy_name = Column(String, nullable=False)
+    policy_hash = Column(String, nullable=False)
+    reasons = Column(JSON, nullable=False)
+    regime_signals = Column(JSON, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))

@@ -1,0 +1,35 @@
+# policy_best_conditions.yaml
+# Aggressive policy for high-confluence/clean market regimes
+policy_name: "Best Conditions"
+guardrails_version: "2.0.0"
+
+news_buffer_minutes: 20           # more aggressive
+news_window_hard_block: true
+
+phx_min_stages_required: 4
+phx_sequence_hard_block: false
+
+displacement_min_candle_ratio: 0.67
+displacement_quality_hard_block: false
+
+min_setup_score: 65               # more lenient if bias aligns
+setup_score_hard_block: false
+
+max_consecutive_losses: 5         # more breathing room
+max_daily_loss_pct: 3.0
+risk_state_hard_block: true
+
+duplicate_suppression_window_minutes: 30
+duplicate_suppression_hard_block: false
+
+score_deduction_fail: 15
+score_deduction_warn: 3
+
+session_windows:
+  LONDON:
+    start: "11:00"
+    end: "20:00"
+  NEW YORK:
+    start: "16:00"
+    end: "01:00"
+allowed_sessions: ["LONDON", "NEW YORK"]

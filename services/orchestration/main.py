@@ -21,6 +21,7 @@ from shared.logic.notifications import NotificationService, ConsoleNotificationA
 from shared.types.packets import TechnicalSetupPacket, RiskApprovalPacket
 from shared.types.trading import OrderTicketSchema
 from shared.types.guardrails import GuardrailsResult
+from shared.logic.policy_router import PolicyRouter
 import httpx
 
 logging.basicConfig(level=logging.INFO)
@@ -29,6 +30,7 @@ logger = logging.getLogger("OrchestrationAPI")
 app = FastAPI(title="Orchestration Service API")
 notifier = NotificationService([ConsoleNotificationAdapter()])
 _guardrails_engine = GuardrailsEngine()
+_policy_router = PolicyRouter()
 
 
 # ──────────────────────────────────────────────
@@ -267,6 +269,32 @@ async def generate_ticket(pair: str, db: Session = Depends(get_db)):
     ).order_by(Packet.created_at.desc()).first()
     context_data = ctx_db.data if ctx_db else {}
 
+    # Policy Selection
+    # Need movers and pair fundamentals for policy routing
+    movers_db = db.query(Packet).filter(Packet.packet_type == "MarketMoversPacket").order_by(Packet.created_at.desc()).first()
+    pair_fund_db = db.query(Packet).filter(
+        and_(
+            Packet.packet_type == "PairFundamentalsPacket",
+            Packet.data["asset_pair"].as_string() == pair,
+        )
+    ).order_by(Packet.created_at.desc()).first()
+
+    movers_data = movers_db.data if movers_db else {}
+    pair_fund_data = pair_fund_db.data if pair_fund_db else {}
+    
+    policy_decision = _policy_router.select_policy(
+        movers_data=movers_data,
+        context_data=context_data,
+        pair_fundamentals=pair_fund_data,
+```
+    from shared.database.models import PolicySelectionLog
+    db.add(PolicySelectionLog(
+        primary_block_reason=policy_decision.primary_block_reason,
+        policy_name=policy_decision.policy_name,
+        policy_hash=policy_decision.policy_hash,
+        regime_signals=policy_decision.regime_signals
+    ))
+
     # Run guardrails before ticket generation
     guardrails_result = _guardrails_engine.evaluate(
         setup_data=setup_db.data,
@@ -274,6 +302,8 @@ async def generate_ticket(pair: str, db: Session = Depends(get_db)):
         db=db,
         now_nairobi=get_nairobi_time(),
         setup_packet_id=setup_db.id,
+        config_override=policy_decision.policy_config,
+        policy_hash=policy_decision.policy_hash
     )
     _guardrails_engine.persist(guardrails_result, db)
 

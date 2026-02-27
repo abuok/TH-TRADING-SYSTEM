@@ -1,0 +1,35 @@
+# policy_risk_off.yaml
+# Strict defensive policy for high-volatility or risky sentiment
+policy_name: "Risk Off"
+guardrails_version: "2.0.0"
+
+news_buffer_minutes: 45           # increased buffer
+news_window_hard_block: true
+
+phx_min_stages_required: 5        # must reach RETEST (stricter)
+phx_sequence_hard_block: true     # hard block now
+
+displacement_min_candle_ratio: 0.75 # higher quality required
+displacement_quality_hard_block: true
+
+min_setup_score: 80               # much higher bar
+setup_score_hard_block: true      # hard block now
+
+max_consecutive_losses: 2         # cut off earlier
+max_daily_loss_pct: 1.0           # tighter cap
+risk_state_hard_block: true
+
+duplicate_suppression_window_minutes: 120
+duplicate_suppression_hard_block: true
+
+score_deduction_fail: 30
+score_deduction_warn: 10
+
+session_windows:
+  LONDON:
+    start: "11:30"                # Shave off market open volatility
+    end: "19:30"
+  NEW YORK:
+    start: "16:30"
+    end: "00:30"
+allowed_sessions: ["LONDON", "NEW YORK"]

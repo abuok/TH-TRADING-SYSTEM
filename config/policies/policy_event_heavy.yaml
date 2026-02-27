@@ -1,0 +1,35 @@
+# policy_event_heavy.yaml
+# Policy optimized for news-dense periods
+policy_name: "Event Heavy"
+guardrails_version: "2.0.0"
+
+news_buffer_minutes: 90           # very wide buffer
+news_window_hard_block: true
+
+phx_min_stages_required: 4
+phx_sequence_hard_block: false
+
+displacement_min_candle_ratio: 0.67
+displacement_quality_hard_block: false
+
+min_setup_score: 75               # slight increase
+setup_score_hard_block: false
+
+max_consecutive_losses: 3
+max_daily_loss_pct: 2.0
+risk_state_hard_block: true
+
+duplicate_suppression_window_minutes: 60
+duplicate_suppression_hard_block: false
+
+score_deduction_fail: 20
+score_deduction_warn: 5
+
+session_windows:
+  LONDON:
+    start: "11:00"
+    end: "20:00"
+  NEW YORK:
+    start: "16:00"
+    end: "01:00"
+allowed_sessions: ["LONDON", "NEW YORK"]

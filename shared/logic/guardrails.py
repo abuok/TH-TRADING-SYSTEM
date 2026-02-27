@@ -417,6 +417,8 @@ class GuardrailsEngine:
         db: Optional[Session] = None,
         now_nairobi: Optional[datetime] = None,
         setup_packet_id: Optional[int] = None,
+        config_override: Optional[Dict[str, Any]] = None,
+        policy_hash: Optional[str] = None,
     ) -> GuardrailsResult:
         """
         Run all 7 guardrail rules against a setup.
@@ -427,41 +429,47 @@ class GuardrailsEngine:
             db: SQLAlchemy session (used for duplicate check)
             now_nairobi: override for deterministic testing (Africa/Nairobi timezone)
             setup_packet_id: FK to the Packet table row
+            config_override: Optional dynamic configuration dict (from PolicyRouter)
         """
         if now_nairobi is None:
             now_nairobi = get_nairobi_time()
         context_data = context_data or {}
         account_state = account_state or {"consecutive_losses": 0, "daily_loss": 0.0, "account_balance": 10000.0}
 
+        # Use effective config: override > self.cfg
+        effective_cfg = self.cfg.copy()
+        if config_override:
+            effective_cfg.update(config_override)
+
         checks: List[RuleCheck] = []
 
         # GR-S01 Session window
-        checks.append(_rule_session_window(now_nairobi, self.cfg, setup_data))
+        checks.append(_rule_session_window(now_nairobi, effective_cfg, setup_data))
 
         # GR-N01 News window
-        checks.append(_rule_news_window(now_nairobi, self.cfg, context_data))
+        checks.append(_rule_news_window(now_nairobi, effective_cfg, context_data))
 
         # GR-P01 PHX sequence completeness
-        checks.append(_rule_phx_sequence(setup_data, self.cfg))
+        checks.append(_rule_phx_sequence(setup_data, effective_cfg))
 
         # GR-D01 Displacement quality
-        checks.append(_rule_displacement_quality(setup_data, self.cfg))
+        checks.append(_rule_displacement_quality(setup_data, effective_cfg))
 
         # GR-SC01 Setup score
-        checks.append(_rule_setup_score(setup_data, self.cfg))
+        checks.append(_rule_setup_score(setup_data, effective_cfg))
 
         # GR-R01 Risk state
-        checks.append(_rule_risk_state(account_state, self.cfg, setup_data))
+        checks.append(_rule_risk_state(account_state, effective_cfg, setup_data))
 
         # GR-U01 Duplicate signal (requires DB)
         if db is not None:
-            checks.append(_rule_duplicate_signal(setup_data, self.cfg, db, now_nairobi))
+            checks.append(_rule_duplicate_signal(setup_data, effective_cfg, db, now_nairobi))
         else:
             checks.append(RuleCheck(
                 id="GR-U01", name="Duplicate Signal Suppression",
                 status="WARN",
                 details="DB not available for duplicate check — skipping.",
-                is_mandatory=False, deduction=self.cfg["score_deduction_warn"],
+                is_mandatory=False, deduction=effective_cfg["score_deduction_warn"],
             ))
 
         # ── Score computation ──────────────────────────────────────────
@@ -485,6 +493,8 @@ class GuardrailsEngine:
             discipline_score=score,
             hard_block=hard_block,
             primary_block_reason=primary_reason,
+            policy_name=effective_cfg.get("policy_name"),
+            policy_hash=policy_hash,
         )
         logger.info(
             f"Guardrails [{pair}]: score={score} hard_block={hard_block} "
@@ -502,6 +512,8 @@ class GuardrailsEngine:
             primary_block_reason=result.primary_block_reason,
             guardrails_version=result.guardrails_version,
             result_json=result.model_dump(mode="json"),
+            policy_name=result.policy_name,
+            policy_hash=result.policy_hash,
         )
         db.add(record)
         db.commit()

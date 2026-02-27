@@ -44,6 +44,9 @@ class GuardrailsResult(BaseModel):
     hard_block: bool = False
     primary_block_reason: Optional[str] = None
 
+    policy_name: Optional[str] = None
+    policy_hash: Optional[str] = None
+
     # Convenience aggregates
     @property
     def pass_count(self) -> int:
