@@ -20,8 +20,19 @@
         </div>
     </div>
 
-    <!-- Right Column: The Queue -->
+    <!-- Right Column: The Queue + Active Preps -->
     <div>
+        <div class="header-section" style="margin-top: 0; margin-bottom: 1rem;">
+            <h2>Execution Prep Layer</h2>
+            <p>Approved plans ready for manual execution.</p>
+        </div>
+        <div id="prep-container" style="margin-bottom: 2rem;">
+            <p>No active execution preps.</p>
+        </div>
+
+        <div class="header-section" style="margin-top: 0; margin-bottom: 1rem;">
+            <h2>Review Queue</h2>
+        </div>
         <div id="queue-container">
             <p>Loading queue...</p>
         </div>
@@ -175,6 +186,7 @@
             if (res.ok) {
                 document.getElementById(`card-${id}`).remove();
                 fetchStats();
+                fetchActivePreps(); // Show prep immediately
             } else {
                 alert("Failed to approve ticket");
             }
@@ -218,13 +230,109 @@
         }
     }
 
-    // Initial load
-    fetchStats();
-    fetchQueue();
-    // Auto-refresh queue every 20 seconds
+    async function fetchActivePreps() {
+        try {
+            const res = await fetch('/api/execution-preps/active');
+            const preps = await res.json();
+            const container = document.getElementById('prep-container');
+
+            if (preps.length === 0) {
+                container.innerHTML = `<div class="card"><p class="util-bdc6c3">No active execution preps.</p></div>`;
+                return;
+            }
+
+            let html = '';
+            preps.forEach(p => {
+                const checkHtml = p.preflight_checks.map(c => `
+                    <div class="util-bdc6c3" style="display:flex; justify-content:space-between; margin-bottom: 0.25rem;">
+                        <span>${c.name}</span>
+                        <span class="badge ${c.status === 'PASS' ? 'badge-success' : (c.status === 'WARN' ? 'badge-warning' : 'badge-danger')}">${c.status}</span>
+                    </div>
+                `).join('');
+
+                const overrideBtn = p.override_required ?
+                    `<button onclick="openOverrideModal('${p.ticket_id}')" class="badge badge-danger util-f584b9">Manual Override</button>` : '';
+
+                html += `
+                <div id="prep-${p.ticket_id}" class="card" style="border-left: 4px solid var(--accent-green); margin-bottom: 1rem;">
+                    <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                        <h3>EXE Prep: ${p.ticket_id}</h3>
+                        <span data-expiry="${p.expires_at}" class="badge badge-warning">Prep Expires...</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="dashboard-grid" style="grid-template-columns: 1fr 1.5fr; gap: 2rem;">
+                            <!-- Checks -->
+                            <div>
+                                <h4 style="margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-muted);">Preflight Checklist</h4>
+                                ${checkHtml}
+                                <div style="margin-top: 1rem;">
+                                    ${overrideBtn}
+                                </div>
+                            </div>
+                            <!-- Formats -->
+                            <div>
+                                <h4 style="margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-muted);">Execution Strings</h4>
+                                <div style="margin-bottom: 1rem;">
+                                    <div style="font-size: 0.75rem; color:var(--text-muted); margin-bottom: 0.2rem;">MT5 Format</div>
+                                    <div style="display:flex; gap: 0.5rem;">
+                                        <code style="background: rgba(0,0,0,0.3); padding: 0.4rem; border-radius: 4px; font-size: 0.85rem; flex-grow:1;">${p.platform_formats.mt5_text}</code>
+                                        <button onclick="copyToClipboard('${p.platform_formats.mt5_text}')" class="badge">Copy</button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.75rem; color:var(--text-muted); margin-bottom: 0.2rem;">cTrader Format</div>
+                                    <div style="display:flex; gap: 0.5rem;">
+                                        <code style="background: rgba(0,0,0,0.3); padding: 0.4rem; border-radius: 4px; font-size: 0.85rem; flex-grow:1;">${p.platform_formats.ctrader_text}</code>
+                                        <button onclick="copyToClipboard('${p.platform_formats.ctrader_text}')" class="badge">Copy</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+            });
+            container.innerHTML = html;
+        } catch (e) {
+            console.error("Prep Error:", e);
+        }
+    }
+
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            alert("Copied to clipboard");
+        });
+    }
+
+    let currentOverrideId = null;
+    function openOverrideModal(id) {
+        currentOverrideId = id;
+        document.getElementById('override-ticket-id').innerText = id;
+        document.getElementById('overrideModal').style.display = 'flex';
+    }
+
+    async function submitOverride() {
+        const reason = document.getElementById('override-reason').value;
+        if (!reason) return alert("Reason required");
+        try {
+            const res = await fetch(`/api/execution-prep/${currentOverrideId}/override?reason=${encodeURIComponent(reason)}`, { method: 'POST' });
+            if (res.ok) {
+                closeModal('overrideModal');
+                fetchActivePreps();
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    // Update global refresh
     setInterval(() => {
         fetchQueue();
+        fetchActivePreps();
         fetchStats();
     }, 20000);
+
+    // Initial load updates
+    fetchStats();
+    fetchQueue();
+    fetchActivePreps();
 </script>
 {% endblock %}

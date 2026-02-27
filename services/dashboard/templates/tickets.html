@@ -80,6 +80,59 @@
             </div>
         </div>
 
+        {% if ticket.status == 'APPROVED' %}
+        <div id="prep-panel-{{ ticket.ticket_id }}" class="util-f67a91"
+            style="border-left: 4px solid var(--accent-green); padding-left: 1rem; margin-bottom: 2rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3 class="sub-header" style="color: var(--accent-green);">Execution Prep Active</h3>
+                <span id="timer-{{ ticket.ticket_id }}" class="badge badge-warning">Loading...</span>
+            </div>
+            <div id="prep-content-{{ ticket.ticket_id }}">
+                <p class="util-bdc6c3">Loading preflight checks...</p>
+            </div>
+        </div>
+        <script>
+            (async function () {
+                try {
+                    const res = await fetch('/api/execution-prep/{{ ticket.ticket_id }}');
+                    if (res.ok) {
+                        const p = await res.json();
+                        const content = document.getElementById('prep-content-{{ ticket.ticket_id }}');
+                        const timer = document.getElementById('timer-{{ ticket.ticket_id }}');
+
+                        // Set timer expiry for countdown
+                        timer.setAttribute('data-expiry', p.expires_at);
+
+                        const checkHtml = p.preflight_checks.map(c => `
+                            <div class="util-bdc6c3" style="display:flex; justify-content:space-between; margin-bottom: 0.25rem; font-size: 0.85rem;">
+                                <span>${c.name}: ${c.details}</span>
+                                <span class="badge ${c.status === 'PASS' ? 'badge-success' : (c.status === 'WARN' ? 'badge-warning' : 'badge-danger')}">${c.status}</span>
+                            </div>
+                        `).join('');
+
+                        content.innerHTML = `
+                            <div class="dashboard-grid" style="grid-template-columns: 1fr 1.5fr; gap: 2rem; margin-top: 1rem;">
+                                <div>
+                                    <h4 style="margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-muted);">Preflight Checklist</h4>
+                                    ${checkHtml}
+                                </div>
+                                <div>
+                                    <h4 style="margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-muted);">Platform Specific Strings</h4>
+                                    <div style="font-size: 0.75rem; color:var(--text-muted); margin-bottom: 0.2rem;">MT5 Format</div>
+                                    <code style="background: rgba(0,0,0,0.3); padding: 0.4rem; border-radius: 4px; font-size: 0.85rem; display:block; margin-bottom:0.5rem;">${p.platform_formats.mt5_text}</code>
+                                    <div style="font-size: 0.75rem; color:var(--text-muted); margin-bottom: 0.2rem;">cTrader Format</div>
+                                    <code style="background: rgba(0,0,0,0.3); padding: 0.4rem; border-radius: 4px; font-size: 0.85rem; display:block;">${p.platform_formats.ctrader_text}</code>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        document.getElementById('prep-panel-{{ ticket.ticket_id }}').style.display = 'none';
+                    }
+                } catch (e) { console.error(e); }
+            })();
+        </script>
+        {% endif %}
+
         <div class="util-f67a91">
             <h3 class="sub-header">Platform Notes (Copy to Clipboard)</h3>
             <div class="util-0ba205">
@@ -106,11 +159,24 @@
 </div>
 
 <script>
-    function copyText(elementId, message) {
-        const text = document.getElementById(elementId).value;
-        navigator.clipboard.writeText(text).then(() => {
-            alert(message);
-        });
+    function startTimers() {
+        setInterval(() => {
+            const now = new Date();
+            document.querySelectorAll('[data-expiry]').forEach(el => {
+                const expiry = new Date(el.getAttribute('data-expiry'));
+                const diff = Math.floor((expiry - now) / 1000);
+
+                if (diff <= 0) {
+                    el.innerText = "EXPIRED";
+                    el.className = "badge badge-danger";
+                } else {
+                    const m = Math.floor(diff / 60);
+                    const s = diff % 60;
+                    el.innerText = `Exp: ${m}m ${s.toString().padStart(2, '0')}s`;
+                }
+            });
+        }, 1000);
     }
+    startTimers();
 </script>
 {% endblock %}
