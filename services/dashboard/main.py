@@ -14,6 +14,10 @@ import shared.database.session as db_session
 from shared.database.models import Packet, IncidentLog, KillSwitch, SessionBriefing, GuardrailsLog, PolicySelectionLog
 from services.dashboard.logic import get_service_health, get_dashboard_data, get_tickets, get_briefings, get_latest_briefing
 from shared.logic.sessions import get_nairobi_time
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
+import secrets
+
+security = HTTPBasic()
 
 app = FastAPI(title="Operator Dashboard")
 
@@ -27,8 +31,29 @@ if os.path.exists("artifacts"):
 if os.path.exists("services/dashboard/static"):
     app.mount("/static", StaticFiles(directory="services/dashboard/static"), name="static")
 
+def verify_auth(credentials: HTTPBasicCredentials = Depends(security)):
+    if not os.getenv("DASHBOARD_AUTH_ENABLED", "false").lower() == "true":
+        return True
+    
+    correct_username = os.getenv("DASHBOARD_USERNAME", "admin")
+    correct_password = os.getenv("DASHBOARD_PASSWORD")
+    
+    if not correct_password:
+        return True # Fallback if not configured effectively
+        
+    is_correct_username = secrets.compare_digest(credentials.username, correct_username)
+    is_correct_password = secrets.compare_digest(credentials.password, correct_password)
+    
+    if not (is_correct_username and is_correct_password):
+        raise HTTPException(
+            status_code=401,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    return True
+
 @app.get("/dashboard", response_class=HTMLResponse)
-async def dashboard_overview(request: Request, db: Session = Depends(db_session.get_db)):
+async def dashboard_overview(request: Request, auth: bool = Depends(verify_auth), db: Session = Depends(db_session.get_db)):
     health, response_times = await get_service_health()
     data = get_dashboard_data(db)
     

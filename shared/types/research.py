@@ -1,6 +1,8 @@
 from datetime import datetime
 from typing import Dict, List, Optional, Any
 from pydantic import BaseModel, Field
+import hashlib
+import json
 
 class SimulatedTrade(BaseModel):
     ticket_id: str
@@ -54,4 +56,16 @@ class ResearchRunResult(BaseModel):
     end_date: datetime
     timeframes: List[str]
     created_at: datetime = Field(default_factory=datetime.utcnow)
+    reproducibility_hash: str = ""
     variants: Dict[str, ResearchVariant] = Field(default_factory=dict)
+
+    def generate_hash(self, git_commit: str = "unknown"):
+        data = {
+            "pair": self.pair,
+            "start": self.start_date.isoformat(),
+            "end": self.end_date.isoformat(),
+            "git": git_commit,
+            "variants": {k: v.config.model_dump() for k, v in self.variants.items()}
+        }
+        raw = json.dumps(data, sort_keys=True).encode()
+        self.reproducibility_hash = hashlib.sha256(raw).hexdigest()[:12]

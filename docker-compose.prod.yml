@@ -1,0 +1,76 @@
+# docker-compose.prod.yml
+# PHX v2 Production Stack for VPS deployment
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: phx-db-prod
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-phx_prod_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME:-phx_trading_prod}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    networks:
+      - phx-internal
+
+  redis:
+    image: redis:7-alpine
+    container_name: phx-redis-prod
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    networks:
+      - phx-internal
+
+  orchestration:
+    build: .
+    container_name: phx-orchestration-prod
+    restart: always
+    command: uvicorn services.orchestration.main:app --host 0.0.0.0 --port 8003
+    env_file: .env.prod
+    depends_on:
+      - db
+      - redis
+    networks:
+      - phx-internal
+
+  dashboard:
+    build: .
+    container_name: phx-dashboard-prod
+    restart: always
+    command: uvicorn services.dashboard.main:app --host 0.0.0.0 --port 8005
+    env_file: .env.prod
+    ports:
+      - "80:8005" # Expose only dashboard to public
+    volumes:
+      - ./artifacts:/app/artifacts
+    depends_on:
+      - orchestration
+    networks:
+      - phx-internal
+
+  journal:
+    build: .
+    container_name: phx-journal-prod
+    restart: always
+    command: uvicorn services.journal.main:app --host 0.0.0.0 --port 8004
+    env_file: .env.prod
+    depends_on:
+      - db
+    networks:
+      - phx-internal
+
+networks:
+  phx-internal:
+    driver: bridge
+
+volumes:
+  postgres_data:

@@ -22,6 +22,9 @@ from shared.types.packets import TechnicalSetupPacket, RiskApprovalPacket
 from shared.types.trading import OrderTicketSchema
 from shared.types.guardrails import GuardrailsResult
 from shared.logic.policy_router import PolicyRouter
+from shared.logic.logging import setup_production_logging
+from shared.logic.metrics import metrics_registry
+from fastapi.responses import Response
 import httpx
 
 logging.basicConfig(level=logging.INFO)
@@ -50,7 +53,10 @@ def get_db():
 # ──────────────────────────────────────────────
 
 @app.on_event("startup")
-async def startup():
+async def startup_event():
+    if os.getenv("ENV") == "prod":
+        setup_production_logging()
+    logger.info("Orchestration Service starting up...")
     db_session.init_db()
     asyncio.create_task(fundamentals_scheduler())
     asyncio.create_task(briefing_scheduler())
@@ -174,6 +180,25 @@ async def generate_briefing_now(
     return {"briefing_id": record.briefing_id, "html_path": record.html_path}
 
 
+from shared.logic.alerting import check_incident_alerts
+from shared.database.models import Incident
+from shared.types.incident import IncidentSchema
+
+@app.post("/incidents/log")
+async def log_incident(incident_data: IncidentSchema, db: Session = Depends(get_db)):
+    """Logs a new incident and triggers alerts."""
+    incident = Incident(**incident_data.model_dump())
+    db.add(incident)
+    db.commit()
+    db.refresh(incident) # Refresh to get the generated ID and created_at
+    
+    # Metrics & Alerting
+    metrics_registry.increment("incidents_total", incident.severity)
+    check_incident_alerts(incident_data)
+    
+    return {"status": "success", "id": incident.id}
+
+
 @app.post("/fundamentals/generate")
 async def generate_fundamentals_now(db: Session = Depends(get_db)):
     """Manually trigger a fundamentals evaluation."""
@@ -288,6 +313,7 @@ async def generate_ticket(pair: str, db: Session = Depends(get_db)):
         pair_fundamentals=pair_fund_data,
         now_nairobi=get_nairobi_time()
     )
+    metrics_registry.increment("policy_switches_total")
 
     from shared.database.models import PolicySelectionLog
     db.add(PolicySelectionLog(
@@ -314,6 +340,7 @@ async def generate_ticket(pair: str, db: Session = Depends(get_db)):
     risk_packet = RiskApprovalPacket(**risk_db.data)
 
     ticket = generate_order_ticket(setup_packet, risk_packet, db, guardrails=guardrails_result)
+    metrics_registry.increment("tickets_generated_total")
     ticket.setup_packet_id = setup_db.id
     ticket.risk_packet_id = risk_db.id
     db.commit()

@@ -226,4 +226,5 @@ def run_replay(
             trades=variant_trades
         )
         
+    result.generate_hash(git_commit=os.getenv("GIT_COMMIT", "HEAD"))
     return result
