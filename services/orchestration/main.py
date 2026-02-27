@@ -22,6 +22,9 @@ from shared.types.packets import TechnicalSetupPacket, RiskApprovalPacket
 from shared.types.trading import OrderTicketSchema
 from shared.types.guardrails import GuardrailsResult
 from shared.logic.policy_router import PolicyRouter
+from services.orchestration.logic.ops_engine import OpsEngine
+from services.orchestration.logic.review_engine import ReviewEngine
+from shared.database.models import ActionItem, OpsReportLog
 from shared.logic.logging import setup_production_logging
 from shared.logic.metrics import metrics_registry
 from fastapi.responses import Response
@@ -60,6 +63,7 @@ async def startup_event():
     db_session.init_db()
     asyncio.create_task(fundamentals_scheduler())
     asyncio.create_task(briefing_scheduler())
+    asyncio.create_task(ops_scheduler())
 
 async def fundamentals_scheduler(interval_minutes: int = 30):
     """
@@ -260,6 +264,46 @@ async def get_briefing(briefing_id: str, db: Session = Depends(get_db)) -> Dict[
         "created_at": record.created_at.isoformat(),
     }
 
+
+async def ops_scheduler():
+    """Background task to generate daily/weekly reports."""
+    while True:
+        try:
+            now = get_nairobi_time()
+            db = next(db_session.get_db())
+            
+            # Daily at 06:30
+            if now.hour == 6 and now.minute == 30:
+                engine = OpsEngine(db)
+                report, path = engine.generate_daily_report()
+                log = OpsReportLog(
+                    report_type="daily",
+                    report_data=report.model_dump(),
+                    html_path=path,
+                    created_at=now
+                )
+                db.add(log)
+                db.commit()
+                logger.info(f"Daily Ops Report generated: {report.report_id}")
+                
+            # Weekly on Sunday at 18:00
+            if now.weekday() == 6 and now.hour == 18 and now.minute == 0:
+                engine = ReviewEngine(db)
+                report, path = engine.generate_weekly_report()
+                log = OpsReportLog(
+                    report_type="weekly",
+                    report_data=report.model_dump(),
+                    html_path=path,
+                    created_at=now
+                )
+                db.add(log)
+                db.commit()
+                logger.info(f"Weekly Review Report generated: {report.report_id}")
+                
+        except Exception as e:
+            logger.error(f"Error in ops_scheduler: {e}")
+        
+        await asyncio.sleep(60) # check every minute
 
 # ──────────────────────────────────────────────
 # Ticket endpoints

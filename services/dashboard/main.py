@@ -11,7 +11,7 @@ from typing import List, Optional
 sys.path.append(os.getcwd())
 
 import shared.database.session as db_session
-from shared.database.models import Packet, IncidentLog, KillSwitch, SessionBriefing, GuardrailsLog, PolicySelectionLog
+from shared.database.models import Packet, IncidentLog, KillSwitch, SessionBriefing, GuardrailsLog, PolicySelectionLog, ActionItem, OpsReportLog
 from services.dashboard.logic import get_service_health, get_dashboard_data, get_tickets, get_briefings, get_latest_briefing
 from shared.logic.sessions import get_nairobi_time
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
@@ -431,7 +431,7 @@ async def dashboard_hindsight(request: Request, date_str: Optional[str] = None, 
     })
 
 @app.get("/dashboard/policies", response_class=HTMLResponse)
-async def dashboard_policies(request: Request, db: Session = Depends(db_session.get_db)):
+async def dashboard_policies(request: Request, auth: bool = Depends(verify_auth), db: Session = Depends(db_session.get_db)):
     from sqlalchemy import func
     # Latest policy per pair
     subq = db.query(
@@ -457,6 +457,34 @@ async def dashboard_policies(request: Request, db: Session = Depends(db_session.
         "active_policies": active_policies,
         "history": history
     })
+
+@app.get("/dashboard/ops/daily", response_class=HTMLResponse)
+async def dashboard_daily_ops(request: Request, auth: bool = Depends(verify_auth), db: Session = Depends(db_session.get_db)):
+    latest = db.query(OpsReportLog).filter(OpsReportLog.report_type == "daily").order_by(OpsReportLog.created_at.desc()).first()
+    if not latest:
+        raise HTTPException(status_code=404, detail="No daily report found")
+    return templates.TemplateResponse("ops_daily_template.html", {"request": request, "report": latest.report_data, "active_page": "ops"})
+
+@app.get("/dashboard/ops/weekly", response_class=HTMLResponse)
+async def dashboard_weekly_review(request: Request, auth: bool = Depends(verify_auth), db: Session = Depends(db_session.get_db)):
+    latest = db.query(OpsReportLog).filter(OpsReportLog.report_type == "weekly").order_by(OpsReportLog.created_at.desc()).first()
+    if not latest:
+        raise HTTPException(status_code=404, detail="No weekly report found")
+    return templates.TemplateResponse("ops_weekly_template.html", {"request": request, "report": latest.report_data, "active_page": "ops"})
+
+@app.get("/dashboard/action-items", response_class=HTMLResponse)
+async def dashboard_action_items(request: Request, auth: bool = Depends(verify_auth), db: Session = Depends(db_session.get_db)):
+    items = db.query(ActionItem).order_by(ActionItem.created_at.desc()).all()
+    return templates.TemplateResponse("action_items.html", {"request": request, "items": items, "active_page": "actions"})
+
+@app.post("/api/action-items/{id}/done")
+async def mark_action_item_done(id: int, auth: bool = Depends(verify_auth), db: Session = Depends(db_session.get_db)):
+    item = db.query(ActionItem).get(id)
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    item.status = "DONE"
+    db.commit()
+    return {"status": "success"}
 
 if __name__ == "__main__":
     import uvicorn
