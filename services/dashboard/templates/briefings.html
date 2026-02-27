@@ -22,10 +22,9 @@
 {% else %}
 <div class="grid util-6b19d8">
     {% for b in briefings %}
-    {% set session_color = {"LONDON": "#10b981", "NEW YORK": "#f59e0b", "ASIA": "#6366f1"}.get(b.session_label,
-    "#64748b") %}
-    <div 
-        style="border-left:4px solid {{ session_color }};display:flex;justify-content:space-between;align-items:center;padding:1.2rem 1.5rem;" class="card animate-fade">
+    {% set session_class = {"LONDON": "session-london", "NEW YORK": "session-new-york", "ASIA":
+    "session-asia"}.get(b.session_label, "session-default") %}
+    <div class="card animate-fade {{ session_class }} flex-between-center padding-briefing">
         <div>
             <div class="util-127af0">
                 <span class="util-fbd352">{{ b.session_label }}</span>

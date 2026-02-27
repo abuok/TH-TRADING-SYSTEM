@@ -23,8 +23,7 @@
     </div>
     {% else %}
     {% for ticket in tickets %}
-    <div class="card animate-fade border-left-{{ 'green' if ticket.status != 'BLOCKED' else 'red' }}"
-        style="margin-bottom: 2rem;">
+    <div class="card animate-fade border-left-{{ 'green' if ticket.status != 'BLOCKED' else 'red' }} mb-2rem">
         <div class="util-f9eb53">
             <div>
                 <span class="badge {{ 'badge-success' if ticket.status != 'BLOCKED' else 'badge-danger' }} util-ac79cc">
@@ -40,7 +39,7 @@
                 {% elif ticket.hindsight_outcome_label == 'BE' %}
                 {% set hs_class = 'bg-warning text-warning border-warning' %}
                 {% endif %}
-                <span class="badge {{ hs_class }}" style="margin-bottom: 0.5rem; border: 1px solid currentColor;">
+                <span class="badge {{ hs_class }} mb-05rem border-current">
                     HINDSIGHT: {{ ticket.hindsight_outcome_label }}
                     {% if ticket.hindsight_realized_r %}({{ "{:+.2f}".format(ticket.hindsight_realized_r) }}R){% endif
                     %}
