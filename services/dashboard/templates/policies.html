@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="header-section">
+    <div class="header-title">
+        <h1>Adaptive Policy Router</h1>
+        <p>Regime-based guardrails adaptation for current market conditions.</p>
+    </div>
+</div>
+
+<div class="grid">
+    <!-- Active Policies per Pair -->
+    {% for policy in active_policies %}
+    <div class="card">
+        <div class="card-header">
+            <span class="metric-label">{{ policy.pair }}</span>
+            <span class="badge badge-info">{{ policy.policy_name }}</span>
+        </div>
+        <div class="metric-value util-3f60e0">{{ policy.policy_hash }}</div>
+
+        <div class="sub-header">Signals</div>
+        <div class="util-d3297f">
+            {% for key, val in policy.regime_signals.items() %}
+            <div class="util-acb67b" style="font-size: 0.85rem;">
+                <strong>{{ key | replace('_', ' ') | title }}:</strong> {{ val }}
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="sub-header">Reasons</div>
+        <ul class="list-unstyled">
+            {% for reason in policy.reasons %}
+            <li class="util-e7992d" style="font-size: 0.85rem; padding: 2px 0;">• {{ reason }}</li>
+            {% endfor %}
+        </ul>
+
+        <div class="clock-label util-f8a732" style="margin-top: 10px;">
+            Selected: {{ policy.created_at.strftime('%H:%M:%S') }} EAT
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Policy Switch History -->
+<div class="card" style="margin-top: 20px;">
+    <h2>Policy Switch Timeline (Last 30)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Time (EAT)</th>
+                <th>Pair</th>
+                <th>Selection</th>
+                <th>Regime Signals</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in history %}
+            <tr>
+                <td class="util-e7992d">{{ entry.created_at.strftime('%H:%M:%S') }}</td>
+                <td><strong>{{ entry.pair }}</strong></td>
+                <td>
+                    <span class="badge badge-info">{{ entry.policy_name }}</span>
+                    <span class="util-acb67b" style="font-size: 0.8rem;">#{{ entry.policy_hash }}</span>
+                </td>
+                <td>
+                    <div class="util-acb67b" style="font-size: 0.8rem;">
+                        {{ entry.reasons | join(' | ') }}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

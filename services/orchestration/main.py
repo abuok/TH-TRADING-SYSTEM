@@ -286,12 +286,15 @@ async def generate_ticket(pair: str, db: Session = Depends(get_db)):
         movers_data=movers_data,
         context_data=context_data,
         pair_fundamentals=pair_fund_data,
-```
+        now_nairobi=get_nairobi_time()
+    )
+
     from shared.database.models import PolicySelectionLog
     db.add(PolicySelectionLog(
-        primary_block_reason=policy_decision.primary_block_reason,
+        pair=pair,
         policy_name=policy_decision.policy_name,
         policy_hash=policy_decision.policy_hash,
+        reasons=policy_decision.reasons,
         regime_signals=policy_decision.regime_signals
     ))
 
@@ -359,12 +362,33 @@ async def evaluate_guardrails(
     ).order_by(Packet.created_at.desc()).first()
     context_data = ctx_db.data if ctx_db else {}
 
+    # Policy Selection
+    movers_db = db.query(Packet).filter(Packet.packet_type == "MarketMoversPacket").order_by(Packet.created_at.desc()).first()
+    pair_fund_db = db.query(Packet).filter(
+        and_(
+            Packet.packet_type == "PairFundamentalsPacket",
+            Packet.data["asset_pair"].as_string() == pair,
+        )
+    ).order_by(Packet.created_at.desc()).first()
+
+    movers_data = movers_db.data if movers_db else {}
+    pair_fund_data = pair_fund_db.data if pair_fund_db else {}
+
+    policy_decision = _policy_router.select_policy(
+        movers_data=movers_data,
+        context_data=context_data,
+        pair_fundamentals=pair_fund_data,
+        now_nairobi=get_nairobi_time()
+    )
+
     result = _guardrails_engine.evaluate(
         setup_data=setup_db.data,
         context_data=context_data,
         db=db,
         now_nairobi=get_nairobi_time(),
         setup_packet_id=setup_db.id,
+        config_override=policy_decision.policy_config,
+        policy_hash=policy_decision.policy_hash
     )
     _guardrails_engine.persist(result, db)
     return result.model_dump(mode="json")

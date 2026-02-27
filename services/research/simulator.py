@@ -7,8 +7,8 @@ from shared.types.packets import Candle, TechnicalSetupPacket, RiskApprovalPacke
 from shared.types.trading import OrderTicketSchema
 from shared.types.research import SimulatedTrade, CounterfactualConfig, ResearchRunResult, ResearchVariant
 from shared.logic.fundamentals_engine import evaluate_fundamentals
-from shared.logic.guardrails import GuardrailsEngine, GuardrailsResult
 from shared.logic.guardrails import GuardrailsEngine, GuardrailsResult, load_config
+from shared.logic.policy_router import PolicyRouter
 
 from services.research.outcome import simulate_outcome
 from services.research.analytics import calculate_metrics
@@ -145,10 +145,35 @@ def run_replay(
             bias_score = bias_pkt.bias_score if bias_pkt else 0.0
             
             # 3. Guardrails
-            # Mock historical tickets for discipline tracking (empty for now)
             gr_engine = GuardrailsEngine()
-            gr_engine.cfg = gc # override
-            gr_res = gr_engine.evaluate(setup.model_dump(), None, None, None, current_time, 1)
+            policy_config = gc
+            policy_hash = None
+            
+            if config_override.use_router:
+                from services.orchestration.main import _policy_router
+                # In simulator, we'll instantiate if needed or use a mock
+                # To avoid circular imports if _policy_router is in orchestration main
+                from shared.logic.policy_router import PolicyRouter
+                router = PolicyRouter()
+                decision = router.select_policy(
+                    movers_data=movers,
+                    context_data=ctx,
+                    pair_fundamentals=bias_pkt.model_dump() if bias_pkt else {},
+                    now_nairobi=current_time
+                )
+                policy_config = decision.policy_config
+                policy_hash = decision.policy_hash
+            
+            gr_res = gr_engine.evaluate(
+                setup.model_dump(), 
+                ctx, 
+                None, 
+                None, 
+                current_time, 
+                1,
+                config_override=policy_config if config_override.use_router else None,
+                policy_hash=policy_hash
+            )
             
             # 4. Mock Risk & Ticket
             direction = "LONG" if "BULL" in setup.strategy_name else "SHORT"

@@ -28,6 +28,7 @@ class CounterfactualConfig(BaseModel):
     min_setup_score: Optional[float] = None
     hard_block_displacement: Optional[bool] = None
     duplicate_suppression_minutes: Optional[int] = None
+    use_router: bool = False
 
 class ResearchMetrics(BaseModel):
     total_trades: int = 0

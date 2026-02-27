@@ -11,7 +11,7 @@ from typing import List, Optional
 sys.path.append(os.getcwd())
 
 import shared.database.session as db_session
-from shared.database.models import Packet, IncidentLog, KillSwitch, SessionBriefing, GuardrailsLog
+from shared.database.models import Packet, IncidentLog, KillSwitch, SessionBriefing, GuardrailsLog, PolicySelectionLog
 from services.dashboard.logic import get_service_health, get_dashboard_data, get_tickets, get_briefings, get_latest_briefing
 from shared.logic.sessions import get_nairobi_time
 
@@ -385,6 +385,34 @@ async def dashboard_hindsight(request: Request, date_str: Optional[str] = None, 
         "date_str": date_val,
         "summary": summary,
         "tickets": tickets
+    })
+
+@app.get("/dashboard/policies", response_class=HTMLResponse)
+async def dashboard_policies(request: Request, db: Session = Depends(db_session.get_db)):
+    from sqlalchemy import func
+    # Latest policy per pair
+    subq = db.query(
+        PolicySelectionLog.pair,
+        func.max(PolicySelectionLog.created_at).label("max_ts")
+    ).group_by(PolicySelectionLog.pair).subquery()
+    
+    active_policies = db.query(PolicySelectionLog).join(
+        subq, 
+        and_(
+            PolicySelectionLog.pair == subq.c.pair,
+            PolicySelectionLog.created_at == subq.c.max_ts
+        )
+    ).all()
+
+    history = db.query(PolicySelectionLog).order_by(
+        PolicySelectionLog.created_at.desc()
+    ).limit(30).all()
+
+    return templates.TemplateResponse("policies.html", {
+        "request": request,
+        "active_page": "policies",
+        "active_policies": active_policies,
+        "history": history
     })
 
 if __name__ == "__main__":
