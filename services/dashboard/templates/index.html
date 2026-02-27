@@ -18,7 +18,7 @@
     <div class="card">
         <div class="card-header">
             <span class="metric-label">{{ service }}</span>
-            <span class="status-dot status-{{ 'healthy' if status == else 'unhealthy' }}"></span>
+            <span class="status-dot status-{{ 'healthy' if status == 'OK' else 'unhealthy' }}"></span>
         </div>
         <div class="metric-value">{{ status | upper }}</div>
         <div class="clock-label util-f8a732">

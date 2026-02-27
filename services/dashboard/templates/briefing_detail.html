@@ -24,8 +24,8 @@
 {% if html_content %}
 <div class="card util-a1c1c4">
     {# Embed the pre-rendered briefing HTML inside an iframe for clean print isolation #}
-    <iframe id="briefing-frame" src="/dashboard/briefings/{{ record.briefing_id }}/print"
-         title="Briefing Pack" class="util-bc4f53"></iframe>
+    <iframe id="briefing-frame" src="/dashboard/briefings/{{ record.briefing_id }}/print" title="Briefing Pack"
+        class="util-bc4f53"></iframe>
 </div>
 {% else %}
 {# Fallback: render key metadata from DB JSON #}
@@ -70,7 +70,9 @@
     <h2 class="sub-header">Operator Actions</h2>
     {% for action in d.get("operator_actions", []) %}
     <div class="util-146b08">
-        <span class="badge {% if action.priority == 'HIGH' %}badge-danger elif 'MEDIUM' %}badge-warning else %}badge-info{% endif %}">{{ action.priority }}</span>
+        <span
+            class="badge badge-{{ 'danger' if action.priority == 'HIGH' else ('warning' if action.priority == 'MEDIUM' else 'info') }}">{{
+            action.priority }}</span>
         <strong>{{ action.category }}</strong> — {{ action.description }}
     </div>
     {% endfor %}

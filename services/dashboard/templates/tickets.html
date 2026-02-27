@@ -8,7 +8,8 @@
     </div>
     <div class="header-clock">
         <form action="/dashboard/tickets" method="get" class="util-5fa1c6">
-            <input type="text" name="pair" placeholder="Filter by Pair (e.g. XAUUSD)" value="{{ selected_pair or '' }}" class="util-922919">
+            <input type="text" name="pair" placeholder="Filter by Pair (e.g. XAUUSD)" value="{{ selected_pair or '' }}"
+                class="util-922919">
             <button type="submit" class="btn btn-primary util-0cf5a0">Filter</button>
         </form>
     </div>
@@ -22,8 +23,8 @@
     </div>
     {% else %}
     {% for ticket in tickets %}
-    <div 
-        style="margin-bottom: 2rem; border-left: 4px solid {{ 'var(--accent-green)' if ticket.status != 'BLOCKED' else 'var(--accent-red)' }};" class="card animate-fade">
+    <div class="card animate-fade border-left-{{ 'green' if ticket.status != 'BLOCKED' else 'red' }}"
+        style="margin-bottom: 2rem;">
         <div class="util-f9eb53">
             <div>
                 <span class="badge {{ 'badge-success' if ticket.status != 'BLOCKED' else 'badge-danger' }} util-ac79cc">
@@ -31,17 +32,15 @@
                 </span>
 
                 {% if ticket.hindsight_status == 'DONE' and ticket.hindsight_outcome_label %}
-                {% set hs_color = '#e2e8f0' %}
-                {% set hs_text = '#1e293b' %}
+                {% set hs_class = 'bg-muted' %}
                 {% if ticket.hindsight_outcome_label == 'WIN' %}
-                {% set hs_color = '#dcfce7' %}{% set hs_text = '#166534' %}
+                {% set hs_class = 'bg-success text-success border-success' %}
                 {% elif ticket.hindsight_outcome_label == 'LOSS' %}
-                {% set hs_color = '#fee2e2' %}{% set hs_text = '#991b1b' %}
+                {% set hs_class = 'bg-danger text-danger border-danger' %}
                 {% elif ticket.hindsight_outcome_label == 'BE' %}
-                {% set hs_color = '#fef3c7' %}{% set hs_text = '#92400e' %}
+                {% set hs_class = 'bg-warning text-warning border-warning' %}
                 {% endif %}
-                <span 
-                    style="margin-bottom: 0.5rem; background: {{ hs_color }}; color: {{ hs_text }}; border: 1px solid currentColor;" class="badge">
+                <span class="badge {{ hs_class }}" style="margin-bottom: 0.5rem; border: 1px solid currentColor;">
                     HINDSIGHT: {{ ticket.hindsight_outcome_label }}
                     {% if ticket.hindsight_realized_r %}({{ "{:+.2f}".format(ticket.hindsight_realized_r) }}R){% endif
                     %}
@@ -85,11 +84,11 @@
         <div class="util-f67a91">
             <h3 class="sub-header">Platform Notes (Copy to Clipboard)</h3>
             <div class="util-0ba205">
-                <button 
-                    onclick="copyText('mt5-{{ ticket.ticket_id }}', 'MT5 Plan Copied!')" class="btn btn-secondary">Copy MT5</button>
-                <button 
-                    onclick="copyText('ctrader-{{ ticket.ticket_id }}', 'cTrader Plan Copied!')" class="btn btn-secondary">Copy cTrader</button>
-                <button  onclick="copyText('json-{{ ticket.ticket_id }}', 'JSON Copied!')" class="btn btn-secondary">Copy
+                <button onclick="copyText('mt5-{{ ticket.ticket_id }}', 'MT5 Plan Copied!')"
+                    class="btn btn-secondary">Copy MT5</button>
+                <button onclick="copyText('ctrader-{{ ticket.ticket_id }}', 'cTrader Plan Copied!')"
+                    class="btn btn-secondary">Copy cTrader</button>
+                <button onclick="copyText('json-{{ ticket.ticket_id }}', 'JSON Copied!')" class="btn btn-secondary">Copy
                     JSON</button>
             </div>
 

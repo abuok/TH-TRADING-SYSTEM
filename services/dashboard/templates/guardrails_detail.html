@@ -18,10 +18,11 @@
 {% set score = result.discipline_score %}
 {% set hard = result.hard_block %}
 {% set score_color = "#ef4444" if score < 60 else ("#f59e0b" if score < 80 else "#10b981" ) %} <!-- Score Banner -->
-    <div 
-        style="border-left:4px solid {{ score_color }};display:flex;justify-content:space-between;align-items:center;padding:1.5rem;" class="card animate-fade">
+    <div class="card animate-fade border-left-{{ 'red' if score < 60 else ('warning' if score < 80 else 'green') }}"
+        style="display:flex;justify-content:space-between;align-items:center;padding:1.5rem;">
         <div>
-            <div style="font-size:2.5rem;font-weight:800;color:{{ score_color }};">{{ score }}<span class="util-6788df">/100</span></div>
+            <div class="text-{{ 'red' if score < 60 else ('warning' if score < 80 else 'green') }}"
+                style="font-size:2.5rem;font-weight:800;">{{ score }}<span class="util-6788df">/100</span></div>
             <p class="util-366b05">Discipline Score</p>
         </div>
         <div class="util-ba9b3f">
@@ -72,15 +73,15 @@
             </thead>
             <tbody>
                 {% for check in result.rule_checks %}
-                {% set s_color = "#10b981" if check.status == "PASS" else ("#f59e0b" if check.status == "WARN" else
-                "#ef4444") %}
+                {% set s_color = "success" if check.status == "PASS" else ("warning" if check.status == "WARN" else
+                "danger") %}
                 <tr class="util-788560">
                     <td class="util-384bdf">{{ check.id }}</td>
                     <td class="util-4009b5">{{ check.name }}</td>
                     <td class="util-ee8d52">
-                        <span  style="background:{{ s_color }};" class="badge">{{ check.status }}</span>
+                        <span class="badge badge-{{ s_color }}">{{ check.status }}</span>
                     </td>
-                    <td style="padding:0.75rem 0.5rem;text-align:right;color:{{ s_color }};">
+                    <td class="text-{{ s_color }}" style="padding:0.75rem 0.5rem;text-align:right;">
                         {% if check.deduction > 0 %}−{{ check.deduction }}{% else %}&mdash;{% endif %}
                     </td>
                     <td class="util-198019">{{

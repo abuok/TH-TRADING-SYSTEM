@@ -78,9 +78,9 @@
         </div>
         <div class="util-d63a21">
             {% set pct = ((latest.data.bias_score + 5) / 10) * 100 %}
-            {% set bar_col = 'var(--accent-green)' if latest.data.bias_score > 0 else ('var(--accent-red)' if
-            latest.data.bias_score < 0 else 'var(--text-muted)' ) %} <div
-                style="position: absolute; left: 0; top: 0; height: 100%; width: {{ pct }}%; background: {{ bar_col }};">
+            {% set bar_col_class = 'bg-success' if latest.data.bias_score > 0 else ('bg-danger' if
+            latest.data.bias_score < 0 else 'bg-muted' ) %} <div class="{{ bar_col_class }}"
+                style="position: absolute; left: 0; top: 0; height: 100%; width: {{ pct }}%;">
         </div>
         <!-- Zero line marker -->
         <div class="util-a311f0"></div>
@@ -89,15 +89,14 @@
 
 <div class="sub-header">Key Drivers</div>
 <ul class="list-unstyled util-d3297f">
-    {% for drv in latest.data.get('drivers', []) %}
-    <li 
-        style="border-left-color: {% if drv.impact > 0 %}var(--accent-green){% elif drv.impact < 0 %}var(--accent-red){% else %}var(--text-muted){% endif %};" class="event-item">
+    {%- for drv in latest.data.get('drivers', []) -%}
+    <li class="event-item border-left-{{ 'green' if drv.impact > 0 else ('red' if drv.impact < 0 else 'muted') }}">
         <div class="event-title">{{ drv.text }}</div>
         <div class="event-meta">Impact: {{ drv.impact }}</div>
     </li>
-    {% else %}
+    {%- else -%}
     <li class="util-d77719">No explicit drivers detected.</li>
-    {% endfor %}
+    {%- endfor -%}
 </ul>
 
 <div class="safety-window">
