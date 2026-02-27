@@ -315,11 +315,14 @@ async def dashboard_queue(request: Request):
         "request": request,
         "active_page": "queue",
     })
-
 # --- Manual Review Queue Endpoints ---
 from pydantic import BaseModel
 from shared.types.trading import SkipReasonEnum, TicketOutcomeEnum
 from services.tickets.queue_logic import approve_ticket, skip_ticket, close_ticket, auto_expire_tickets
+from shared.types.execution_prep import ExecutionPrepSchema
+from services.orchestration.logic.execution_prep_generator import ExecutionPrepGenerator
+from shared.database.models import ExecutionPrepLog
+from shared.logic.sessions import get_nairobi_time
 
 class SkipPayload(BaseModel):
     reason: SkipReasonEnum
@@ -368,9 +371,57 @@ async def get_queue_stats(date_str: Optional[str] = None, db: Session = Depends(
 async def api_approve_ticket(ticket_id: str, db: Session = Depends(db_session.get_db)):
     try:
         t = approve_ticket(db, ticket_id)
-        return {"status": "success", "ticket": t.ticket_id}
+        
+        # Generate Execution Prep
+        generator = ExecutionPrepGenerator(db)
+        # Mocking current price/spread for now (in real system these would come from a price feed)
+        prep = generator.generate(t, current_price=t.entry_price, current_spread=1.2)
+        
+        log = ExecutionPrepLog(
+            prep_id=prep.prep_id,
+            ticket_id=t.ticket_id,
+            expires_at=prep.expires_at,
+            data=prep.model_dump(mode="json"),
+            status="ACTIVE"
+        )
+        db.add(log)
+        db.commit()
+        
+        return {"status": "success", "ticket": t.ticket_id, "prep_id": prep.prep_id}
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/api/execution-prep/{ticket_id}", response_model=ExecutionPrepSchema)
+async def get_execution_prep(ticket_id: str, db: Session = Depends(db_session.get_db)):
+    prep_log = db.query(ExecutionPrepLog).filter(ExecutionPrepLog.ticket_id == ticket_id).order_by(ExecutionPrepLog.created_at.desc()).first()
+    if not prep_log:
+        raise HTTPException(status_code=404, detail="Execution prep not found")
+    
+    prep_data = ExecutionPrepSchema(**prep_log.data)
+    # Update status if expired
+    if get_nairobi_time() > prep_data.expires_at and prep_log.status == "ACTIVE":
+        prep_log.status = "EXPIRED"
+        db.commit()
+        prep_data.status = "EXPIRED"
+    else:
+        prep_data.status = prep_log.status
+        
+    return prep_data
+
+
+@app.post("/api/execution-prep/{ticket_id}/override")
+async def override_execution_prep(ticket_id: str, reason: str, db: Session = Depends(db_session.get_db)):
+    prep_log = db.query(ExecutionPrepLog).filter(ExecutionPrepLog.ticket_id == ticket_id).order_by(ExecutionPrepLog.created_at.desc()).first()
+    if not prep_log:
+        raise HTTPException(status_code=404, detail="Execution prep not found")
+    
+    prep_log.status = "OVERRIDDEN"
+    prep_log.override_reason = reason
+    db.commit()
+    return {"status": "success"}
 
 @app.post("/api/tickets/{ticket_id}/skip")
 async def api_skip_ticket(ticket_id: str, payload: SkipPayload, db: Session = Depends(db_session.get_db)):
