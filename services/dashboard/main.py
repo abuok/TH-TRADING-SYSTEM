@@ -31,18 +31,36 @@ if os.path.exists("artifacts"):
 if os.path.exists("services/dashboard/static"):
     app.mount("/static", StaticFiles(directory="services/dashboard/static"), name="static")
 
-def verify_auth(credentials: HTTPBasicCredentials = Depends(security)):
+def verify_auth(request: Request):
     if not os.getenv("DASHBOARD_AUTH_ENABLED", "false").lower() == "true":
         return True
     
+    # Manually get credentials to avoid Mandatory Basic Auth popup when disabled
+    auth_header = request.headers.get("Authorization")
+    if not auth_header:
+        raise HTTPException(
+            status_code=401,
+            detail="Authentication required",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    
+    import base64
+    try:
+        scheme, credentials = auth_header.split()
+        if scheme.lower() != 'basic': raise ValueError()
+        decoded = base64.b64decode(credentials).decode("ascii")
+        username, _, password = decoded.partition(":")
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid auth header")
+
     correct_username = os.getenv("DASHBOARD_USERNAME", "admin")
     correct_password = os.getenv("DASHBOARD_PASSWORD")
     
     if not correct_password:
-        return True # Fallback if not configured effectively
+        return True 
         
-    is_correct_username = secrets.compare_digest(credentials.username, correct_username)
-    is_correct_password = secrets.compare_digest(credentials.password, correct_password)
+    is_correct_username = secrets.compare_digest(username, correct_username)
+    is_correct_password = secrets.compare_digest(password, correct_password)
     
     if not (is_correct_username and is_correct_password):
         raise HTTPException(
