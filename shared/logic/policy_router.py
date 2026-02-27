@@ -49,9 +49,9 @@ class PolicyRouter:
 
     def select_policy(
         self,
-        movers_data: Dict[str, Any],
-        context_data: Dict[str, Any],
-        pair_fundamentals: Dict[str, Any],
+        movers_data: Any,
+        context_data: Any,
+        pair_fundamentals: Any,
         now_nairobi: datetime
     ) -> PolicyDecision:
         """
@@ -61,12 +61,21 @@ class PolicyRouter:
         reasons = []
         signals = {}
         
-        # 1. Extract Signals
-        sentiment_flags = movers_data.get("sentiment_flags", [])
-        events = context_data.get("high_impact_events", [])
+        # 1. Extract Signals (Handle Dict or Pydantic Model)
+        def _get(obj, key, default=None):
+            if hasattr(obj, "dict"): # Pydantic v1
+                return getattr(obj, key, default)
+            if hasattr(obj, "model_dump"): # Pydantic v2
+                return getattr(obj, key, default)
+            if isinstance(obj, dict):
+                return obj.get(key, default)
+            return getattr(obj, key, default)
+
+        sentiment_flags = _get(movers_data, "sentiment_flags", [])
+        events = _get(context_data, "high_impact_events", [])
         session = get_session_label(now_nairobi)
-        bias_score = pair_fundamentals.get("bias_score", 0.0)
-        confidence = pair_fundamentals.get("confidence_label", "LOW")
+        bias_score = _get(pair_fundamentals, "bias_score", 0.0)
+        confidence = _get(pair_fundamentals, "confidence_label", "LOW")
 
         signals["sentiment_flags"] = sentiment_flags
         signals["event_count"] = len(events)
