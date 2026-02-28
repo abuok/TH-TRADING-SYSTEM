@@ -2,7 +2,7 @@ import pytest
 import uuid
 from datetime import datetime, timezone, timedelta
 from shared.database.session import SessionLocal, init_db
-from shared.database.models import OrderTicket, TradeFillLog, TicketTradeLink, PositionSnapshot, Run, Packet
+from shared.database.models import OrderTicket, TradeFillLog, TicketTradeLink, PositionSnapshot, Run, Packet, ExecutionPrepLog
 from shared.types.trade_capture import TradeFillEvent, PositionSnapshotBatch, TradeFillBatch
 from shared.logic.trade_lifecycle import process_trade_fill
 from shared.logic.sessions import get_nairobi_time
@@ -90,10 +90,13 @@ def test_matching_logic_heuristic(db):
     # 1. Create a dummy ticket
     ticket_id = f"T-{uuid.uuid4().hex[:8]}"
     now = datetime.now(timezone.utc)
+    setup_p = db.query(Packet).filter(Packet.packet_type == "TechnicalSetupPacket").first()
+    risk_p = db.query(Packet).filter(Packet.packet_type == "RiskApprovalPacket").first()
+    
     ticket = OrderTicket(
         ticket_id=ticket_id,
-        setup_packet_id=2,
-        risk_packet_id=2,
+        setup_packet_id=setup_p.id,
+        risk_packet_id=risk_p.id,
         pair="GBPUSD",
         direction="SELL",
         entry_price=1.25000,
@@ -105,9 +108,21 @@ def test_matching_logic_heuristic(db):
         rr_tp1=2.0,
         status="APPROVED",
         idempotency_key=str(uuid.uuid4()),
-        created_at=now - timedelta(minutes=5)
+        created_at=now - timedelta(seconds=60)
     )
     db.add(ticket)
+    db.commit()
+
+    # Heuristic match needs an ExecutionPrepLog
+    prep = ExecutionPrepLog(
+        prep_id=f"PREP-{uuid.uuid4().hex[:6]}",
+        ticket_id=ticket.ticket_id,
+        status="ACTIVE",
+        data={},
+        created_at=now - timedelta(seconds=60),
+        expires_at=now + timedelta(hours=1)
+    )
+    db.add(prep)
     db.commit()
 
     # 2. Create a fill event that should match heuristically (within time/price window)
@@ -133,10 +148,13 @@ def test_matching_logic_heuristic(db):
 def test_pnl_calculation_on_close(db):
     # 1. Setup executed ticket
     ticket_id = "T-PNL-TEST"
+    setup_p = db.query(Packet).filter(Packet.packet_type == "TechnicalSetupPacket").first()
+    risk_p = db.query(Packet).filter(Packet.packet_type == "RiskApprovalPacket").first()
+
     ticket = OrderTicket(
         ticket_id=ticket_id,
-        setup_packet_id=3,
-        risk_packet_id=3,
+        setup_packet_id=setup_p.id,
+        risk_packet_id=risk_p.id,
         pair="XAUUSD",
         direction="BUY",
         entry_price=2000.0,
@@ -177,6 +195,6 @@ def test_pnl_calculation_on_close(db):
     
     updated_ticket = db.query(OrderTicket).filter(OrderTicket.ticket_id == ticket_id).first()
     assert updated_ticket.status == "CLOSED"
-    assert updated_ticket.manual_outcome_r is not None
+    assert updated_ticket.hindsight_realized_r is not None
     # Tolerance for small float diffs
-    assert abs(updated_ticket.manual_outcome_r - 1.5) < 0.01 
+    assert abs(updated_ticket.hindsight_realized_r - 1.5) < 0.01 
