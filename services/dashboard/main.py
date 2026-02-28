@@ -5,6 +5,7 @@ from fastapi import FastAPI, Request, Depends, HTTPException
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
+from datetime import datetime, timezone, timedelta
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -16,9 +17,10 @@ from typing import List, Optional
 sys.path.append(os.getcwd())
 
 import shared.database.session as db_session
-from shared.database.models import Packet, IncidentLog, KillSwitch, SessionBriefing, GuardrailsLog, PolicySelectionLog, ActionItem, OpsReportLog
+from shared.database.models import Packet, IncidentLog, KillSwitch, SessionBriefing, GuardrailsLog, PolicySelectionLog, ActionItem, OpsReportLog, OrderTicket, LiveQuote, SymbolSpec
 from services.dashboard.logic import get_service_health, get_dashboard_data, get_tickets, get_briefings, get_latest_briefing
 from shared.logic.sessions import get_nairobi_time
+from sqlalchemy import func, and_
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 import secrets
 
