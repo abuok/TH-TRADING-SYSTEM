@@ -1,6 +1,7 @@
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
 from datetime import datetime
+from shared.types.research import SystemMetadata
 
 class Proposal(BaseModel):
     id: str = Field(..., description="Unique ID for this proposal (e.g., PROP-123)")
@@ -20,3 +21,4 @@ class TuningProposalReport(BaseModel):
     proposals: List[Proposal] = Field(default_factory=list, description="A list of generated tuning proposals")
     supporting_metrics: Dict[str, Any] = Field(default_factory=dict, description="Raw supporting metric KPIs")
     simulation_links: List[str] = Field(default_factory=list, description="Links/commands to re-run simulations")
+    reproducibility: SystemMetadata = Field(..., description="Version and commit information")

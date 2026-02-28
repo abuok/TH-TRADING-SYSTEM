@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field
-from shared.types.research import ResearchMetrics
+from shared.types.research import ResearchMetrics, SystemMetadata
 
 class Recommendation(BaseModel):
     id: str
@@ -30,3 +30,4 @@ class CalibrationReport(BaseModel):
     # Data tables to back up the recommendations
     # Format: dict of dicts e.g., {"Metrics": {"Baseline": ..., "Variant_A": ...}}
     evidence_tables: Dict[str, Any] = Field(default_factory=dict)
+    reproducibility: SystemMetadata = Field(..., description="Version and commit information")

@@ -5,6 +5,13 @@ import hashlib
 import json
 import os
 
+class SystemMetadata(BaseModel):
+    version: str = Field(..., description="System version (e.g., 1.0.0)")
+    git_commit: str = Field(..., description="Short git commit hash")
+    guardrails_version: str = Field(..., description="Version of the guardrails policy used")
+    policy_hash: str = Field(..., description="Hash of the active policy configuration")
+    dataset_hash: Optional[str] = Field(None, description="Hash of the input dataset if applicable")
+
 class SimulatedTrade(BaseModel):
     ticket_id: str
     pair: str

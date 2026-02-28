@@ -1,6 +1,7 @@
 from typing import List, Dict, Optional, Any
 from pydantic import BaseModel, Field
 from datetime import date
+from shared.types.research import SystemMetadata
 
 class PairStats(BaseModel):
     pair: str
@@ -37,3 +38,4 @@ class PilotScorecard(BaseModel):
     pass_fail_summary: str = Field(..., description="Overall Pilot PASS/FAIL")
     
     next_week_plan: List[str] = Field(default_factory=list, description="Advisory action items and tuning recommendations")
+    reproducibility: SystemMetadata = Field(..., description="Version and commit information")
