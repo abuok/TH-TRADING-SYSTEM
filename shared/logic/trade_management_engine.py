@@ -190,14 +190,14 @@ def run_management_cycle(db: Session):
             try:
                 # Check for existing
                 existing = db.query(ManagementSuggestionLog).filter(
-                    ManagementSuggestionLog.ticket_id == str(snapshot.id), # Linking via Ticket Row PK
+                    ManagementSuggestionLog.ticket_id == str(sug.ticket_id),
                     ManagementSuggestionLog.suggestion_type == sug.suggestion_type.value,
                     ManagementSuggestionLog.time_bucket == time_bucket
                 ).first()
                 
                 if not existing:
                     log_entry = ManagementSuggestionLog(
-                        ticket_id=str(snapshot.id), 
+                        ticket_id=str(sug.ticket_id), 
                         broker_trade_id=sug.broker_trade_id,
                         suggestion_type=sug.suggestion_type.value,
                         severity=sug.severity,
