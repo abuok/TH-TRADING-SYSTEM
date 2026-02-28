@@ -138,8 +138,11 @@ def generate_html_report(result):
     return filepath
 
 # Add Research sub-app
-research_app = typer.Typer(help="Historical replay research tools")
+research_app = typer.Typer(help="Research algorithms and generation")
+pilot_app = typer.Typer(help="Pilot Protocol & Graduation Gate")
+
 app.add_typer(research_app, name="research")
+app.add_typer(pilot_app, name="pilot")
 
 @research_app.command("run")
 def research_run(
@@ -291,7 +294,7 @@ def validate_proposals(
         if not prop:
             console.print(f"[red]Proposal '{proposal_id}' not found in log {log.report_id}.[/red]")
             return
-            
+        
         # 2. Extract proposed change to build counterfactual
         # In a real system, you'd map standard proposals perfectly to CounterfactualConfig args
         # Here we mock standard mappings for Guardrails/Queue/Management
@@ -350,6 +353,55 @@ def validate_proposals(
         console.print(f"[bold green]Proposal '{proposal_id}' IMPROVES performance on historical data![/]")
     else:
         console.print(f"[bold yellow]Proposal '{proposal_id}' DOES NOT improve performance on historical data.[/]")
+
+# --- PILOT RUN PROTOCOL COMMANDS ---
+
+@pilot_app.command("build-scorecard")
+def build_scorecard(
+    from_date: str = typer.Option(..., "--from", help="Start date (YYYY-MM-DD)"),
+    to_date: str = typer.Option(..., "--to", help="End date (YYYY-MM-DD)")
+):
+    """
+    Build a Pilot Scorecard for a specified rolling window, computing graduation gates.
+    """
+    from datetime import datetime
+    from shared.database.connection import get_db
+    from services.research.pilot import build_pilot_scorecard
+    
+    start_dt = datetime.strptime(from_date, "%Y-%m-%d").date()
+    end_dt = datetime.strptime(to_date, "%Y-%m-%d").date()
+    
+    db = next(get_db())
+    print(f"Building Pilot Scorecard evaluating {start_dt} to {end_dt}...")
+    
+    scorecard = build_pilot_scorecard(db, start_dt, end_dt)
+    
+    print(f"\n--- SCORECARD {scorecard.scorecard_id} ---")
+    print(f"Overview Pass/Fail: {scorecard.pass_fail_summary}")
+    print("\nNext Week Plan:")
+    for plan in scorecard.next_week_plan:
+        print(f" - {plan}")
+        
+    print("\nScorecard and dependencies built and logged directly to artifacts/pilot/")
+
+@pilot_app.command("latest")
+def get_latest_scorecard():
+    """
+    Fetch the latest pilot scorecard aggregates from the database.
+    """
+    from shared.database.connection import get_db
+    from shared.database.models import PilotScorecardLog
+    
+    db = next(get_db())
+    latest = db.query(PilotScorecardLog).order_by(PilotScorecardLog.created_at.desc()).first()
+    
+    if not latest:
+        print("No pilot scorecards found.")
+        return
+        
+    print(f"Scorecard: {latest.scorecard_id}")
+    print(f"Dates Evaluated: {latest.date_range}")
+    print(f"PASS/FAIL: {latest.pass_fail}")
 
 if __name__ == "__main__":
     app()

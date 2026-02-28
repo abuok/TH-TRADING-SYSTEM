@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="header-section">
+    <div class="header-title">
+        <h1>Scorecard Detail: {{ scorecard.scorecard_id }}</h1>
+        <p>Evaluated Window: <strong>{{ scorecard.date_range }}</strong></p>
+    </div>
+    <div class="header-actions">
+        <a href="/dashboard/pilot" class="btn btn-secondary">Back to Scorecard List</a>
+    </div>
+</div>
+
+<div class="card mb-2rem">
+    <div class="card-header">
+        <h2>Graduation Status:
+            <span
+                class="badge {% if scorecard.pass_fail_summary == 'PASS' %}badge-success{% else %}badge-danger{% endif %}">
+                {{ scorecard.pass_fail_summary }}
+            </span>
+        </h2>
+    </div>
+    <div class="grid tuning-grid-4">
+        <div class="card tuning-metric-card">
+            <div class="metric-value">{{ scorecard.aggregates.passing_days }} / {{ scorecard.aggregates.total_days }}
+            </div>
+            <div class="metric-label">Passing Days</div>
+        </div>
+        <div class="card tuning-metric-card">
+            <div class="metric-value">{{ scorecard.aggregates.total_tickets_approved }}</div>
+            <div class="metric-label">Total Approved</div>
+        </div>
+        <div class="card tuning-metric-card">
+            <div class="metric-value">{{ scorecard.aggregates.net_realized_r | round(2) }}R</div>
+            <div class="metric-label">Net Realized R</div>
+        </div>
+        <div class="card tuning-metric-card">
+            <div class="metric-value">{{ (scorecard.aggregates.net_realized_r /
+                scorecard.aggregates.total_tickets_approved) | round(2) if scorecard.aggregates.total_tickets_approved >
+                0 else 0 }}R</div>
+            <div class="metric-label">Avg Expectancy</div>
+        </div>
+    </div>
+</div>
+
+<div class="grid" style="grid-template-columns: 2fr 1fr; gap: 2rem;">
+    <div>
+        <div class="card">
+            <div class="card-header">
+                <h2>Session Breakdown</h2>
+            </div>
+            <table class="util-32d39d">
+                <thead>
+                    <tr class="util-87ccbb">
+                        <th class="util-e7fa6d">Date</th>
+                        <th class="util-7613c8">Gate Status</th>
+                        <th class="util-a8ece1">Expectancy R</th>
+                        <th class="util-e7fa6d">Fail Reasons</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in scorecard.sessions %}
+                    <tr class="util-788560">
+                        <td class="util-4009b5">{{ s.date }}</td>
+                        <td class="util-ee8d52">
+                            <span
+                                class="badge {% if s.pass_fail == 'PASS' %}badge-success{% else %}badge-danger{% endif %}">
+                                {{ s.pass_fail }}
+                            </span>
+                        </td>
+                        <td
+                            class="util-a8ece1 {% if s.performance_metrics.approved_expectancy_r > 0 %}util-20f3a9{% else %}util-49d8b4{% endif %}">
+                            {{ s.performance_metrics.approved_expectancy_r | round(2) }}R
+                        </td>
+                        <td class="util-4009b5 util-1e8514" style="font-size: 0.75rem;">
+                            {{ s.notes | join(', ') }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div>
+        <div class="card mb-2rem">
+            <div class="card-header">
+                <h2>Next Week Plan</h2>
+            </div>
+            <ul class="util-1e8514" style="padding-left: 1.2rem;">
+                {% for plan in scorecard.next_week_plan %}
+                <li style="margin-bottom: 0.5rem;">{{ plan }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

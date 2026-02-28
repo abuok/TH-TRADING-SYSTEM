@@ -17,7 +17,7 @@ from typing import List, Optional
 sys.path.append(os.getcwd())
 
 import shared.database.session as db_session
-from shared.database.models import Packet, IncidentLog, KillSwitch, SessionBriefing, GuardrailsLog, PolicySelectionLog, ActionItem, OpsReportLog, OrderTicket, LiveQuote, SymbolSpec, TradeFillLog, PositionSnapshot as PositionSnapshotModel, TicketTradeLink, JournalLog, TuningProposalLog
+from shared.database.models import Packet, IncidentLog, KillSwitch, SessionBriefing, GuardrailsLog, PolicySelectionLog, ActionItem, OpsReportLog, OrderTicket, LiveQuote, SymbolSpec, TradeFillLog, PositionSnapshot as PositionSnapshotModel, TicketTradeLink, JournalLog, TuningProposalLog, PilotSessionLog, PilotScorecardLog
 from services.dashboard.logic import get_service_health, get_dashboard_data, get_tickets, get_briefings, get_latest_briefing
 from shared.logic.sessions import get_nairobi_time
 from sqlalchemy import func, and_
@@ -651,6 +651,44 @@ async def dashboard_weekly_review(request: Request, auth: bool = Depends(verify_
 async def dashboard_action_items(request: Request, auth: bool = Depends(verify_auth), db: Session = Depends(db_session.get_db)):
     items = db.query(ActionItem).order_by(ActionItem.created_at.desc()).all()
     return render_template("action_items.html", {"request": request, "items": items, "active_page": "actions"})
+
+@app.get("/dashboard/pilot", response_class=HTMLResponse)
+async def dashboard_pilot(request: Request, db: Session = Depends(db_session.get_db)):
+    verify_auth(request)
+    scorecards = db.query(PilotScorecardLog).order_by(PilotScorecardLog.created_at.desc()).limit(10).all()
+    sessions = db.query(PilotSessionLog).order_by(PilotSessionLog.date.desc()).limit(15).all()
+    
+    return render_template("pilot_index.html", {
+        "request": request,
+        "active_page": "pilot",
+        "scorecards": scorecards,
+        "recent_sessions": sessions
+    })
+
+@app.get("/dashboard/pilot/gate", response_class=HTMLResponse)
+async def dashboard_pilot_gate(request: Request):
+    verify_auth(request)
+    from services.research.pilot import load_pilot_config
+    config = load_pilot_config()
+    return render_template("pilot_gate.html", {
+        "request": request,
+        "active_page": "pilot",
+        "config": config
+    })
+
+@app.get("/dashboard/pilot/{scorecard_id}", response_class=HTMLResponse)
+async def dashboard_pilot_detail(scorecard_id: str, request: Request, db: Session = Depends(db_session.get_db)):
+    verify_auth(request)
+    log = db.query(PilotScorecardLog).filter(PilotScorecardLog.scorecard_id == scorecard_id).first()
+    if not log:
+        raise HTTPException(status_code=404, detail="Scorecard not found")
+        
+    return render_template("pilot_detail.html", {
+        "request": request,
+        "active_page": "pilot",
+        "scorecard": log.data
+    })
+
 
 @app.post("/api/action-items/{id}/done")
 async def mark_action_item_done(id: int, auth: bool = Depends(verify_auth), db: Session = Depends(db_session.get_db)):

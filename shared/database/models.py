@@ -298,3 +298,23 @@ class TuningProposalLog(Base):
     status = Column(String, default="OPEN", index=True) # OPEN, ACCEPTED, REJECTED
     reviewer_notes = Column(Text, nullable=True)
     data = Column(JSON, nullable=False) # Full TuningProposalReport JSON
+
+class PilotSessionLog(Base):
+    __tablename__ = "pilot_sessions_log"
+
+    id = Column(Integer, primary_key=True, index=True)
+    session_id = Column(String, unique=True, index=True, nullable=False)
+    date = Column(Date, index=True, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    pass_fail = Column(String, index=True) # PASS or FAIL
+    data = Column(JSON, nullable=False) # Full PilotSessionRecord JSON
+
+class PilotScorecardLog(Base):
+    __tablename__ = "pilot_scorecards_log"
+
+    id = Column(Integer, primary_key=True, index=True)
+    scorecard_id = Column(String, unique=True, index=True, nullable=False)
+    date_range = Column(String, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    pass_fail = Column(String, index=True) # PASS or FAIL
+    data = Column(JSON, nullable=False) # Full PilotScorecard JSON

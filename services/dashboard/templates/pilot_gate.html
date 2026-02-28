@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="header-section">
+    <div class="header-title">
+        <h1>Graduation Gate Configuration</h1>
+        <p>Current thresholds required to pass the pilot phase and move to full production.</p>
+    </div>
+    <div class="header-actions">
+        <a href="/dashboard/pilot" class="btn btn-secondary">Back to Pilot Index</a>
+    </div>
+</div>
+
+<div class="card mb-2rem">
+    <div class="card-header">
+        <h2>Threshold Definitions</h2>
+    </div>
+    <table class="util-32d39d">
+        <thead>
+            <tr class="util-87ccbb">
+                <th class="util-e7fa6d">Metric ID</th>
+                <th class="util-7613c8">Configured Threshold</th>
+                <th class="util-a8ece1">Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for key, val in config.items() %}
+            <tr class="util-788560">
+                <td class="util-4009b5">{{ key }}</td>
+                <td class="util-ee8d52">
+                    <span class="badge badge-info">{{ val }}</span>
+                </td>
+                <td class="util-a8ece1 util-1e8514" style="text-align: left;">
+                    {% if key == 'quote_freshness_pct' %}
+                    Minimum uptime/freshness for live quote bridge data.
+                    {% elif key == 'ticket_based_trades_pct' %}
+                    Percentage of trades that must originate from system tickets.
+                    {% elif key == 'execution_prep_override_rate' %}
+                    Maximum allowed human overrides on pre-flight checks.
+                    {% elif key == 'expired_ticket_rate' %}
+                    Maximum allowed ticket expiration rate.
+                    {% elif key == 'approved_expectancy_R' %}
+                    Minimum expected R-multiple per trade.
+                    {% elif key == 'max_drawdown_R' %}
+                    Maximum allowed drawdown in R-multiples.
+                    {% elif key == 'min_win_rate_pct' %}
+                    Minimum win rate percentage for graduation.
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Gate Policy</h2>
+    </div>
+    <div style="padding: 1.5rem; font-size: 0.95rem; color: #8b949e; line-height: 1.6;">
+        <p>The system graduation requires <strong>80% passing sessions</strong> over a 10-session rolling window.</p>
+        <p>If any core metric (Drawdown or Expectancy) is breached, the scorecard is marked as a <strong>FAIL</strong>
+            regardless of average aggregates.</p>
+        <p>Next Week Plans are advisory and must be reviewed before applying tuning proposals.</p>
+    </div>
+</div>
+
+{% endblock %}
