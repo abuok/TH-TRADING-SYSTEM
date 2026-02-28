@@ -3,9 +3,13 @@ import uuid
 import json
 from typing import List
 from datetime import datetime, timedelta
-import jinja2
 from sqlalchemy.orm import Session
 from sqlalchemy import func
+
+try:
+    import jinja2
+except ModuleNotFoundError:
+    jinja2 = None
 
 from shared.database.models import OrderTicket, HindsightOutcomeLog, GuardrailsLog, ActionItem, PolicySelectionLog
 from shared.types.ops import WeeklyReviewReport
@@ -17,7 +21,9 @@ OUTPUT_DIR = "artifacts/ops/weekly"
 class ReviewEngine:
     def __init__(self, db: Session):
         self.db = db
-        self.jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(TEMPLATE_DIR))
+        self.jinja_env = None
+        if jinja2 is not None:
+            self.jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(TEMPLATE_DIR))
 
     def generate_weekly_report(self) -> WeeklyReviewReport:
         now = get_nairobi_time()
@@ -133,8 +139,17 @@ class ReviewEngine:
         return report, html_path
 
     def render_html(self, report: WeeklyReviewReport) -> str:
-        template = self.jinja_env.get_template("ops_weekly_template.html")
-        return template.render(report=report)
+        if self.jinja_env is not None:
+            template = self.jinja_env.get_template("ops_weekly_template.html")
+            return template.render(report=report)
+
+        return (
+            f"<html><body><h1>Weekly Review Report</h1>"
+            f"<p>ID: {report.report_id}</p>"
+            f"<p>Realized R: {report.total_realized_r}</p>"
+            f"<p>Missed R: {report.total_missed_r}</p>"
+            f"</body></html>"
+        )
 
     def _count_switches(self, start, policy_name):
         return self.db.query(PolicySelectionLog).filter(
