@@ -29,6 +29,7 @@ from shared.database.models import ActionItem, OpsReportLog, ExecutionPrepLog
 from shared.types.execution_prep import ExecutionPrepSchema
 from shared.logic.logging import setup_production_logging
 from shared.logic.metrics import metrics_registry
+from shared.logic.trade_management_engine import run_management_cycle
 from fastapi.responses import Response
 import httpx
 
@@ -66,6 +67,7 @@ async def startup_event():
     asyncio.create_task(fundamentals_scheduler())
     asyncio.create_task(briefing_scheduler())
     asyncio.create_task(ops_scheduler())
+    asyncio.create_task(management_loop())
 
 async def fundamentals_scheduler(interval_minutes: int = 30):
     """
@@ -306,6 +308,31 @@ async def ops_scheduler():
             logger.error(f"Error in ops_scheduler: {e}")
         
         await asyncio.sleep(60) # check every minute
+
+async def management_loop():
+    """Background task to run trade management rules every 2 minutes during active sessions."""
+    logger.info("Starting trade management background loop.")
+    while True:
+        try:
+            now = get_nairobi_time()
+            t = now.time()
+            # Run only if we are in London or NY session
+            is_active = (
+                TradingSessions.is_in_range(t, *TradingSessions.LONDON_RANGE) or
+                TradingSessions.is_in_range(t, *TradingSessions.NY_RANGE)
+            )
+            
+            if is_active:
+                db = db_session.SessionLocal()
+                try:
+                    run_management_cycle(db)
+                finally:
+                    db.close()
+        except Exception as e:
+            logger.error(f"Error in management_loop: {e}")
+        
+        await asyncio.sleep(120) # 2 minutes
+
 
 # ──────────────────────────────────────────────
 # Ticket endpoints

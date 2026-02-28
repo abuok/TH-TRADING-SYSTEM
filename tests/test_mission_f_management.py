@@ -152,3 +152,205 @@ def test_tp1_partial_suggestion(db):
     sug = db.query(ManagementSuggestionLog).filter(ManagementSuggestionLog.suggestion_type == "TAKE_PARTIAL_TP1").first()
     assert sug is not None
     assert "0.10 lots" in sug.data["instruction"]
+
+def test_killswitch_suggestion(db):
+    from shared.database.models import KillSwitch
+    
+    mock_quotes = MockPriceQuoteProvider()
+    set_price_quote_provider(mock_quotes)
+    
+    ks = KillSwitch(switch_type="GLOBAL", is_active=1)
+    db.add(ks)
+    
+    run = Run(run_id="R3")
+    db.add(run)
+    db.flush()
+    
+    p3 = Packet(run_id=run.id, packet_type="SetupPacket", schema_version="2.0", data={"pair": "USDJPY"})
+    db.add(p3)
+    db.flush()
+    
+    ticket = OrderTicket(
+        ticket_id="T3",
+        setup_packet_id=p3.id,
+        risk_packet_id=p3.id,
+        pair="USDJPY",
+        direction="SELL",
+        entry_price=150.00,
+        stop_loss=150.50,
+        take_profit_1=149.00,
+        lot_size=0.5,
+        risk_usd=500.0,
+        risk_pct=1.0,
+        rr_tp1=2.0,
+        idempotency_key="T3_KEY",
+        status="APPROVED"
+    )
+    db.add(ticket)
+    db.flush()
+    
+    now = datetime.now(timezone.utc)
+    pos = PositionSnapshot(
+        position_id=11111,
+        symbol="USDJPY",
+        side="SELL",
+        lots=0.5,
+        avg_price=150.00,
+        sl=150.50,
+        tp=149.00,
+        floating_pnl=0.0,
+        updated_at_utc=now,
+        updated_at_eat=now.replace(tzinfo=None),
+        account_id="TEST_ACC"
+    )
+    db.add(pos)
+    
+    link = TicketTradeLink(ticket_id="T3", broker_trade_id=11111, match_method="MANUAL")
+    db.add(link)
+    db.commit()
+    
+    mock_quotes.set_quote("USDJPY", 149.90, 149.91) # Small profit
+    
+    run_management_cycle(db)
+    
+    sug = db.query(ManagementSuggestionLog).filter(ManagementSuggestionLog.ticket_id == "T3").first()
+    assert sug is not None
+    assert sug.suggestion_type == "NO_ACTION"
+    assert sug.severity == "CRITICAL"
+    assert "Kill Switch Active" in sug.data["reasons"][0]
+
+def test_end_of_session_suggestion(db, monkeypatch):
+    import shared.logic.trade_management_engine as tme
+    
+    # Mock time to 00:45 EAT
+    def mock_get_nairobi_time():
+        from pytz import timezone as py_tz
+        eat = py_tz("Africa/Nairobi")
+        dt = datetime(2026, 2, 28, 0, 45, tzinfo=eat)
+        return dt
+    
+    monkeypatch.setattr(tme, "get_nairobi_time", mock_get_nairobi_time)
+    
+    mock_quotes = MockPriceQuoteProvider()
+    set_price_quote_provider(mock_quotes)
+    
+    run = Run(run_id="R4")
+    db.add(run)
+    db.flush()
+    
+    p = Packet(run_id=run.id, packet_type="SetupPacket", schema_version="2.0", data={"pair": "AUDUSD"})
+    db.add(p)
+    db.flush()
+    
+    ticket = OrderTicket(
+        ticket_id="T4",
+        setup_packet_id=p.id,
+        risk_packet_id=p.id,
+        pair="AUDUSD",
+        direction="BUY",
+        entry_price=0.6500,
+        stop_loss=0.6400,
+        take_profit_1=0.6600,
+        lot_size=1.0,
+        risk_usd=100.0,
+        risk_pct=1.0,
+        rr_tp1=1.0,
+        idempotency_key="T4_KEY",
+        status="APPROVED"
+    )
+    db.add(ticket)
+    db.flush()
+    
+    pos = PositionSnapshot(
+        position_id=22222,
+        symbol="AUDUSD",
+        side="BUY",
+        lots=1.0,
+        avg_price=0.6500,
+        sl=0.6400,
+        tp=0.6600,
+        floating_pnl=0.0,
+        updated_at_utc=datetime.now(timezone.utc),
+        updated_at_eat=datetime.now(),
+        account_id="TEST_ACC"
+    )
+    db.add(pos)
+    
+    link = TicketTradeLink(ticket_id="T4", broker_trade_id=22222, match_method="MANUAL")
+    db.add(link)
+    db.commit()
+    
+    mock_quotes.set_quote("AUDUSD", 0.6510, 0.6511)
+    
+    run_management_cycle(db)
+    
+    sug = db.query(ManagementSuggestionLog).filter(ManagementSuggestionLog.ticket_id == str(ticket.id)).first()
+    assert sug is not None
+    assert sug.suggestion_type == "CLOSE_END_OF_SESSION"
+    assert sug.severity == "WARN"
+
+def test_policy_risk_off_suggestion(db):
+    from shared.database.models import PolicySelectionLog
+    
+    mock_quotes = MockPriceQuoteProvider()
+    set_price_quote_provider(mock_quotes)
+    
+    # 2. Add Active RISK_OFF policy
+    policy = PolicySelectionLog(pair="NZDUSD", policy_name="RISK_OFF", policy_hash="ABC", reasons=[], regime_signals={})
+    db.add(policy)
+    
+    run = Run(run_id="R5")
+    db.add(run)
+    db.flush()
+    
+    p = Packet(run_id=run.id, packet_type="SetupPacket", schema_version="2.0", data={"pair": "NZDUSD"})
+    db.add(p)
+    db.flush()
+    
+    ticket = OrderTicket(
+        ticket_id="T5",
+        setup_packet_id=p.id,
+        risk_packet_id=p.id,
+        pair="NZDUSD",
+        direction="BUY",
+        entry_price=0.6000,
+        stop_loss=0.5900,
+        take_profit_1=0.6200,
+        lot_size=0.2,
+        risk_usd=100.0,
+        risk_pct=1.0,
+        rr_tp1=2.0,
+        idempotency_key="T5_KEY",
+        status="APPROVED"
+    )
+    db.add(ticket)
+    db.flush()
+    
+    pos = PositionSnapshot(
+        position_id=33333,
+        symbol="NZDUSD",
+        side="BUY",
+        lots=0.2,
+        avg_price=0.6000,
+        sl=0.5900,
+        tp=0.6200,
+        floating_pnl=0.0,
+        updated_at_utc=datetime.now(timezone.utc),
+        updated_at_eat=datetime.now(),
+        account_id="TEST_ACC"
+    )
+    db.add(pos)
+    
+    link = TicketTradeLink(ticket_id="T5", broker_trade_id=33333, match_method="MANUAL")
+    db.add(link)
+    db.commit()
+    
+    # 0.6R (>= 0.5R) profit
+    mock_quotes.set_quote("NZDUSD", 0.6060, 0.6061)
+    
+    run_management_cycle(db)
+    
+    sug = db.query(ManagementSuggestionLog).filter(ManagementSuggestionLog.ticket_id == str(ticket.id)).first()
+    assert sug is not None
+    assert sug.suggestion_type == "REDUCE_RISK"
+    assert sug.severity == "WARN"

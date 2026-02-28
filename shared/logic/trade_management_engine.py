@@ -3,7 +3,7 @@ from datetime import datetime, timezone, timedelta
 from typing import List, Optional, Dict
 from sqlalchemy.orm import Session
 
-from shared.database.models import OrderTicket, PositionSnapshot, TicketTradeLink, ManagementSuggestionLog, LiveQuote
+from shared.database.models import OrderTicket, PositionSnapshot, TicketTradeLink, ManagementSuggestionLog, LiveQuote, KillSwitch, PolicySelectionLog
 from shared.types.trade_management import PositionManagementSuggestion, SuggestionType
 from shared.providers.price_quote import PriceQuoteProvider, get_price_quote_provider
 from shared.logic.sessions import get_nairobi_time
@@ -51,6 +51,81 @@ def generate_suggestions_for_position(
     current_r = calculate_r_multiple(snapshot.side, snapshot.avg_price, snapshot.sl, current_price)
     
     suggestions = []
+    
+    # Rule: Kill Switch Active
+    active_ks = db.query(KillSwitch).filter(
+        KillSwitch.is_active == True,
+        KillSwitch.switch_type.in_(["GLOBAL", "TRADING"])
+    ).first()
+    
+    if active_ks:
+        suggestions.append(PositionManagementSuggestion(
+            created_at_eat=now_eat,
+            ticket_id=ticket.id,
+            broker_trade_id=snapshot.position_id,
+            symbol=snapshot.symbol,
+            side=snapshot.side,
+            lots=snapshot.lots,
+            entry_price=snapshot.avg_price,
+            sl=snapshot.sl,
+            tp1=ticket.take_profit_1,
+            tp2=ticket.take_profit_2,
+            current_price=current_price,
+            current_r=current_r,
+            suggestion_type=SuggestionType.NO_ACTION,
+            severity="CRITICAL",
+            reasons=[f"Kill Switch Active: {active_ks.switch_type} - Manually Manage"],
+            expires_at_eat=now_eat + timedelta(minutes=15),
+            instruction="Halt Trading - Manage manually"
+        ))
+        # If kill switch is active, don't generate other suggestions
+        return suggestions
+        
+    # Rule: End of NY Session (00:30 to 01:00 EAT)
+    current_time = now_eat.time()
+    if current_time >= datetime.strptime("00:30", "%H:%M").time() and current_time < datetime.strptime("01:00", "%H:%M").time():
+        suggestions.append(PositionManagementSuggestion(
+            created_at_eat=now_eat,
+            ticket_id=ticket.id,
+            broker_trade_id=snapshot.position_id,
+            symbol=snapshot.symbol,
+            side=snapshot.side,
+            lots=snapshot.lots,
+            entry_price=snapshot.avg_price,
+            sl=snapshot.sl,
+            tp1=ticket.take_profit_1,
+            tp2=ticket.take_profit_2,
+            current_price=current_price,
+            current_r=current_r,
+            suggestion_type=SuggestionType.CLOSE_END_OF_SESSION,
+            severity="WARN",
+            reasons=["NY Session ends at 01:00 EAT"],
+            expires_at_eat=now_eat + timedelta(minutes=15),
+            instruction="Close Position - End of Session"
+        ))
+        
+    # Rule: Strict Risk Policy Checks
+    policy_log = db.query(PolicySelectionLog).filter(PolicySelectionLog.pair == ticket.pair).order_by(PolicySelectionLog.created_at.desc()).first()
+    if policy_log and policy_log.policy_name == "RISK_OFF" and current_r >= 0.5:
+        suggestions.append(PositionManagementSuggestion(
+            created_at_eat=now_eat,
+            ticket_id=ticket.id,
+            broker_trade_id=snapshot.position_id,
+            symbol=snapshot.symbol,
+            side=snapshot.side,
+            lots=snapshot.lots,
+            entry_price=snapshot.avg_price,
+            sl=snapshot.sl,
+            tp1=ticket.take_profit_1,
+            tp2=ticket.take_profit_2,
+            current_price=current_price,
+            current_r=current_r,
+            suggestion_type=SuggestionType.REDUCE_RISK,
+            severity="WARN",
+            reasons=["RISK_OFF policy active: Taking partial profit early at >= 0.5R"],
+            expires_at_eat=now_eat + timedelta(minutes=15),
+            instruction=f"Take Partial Profit (RISK_OFF): {(snapshot.lots / 2):.2f} lots"
+        ))
     
     # Rule: Move SL to BE at 1.0R
     if current_r >= 1.0:

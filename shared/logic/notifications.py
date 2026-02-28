@@ -48,9 +48,13 @@ def notify_suggestion(suggestion: dict):
             return 
             
     _last_notified[key] = now
+    severity = suggestion.get("severity", "INFO")
+    if severity not in ["WARN", "CRITICAL"]:
+        return
+
     msg = (
         f"TRADE MANAGEMENT ALERT: {suggestion.get('symbol')} {s_type} "
         f"({suggestion.get('current_r', 0):.2f}R). "
         f"Instruction: {suggestion.get('instruction')}"
     )
-    _service.notify(msg, "WARNING" if "MOVE_SL" in s_type else "ERROR")
+    _service.notify(msg, "WARNING" if severity == "WARN" else "ERROR")
