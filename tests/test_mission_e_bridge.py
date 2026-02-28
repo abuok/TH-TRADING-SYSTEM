@@ -77,7 +77,8 @@ def test_matching_logic_by_comment(db):
 
     # 3. Process fill
     result = process_trade_fill(db, fill)
-    assert result["status"] == "MATCHED"
+    assert result["status"] == "success"
+    assert result["matched"] is True
     assert result["ticket_id"] == ticket_id
 
     # 4. Verify DB state
@@ -125,7 +126,8 @@ def test_matching_logic_heuristic(db):
 
     # 3. Process fill
     result = process_trade_fill(db, fill)
-    assert result["status"] == "MATCHED"
+    assert result["status"] == "success"
+    assert result["matched"] is True
     assert result["ticket_id"] == ticket_id
 
 def test_pnl_calculation_on_close(db):
@@ -170,7 +172,8 @@ def test_pnl_calculation_on_close(db):
     )
 
     result = process_trade_fill(db, close_fill)
-    assert result["status"] == "MATCHED"
+    assert result["status"] == "success"
+    assert result["matched"] is True
     
     updated_ticket = db.query(OrderTicket).filter(OrderTicket.ticket_id == ticket_id).first()
     assert updated_ticket.status == "CLOSED"
