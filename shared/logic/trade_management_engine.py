@@ -23,6 +23,8 @@ def calculate_r_multiple(side: str, entry_price: float, sl: float, current_price
         
     return profit / risk
 
+from shared.providers.calendar import get_calendar_provider
+
 def generate_suggestions_for_position(
     db: Session,
     snapshot: PositionSnapshot,
@@ -52,10 +54,9 @@ def generate_suggestions_for_position(
     
     # Rule: Move SL to BE at 1.0R
     if current_r >= 1.0:
-        # Check if SL is already at or better than BE
         is_already_be = False
         if snapshot.side == "BUY":
-            is_already_be = snapshot.sl >= (snapshot.avg_price - 0.00001) # Small epsilon
+            is_already_be = snapshot.sl >= (snapshot.avg_price - 0.00001)
         else:
             is_already_be = snapshot.sl <= (snapshot.avg_price + 0.00001)
             
@@ -75,7 +76,7 @@ def generate_suggestions_for_position(
                 current_r=current_r,
                 suggestion_type=SuggestionType.MOVE_SL_TO_BE,
                 severity="WARN",
-                reasons=[f"Price reached {current_r:.2f}R (Reward threshold: 1.0R)"],
+                reasons=[f"Price reached {current_r:.2f}R"],
                 expires_at_eat=now_eat + timedelta(minutes=15),
                 instruction=f"Move SL to Entry: {snapshot.avg_price:.5f}"
             ))
@@ -106,8 +107,67 @@ def generate_suggestions_for_position(
                 severity="CRITICAL",
                 reasons=[f"Price hit TP1: {ticket.take_profit_1:.5f}"],
                 expires_at_eat=now_eat + timedelta(minutes=15),
-                instruction=f"Take Partial Profit TP1 at {ticket.take_profit_1:.5f}"
+                instruction=f"Take Partial Profit TP1 (Close 50%): {(snapshot.lots / 2):.2f} lots"
             ))
+
+    # Rule: Partial TP2 / Full Close
+    if ticket.take_profit_2:
+        hit_tp2 = False
+        if snapshot.side == "BUY":
+            hit_tp2 = current_price >= ticket.take_profit_2
+        else:
+            hit_tp2 = current_price <= ticket.take_profit_2
+            
+        if hit_tp2:
+            suggestions.append(PositionManagementSuggestion(
+                created_at_eat=now_eat,
+                ticket_id=ticket.id,
+                broker_trade_id=snapshot.position_id,
+                symbol=snapshot.symbol,
+                side=snapshot.side,
+                lots=snapshot.lots,
+                entry_price=snapshot.avg_price,
+                sl=snapshot.sl,
+                tp1=ticket.take_profit_1,
+                tp2=ticket.take_profit_2,
+                current_price=current_price,
+                current_r=current_r,
+                suggestion_type=SuggestionType.TAKE_PARTIAL_CUSTOM,
+                severity="CRITICAL",
+                reasons=[f"Price hit TP2: {ticket.take_profit_2:.5f}"],
+                expires_at_eat=now_eat + timedelta(minutes=15),
+                instruction=f"Take TP2 / Full Close: {snapshot.lots:.2f} lots"
+            ))
+
+    # Rule: News warning
+    calendar = get_calendar_provider()
+    events = calendar.fetch_events()
+    now_utc = datetime.now(timezone.utc)
+    for ev in events:
+        ev_time = datetime.fromisoformat(ev["time"].replace("Z", "+00:00"))
+        if now_utc < ev_time < now_utc + timedelta(minutes=60):
+            # Check if currency relates to symbol
+            if ev["currency"] in snapshot.symbol:
+                suggestions.append(PositionManagementSuggestion(
+                    created_at_eat=now_eat,
+                    ticket_id=ticket.id,
+                    broker_trade_id=snapshot.position_id,
+                    symbol=snapshot.symbol,
+                    side=snapshot.side,
+                    lots=snapshot.lots,
+                    entry_price=snapshot.avg_price,
+                    sl=snapshot.sl,
+                    tp1=ticket.take_profit_1,
+                    tp2=ticket.take_profit_2,
+                    current_price=current_price,
+                    current_r=current_r,
+                    suggestion_type=SuggestionType.EXIT_BEFORE_NEWS,
+                    severity="WARN",
+                    reasons=[f"High impact news ({ev['event']}) in {int((ev_time - now_utc).total_seconds() / 60)} mins"],
+                    expires_at_eat=now_eat + timedelta(minutes=15),
+                    instruction="Close Position Before News"
+                ))
+                break
 
     return suggestions
 
@@ -148,6 +208,10 @@ def run_management_cycle(db: Session):
                     db.add(log_entry)
                     db.commit()
                     logger.info(f"Generated suggestion {sug.suggestion_type} for ticket {sug.ticket_id}")
+                    
+                    # Notify
+                    from shared.logic.notifications import notify_suggestion as send_notif
+                    send_notif(sug.model_dump(mode="json"))
             except Exception as e:
                 db.rollback()
                 logger.error(f"Failed to log suggestion: {e}")

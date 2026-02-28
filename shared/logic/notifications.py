@@ -30,3 +30,27 @@ class NotificationService:
                 adapter.send(message, level)
             except Exception as e:
                 logger.error(f"Failed to send notification via {adapter.__class__.__name__}: {e}")
+
+# Global singleton or helper
+_service = NotificationService([ConsoleNotificationAdapter()])
+_last_notified = {}
+
+def notify_suggestion(suggestion: dict):
+    """Notify about a trade management suggestion with 1h rate limit per ticket+type."""
+    from datetime import datetime, timedelta
+    ticket_id = suggestion.get("ticket_id")
+    s_type = suggestion.get("suggestion_type")
+    key = f"{ticket_id}_{s_type}"
+    now = datetime.now()
+    
+    if key in _last_notified:
+        if now - _last_notified[key] < timedelta(hours=1):
+            return 
+            
+    _last_notified[key] = now
+    msg = (
+        f"TRADE MANAGEMENT ALERT: {suggestion.get('symbol')} {s_type} "
+        f"({suggestion.get('current_r', 0):.2f}R). "
+        f"Instruction: {suggestion.get('instruction')}"
+    )
+    _service.notify(msg, "WARNING" if "MOVE_SL" in s_type else "ERROR")
