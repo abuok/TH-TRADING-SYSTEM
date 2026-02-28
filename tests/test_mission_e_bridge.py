@@ -1,33 +1,31 @@
 import pytest
 import uuid
 from datetime import datetime, timezone, timedelta
-from shared.database.session import SessionLocal, init_db
+import shared.database.session as db_session
 from shared.database.models import OrderTicket, TradeFillLog, TicketTradeLink, PositionSnapshot, Run, Packet, ExecutionPrepLog
 from shared.types.trade_capture import TradeFillEvent, PositionSnapshotBatch, TradeFillBatch
 from shared.logic.trade_lifecycle import process_trade_fill
 from shared.logic.sessions import get_nairobi_time
 
-@pytest.fixture(scope="module", autouse=True)
-def setup_database():
-    init_db()
+# NOTE: conftest.py handles SQLite engine setup via setup_db autouse fixture
 
 @pytest.fixture
 def db():
-    session = SessionLocal()
+    session = db_session.SessionLocal()
     # Create a dummy run and packets for FKs
     run = Run(run_id=f"test-run-{uuid.uuid4().hex[:6]}")
     db_run = session.query(Run).first() or run
     if db_run == run:
         session.add(run)
         session.commit()
-    
+
     p1 = Packet(run_id=db_run.id, packet_type="TechnicalSetupPacket", schema_version="1.0", data={})
     p2 = Packet(run_id=db_run.id, packet_type="RiskApprovalPacket", schema_version="1.0", data={})
     session.add_all([p1, p2])
     session.commit()
-    
+
     yield session
-    
+
     # Cleanup
     session.query(TicketTradeLink).delete()
     session.query(TradeFillLog).delete()

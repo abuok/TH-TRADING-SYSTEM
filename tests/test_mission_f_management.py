@@ -18,6 +18,8 @@ def db():
     yield session
     session.close()
     Base.metadata.drop_all(bind=engine)
+    # Reset global provider so it doesn't leak into other test files
+    set_price_quote_provider(None)
 
 def test_move_sl_to_be_suggestion(db):
     # 1. Setup Mock Provider

@@ -324,6 +324,81 @@
         .list-unstyled {
             list-style: none;
         }
+
+        .mb-2rem {
+            margin-bottom: 2rem;
+        }
+
+        .util-db1172 {
+            color: #db1172;
+        }
+
+        .util-accent-blue {
+            color: var(--accent-blue);
+        }
+
+        .util-f85149 {
+            color: var(--accent-red);
+        }
+
+        .util-e7992d {
+            color: #e7992d;
+        }
+
+        .util-acb67b {
+            color: #8b949e;
+        }
+
+        .util-3fb950 {
+            color: #3fb950;
+        }
+
+        .execution-matched-box {
+            background: rgba(43, 85, 233, 0.05);
+            border: 1px solid rgba(43, 85, 233, 0.2);
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        .mb-025rem {
+            margin-bottom: 0.25rem;
+        }
+
+        .mb-1rem {
+            margin-bottom: 1rem;
+        }
+
+        .mb-0 {
+            margin-bottom: 0;
+        }
+
+        .fs-125 {
+            font-size: 1.25rem;
+        }
+
+        .fs-075 {
+            font-size: 0.75rem;
+        }
+
+        .sub-header-small {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .text-muted-small {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .mb-02 {
+            margin-bottom: 0.5rem;
+        }
+
+        .mb-05 {
+            margin-bottom: 1rem;
+        }
     </style>
 </head>
 
@@ -334,7 +409,7 @@
                 stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
             </svg>
-            ANTIGRAVITY
+            TRADEHALL
         </a>
         <div class="nav-links">
             <a href="/dashboard" class="nav-link ">Overview</a>
@@ -345,6 +420,9 @@
             <a href="/dashboard/setups" class="nav-link ">Technical</a>
             <a href="/dashboard/risk" class="nav-link ">Risk</a>
             <a href="/dashboard/tickets" class="nav-link ">Tickets</a>
+            <a href="/dashboard/trades" class="nav-link ">Trades</a>
+            <a href="/dashboard/management"
+                class="nav-link ">Management</a>
             <a href="/dashboard/queue"
                 class="nav-link nav-link-queue ">Review Queue</a>
             <a href="/dashboard/briefings"
@@ -450,6 +528,8 @@
                     <li class="event-item border-left-green">Policy Router effectively switched to RISK_OFF 0 times during high news density.</li>
                     
                     <li class="event-item border-left-green">Average Guardrails score for winners: 0.0</li>
+                    
+                    <li class="event-item border-left-green">Auto-capture rate (bridge fills): 0.0% (0 of 0 closed trades logged automatically).</li>
                     
                 </ul>
             </div>
