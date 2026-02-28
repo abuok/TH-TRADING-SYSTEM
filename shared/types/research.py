@@ -3,6 +3,7 @@ from typing import Dict, List, Optional, Any
 from pydantic import BaseModel, Field
 import hashlib
 import json
+import os
 
 class SimulatedTrade(BaseModel):
     ticket_id: str
@@ -57,15 +58,36 @@ class ResearchRunResult(BaseModel):
     timeframes: List[str]
     created_at: datetime = Field(default_factory=datetime.utcnow)
     reproducibility_hash: str = ""
+    guardrails_version: str = ""
+    dataset_hash: str = ""
     variants: Dict[str, ResearchVariant] = Field(default_factory=dict)
 
-    def generate_hash(self, git_commit: str = "unknown"):
+    def generate_hash(
+        self,
+        git_commit: str = "unknown",
+        guardrails_version: str = "unknown",
+        dataset_path: str = "",
+    ) -> None:
+        """Compute a deterministic fingerprint covering all inputs that affect research results."""
+        # Hash the dataset file itself for byte-level reproducibility
+        dataset_hash = ""
+        if dataset_path and os.path.exists(dataset_path):
+            h = hashlib.sha256()
+            with open(dataset_path, "rb") as f:
+                for chunk in iter(lambda: f.read(65536), b""):
+                    h.update(chunk)
+            dataset_hash = h.hexdigest()[:12]
+
         data = {
             "pair": self.pair,
             "start": self.start_date.isoformat(),
             "end": self.end_date.isoformat(),
             "git": git_commit,
-            "variants": {k: v.config.model_dump() for k, v in self.variants.items()}
+            "guardrails_version": guardrails_version,
+            "dataset_hash": dataset_hash,
+            "variants": {k: v.config.model_dump() for k, v in self.variants.items()},
         }
         raw = json.dumps(data, sort_keys=True).encode()
         self.reproducibility_hash = hashlib.sha256(raw).hexdigest()[:12]
+        self.guardrails_version = guardrails_version
+        self.dataset_hash = dataset_hash
