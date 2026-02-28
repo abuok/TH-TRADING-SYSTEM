@@ -27,6 +27,10 @@ class MarketContextPacket(BasePacket):
     volume_24h: float
     proxies: Dict[str, Any] = Field(default_factory=dict)
     metrics: Dict[str, Any] = Field(default_factory=dict)
+    # First-class event fields (not buried in metrics)
+    high_impact_events: List[Dict[str, Any]] = Field(default_factory=list)
+    no_trade_windows: List[Dict[str, Any]] = Field(default_factory=list)
+
 
 class PairBiasPacket(BasePacket):
     asset_pair: str

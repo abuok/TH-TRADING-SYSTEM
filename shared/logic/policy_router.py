@@ -111,9 +111,17 @@ class PolicyRouter:
 
     def _build_decision(self, name: str, reasons: List[str], signals: Dict[str, Any]) -> PolicyDecision:
         if name not in self.policies:
-            logger.error(f"Selected policy {name} not found in loaded policies. Falling back to Default.")
+            logger.error(f"Selected policy '{name}' not found in loaded policies. Falling back to Default.")
             name = "Default"
             reasons.append("FALLBACK: Selected policy was missing from config.")
+
+        if name not in self.policies:
+            # Default is also missing — fail hard so operators know the system is misconfigured
+            raise RuntimeError(
+                "PolicyRouter: Neither the selected policy nor 'Default' was found in "
+                f"{self.policies_dir}. Cannot proceed — guardrails would be unconfigured. "
+                "Ensure config/policies/policy_default.yaml exists."
+            )
 
         config = self.policies.get(name, {})
         return PolicyDecision(
