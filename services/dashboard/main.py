@@ -5,6 +5,10 @@ from fastapi import FastAPI, Request, Depends, HTTPException
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
