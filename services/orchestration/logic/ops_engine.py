@@ -5,7 +5,7 @@ import jinja2
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
-from shared.database.models import IncidentLog, OrderTicket, PolicySelectionLog, HindsightOutcomeLog, GuardrailsLog
+from shared.database.models import IncidentLog, OrderTicket, PolicySelectionLog, HindsightOutcomeLog, GuardrailsLog, Packet
 from shared.types.ops import DailyOpsReport, HindsightSummary
 from shared.logic.sessions import get_nairobi_time
 
@@ -70,15 +70,7 @@ class OpsEngine:
         )
         
         # 5. Checklist (Dynamic logic based on current state)
-        checklist_do = [
-            "Monitor news for high-impact red events.",
-            "Review Manual Review Queue every 4 hours.",
-            "Ensure hindsight scoring is running for all skipped trades."
-        ]
-        checklist_dont = [
-            "Over-leverage during high volatility session openings.",
-            "Ignore system health warnings (currently " + health_status + ")."
-        ]
+        checklist_do, checklist_dont = self._generate_dynamic_checklist(health_status)
         
         report = DailyOpsReport(
             report_id=f"ops_{now.strftime('%Y%m%d')}",
@@ -110,3 +102,36 @@ class OpsEngine:
     def render_html(self, report: DailyOpsReport) -> str:
         template = self.jinja_env.get_template("ops_daily_template.html")
         return template.render(report=report)
+
+    def _generate_dynamic_checklist(self, health_status: str):
+        do_items = ["Review Manual Review Queue every 4 hours.", "Ensure hindsight scoring is running for all skipped trades."]
+        dont_items = []
+
+        if health_status != "STABLE":
+            dont_items.append(f"Ignore system health warnings (currently {health_status}).")
+        
+        # Check for upcoming news in next 8 hours
+        now = get_nairobi_time()
+        later = now + timedelta(hours=8)
+        
+        context = self.db.query(Packet).filter(Packet.packet_type == "MarketContextPacket").order_by(Packet.created_at.desc()).first()
+        if context and "high_impact_events" in context.data:
+            upcoming = []
+            for ev in context.data["high_impact_events"]:
+                try:
+                    ev_time = datetime.fromisoformat(ev["time"].replace('Z', '+00:00'))
+                    if now <= ev_time <= later:
+                        upcoming.append(ev["event"])
+                except (ValueError, TypeError, KeyError):
+                    continue
+            
+            if upcoming:
+                dont_items.append(f"Trade during upcoming high-impact news: {', '.join(upcoming[:2])}")
+                do_items.append("Tighten stop losses before news events.")
+            else:
+                do_items.append("Standard execution rules apply (no imminent high-impact news).")
+
+        if not dont_items:
+            dont_items.append("Over-leverage during high volatility session openings.")
+
+        return do_items, dont_items

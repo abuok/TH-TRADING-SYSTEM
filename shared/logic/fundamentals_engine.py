@@ -114,9 +114,16 @@ def evaluate_gbpjpy(proxies: Dict[str, ProxySnapshot], events: List[Dict], creat
             drivers.append(BulletItem(category="RISK_SENTIMENT", text=f"Neutral Risk Sentiment", impact=0))
             
     # 2. Central Bank divergence via events
-    # Simplified mock semantic check
-    boj_hawkish = any("boj" in e.get("event", "").lower() and "rate" in e.get("event", "").lower() for e in events) 
-    boe_hawkish = any("boe" in e.get("event", "").lower() and "hike" in e.get("event", "").lower() for e in events)
+    boj_keywords = ["boj", "bank of japan", "ueda", "ycc", "nirp"]
+    boe_keywords = ["boe", "bank of england", "bailey", "mpc", "bank rate"]
+    
+    boj_hawkish = any(any(kw in e.get("event", "").lower() for kw in boj_keywords) and 
+                      any(kw in e.get("event", "").lower() for kw in ["rate", "hike", "hawkish", "tighten"]) 
+                      for e in events)
+                      
+    boe_hawkish = any(any(kw in e.get("event", "").lower() for kw in boe_keywords) and 
+                      any(kw in e.get("event", "").lower() for kw in ["rate", "hike", "hawkish", "tighten"]) 
+                      for e in events)
 
     if boj_hawkish:
         score -= 2.0

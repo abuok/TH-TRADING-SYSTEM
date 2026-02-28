@@ -1,7 +1,7 @@
 import yaml
 from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional
-from shared.database.models import KillSwitch, OrderTicket
+from shared.database.models import KillSwitch, OrderTicket, Packet
 from shared.types.execution_prep import PreflightCheck
 from shared.logic.sessions import get_nairobi_time
 
@@ -63,13 +63,35 @@ class PreflightEngine:
             details=f"Current spread {current_spread:.1f} pips (Max recommended {max_spread})"
         ))
 
-        # 5. News Check (Simplified placeholder, would normally check MarketContextPacket)
-        # Assuming no news for mock purposes unless we add real integration
+        # 5. News Check (Real-time check against MarketContextPacket)
+        context = self.db.query(Packet).filter(Packet.packet_type == "MarketContextPacket").order_by(Packet.created_at.desc()).first()
+        
+        in_window = False
+        window_details = "No high-impact red events in immediate window"
+        
+        if context and "no_trade_windows" in context.data:
+            for window in context.data["no_trade_windows"]:
+                start_str = window.get("start")
+                end_str = window.get("end")
+                event_name = window.get("event", "Unknown Event")
+                
+                try:
+                    # Expecting ISO format from MarketContextPacket
+                    start_dt = datetime.fromisoformat(start_str.replace('Z', '+00:00'))
+                    end_dt = datetime.fromisoformat(end_str.replace('Z', '+00:00'))
+                    
+                    if start_dt <= now <= end_dt:
+                        in_window = True
+                        window_details = f"Inside no-trade window for: {event_name} (until {end_dt.strftime('%H:%M')} EAT)"
+                        break
+                except (ValueError, TypeError):
+                    continue
+
         checks.append(PreflightCheck(
             id="news_window",
             name="News Proximity",
-            status="PASS",
-            details="No high-impact red events in immediate window"
+            status="PASS" if not in_window else "FAIL",
+            details=window_details
         ))
 
         return checks

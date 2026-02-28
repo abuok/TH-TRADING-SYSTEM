@@ -1,3 +1,4 @@
+import os
 import asyncio
 import httpx
 import time
@@ -12,11 +13,11 @@ from shared.logic.sessions import get_nairobi_time, get_session_label
 from shared.types.trading import OrderTicketSchema
 
 SERVICES = {
-    "Ingestion": "http://localhost:8001/health",
-    "Technical": "http://localhost:8002/health",
-    "Risk": "http://localhost:8003/health",
-    "Journal": "http://localhost:8004/health",
-    "Orchestrator": "http://localhost:8000/health"
+    "Ingestion": os.getenv("INGESTION_URL", "http://localhost:8001/health"),
+    "Technical": os.getenv("TECHNICAL_URL", "http://localhost:8002/health"),
+    "Risk": os.getenv("RISK_URL", "http://localhost:8003/health"),
+    "Journal": os.getenv("JOURNAL_URL", "http://localhost:8004/health"),
+    "Orchestrator": os.getenv("ORCHESTRATOR_URL", "http://localhost:8000/health")
 }
 
 async def get_service_health() -> Dict[str, Any]:

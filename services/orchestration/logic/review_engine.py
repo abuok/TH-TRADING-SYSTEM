@@ -1,6 +1,7 @@
 import os
 import uuid
 import json
+from typing import List
 from datetime import datetime, timedelta
 import jinja2
 from sqlalchemy.orm import Session
@@ -33,11 +34,15 @@ class ReviewEngine:
         missed_r = sum(h.realized_r for h in hindsight_logs if h.realized_r > 0)
         
         # 2. Discipline
-        violations = 0 # Placeholder for violation logic
+        violations = self.db.query(GuardrailsLog).filter(
+            GuardrailsLog.created_at >= start_date,
+            GuardrailsLog.hard_block == True
+        ).count()
+        
         avg_score = 0.0
         gr_logs = self.db.query(GuardrailsLog).filter(GuardrailsLog.created_at >= start_date).all()
         if gr_logs:
-            avg_score = sum(l.total_score for l in gr_logs) / len(gr_logs)
+            avg_score = sum(l.discipline_score for l in gr_logs) / len(gr_logs)
         
         # 3. Decision Quality
         skipped_winners = len([h for h in hindsight_logs if h.outcome_label == "WIN"])
@@ -54,7 +59,7 @@ class ReviewEngine:
         # 5. Insights & Mistakes
         insights = [
             f"Policy Router effectively switched to RISK_OFF {self._count_switches(start_date, 'policy_risk_off')} times during high news density.",
-            f"Average Guardrails score for winners: {self._avg_winner_score(start_date):.1f}"
+            f"Average Guardrails score for winners: {self._avg_winner_score(start_date, hindsight_logs):.1f}"
         ]
         
         mistakes = []
@@ -137,7 +142,24 @@ class ReviewEngine:
             PolicySelectionLog.policy_name == policy_name
         ).count()
 
-    def _avg_winner_score(self, start):
-        # Join tickets with guardrails logs (matching setup_packet_id)
-        # For simplicity, just average gr scores of winners
-        return 88.5 # Mock as actual join is complex without cross-linking properly
+    def _avg_winner_score(self, start, hindsight_logs: List[HindsightOutcomeLog]):
+        # Get ticket_ids of winners from hindsight logs
+        winning_ticket_ids = [h.ticket_id for h in hindsight_logs if h.outcome_label == "WIN"]
+        if not winning_ticket_ids:
+            return 0.0
+            
+        # Get setup_packet_ids for those tickets
+        setup_ids = self.db.query(OrderTicket.setup_packet_id).filter(
+            OrderTicket.ticket_id.in_(winning_ticket_ids)
+        ).all()
+        setup_ids = [s[0] for s in setup_ids if s[0]]
+        
+        if not setup_ids:
+            return 0.0
+
+        # Get avg score from guardrails logs for those setups
+        res = self.db.query(func.avg(GuardrailsLog.discipline_score)).filter(
+            GuardrailsLog.setup_packet_id.in_(setup_ids)
+        ).scalar()
+        
+        return float(res) if res else 0.0
