@@ -80,9 +80,92 @@ def seed():
         IncidentLog(severity="WARNING", component="Bridge", message="Slow response from MT5 detected (300ms).")
     ]
     db.add_all(incidents)
-    
+    db.flush()
+
+    # 8. Order Tickets (for Hindsight)
+    ticket = OrderTicket(
+        ticket_id="TKT-RESEARCH-001",
+        setup_packet_id=setups[0].id,
+        risk_packet_id=decisions[0].id,
+        pair="XAUUSD",
+        direction="BUY",
+        entry_price=2034.50,
+        stop_loss=2030.00,
+        take_profit_1=2045.00,
+        lot_size=0.1,
+        risk_usd=45.0,
+        risk_pct=0.45,
+        rr_tp1=2.3,
+        status="SKIPPED",
+        skip_reason="NEWS_WINDOW",
+        idempotency_key="ORDER_IDEMP_001",
+        hindsight_status="DONE",
+        hindsight_outcome_label="WIN",
+        hindsight_realized_r=2.3
+    )
+    db.add(ticket)
+    db.flush()
+
+    # 9. Hindsight Outcome Log
+    hindsight_log = HindsightOutcomeLog(
+        ticket_id=ticket.ticket_id,
+        outcome_label="WIN",
+        realized_r=2.3,
+        first_hit="TP1",
+        time_to_hit_min=45,
+        notes="Price hit TP1 after 45 mins. Good setup missed."
+    )
+    db.add(hindsight_log)
+
+    # 10. Policy Selection Log
+    policies = [
+        PolicySelectionLog(
+            pair="XAUUSD",
+            policy_name="Volatile_Breakout_V2",
+            policy_hash="abc123hash",
+            reasons={"volatility": "high", "trend": "strong_up"},
+            regime_signals={"atr_ratio": 1.5, "adx": 35}
+        ),
+        PolicySelectionLog(
+            pair="EURUSD",
+            policy_name="Mean_Reversion_Standard",
+            policy_hash="xyz789hash",
+            reasons={"volatility": "low", "regime": "ranging"},
+            regime_signals={"atr_ratio": 0.8, "rsi": 50}
+        )
+    ]
+    db.add_all(policies)
+
     db.commit()
     print("Seed complete.")
+
+    # 11. Create dummy research artifacts
+    print("Creating research artifacts...")
+    os.makedirs("artifacts/research", exist_ok=True)
+    import json
+    
+    run_id = "res_demo_001"
+    research_report = {
+        "run_id": run_id,
+        "strategy": "PHX_Detector_V3",
+        "dataset": "XAUUSD_M1_2024",
+        "net_profit": 1250.50,
+        "win_rate": 0.62,
+        "max_drawdown": 0.05,
+        "sharpe_ratio": 1.8,
+        "total_trades": 142
+    }
+    with open(f"artifacts/research/{run_id}.json", "w") as f:
+        json.dump(research_report, f)
+    
+    with open(f"artifacts/research/{run_id}.html", "w") as f:
+        f.write(f"<html><body><h1>Research Report: {run_id}</h1><p>Performance: +12.5% over 1 month.</p></body></html>")
+
+    # Create a dummy data.csv for hindsight
+    if not os.path.exists("data.csv"):
+        with open("data.csv", "w") as f:
+            f.write("timestamp,open,high,low,close,volume\n")
+            f.write("2026-02-28 12:00:00,2034.5,2035.0,2034.0,2034.8,100\n")
 
 if __name__ == "__main__":
     seed()

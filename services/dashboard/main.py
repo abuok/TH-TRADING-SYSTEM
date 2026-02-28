@@ -24,7 +24,7 @@ import secrets
 
 security = HTTPBasic()
 
-app = FastAPI(title="Operator Dashboard")
+app = FastAPI(title="Tradehall Trading System")
 
 # Templates setup (optional in lightweight test environments)
 try:
