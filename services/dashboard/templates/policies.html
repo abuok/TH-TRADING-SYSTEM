@@ -28,8 +28,7 @@
         </div>
 
         <div class="sub-header">Reasons</div>
-        <ul class="list-unstyled">
-            {% for reason in policy.reasons %}
+        <ul class="list-unstyled">{% for reason in policy.reasons %}
             <li class="util-e7992d text-small p-0">• {{ reason }}</li>
             {% endfor %}
         </ul>
