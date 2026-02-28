@@ -180,7 +180,7 @@ async def dashboard_research(request: Request):
     runs = []
     import json
     if os.path.exists("artifacts/research"):
-        files = [f for f in os.listdir("artifacts/research") if f.endswith(".json")]
+        files = [f for f in os.listdir("artifacts/research") if f.startswith("res_") and f.endswith(".json")]
         for f in sorted(files, reverse=True):
             try:
                 with open(os.path.join("artifacts/research", f), "r") as rfile:
