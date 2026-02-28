@@ -213,7 +213,7 @@ def test_killswitch_suggestion(db):
     
     run_management_cycle(db)
     
-    sug = db.query(ManagementSuggestionLog).filter(ManagementSuggestionLog.ticket_id == "T3").first()
+    sug = db.query(ManagementSuggestionLog).filter(ManagementSuggestionLog.ticket_id == str(ticket.id)).first()
     assert sug is not None
     assert sug.suggestion_type == "NO_ACTION"
     assert sug.severity == "CRITICAL"
