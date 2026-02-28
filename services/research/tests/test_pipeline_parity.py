@@ -157,9 +157,9 @@ class TestPipelineParity:
 
     def test_lot_sizing_parity_gbpjpy(self):
         """GBPJPY uses 100_000 factor."""
-        # Risk $100, dist 1.0, factor 100000 → 0.001
+        # Risk $100, dist 1.0, factor 100000 → 0.001 but floor is 0.01
         lot = _calc_lot_size(entry=190.0, sl=189.0, pair="GBPJPY", risk_usd=100.0)
-        assert lot == 0.001
+        assert lot == 0.01
 
     def test_lot_sizing_zero_dist_fallback(self):
         """Zero risk distance must fall back to minimum lot."""

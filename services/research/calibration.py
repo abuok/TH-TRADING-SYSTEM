@@ -27,7 +27,7 @@ def analyze_variant(
     
     # Calculate Deltas
     er_delta = variant_metrics.expectancy_r - baseline_metrics.expectancy_r
-    dd_delta = variant_metrics.max_drawdown_r - baseline_metrics.max_drawdown_r # Positive means DD got closer to 0 (improved)
+    dd_delta = baseline_metrics.max_drawdown_r - variant_metrics.max_drawdown_r # Positive means DD decreased (improved)
     win_rate_delta = variant_metrics.win_rate_pct - baseline_metrics.win_rate_pct
     
     recco_id = f"rec_{uuid.uuid4().hex[:6]}"

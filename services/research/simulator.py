@@ -178,7 +178,7 @@ def run_replay(
         # Guardrails engine (same class used by live orchestration)
         gr_engine = GuardrailsEngine()
 
-        # PHX candle-by-candle state machine — replaces _mock_detector
+        # PHX candle-by-candle state machine
         detector = PHXDetector(asset_pair=pair)
 
         last_signal_time: Optional[datetime] = None

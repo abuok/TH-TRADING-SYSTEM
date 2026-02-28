@@ -14,35 +14,36 @@ def synthetic_csv(tmp_path):
         writer.writerow(["timestamp", "open", "high", "low", "close", "volume"])
         
         start_time = datetime(2026, 1, 1, 10, 0, 0)
+        base = 2000.0
         
-        # We need at least 50 candles for the sliding window
-        # Let's mock a sequence where the last 3 candles trigger a LONG setup
-        base_price = 100.0
-        for i in range(50):
-            writer.writerow([
-                (start_time + timedelta(minutes=15 * i)).isoformat() + "Z",
-                base_price, base_price + 2, base_price - 2, base_price + 0.5, 100
-            ])
-            # slight upward drift
-            base_price += 0.1
+        # 1. BIAS: 3 higher highs
+        for i in range(3):
+            writer.writerow([(start_time + timedelta(minutes=15*i)).isoformat() + "Z", base, base+i+1, base-1, base+i, 1000])
+        
+        # 2. History padding to 10 candles
+        for i in range(3, 9):
+            writer.writerow([(start_time + timedelta(minutes=15*i)).isoformat() + "Z", base+2, base+3, base+1, base+2, 1000])
             
-        # The trigger candles (3 consecutive bullish drives)
-        for i in range(50, 53):
-            writer.writerow([
-                (start_time + timedelta(minutes=15 * i)).isoformat() + "Z",
-                base_price, base_price + 3, base_price, base_price + 2, 200
-            ])
-            base_price += 2
-            
-        # The future candles (that will immediately hit TP)
-        # Entry will be around 111.0, TP will be heavily above.
-        # We'll just pump the price so it hits TP to test WIN resolution.
-        for i in range(53, 55):
-            writer.writerow([
-                (start_time + timedelta(minutes=15 * i)).isoformat() + "Z",
-                base_price, base_price + 20, base_price, base_price + 15, 200
-            ])
-            base_price += 15
+        # 3. SWEEP: Price takes out min low (base-1)
+        writer.writerow([(start_time + timedelta(minutes=15*9)).isoformat() + "Z", base+2, base+5, base-2, base+3, 2000])
+        
+        # 4. DISPLACE: Bullish drive
+        writer.writerow([(start_time + timedelta(minutes=15*10)).isoformat() + "Z", base+2, base+6, base+1, base+5, 1000])
+        writer.writerow([(start_time + timedelta(minutes=15*11)).isoformat() + "Z", base+4, base+8, base+3, base+7, 1000])
+        writer.writerow([(start_time + timedelta(minutes=15*12)).isoformat() + "Z", base+6, base+10, base+5, base+9, 1000])
+        
+        # 5. CHOCH_BOS: break sweep high (sweep candle high was base-2+7=base+5? wait, base+5)
+        writer.writerow([(start_time + timedelta(minutes=15*13)).isoformat() + "Z", base+4, base+15, base+3, base+12, 1000])
+        
+        # 6. RETEST
+        writer.writerow([(start_time + timedelta(minutes=15*14)).isoformat() + "Z", base+12, base+13, base+4, base+6, 1000])
+        
+        # 7. TRIGGER
+        writer.writerow([(start_time + timedelta(minutes=15*15)).isoformat() + "Z", base+6, base+10, base+5, base+9, 1000])
+        
+        # 8. FUTURE (WIN)
+        for i in range(16, 25):
+            writer.writerow([(start_time + timedelta(minutes=15*i)).isoformat() + "Z", base+9, base+50, base+8, base+45, 1000])
             
     return str(filepath)
 
