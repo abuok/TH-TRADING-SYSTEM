@@ -50,7 +50,7 @@
                 </td>
                 <td>
                     {% if item.status == 'OPEN' %}
-                    <button class="badge badge-success pointer no-border" onclick="markDone({{ item.id }})">Mark
+                    <button class="badge badge-success pointer no-border" onclick="markDone('{{ item.id }}')">Mark
                         Done</button>
                     {% endif %}
                 </td>

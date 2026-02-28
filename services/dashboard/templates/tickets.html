@@ -110,17 +110,17 @@
                         `).join('');
 
                         content.innerHTML = `
-                            <div class="dashboard-grid util-grid-cols-2-gap-2rem-mt-1rem">
+                            <div class="dashboard-grid-2-col">
                                 <div>
-                                    <h4 class="sub-header-small text-muted mb-05rem">Preflight Checklist</h4>
+                                    <h4 class="sub-header-small text-muted mb-05">Preflight Checklist</h4>
                                     ${checkHtml}
                                 </div>
                                 <div>
-                                    <h4 style="margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-muted);">Platform Specific Strings</h4>
-                                    <div style="font-size: 0.75rem; color:var(--text-muted); margin-bottom: 0.2rem;">MT5 Format</div>
-                                    <code style="background: rgba(0,0,0,0.3); padding: 0.4rem; border-radius: 4px; font-size: 0.85rem; display:block; margin-bottom:0.5rem;">${p.platform_formats.mt5_text}</code>
-                                    <div style="font-size: 0.75rem; color:var(--text-muted); margin-bottom: 0.2rem;">cTrader Format</div>
-                                    <code style="background: rgba(0,0,0,0.3); padding: 0.4rem; border-radius: 4px; font-size: 0.85rem; display:block;">${p.platform_formats.ctrader_text}</code>
+                                    <h4 class="sub-header-small text-muted mb-05">Platform Specific Strings</h4>
+                                    <div class="text-muted-small mb-02">MT5 Format</div>
+                                    <code class="execution-code-block">${p.platform_formats.mt5_text}</code>
+                                    <div class="text-muted-small mb-02">cTrader Format</div>
+                                    <code class="execution-code-block">${p.platform_formats.ctrader_text}</code>
                                 </div>
                             </div>
                         `;
