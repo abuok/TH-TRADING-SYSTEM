@@ -75,12 +75,15 @@ def test_preflight_fail_closed_on_no_data(db):
     import os
     os.environ["PRICE_PROVIDER"] = "db"
     
-    checks = engine.run_checks(ticket)
-    
-    # Find price_deviation check
-    pd_check = next(c for c in checks if c.id == "price_deviation")
-    assert pd_check.status == "FAIL"
-    assert "FAIL-CLOSED" in pd_check.details
+    try:
+        checks = engine.run_checks(ticket)
+        
+        # Find price_deviation check
+        pd_check = next(c for c in checks if c.id == "price_deviation")
+        assert pd_check.status == "FAIL"
+        assert "FAIL-CLOSED" in pd_check.details
+    finally:
+        os.environ["PRICE_PROVIDER"] = "mock"
 
 def test_lot_sizing_with_spec(db):
     # Seed spec
@@ -122,9 +125,12 @@ def test_lot_sizing_with_spec(db):
     import os
     os.environ["SPEC_PROVIDER"] = "db"
     
-    ticket = generate_order_ticket(setup, risk, db)
-    assert ticket.lot_size > 0
-    assert ticket.status != "BLOCKED"
+    try:
+        ticket = generate_order_ticket(setup, risk, db)
+        assert ticket.lot_size > 0
+        assert ticket.status != "BLOCKED"
+    finally:
+        os.environ["SPEC_PROVIDER"] = "mock"
 
 def test_lot_sizing_blocked_on_missing_spec(db):
     from shared.types.packets import TechnicalSetupPacket, RiskApprovalPacket
@@ -153,6 +159,9 @@ def test_lot_sizing_blocked_on_missing_spec(db):
     import os
     os.environ["SPEC_PROVIDER"] = "db"
     
-    ticket = generate_order_ticket(setup, risk, db)
-    assert ticket.status == "BLOCKED"
-    assert "No SymbolSpec found" in ticket.block_reason
+    try:
+        ticket = generate_order_ticket(setup, risk, db)
+        assert ticket.status == "BLOCKED"
+        assert "No SymbolSpec found" in ticket.block_reason
+    finally:
+        os.environ["SPEC_PROVIDER"] = "mock"
