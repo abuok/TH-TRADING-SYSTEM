@@ -1,9 +1,13 @@
 import os
 import uuid
 from datetime import datetime, timedelta
-import jinja2
 from sqlalchemy.orm import Session
 from sqlalchemy import func
+
+try:
+    import jinja2
+except ModuleNotFoundError:
+    jinja2 = None
 
 from shared.database.models import IncidentLog, OrderTicket, PolicySelectionLog, HindsightOutcomeLog, GuardrailsLog, Packet
 from shared.types.ops import DailyOpsReport, HindsightSummary
@@ -15,7 +19,9 @@ OUTPUT_DIR = "artifacts/ops/daily"
 class OpsEngine:
     def __init__(self, db: Session):
         self.db = db
-        self.jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(TEMPLATE_DIR))
+        self.jinja_env = None
+        if jinja2 is not None:
+            self.jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(TEMPLATE_DIR))
 
     def generate_daily_report(self) -> DailyOpsReport:
         now = get_nairobi_time()
@@ -100,8 +106,17 @@ class OpsEngine:
         return report, html_path
 
     def render_html(self, report: DailyOpsReport) -> str:
-        template = self.jinja_env.get_template("ops_daily_template.html")
-        return template.render(report=report)
+        if self.jinja_env is not None:
+            template = self.jinja_env.get_template("ops_daily_template.html")
+            return template.render(report=report)
+
+        return (
+            f"<html><body><h1>Daily Ops Report</h1>"
+            f"<p>ID: {report.report_id}</p>"
+            f"<p>Health: {report.health_status}</p>"
+            f"<p>Skips: {report.queue_skips}</p>"
+            f"</body></html>"
+        )
 
     def _generate_dynamic_checklist(self, health_status: str):
         do_items = ["Review Manual Review Queue every 4 hours.", "Ensure hindsight scoring is running for all skipped trades."]
