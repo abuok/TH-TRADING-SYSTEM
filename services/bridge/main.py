@@ -168,6 +168,29 @@ async def post_trades_positions(batch: PositionSnapshotBatch, db: Session = Depe
 async def health():
     return {"status": "healthy", "service": "bridge"}
 
+import asyncio
+from shared.logic.trade_management_engine import run_management_cycle
+
+async def management_loop():
+    """Background task to run trade management rules every 2 minutes."""
+    logger.info("Starting trade management background loop.")
+    while True:
+        try:
+            db = db_session.SessionLocal()
+            try:
+                run_management_cycle(db)
+            finally:
+                db.close()
+        except Exception as e:
+            logger.error(f"Error in management_loop: {e}")
+        
+        await asyncio.sleep(120) # 2 minutes
+
+@app.on_event("startup")
+async def startup_event():
+    asyncio.create_task(management_loop())
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8005)
+

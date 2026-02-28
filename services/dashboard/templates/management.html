@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="header-section mb-6">
+    <h1 class="text-3xl font-bold text-white mb-2">Trade Management Assistant</h1>
+    <p class="text-gray-400">Rule-based management suggestions for active positions. Execution must be done manually in
+        MT5.</p>
+</div>
+
+<div class="grid grid-cols-1 gap-6">
+    <!-- Active Suggestions Card -->
+    <div class="bg-gray-800 border border-gray-700 rounded-xl overflow-hidden shadow-2xl">
+        <div class="px-6 py-4 border-b border-gray-700 bg-gray-900/50 flex justify-between items-center">
+            <h2 class="text-lg font-semibold text-white flex items-center">
+                <svg class="w-5 h-5 mr-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Active Recommendations
+            </h2>
+            <span class="px-3 py-1 bg-blue-900/30 text-blue-400 text-xs font-bold rounded-full border border-blue-800">
+                {{ suggestions|length }} Alerts
+            </span>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-900/50 text-gray-400 text-xs uppercase tracking-wider">
+                        <th class="px-6 py-3 border-b border-gray-700">Type</th>
+                        <th class="px-6 py-3 border-b border-gray-700">Symbol</th>
+                        <th class="px-6 py-3 border-b border-gray-700">Current R</th>
+                        <th class="px-6 py-3 border-b border-gray-700">Reason</th>
+                        <th class="px-6 py-3 border-b border-gray-700">Instruction</th>
+                        <th class="px-6 py-3 border-b border-gray-700">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-700">
+                    {% for sug in suggestions %}
+                    <tr class="hover:bg-gray-750 transition-colors">
+                        <td class="px-6 py-4">
+                            {% if sug.severity == 'CRITICAL' %}
+                            <span
+                                class="px-2 py-1 bg-red-900/30 text-red-400 text-xs font-bold rounded border border-red-800">
+                                {{ sug.suggestion_type }}
+                            </span>
+                            {% elif sug.severity == 'WARN' %}
+                            <span
+                                class="px-2 py-1 bg-yellow-900/30 text-yellow-400 text-xs font-bold rounded border border-yellow-800">
+                                {{ sug.suggestion_type }}
+                            </span>
+                            {% else %}
+                            <span
+                                class="px-2 py-1 bg-blue-900/30 text-blue-400 text-xs font-bold rounded border border-blue-800">
+                                {{ sug.suggestion_type }}
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm font-medium text-white">{{ sug.symbol }}</div>
+                            <div class="text-xs text-gray-500">{{ sug.side }} {{ sug.lots }} lots</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div
+                                class="text-sm font-bold {% if sug.current_r >= 1.0 %}text-green-400{% else %}text-white{% endif %}">
+                                {{ sug.current_r|round(2) }}R
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-300">
+                            {{ sug.reasons|join(', ') }}
+                        </td>
+                        <td class="px-6 py-4">
+                            <code class="text-blue-400 bg-gray-900 px-2 py-1 rounded text-xs select-all">
+                                {{ sug.instruction }}
+                            </code>
+                        </td>
+                        <td class="px-6 py-4 text-sm">
+                            <button onclick="copyToClipboard('{{ sug.instruction }}')"
+                                class="text-gray-400 hover:text-white transition-colors" title="Copy for MT5">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3">
+                                    </path>
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% if not suggestions %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-12 text-center text-gray-500 italic">
+                            No active management suggestions. Your positions are in good standing.
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Live Position Context -->
+    <div class="bg-gray-800 border border-gray-700 rounded-xl overflow-hidden shadow-2xl mt-4">
+        <div class="px-6 py-4 border-b border-gray-700 bg-gray-900/50">
+            <h2 class="text-lg font-semibold text-white">Live Positions Reference</h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-900/50 text-gray-400 text-xs uppercase tracking-wider">
+                        <th class="px-6 py-3 border-b border-gray-700">Symbol</th>
+                        <th class="px-6 py-3 border-b border-gray-700">Avg Price</th>
+                        <th class="px-6 py-3 border-b border-gray-700">SL / TP</th>
+                        <th class="px-6 py-3 border-b border-gray-700">P&L</th>
+                        <th class="px-6 py-3 border-b border-gray-700">Last Seen</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-700">
+                    {% for pos in positions %}
+                    <tr class="hover:bg-gray-750 transition-colors">
+                        <td class="px-6 py-4">
+                            <span class="text-sm font-bold text-white">{{ pos.symbol }}</span>
+                            <span
+                                class="ml-2 text-xs {% if pos.side == 'BUY' %}text-green-500{% else %}text-red-500{% endif %}">
+                                {{ pos.side }} {{ pos.lots }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-300">
+                            {{ pos.avg_price }}
+                        </td>
+                        <td class="px-6 py-4 text-xs text-gray-400">
+                            <div>SL: {{ pos.sl }}</div>
+                            <div>TP: {{ pos.tp }}</div>
+                        </td>
+                        <td
+                            class="px-6 py-4 font-mono text-sm {% if pos.floating_pnl >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
+                            ${{ "%.2f"|format(pos.floating_pnl) }}
+                        </td>
+                        <td class="px-6 py-4 text-xs text-gray-500">
+                            {{ pos.updated_at_eat.strftime('%H:%M:%S') if pos.updated_at_eat else 'N/A' }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            alert('Instruction copied to clipboard!');
+        });
+    }
+</script>
+
+<style>
+    .bg-gray-750 {
+        background-color: #2d3748;
+    }
+</style>
+{% endblock %}

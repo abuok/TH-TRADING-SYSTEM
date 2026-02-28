@@ -269,3 +269,23 @@ class JournalLog(Base):
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     ticket = relationship("OrderTicket", foreign_keys=[ticket_id])
+
+class ManagementSuggestionLog(Base):
+    __tablename__ = "management_suggestions_log"
+
+    id = Column(Integer, primary_key=True, index=True)
+    ticket_id = Column(String, ForeignKey("order_tickets.ticket_id"), nullable=False, index=True)
+    broker_trade_id = Column(String, nullable=False, index=True)
+    suggestion_type = Column(String, nullable=False, index=True) # MOVE_SL_TO_BE, etc.
+    severity = Column(String, nullable=False) # INFO, WARN, CRITICAL
+    data = Column(JSON, nullable=False) # Full suggestion details
+    time_bucket = Column(String, nullable=False, index=True) # e.g., "S1-2026-02-28-18" for dedup
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint('ticket_id', 'suggestion_type', 'time_bucket', name='_ticket_suggestion_bucket_uc'),
+    )
+
+    ticket = relationship("OrderTicket", foreign_keys=[ticket_id])
+

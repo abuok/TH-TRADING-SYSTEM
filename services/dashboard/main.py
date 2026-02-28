@@ -248,6 +248,21 @@ async def dashboard_trades(request: Request, db: Session = Depends(db_session.ge
         "positions": positions
     })
 
+@app.get("/dashboard/management", response_class=HTMLResponse)
+async def dashboard_management(request: Request, db: Session = Depends(db_session.get_db)):
+    from shared.database.models import ManagementSuggestionLog
+    suggestions = db.query(ManagementSuggestionLog).order_by(ManagementSuggestionLog.created_at.desc()).limit(50).all()
+    # Also get open positions for context
+    positions = db.query(PositionSnapshotModel).all()
+    
+    return render_template("management.html", {
+        "request": request,
+        "active_page": "management",
+        "suggestions": [s.data for s in suggestions], # Using the JSON data field
+        "positions": positions
+    })
+
+
 
 @app.get("/dashboard/tickets", response_class=HTMLResponse)
 async def tickets(request: Request, pair: Optional[str] = None):
