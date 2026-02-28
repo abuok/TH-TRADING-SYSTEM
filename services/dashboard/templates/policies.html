@@ -21,7 +21,7 @@
         <div class="sub-header">Signals</div>
         <div class="util-d3297f">
             {% for key, val in policy.regime_signals.items() %}
-            <div class="util-acb67b" style="font-size: 0.85rem;">
+            <div class="util-acb67b text-small">
                 <strong>{{ key | replace('_', ' ') | title }}:</strong> {{ val }}
             </div>
             {% endfor %}
@@ -30,11 +30,11 @@
         <div class="sub-header">Reasons</div>
         <ul class="list-unstyled">
             {% for reason in policy.reasons %}
-            <li class="util-e7992d" style="font-size: 0.85rem; padding: 2px 0;">• {{ reason }}</li>
+            <li class="util-e7992d text-small p-0">• {{ reason }}</li>
             {% endfor %}
         </ul>
 
-        <div class="clock-label util-f8a732" style="margin-top: 10px;">
+        <div class="clock-label util-f8a732 mt-10">
             Selected: {{ policy.created_at.strftime('%H:%M:%S') }} EAT
         </div>
     </div>
@@ -42,7 +42,7 @@
 </div>
 
 <!-- Policy Switch History -->
-<div class="card" style="margin-top: 20px;">
+<div class="card mt-20">
     <h2>Policy Switch Timeline (Last 30)</h2>
     <table>
         <thead>
@@ -60,10 +60,10 @@
                 <td><strong>{{ entry.pair }}</strong></td>
                 <td>
                     <span class="badge badge-info">{{ entry.policy_name }}</span>
-                    <span class="util-acb67b" style="font-size: 0.8rem;">#{{ entry.policy_hash }}</span>
+                    <span class="util-acb67b text-xs">#{{ entry.policy_hash }}</span>
                 </td>
                 <td>
-                    <div class="util-acb67b" style="font-size: 0.8rem;">
+                    <div class="util-acb67b text-xs">
                         {{ entry.reasons | join(' | ') }}
                     </div>
                 </td>

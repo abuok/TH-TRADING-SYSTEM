@@ -804,6 +804,152 @@
     border-left: 4px solid var(--accent-orange);
 }
 
+/* Animations */
+.delay-1 {
+    animation-delay: 0.1s;
+}
+
+.delay-2 {
+    animation-delay: 0.2s;
+}
+
+.delay-3 {
+    animation-delay: 0.3s;
+}
+
+.delay-4 {
+    animation-delay: 0.4s;
+}
+
+/* Spacing Utilities */
+.mt-0 {
+    margin-top: 0;
+}
+
+.mt-1 {
+    margin-top: 1rem;
+}
+
+.mt-10 {
+    margin-top: 10px;
+}
+
+.mt-20 {
+    margin-top: 20px;
+}
+
+.mb-02 {
+    margin-bottom: 0.2rem;
+}
+
+.mb-05 {
+    margin-bottom: 0.5rem;
+}
+
+.mb-1 {
+    margin-bottom: 1rem;
+}
+
+.mb-2 {
+    margin-bottom: 2rem;
+}
+
+.p-0 {
+    padding: 0;
+}
+
+.pl-1 {
+    padding-left: 1rem;
+}
+
+/* Text Utilities */
+.text-small {
+    font-size: 0.85rem;
+}
+
+.text-xs {
+    font-size: 0.8rem;
+}
+
+.text-green {
+    color: var(--accent-green);
+}
+
+.text-red {
+    color: var(--accent-red);
+}
+
+.text-orange {
+    color: var(--accent-orange);
+}
+
+.text-muted-small {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.no-underline {
+    text-decoration: none;
+}
+
+.pointer {
+    cursor: pointer;
+}
+
+.no-border {
+    border: none;
+}
+
+/* Flex & Grid Utilities */
+.flex-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.flex-between-start {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.dashboard-grid-2-col {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 2rem;
+    margin-top: 1rem;
+}
+
+/* Execution Prep Component */
+.prep-active-panel {
+    border-top: 1px solid var(--border-color);
+    border-left: 4px solid var(--accent-green);
+    padding-left: 1rem;
+    margin-bottom: 2rem;
+}
+
+.preflight-item {
+    color: #888;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.25rem;
+    font-size: 0.85rem;
+}
+
+.execution-code-block {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 0.4rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    display: block;
+    margin-bottom: 0.5rem;
+    font-family: monospace;
+}
+
+.border-left-orange {
+    border-left: 4px solid var(--accent-orange);
+}
+
 .border-left-warning {
     border-left: 4px solid var(--accent-orange);
 }

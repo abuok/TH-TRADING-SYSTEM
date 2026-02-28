@@ -36,9 +36,14 @@
             <div>
                 <h3 class="sub-header">ACTIVE KILL SWITCHES</h3>
                 {% if kill_switches %}
-                <ul class="list-unstyled">{%- for ks in kill_switches -%}<li class="util-ac79cc"><span
-                            class="badge badge-danger">{{ ks.switch_type }}</span><span class="util-e7992d">{{ ks.target
-                            or 'GLOBAL' }}</span></li>{%- endfor -%}</ul>
+                <ul class="list-unstyled">
+                    {%- for ks in kill_switches -%}
+                    <li class="util-ac79cc">
+                        <span class="badge badge-danger">{{ ks.switch_type }}</span>
+                        <span class="util-e7992d">{{ ks.target or 'GLOBAL' }}</span>
+                    </li>
+                    {%- endfor -%}
+                </ul>
                 {% else %}
                 <p class="util-ff6795">SYSTEM ARMED: No Active Kill Switches</p>
                 {% endif %}

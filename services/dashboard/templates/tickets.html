@@ -81,10 +81,9 @@
         </div>
 
         {% if ticket.status == 'APPROVED' %}
-        <div id="prep-panel-{{ ticket.ticket_id }}" class="util-f67a91"
-            style="border-left: 4px solid var(--accent-green); padding-left: 1rem; margin-bottom: 2rem;">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h3 class="sub-header" style="color: var(--accent-green);">Execution Prep Active</h3>
+        <div id="prep-panel-{{ ticket.ticket_id }}" class="prep-active-panel">
+            <div class="flex-between">
+                <h3 class="sub-header text-green">Execution Prep Active</h3>
                 <span id="timer-{{ ticket.ticket_id }}" class="badge badge-warning">Loading...</span>
             </div>
             <div id="prep-content-{{ ticket.ticket_id }}">
@@ -104,16 +103,16 @@
                         timer.setAttribute('data-expiry', p.expires_at);
 
                         const checkHtml = p.preflight_checks.map(c => `
-                            <div class="util-bdc6c3" style="display:flex; justify-content:space-between; margin-bottom: 0.25rem; font-size: 0.85rem;">
+                            <div class="preflight-item">
                                 <span>${c.name}: ${c.details}</span>
                                 <span class="badge ${c.status === 'PASS' ? 'badge-success' : (c.status === 'WARN' ? 'badge-warning' : 'badge-danger')}">${c.status}</span>
                             </div>
                         `).join('');
 
                         content.innerHTML = `
-                            <div class="dashboard-grid" style="grid-template-columns: 1fr 1.5fr; gap: 2rem; margin-top: 1rem;">
+                            <div class="dashboard-grid util-grid-cols-2-gap-2rem-mt-1rem">
                                 <div>
-                                    <h4 style="margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-muted);">Preflight Checklist</h4>
+                                    <h4 class="sub-header-small text-muted mb-05rem">Preflight Checklist</h4>
                                     ${checkHtml}
                                 </div>
                                 <div>

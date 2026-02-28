@@ -50,8 +50,8 @@
                 </td>
                 <td>
                     {% if item.status == 'OPEN' %}
-                    <button class="badge badge-success" onclick="markDone({{ item.id }})"
-                        style="cursor: pointer; border: none;">Mark Done</button>
+                    <button class="badge badge-success pointer no-border" onclick="markDone({{ item.id }})">Mark
+                        Done</button>
                     {% endif %}
                 </td>
             </tr>
@@ -62,7 +62,7 @@
 </div>
 
 <script>
-async def markDone(id) {
+    async function markDone(id) {
         if (!confirm("Mark this action item as completed?")) return;
 
         const response = await fetch(`/api/action-items/${id}/done`, {

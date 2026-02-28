@@ -26,7 +26,7 @@
                 <div class="metric-label">Realized R</div>
             </div>
             <div>
-                <div class="metric-value" style="color: var(--accent-orange);">{{ "%.2f"|format(report.total_missed_r)
+                <div class="metric-value text-orange">{{ "%.2f"|format(report.total_missed_r)
                     }}R</div>
                 <div class="metric-label">Missed R (Hindsight)</div>
             </div>
@@ -34,7 +34,7 @@
     </div>
 
     <!-- discipline card -->
-    <div class="card animate-fade" style="animation-delay: 0.1s;">
+    <div class="card animate-fade delay-1">
         <div class="card-header">
             <h2>Discipline & Quality</h2>
         </div>
@@ -51,7 +51,7 @@
     </div>
 
     <!-- decision quality card -->
-    <div class="card animate-fade" style="animation-delay: 0.2s;">
+    <div class="card animate-fade delay-2">
         <div class="card-header">
             <h2>Decision Quality</h2>
         </div>
@@ -63,13 +63,13 @@
             </tr>
             <tr>
                 <td>Approved</td>
-                <td style="color: var(--accent-green);">{{ report.approved_winners }}</td>
-                <td style="color: var(--accent-red);">{{ report.approved_losers }}</td>
+                <td class="text-green">{{ report.approved_winners }}</td>
+                <td class="text-red">{{ report.approved_losers }}</td>
             </tr>
             <tr>
                 <td>Skipped/Expired</td>
-                <td style="color: var(--accent-green);">{{ report.skipped_winners }}</td>
-                <td style="color: var(--accent-red);">{{ report.skipped_losers }}</td>
+                <td class="text-green">{{ report.skipped_winners }}</td>
+                <td class="text-red">{{ report.skipped_losers }}</td>
             </tr>
         </table>
     </div>
@@ -77,22 +77,22 @@
 
 <div class="grid">
     <!-- insights card -->
-    <div class="card animate-fade" style="animation-delay: 0.3s;">
+    <div class="card animate-fade delay-3">
         <h2>Top Insights & Mistakes</h2>
         <div class="sub-grid">
             <div>
-                <div class="sub-header" style="color: var(--accent-green);">Insights</div>
+                <div class="sub-header text-green">Insights</div>
                 <ul class="list-unstyled">
                     {% for insight in report.top_insights %}
-                    <li class="event-item" style="border-left-color: var(--accent-green);">{{ insight }}</li>
+                    <li class="event-item border-left-green">{{ insight }}</li>
                     {% endfor %}
                 </ul>
             </div>
             <div>
-                <div class="sub-header" style="color: var(--accent-red);">Mistakes</div>
+                <div class="sub-header text-red">Mistakes</div>
                 <ul class="list-unstyled">
                     {% for mistake in report.top_mistakes %}
-                    <li class="event-item" style="border-left-color: var(--accent-red);">{{ mistake }}</li>
+                    <li class="event-item border-left-red">{{ mistake }}</li>
                     {% endfor %}
                 </ul>
             </div>
@@ -100,14 +100,14 @@
     </div>
 
     <!-- action items card -->
-    <div class="card animate-fade" style="animation-delay: 0.4s;">
+    <div class="card animate-fade delay-4">
         <div class="card-header">
             <h2>Auto-Created Action Items</h2>
-            <a href="/dashboard/action-items" class="badge badge-info" style="text-decoration: none;">View Tracker</a>
+            <a href="/dashboard/action-items" class="badge badge-info no-underline">View Tracker</a>
         </div>
         <ul class="list-unstyled">
             {% for item in report.created_action_items %}
-            <li class="event-item" style="border-left-color: var(--accent-orange);">{{ item }}</li>
+            <li class="event-item border-left-orange">{{ item }}</li>
             {% endfor %}
             {% if not report.created_action_items %}
             <li class="event-meta">No critical issues identified this week. Keep going!</li>
