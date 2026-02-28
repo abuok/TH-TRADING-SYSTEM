@@ -44,3 +44,19 @@ This manual provides instructions for the daily operation and management of the 
 2. Run `python -m infra.cli tuning validate-proposals --id <ID>` to see counterfactual simulation results.
 3. If results show improvement, apply the YAML patch provided in the dashboard.
 4. **Rollback**: To revert, restore the previous `config/*.yaml` file from the `backups/` directory or your version control system.
+
+## Pilot Graduation Gate Thresholds
+
+The following thresholds must be maintained to successfully "Graduate" the system to higher capital limits:
+
+| Metric | Threshold | Failure Meaning |
+|---|---|---|
+| **Quote Staleness** | < 30s | Data feed reliability issues. Check Quote Bridge ISP or MT5 connectivity. |
+| **Max Overrides** | 1 / session | Over-reliance on human intuition over system guardrails. |
+| **Median Review Time** | < 300s | Operator bottleneck. Tickets are expiring before review. |
+| **Min Approved Trades** | 8 trades | Insufficient data to validate current policy expectancy. |
+| **Expectancy Delta** | > 0.03R | The active policy is not significantly outperforming skipped setups. |
+| **Session Drawdown** | > -2.0R | Risk management failure in a single session. |
+| **Win Rate** | > 40% | Psychological comfort limit for sustainability. |
+
+Failure to meet these thresholds should trigger a **Hindsight Audit** to determine if the issue is market-based or logic-based.

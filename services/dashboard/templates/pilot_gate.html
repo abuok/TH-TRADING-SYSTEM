@@ -33,18 +33,32 @@
                 <td class="util-a8ece1 util-1e8514" style="text-align: left;">
                     {% if key == 'quote_freshness_pct' %}
                     Minimum uptime/freshness for live quote bridge data.
+                    {% elif key == 'max_quote_stale_seconds' %}
+                    Maximum allowed single gap in quote updates.
                     {% elif key == 'ticket_based_trades_pct' %}
-                    Percentage of trades that must originate from system tickets.
+                    Percentage of trades from system tickets.
                     {% elif key == 'execution_prep_override_rate' %}
-                    Maximum allowed human overrides on pre-flight checks.
+                    Max human overrides percentage.
+                    {% elif key == 'max_overrides_per_session' %}
+                    Max absolute overrides in a single session.
                     {% elif key == 'expired_ticket_rate' %}
-                    Maximum allowed ticket expiration rate.
+                    Max ticket expiration rate.
+                    {% elif key == 'max_median_time_to_review_seconds' %}
+                    Max median operator response time (seconds).
                     {% elif key == 'approved_expectancy_R' %}
-                    Minimum expected R-multiple per trade.
+                    Min expected R-multiple per trade.
+                    {% elif key == 'min_approved_trades' %}
+                    Min volume to validate expectancy.
+                    {% elif key == 'min_expectancy_delta_vs_baseline_R' %}
+                    Min improvement over skipped trades.
                     {% elif key == 'max_drawdown_R' %}
-                    Maximum allowed drawdown in R-multiples.
+                    Max aggregate drawdown.
+                    {% elif key == 'max_drawdown_R_per_session' %}
+                    Max drawdown allowed in one session.
                     {% elif key == 'min_win_rate_pct' %}
-                    Minimum win rate percentage for graduation.
+                    Min win rate percentage.
+                    {% elif key == 'max_break_even_rate_pct' %}
+                    Max BE percentage allowed.
                     {% endif %}
                 </td>
             </tr>

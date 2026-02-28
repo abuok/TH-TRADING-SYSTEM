@@ -10,7 +10,7 @@ from fastapi import FastAPI, Header, HTTPException, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from shared.database.models import LiveQuote, SymbolSpec, IncidentLog, PositionSnapshot as PositionSnapshotModel
+from shared.database.models import LiveQuote, SymbolSpec, IncidentLog, PositionSnapshot as PositionSnapshotModel, QuoteStaleLog
 import shared.database.session as db_session
 from shared.logic.sessions import get_nairobi_time
 from shared.types.trade_capture import TradeFillBatch, PositionSnapshotBatch
@@ -57,6 +57,15 @@ async def post_quote(payload: QuotePayload, db: Session = Depends(db_session.get
             if existing.bid == payload.bid and existing.ask == payload.ask:
                 return {"status": "ignored", "reason": "no change"}
             
+            # Track staleness
+            stale_secs = (datetime.now(timezone.utc) - (existing.captured_at or datetime.now(timezone.utc))).total_seconds()
+            if stale_secs > 1.0: # Only log if it's more than 1s gap between updates
+                stale_log = QuoteStaleLog(
+                    symbol=payload.symbol,
+                    stale_duration_seconds=stale_secs
+                )
+                db.add(stale_log)
+
             existing.bid = payload.bid
             existing.ask = payload.ask
             existing.spread = spread

@@ -2,7 +2,7 @@ import pytest
 from datetime import date, timedelta, datetime, timezone
 from sqlalchemy.orm import Session
 from shared.database.models import (
-    OrderTicket, ExecutionPrepLog, PilotSessionLog, PilotScorecardLog, TuningProposalLog
+    OrderTicket, ExecutionPrepLog, PilotSessionLog, PilotScorecardLog, TuningProposalLog, QuoteStaleLog
 )
 from services.research.pilot import build_pilot_scorecard, fetch_session_metrics
 from shared.logic.sessions import get_nairobi_time
@@ -23,7 +23,7 @@ def db():
     session.close()
     Base.metadata.drop_all(bind=engine)
 
-def create_mock_ticket(ticket_id, pair, status, created_at, realized_r=None):
+def create_mock_ticket(ticket_id, pair, status, created_at, realized_r=None, reviewed_at=None, executed_at=None, hindsight_r=None):
     return OrderTicket(
         ticket_id=ticket_id,
         setup_packet_id=1,
@@ -40,7 +40,10 @@ def create_mock_ticket(ticket_id, pair, status, created_at, realized_r=None):
         idempotency_key=f"IK-{ticket_id}",
         status=status,
         manual_outcome_r=realized_r,
-        created_at=created_at
+        created_at=created_at,
+        reviewed_at=reviewed_at,
+        executed_at=executed_at,
+        hindsight_realized_r=hindsight_r
     )
 
 def test_pilot_metrics_aggregation(db):
@@ -84,8 +87,13 @@ def test_full_scorecard_generation(db):
         curr = start_date + timedelta(days=i)
         dt_curr = datetime.combine(curr, datetime.min.time(), tzinfo=timezone.utc)
         
-        # Add a passing trade each day
-        db.add(create_mock_ticket(f"SC-{i}", "EURUSD", "APPROVED", dt_curr + timedelta(hours=12), realized_r=1.0))
+        # Add 8 passing trades each day to meet min_approved_trades
+        for j in range(8):
+            db.add(create_mock_ticket(f"SC-{i}-{j}", "EURUSD", "APPROVED", dt_curr + timedelta(hours=10+j), realized_r=1.0, hindsight_r=1.0, executed_at=dt_curr + timedelta(hours=10+j)))
+        
+        # Add 2 skipped trades with lower hindsight R to create a positive delta
+        for j in range(2):
+            db.add(create_mock_ticket(f"SK-{i}-{j}", "EURUSD", "SKIPPED", dt_curr + timedelta(hours=10+j), hindsight_r=0.5))
     
     db.commit()
     
@@ -122,3 +130,46 @@ def test_graduation_gate_failure(db):
     pf, reasons = evaluate_gate(record, config)
     assert pf == "FAIL"
     assert any("expired" in r.lower() for r in reasons)
+
+def test_gate_staleness_failure(db):
+    day = date(2026, 2, 21)
+    db.add(QuoteStaleLog(symbol="EURUSD", stale_duration_seconds=45.0, created_at=datetime.combine(day, datetime.min.time(), tzinfo=timezone.utc)))
+    db.commit()
+    
+    from services.research.pilot import fetch_session_metrics, evaluate_gate, load_pilot_config
+    record = fetch_session_metrics(db, day)
+    config = load_pilot_config()
+    
+    pf, reasons = evaluate_gate(record, config)
+    assert pf == "FAIL"
+    assert any("staleness" in r.lower() for r in reasons)
+
+def test_gate_operator_response_failure(db):
+    day = date(2026, 2, 22)
+    dt_day = datetime.combine(day, datetime.min.time(), tzinfo=timezone.utc)
+    # Approved but late review (600s > 300s limit)
+    t = create_mock_ticket("LATE-1", "EURUSD", "APPROVED", dt_day, reviewed_at=dt_day + timedelta(seconds=600))
+    db.add(t)
+    db.commit()
+    
+    from services.research.pilot import fetch_session_metrics, evaluate_gate, load_pilot_config
+    record = fetch_session_metrics(db, day)
+    config = load_pilot_config()
+    pf, reasons = evaluate_gate(record, config)
+    assert pf == "FAIL"
+    assert any("response time" in r.lower() or "median" in r.lower() for r in reasons)
+
+def test_gate_session_drawdown_failure(db):
+    day = date(2026, 2, 23)
+    dt_day = datetime.combine(day, datetime.min.time(), tzinfo=timezone.utc)
+    # Sequential losses creating a -2.5R drawdown
+    db.add(create_mock_ticket("DD-1", "EURUSD", "APPROVED", dt_day, executed_at=dt_day + timedelta(hours=8), realized_r=-1.0))
+    db.add(create_mock_ticket("DD-2", "EURUSD", "APPROVED", dt_day, executed_at=dt_day + timedelta(hours=9), realized_r=-1.5))
+    db.commit()
+    
+    from services.research.pilot import fetch_session_metrics, evaluate_gate, load_pilot_config
+    record = fetch_session_metrics(db, day)
+    config = load_pilot_config()
+    pf, reasons = evaluate_gate(record, config)
+    assert pf == "FAIL"
+    assert any("drawdown" in r.lower() or "dd" in r.lower() for r in reasons)

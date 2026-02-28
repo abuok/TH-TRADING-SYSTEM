@@ -1,26 +1,21 @@
-# config/pilot_gate.yaml
-# Graduation thresholds for the 10-session pilot protocol
-
-# Must have high freshness data
 quote_freshness_pct: 95.0
+max_quote_stale_seconds: 30
 
-# Bulk of trades must be ticket based, not manual fallbacks
 ticket_based_trades_pct: 95.0
 
-# Humans should not be overriding pre-flight too often
 execution_prep_override_rate: 10.0
+max_overrides_per_session: 1
 
-# Tickets shouldn't be expiring constantly 
 expired_ticket_rate: 15.0
+max_median_time_to_review_seconds: 300
 
-# System must have positive expectancy per trade
 approved_expectancy_R: 0.05
+min_approved_trades: 8
 
-# System should be beating the skipped/missed baseline
-expectancy_beat_baseline: true
+min_expectancy_delta_vs_baseline_R: 0.03
 
-# Max drawdown allowed during the pilot
 max_drawdown_R: -5.0
+max_drawdown_R_per_session: -2.0
 
-# Minimum win rate to sustain psychological comfort
 min_win_rate_pct: 40.0
+# max_break_even_rate_pct: 35.0

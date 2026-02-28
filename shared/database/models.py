@@ -318,3 +318,10 @@ class PilotScorecardLog(Base):
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     pass_fail = Column(String, index=True) # PASS or FAIL
     data = Column(JSON, nullable=False) # Full PilotScorecard JSON
+
+class QuoteStaleLog(Base):
+    __tablename__ = "quote_stale_logs"
+    id = Column(Integer, primary_key=True)
+    symbol = Column(String, index=True, nullable=False)
+    stale_duration_seconds = Column(Float, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))

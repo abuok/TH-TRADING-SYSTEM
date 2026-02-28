@@ -62,6 +62,8 @@
                         <th class="util-e7fa6d">Session ID</th>
                         <th class="util-7613c8">Status</th>
                         <th class="util-a8ece1">Expectancy R</th>
+                        <th class="util-a8ece1">Max Stale</th>
+                        <th class="util-a8ece1">DD Session</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -78,6 +80,12 @@
                         <td
                             class="util-a8ece1 {% if s.data.performance_metrics.approved_expectancy_r > 0 %}util-20f3a9{% else %}util-49d8b4{% endif %}">
                             {{ s.data.performance_metrics.approved_expectancy_r | round(2) }}R
+                        </td>
+                        <td class="util-a8ece1">
+                            {{ s.data.reliability_metrics.max_quote_stale_seconds | round(1) }}s
+                        </td>
+                        <td class="util-a8ece1">
+                            {{ s.data.performance_metrics.max_drawdown_r | round(2) }}R
                         </td>
                     </tr>
                     {% endfor %}
