@@ -63,7 +63,7 @@ def get_dashboard_data(db: Session):
     no_trade_windows = []
     if latest_context and "high_impact_events" in latest_context.data:
         events = latest_context.data.get("high_impact_events", [])[:5]
-        no_trade_windows = latest_context.get("no_trade_windows", [])
+        no_trade_windows = latest_context.data.get("no_trade_windows", [])
     
     # 3. Latest 10 Setups
     setup_packets = db.query(Packet).filter(Packet.packet_type == "TechnicalSetupPacket").order_by(Packet.created_at.desc()).limit(10).all()
