@@ -17,7 +17,7 @@ from typing import List, Optional
 sys.path.append(os.getcwd())
 
 import shared.database.session as db_session
-from shared.database.models import Packet, IncidentLog, KillSwitch, SessionBriefing, GuardrailsLog, PolicySelectionLog, ActionItem, OpsReportLog, OrderTicket, LiveQuote, SymbolSpec
+from shared.database.models import Packet, IncidentLog, KillSwitch, SessionBriefing, GuardrailsLog, PolicySelectionLog, ActionItem, OpsReportLog, OrderTicket, LiveQuote, SymbolSpec, TradeFillLog, PositionSnapshot as PositionSnapshotModel, TicketTradeLink, JournalLog
 from services.dashboard.logic import get_service_health, get_dashboard_data, get_tickets, get_briefings, get_latest_briefing
 from shared.logic.sessions import get_nairobi_time
 from sqlalchemy import func, and_
@@ -230,6 +230,23 @@ async def calibration_report_view(report_id: str):
     if not os.path.exists(report_path):
         raise HTTPException(status_code=404, detail="Calibration report not found")
     return FileResponse(report_path)
+
+@app.get("/dashboard/trades", response_class=HTMLResponse)
+async def dashboard_trades(request: Request, db: Session = Depends(db_session.get_db)):
+    fills = db.query(TradeFillLog).order_by(TradeFillLog.time_utc.desc()).limit(100).all()
+    positions = db.query(PositionSnapshotModel).order_by(PositionSnapshotModel.updated_at_utc.desc()).all()
+    
+    # Enrich fills with ticket links
+    for f in fills:
+        link = db.query(TicketTradeLink).filter(TicketTradeLink.broker_trade_id == f.broker_trade_id).first()
+        f.ticket_id = link.ticket_id if link else None
+
+    return render_template("trades.html", {
+        "request": request,
+        "active_page": "trades",
+        "fills": fills,
+        "positions": positions
+    })
 
 
 @app.get("/dashboard/tickets", response_class=HTMLResponse)

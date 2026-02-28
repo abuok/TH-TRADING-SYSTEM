@@ -63,6 +63,30 @@
         </div>
         {% endif %}
 
+        {% if ticket.broker_trade_id %}
+        <!-- Mission E: Execution Result -->
+        <div class="card animate-fade mb-1rem"
+            style="background: rgba(43, 85, 233, 0.05); border: 1px solid rgba(43, 85, 233, 0.2);">
+            <div class="flex-between">
+                <div>
+                    <h3 class="sub-header util-accent-blue" style="margin-bottom: 0.25rem;">Live Execution Matched</h3>
+                    <p class="util-acb67b" style="margin-bottom: 0;">MT5 ID: {{ ticket.broker_trade_id }} | Executed: {{
+                        ticket.executed_at.strftime('%Y-%m-%d %H:%M:%S') if ticket.executed_at else 'Time Pending' }}
+                        EAT</p>
+                </div>
+                <div class="text-right">
+                    {% if ticket.realized_r is not none %}
+                    <div class="metric-value {{ 'util-3fb950' if ticket.realized_r >= 0 else 'util-f85149' }}"
+                        style="font-size: 1.25rem;">
+                        {{ "{:+.2f}".format(ticket.realized_r) }}R
+                    </div>
+                    <div class="util-acb67b" style="font-size: 0.75rem;">Realized PnL</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
         <div class="grid util-0f1e43">
             <div class="util-a93da3">
                 <div class="metric-label">Entry ({{ ticket.entry_type }})</div>

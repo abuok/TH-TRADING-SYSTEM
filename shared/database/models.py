@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, JSON, DateTime, ForeignKey, Float, Boolean, Date, Text
+from sqlalchemy import Column, Integer, String, JSON, DateTime, ForeignKey, Float, Boolean, Date, Text, UniqueConstraint
 from sqlalchemy.orm import declarative_base, relationship
 from datetime import datetime, timezone
 
@@ -75,6 +75,7 @@ class OrderTicket(Base):
 
     expires_at = Column(DateTime(timezone=True), nullable=True)
     reviewed_at = Column(DateTime(timezone=True), nullable=True)
+    executed_at = Column(DateTime(timezone=True), nullable=True)
     closed_at = Column(DateTime(timezone=True), nullable=True)
     review_decision = Column(String, nullable=True) # APPROVE, SKIP
     skip_reason = Column(String, nullable=True)
@@ -205,3 +206,66 @@ class SymbolSpec(Base):
     min_lot = Column(Float, default=0.01)
     lot_step = Column(Float, default=0.01)
     captured_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+class TradeFillLog(Base):
+    __tablename__ = "trade_fills_log"
+
+    id = Column(Integer, primary_key=True, index=True)
+    broker_trade_id = Column(String, index=True, nullable=False)
+    symbol = Column(String, nullable=False)
+    side = Column(String, nullable=False)
+    lots = Column(Float, nullable=False)
+    price = Column(Float, nullable=False)
+    time_utc = Column(DateTime(timezone=True), nullable=False)
+    time_eat = Column(DateTime(timezone=True), nullable=False)
+    event_type = Column(String, nullable=False) # OPEN, CLOSE, PARTIAL
+    sl = Column(Float, nullable=True)
+    tp = Column(Float, nullable=True)
+    comment = Column(Text, nullable=True)
+    magic = Column(Integer, nullable=True)
+    account_id = Column(String, nullable=False)
+    source = Column(String, default="MT5")
+    captured_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (UniqueConstraint('broker_trade_id', 'event_type', 'time_utc', name='_broker_fill_uc'),)
+
+class PositionSnapshot(Base):
+    __tablename__ = "position_snapshots"
+
+    id = Column(Integer, primary_key=True)
+    position_id = Column(String, unique=True, index=True, nullable=False)
+    symbol = Column(String, nullable=False)
+    side = Column(String, nullable=False)
+    lots = Column(Float, nullable=False)
+    avg_price = Column(Float, nullable=False)
+    floating_pnl = Column(Float, nullable=False)
+    sl = Column(Float, nullable=True)
+    tp = Column(Float, nullable=True)
+    updated_at_utc = Column(DateTime(timezone=True), nullable=False)
+    updated_at_eat = Column(DateTime(timezone=True), nullable=False)
+    account_id = Column(String, nullable=False)
+    captured_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+class TicketTradeLink(Base):
+    __tablename__ = "ticket_trade_link"
+
+    id = Column(Integer, primary_key=True)
+    ticket_id = Column(String, ForeignKey("order_tickets.ticket_id"), nullable=False, index=True)
+    broker_trade_id = Column(String, nullable=False, index=True)
+    match_method = Column(String, nullable=False) # COMMENT, HEURISTIC
+    confidence = Column(Float, default=1.0)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+    ticket = relationship("OrderTicket", foreign_keys=[ticket_id])
+
+class JournalLog(Base):
+    __tablename__ = "journal_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    ticket_id = Column(String, ForeignKey("order_tickets.ticket_id"), nullable=True, index=True)
+    event_type = Column(String, nullable=False, index=True) # TRADE_OPENED, TRADE_PARTIAL, TRADE_CLOSED, etc.
+    message = Column(Text, nullable=False)
+    data = Column(JSON, nullable=True) # Extra metadata like broker_trade_id, price, lots
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+    ticket = relationship("OrderTicket", foreign_keys=[ticket_id])

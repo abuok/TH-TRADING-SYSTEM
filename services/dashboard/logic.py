@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text, desc
 
 import shared.database.session as db_session
-from shared.database.models import Packet, KillSwitch, IncidentLog, OrderTicket, SessionBriefing, LiveQuote, SymbolSpec
+from shared.database.models import Packet, KillSwitch, IncidentLog, OrderTicket, SessionBriefing, LiveQuote, SymbolSpec, TicketTradeLink, TradeFillLog, JournalLog
 from shared.logic.sessions import get_nairobi_time, get_session_label
 from shared.types.trading import OrderTicketSchema
 
@@ -119,7 +119,30 @@ async def get_tickets(pair: Optional[str] = None) -> List[OrderTicketSchema]:
         tickets = query.order_by(OrderTicket.created_at.desc()).limit(50).all()
         
         # Convert to schemas with formatters
-        return [OrderTicketSchema.model_validate(t, from_attributes=True) for t in tickets]
+        ticket_schemas = [OrderTicketSchema.model_validate(t, from_attributes=True) for t in tickets]
+        
+        # Enrich with bridge and journal data
+        for t_schema in ticket_schemas:
+            link = db.query(TicketTradeLink).filter(TicketTradeLink.ticket_id == t_schema.ticket_id).first()
+            if link:
+                t_schema.broker_trade_id = link.broker_trade_id
+                # Get execution timestamp from the fill log
+                fill = db.query(TradeFillLog).filter(
+                    TradeFillLog.broker_trade_id == link.broker_trade_id, 
+                    TradeFillLog.event_type == "OPEN"
+                ).first()
+                if fill:
+                    t_schema.executed_at = fill.time_eat
+                
+                # Get realized PnL/R from the most recent journal entry for this ticket
+                journal = db.query(JournalLog).filter(
+                    JournalLog.ticket_id == t_schema.ticket_id, 
+                    JournalLog.event_type.in_(["TRADE_CLOSED", "PARTIAL_CLOSE"])
+                ).order_by(JournalLog.created_at.desc()).first()
+                if journal:
+                    t_schema.realized_r = journal.data.get("realized_r") if journal.data else None
+                    
+        return ticket_schemas
     finally:
         db.close()
 

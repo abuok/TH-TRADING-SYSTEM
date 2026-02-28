@@ -49,6 +49,11 @@ class OrderTicketSchema(BaseModel):
     manual_outcome_r: Optional[float] = None
     manual_outcome_label: Optional[TicketOutcomeEnum] = None
     manual_screenshot_ref: Optional[str] = None
+    
+    # Mission E: Bridge Data
+    executed_at: Optional[datetime] = None
+    broker_trade_id: Optional[str] = None
+    realized_r: Optional[float] = None
 
     def to_mt5_note(self) -> str:
         """Formats the ticket as a plain text note for MT5."""

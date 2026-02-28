@@ -10,9 +10,11 @@ from fastapi import FastAPI, Header, HTTPException, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from shared.database.models import LiveQuote, SymbolSpec, IncidentLog
+from shared.database.models import LiveQuote, SymbolSpec, IncidentLog, PositionSnapshot as PositionSnapshotModel
 import shared.database.session as db_session
 from shared.logic.sessions import get_nairobi_time
+from shared.types.trade_capture import TradeFillBatch, PositionSnapshotBatch
+from shared.logic.trade_lifecycle import process_trade_fill
 
 logger = logging.getLogger("BridgeService")
 
@@ -108,6 +110,57 @@ async def post_spec(payload: SpecPayload, db: Session = Depends(db_session.get_d
         return {"status": "success", "symbol": payload.symbol}
     except Exception as e:
         logger.error(f"Error posting spec: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/bridge/trades/fill")
+async def post_trades_fill(batch: TradeFillBatch, db: Session = Depends(db_session.get_db), authenticated: bool = Depends(verify_secret)):
+    """
+    Ingest a batch of trade fill events (OPEN/CLOSE/PARTIAL).
+    """
+    results = []
+    for fill in batch.fills:
+        res = process_trade_fill(db, fill)
+        results.append(res)
+    return {"status": "success", "processed": len(batch.fills), "results": results}
+
+@app.post("/bridge/trades/positions")
+async def post_trades_positions(batch: PositionSnapshotBatch, db: Session = Depends(db_session.get_db), authenticated: bool = Depends(verify_secret)):
+    """
+    Ingest a batch of current position snapshots. Updates position_snapshots table.
+    """
+    try:
+        # Clear old snapshots for the accounts reported (or just upsert)
+        for snap in batch.snapshots:
+            existing = db.query(PositionSnapshotModel).filter(PositionSnapshotModel.position_id == snap.position_id).first()
+            if existing:
+                existing.lots = snap.lots
+                existing.avg_price = snap.avg_price
+                existing.floating_pnl = snap.floating_pnl
+                existing.sl = snap.sl
+                existing.tp = snap.tp
+                existing.updated_at_utc = snap.updated_at_utc
+                existing.updated_at_eat = snap.updated_at_eat
+            else:
+                new_snap = PositionSnapshotModel(
+                    position_id=snap.position_id,
+                    symbol=snap.symbol,
+                    side=snap.side,
+                    lots=snap.lots,
+                    avg_price=snap.avg_price,
+                    floating_pnl=snap.floating_pnl,
+                    sl=snap.sl,
+                    tp=snap.tp,
+                    updated_at_utc=snap.updated_at_utc,
+                    updated_at_eat=snap.updated_at_eat,
+                    account_id=snap.account_id
+                )
+                db.add(new_snap)
+        
+        db.commit()
+        return {"status": "success", "updated": len(batch.snapshots)}
+    except Exception as e:
+        logger.error(f"Error updating position snapshots: {e}")
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 

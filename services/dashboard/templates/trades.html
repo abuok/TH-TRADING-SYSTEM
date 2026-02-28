@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="header-section">
+    <div class="header-title">
+        <h1>Trade Capture Bridge</h1>
+        <p>Live fills, positions, and history from MetaTrader 5</p>
+    </div>
+</div>
+
+<!-- Position Snapshots -->
+<div class="card" style="margin-bottom: 2rem;">
+    <h2>Current Positions</h2>
+    {% if positions %}
+    <table>
+        <thead>
+            <tr>
+                <th>Position ID</th>
+                <th>Symbol</th>
+                <th>Side</th>
+                <th>Lots</th>
+                <th>Avg Price</th>
+                <th>PnL ($)</th>
+                <th>Last Update</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in positions %}
+            <tr>
+                <td class="util-db1172">{{ p.position_id }}</td>
+                <td>{{ p.symbol }}</td>
+                <td>
+                    <span class="badge badge-{{ 'success' if p.side == 'BUY' else 'danger' }}">
+                        {{ p.side }}
+                    </span>
+                </td>
+                <td>{{ p.lots }}</td>
+                <td>{{ p.avg_price }}</td>
+                <td class="util-{{ '3fb950' if p.floating_pnl >= 0 else 'f85149' }}">
+                    {{ "%.2f" | format(p.floating_pnl) }}
+                </td>
+                <td class="util-acb67b">{{ p.updated_at_eat.strftime('%H:%M:%S') }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="util-acb67b">No active positions reported.</p>
+    {% endif %}
+</div>
+
+<!-- Trade Fills Log -->
+<div class="card">
+    <h2>Latest Fills</h2>
+    {% if fills %}
+    <table>
+        <thead>
+            <tr>
+                <th>Time (EAT)</th>
+                <th>Symbol</th>
+                <th>Type</th>
+                <th>Side</th>
+                <th>Lots</th>
+                <th>Price</th>
+                <th>Matched Ticket</th>
+                <th>MT5 ID</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for f in fills %}
+            <tr>
+                <td class="util-acb67b">{{ f.time_eat.strftime('%H:%M:%S') }}</td>
+                <td class="util-db1172">{{ f.symbol }}</td>
+                <td>
+                    <span class="badge badge-info">{{ f.event_type }}</span>
+                </td>
+                <td>
+                    <span class="badge badge-{{ 'success' if f.side == 'BUY' else 'danger' }}">
+                        {{ f.side }}
+                    </span>
+                </td>
+                <td>{{ f.lots }}</td>
+                <td>{{ f.price }}</td>
+                <td>
+                    {% if f.ticket_id %}
+                    <a href="/dashboard/tickets?pair={{ f.symbol }}#{{ f.ticket_id }}" class="util-accent-blue">{{
+                        f.ticket_id }}</a>
+                    {% else %}
+                    <span class="util-f85149">UNMATCHED</span>
+                    {% endif %}
+                </td>
+                <td class="util-e7992d">{{ f.broker_trade_id }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="util-acb67b">No trade fills recorded yet.</p>
+    {% endif %}
+</div>
+{% endblock %}
