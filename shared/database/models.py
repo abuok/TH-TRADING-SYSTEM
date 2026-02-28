@@ -289,3 +289,12 @@ class ManagementSuggestionLog(Base):
 
     ticket = relationship("OrderTicket", foreign_keys=[ticket_id])
 
+class TuningProposalLog(Base):
+    __tablename__ = "tuning_proposals_log"
+
+    id = Column(Integer, primary_key=True, index=True)
+    report_id = Column(String, unique=True, index=True, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    status = Column(String, default="OPEN", index=True) # OPEN, ACCEPTED, REJECTED
+    reviewer_notes = Column(Text, nullable=True)
+    data = Column(JSON, nullable=False) # Full TuningProposalReport JSON
