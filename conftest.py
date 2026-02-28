@@ -2,6 +2,9 @@ import os
 
 # FORCE SQLite for all tests immediately before any imports trigger engine initialization
 os.environ["DATABASE_URL"] = "sqlite:///:memory:"
+# Force mock providers so tests never hit real DB/broker for quotes/specs
+os.environ.setdefault("SPEC_PROVIDER", "mock")
+os.environ.setdefault("PRICE_PROVIDER", "mock")
 
 import pytest
 from sqlalchemy.orm import sessionmaker
@@ -28,3 +31,6 @@ def setup_db():
     # Cleanup
     Base.metadata.drop_all(bind=test_engine)
     test_engine.dispose()
+    # Reset any global provider overrides set during the test
+    from shared.providers.price_quote import set_price_quote_provider
+    set_price_quote_provider(None)
