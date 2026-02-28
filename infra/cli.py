@@ -258,5 +258,98 @@ def research_show(run_id: str):
         console.print(f"  Max Drawdown (R):         [red]-{m.get('max_drawdown_r')}R[/red]")
         console.print(f"  Total R:                  [bold]{m.get('total_r')}R[/bold]\n")
 
+@research_app.command("validate-proposals")
+def validate_proposals(
+    pair: str,
+    date_from: str, 
+    date_to: str,
+    csv_path: str,
+    proposal_id: str,
+    timeframe: str = "15m"
+):
+    """Validate a tuning proposal by running research simulations over a historical window."""
+    try:
+        dt_from = datetime.fromisoformat(date_from)
+        dt_to = datetime.fromisoformat(date_to)
+    except ValueError:
+        console.print("[red]Invalid date format. Use YYYY-MM-DD or ISO 8601[/red]")
+        raise typer.Exit(1)
+        
+    db = db_session.SessionLocal()
+    try:
+        from shared.database.models import TuningProposalLog
+        import json
+        
+        # 1. Fetch the Proposal
+        log = db.query(TuningProposalLog).filter(TuningProposalLog.data['proposals'].contains([{'id': proposal_id}])).first()
+        if not log:
+            console.print(f"[red]Proposal '{proposal_id}' not found.[/red]")
+            return
+            
+        proposals = log.data.get("proposals", [])
+        prop = next((p for p in proposals if p["id"] == proposal_id), None)
+        if not prop:
+            console.print(f"[red]Proposal '{proposal_id}' not found in log {log.report_id}.[/red]")
+            return
+            
+        # 2. Extract proposed change to build counterfactual
+        # In a real system, you'd map standard proposals perfectly to CounterfactualConfig args
+        # Here we mock standard mappings for Guardrails/Queue/Management
+        variant = CounterfactualConfig()
+        if "guardrails" in prop["target"]:
+            # e.g., soften discipline score
+            console.print(f"Applying Guardrails patch for proposal: {proposal_id}")
+            variant = CounterfactualConfig(ignore_guardrails_blocks=True)
+            
+        variants = {
+            "baseline": CounterfactualConfig(), 
+            f"proposed_{proposal_id}": variant
+        }
+    finally:
+        db.close()
+        
+    with console.status(f"[bold green]Simulating Baseline vs {proposal_id} on {pair} from {dt_from.date()} to {dt_to.date()}...[/]"):
+        try:
+            result = run_replay(csv_path, pair, timeframe, dt_from, dt_to, variants)
+        except Exception as e:
+            console.print(f"[red]Replay failed: {e}[/red]")
+            raise typer.Exit(1)
+            
+    json_path = save_json(result)
+    
+    console.print(f"\n[bold cyan]Validation Complete for {proposal_id}[/bold cyan]")
+    
+    base_m = result.variants["baseline"].metrics
+    prop_m = result.variants[f"proposed_{proposal_id}"].metrics
+    
+    console.print("\n[bold]Metrics Comparison:[/bold]")
+    table = Table()
+    table.add_column("Metric")
+    table.add_column("Baseline")
+    table.add_column("Proposed")
+    table.add_column("Delta")
+    
+    def add_metric(name, m_key):
+        b_val = base_m.get(m_key, 0)
+        p_val = prop_m.get(m_key, 0)
+        if isinstance(b_val, float):
+            delta = f"{(p_val - b_val):+.2f}"
+            table.add_row(name, f"{b_val:.2f}", f"{p_val:.2f}", delta)
+        elif isinstance(b_val, int):
+            delta = f"{(p_val - b_val):+d}"
+            table.add_row(name, str(b_val), str(p_val), delta)
+            
+    add_metric("Total R", "total_r")
+    add_metric("Win Rate (%)", "win_rate_pct")
+    add_metric("Max Drawdown (R)", "max_drawdown_r")
+    add_metric("Total Executed", "executed_trades")
+    
+    console.print(table)
+    
+    if prop_m.get("total_r", 0) > base_m.get("total_r", 0):
+        console.print(f"[bold green]Proposal '{proposal_id}' IMPROVES performance on historical data![/]")
+    else:
+        console.print(f"[bold yellow]Proposal '{proposal_id}' DOES NOT improve performance on historical data.[/]")
+
 if __name__ == "__main__":
     app()

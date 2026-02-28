@@ -1,5 +1,6 @@
 import os
 import sys
+from logging.config import fileConfig
 
 # Add the project root to sys.path to allow importing shared
 sys.path.append(os.getcwd())

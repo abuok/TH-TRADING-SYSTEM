@@ -17,7 +17,7 @@ from typing import List, Optional
 sys.path.append(os.getcwd())
 
 import shared.database.session as db_session
-from shared.database.models import Packet, IncidentLog, KillSwitch, SessionBriefing, GuardrailsLog, PolicySelectionLog, ActionItem, OpsReportLog, OrderTicket, LiveQuote, SymbolSpec, TradeFillLog, PositionSnapshot as PositionSnapshotModel, TicketTradeLink, JournalLog
+from shared.database.models import Packet, IncidentLog, KillSwitch, SessionBriefing, GuardrailsLog, PolicySelectionLog, ActionItem, OpsReportLog, OrderTicket, LiveQuote, SymbolSpec, TradeFillLog, PositionSnapshot as PositionSnapshotModel, TicketTradeLink, JournalLog, TuningProposalLog
 from services.dashboard.logic import get_service_health, get_dashboard_data, get_tickets, get_briefings, get_latest_briefing
 from shared.logic.sessions import get_nairobi_time
 from sqlalchemy import func, and_
@@ -230,6 +230,65 @@ async def calibration_report_view(report_id: str):
     if not os.path.exists(report_path):
         raise HTTPException(status_code=404, detail="Calibration report not found")
     return FileResponse(report_path)
+
+@app.get("/dashboard/tuning", response_class=HTMLResponse)
+def dashboard_tuning(request: Request, db: Session = Depends(db_session.get_db)):
+    verify_auth(request)
+    logs = db.query(TuningProposalLog).order_by(TuningProposalLog.created_at.desc()).limit(20).all()
+    reports = []
+    for log in logs:
+        reports.append({
+            "report_id": log.report_id,
+            "created_at": log.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+            "status": log.status,
+            "data": log.data
+        })
+    return render_template("tuning.html", {
+        "request": request, 
+        "active_page": "tuning",
+        "reports": reports
+    })
+
+from pydantic import BaseModel
+class ReviewPayload(BaseModel):
+    action: str # ACCEPT or REJECT
+    notes: str = ""
+
+@app.post("/api/tuning/{report_id}/proposals/{prop_id}/review")
+def review_proposal(report_id: str, prop_id: str, payload: ReviewPayload, request: Request, db: Session = Depends(db_session.get_db)):
+    verify_auth(request)
+    log = db.query(TuningProposalLog).filter(TuningProposalLog.report_id == report_id).first()
+    if not log:
+        raise HTTPException(status_code=404, detail="Report not found")
+        
+    data = log.data
+    prop_found = False
+    new_proposals = []
+    
+    for p in data.get("proposals", []):
+        if p.get("id") == prop_id:
+            p["status"] = payload.action # Add a status field directly to the proposal inside the JSON
+            p["reviewer_notes"] = payload.notes
+            prop_found = True
+        new_proposals.append(p)
+        
+    if not prop_found:
+        raise HTTPException(status_code=404, detail="Proposal not found in report")
+        
+    data["proposals"] = new_proposals
+    log.data = data # SQLAlchemy JSON update
+    
+    # Check if all proposals in report are reviewed to update parent log status
+    all_reviewed = all(p.get("status") in ["ACCEPT", "REJECT"] for p in data["proposals"])
+    if all_reviewed:
+        log.status = "REVIEWED"
+        
+    # Manually trigger SQLAlchemy JSON mutation flagging
+    from sqlalchemy.orm.attributes import flag_modified
+    flag_modified(log, "data")
+    
+    db.commit()
+    return {"status": "success", "message": f"Proposal marked as {payload.action}"}
 
 @app.get("/dashboard/trades", response_class=HTMLResponse)
 async def dashboard_trades(request: Request, db: Session = Depends(db_session.get_db)):
