@@ -108,7 +108,9 @@ def test_full_report_generation_integration(db):
             p["status"] = "ACCEPT"
             p["reviewer_notes"] = "Looks good"
             
+    from sqlalchemy.orm.attributes import flag_modified
     log.data = data
+    flag_modified(log, "data")
     db.commit()
     
     updated = db.query(TuningProposalLog).filter(TuningProposalLog.report_id == report.report_id).first()
