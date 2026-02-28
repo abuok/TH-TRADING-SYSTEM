@@ -12,6 +12,7 @@ from shared.database.models import (
 )
 from shared.types.tuning import Proposal, TuningProposalReport
 from shared.logic.sessions import get_nairobi_time
+from shared.utils.metadata import get_system_metadata
 
 logger = logging.getLogger("TuningAssistant")
 
@@ -164,7 +165,8 @@ def generate_tuning_report(db: Session, days_back: int = 7) -> TuningProposalRep
         date_range=dates,
         proposals=proposals,
         supporting_metrics=metrics,
-        simulation_links=[] # Can be populated via research validates later
+        simulation_links=[], # Can be populated via research validates later
+        reproducibility=get_system_metadata()
     )
     
     # 4. Save to DB

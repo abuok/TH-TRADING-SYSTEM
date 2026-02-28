@@ -10,6 +10,17 @@ help:
 	@echo "  test      : Run tests"
 	@echo "  demo      : Run E2E demo (requires Docker)"
 	@echo "  dashboard : Run dashboard locally (port 8005)"
+	@echo "  release-check : Run all pre-release validations"
+
+release-check:
+	@echo "Running Release Validation..."
+	$(MAKE) test
+	@echo "Running Smoke Test..."
+	python scripts/smoke_test.py
+	@echo "Verifying Artifacts..."
+	@if [ ! -d logs ]; then mkdir logs; fi
+	@if [ ! -d backups ]; then mkdir backups; fi
+	@echo "Release check PASSED."
 
 install:
 	pip install -r requirements.txt

@@ -9,6 +9,7 @@ from shared.database.models import (
 )
 from shared.types.pilot import PilotSessionRecord, PilotScorecard, PairStats
 from shared.logic.sessions import get_nairobi_time
+from shared.utils.metadata import get_system_metadata
 
 def load_pilot_config(path: str = "config/pilot_gate.yaml") -> Dict[str, Any]:
     with open(path, "r") as f:
@@ -219,7 +220,8 @@ def build_pilot_scorecard(db: Session, start_date: date, end_date: date) -> Pilo
         sessions=sessions,
         aggregates=aggregates,
         pass_fail_summary=overall_pass,
-        next_week_plan=generate_next_week_plan(db, start_date, end_date)
+        next_week_plan=generate_next_week_plan(db, start_date, end_date),
+        reproducibility=get_system_metadata()
     )
     
     sc_log = db.query(PilotScorecardLog).filter(PilotScorecardLog.scorecard_id == scorecard.scorecard_id).first()

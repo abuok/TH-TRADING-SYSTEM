@@ -7,6 +7,7 @@ import pytz
 
 from shared.types.research import ResearchRunResult, ResearchMetrics, ResearchVariant
 from shared.types.calibration import CalibrationReport, Recommendation
+from shared.utils.metadata import get_system_metadata
 
 NAIROBI = pytz.timezone("Africa/Nairobi")
 
@@ -145,5 +146,6 @@ def generate_calibration_report(
         date_range=f"{start_date} to {end_date}",
         baseline_policy_hash=baseline_hash,
         recommendations=recommendations,
-        evidence_tables=evidence_tables
+        evidence_tables=evidence_tables,
+        reproducibility=get_system_metadata()
     )
