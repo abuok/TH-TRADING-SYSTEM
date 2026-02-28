@@ -1,10 +1,8 @@
 import os
 import sys
 from datetime import datetime, timezone, timedelta
-from dotenv import load_dotenv
 
-# Load .env before importing engine
-load_dotenv()
+os.environ["DATABASE_URL"] = "sqlite:///trading_db.sqlite"
 
 # Ensure shared is importable
 sys.path.append(os.getcwd())
