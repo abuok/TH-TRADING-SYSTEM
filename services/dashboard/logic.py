@@ -88,6 +88,9 @@ def get_dashboard_data(db: Session):
             "reason": p.data.get("reason")
         })
         
+    # 5. Latest 10 Incidents
+    latest_incidents = db.query(IncidentLog).order_by(IncidentLog.created_at.desc()).limit(10).all()
+    
     # 6. Live Bridge Data
     live_quotes = db.query(LiveQuote).order_by(LiveQuote.captured_at.desc()).limit(5).all()
     symbol_specs = db.query(SymbolSpec).order_by(SymbolSpec.captured_at.desc()).limit(5).all()
