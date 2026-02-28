@@ -181,3 +181,27 @@ class ExecutionPrepLog(Base):
     override_reason = Column(Text, nullable=True)
 
     ticket = relationship("OrderTicket", foreign_keys=[ticket_id])
+
+class LiveQuote(Base):
+    __tablename__ = "live_quotes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    symbol = Column(String, unique=True, index=True, nullable=False)
+    bid = Column(Float, nullable=False)
+    ask = Column(Float, nullable=False)
+    spread = Column(Float, nullable=False)
+    raw_timestamp = Column(String, nullable=True) # UTC from MT5
+    captured_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+class SymbolSpec(Base):
+    __tablename__ = "symbol_specs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    symbol = Column(String, unique=True, index=True, nullable=False)
+    contract_size = Column(Float, nullable=False)
+    tick_size = Column(Float, nullable=False)
+    tick_value = Column(Float, nullable=False)
+    pip_size = Column(Float, nullable=False)
+    min_lot = Column(Float, default=0.01)
+    lot_step = Column(Float, default=0.01)
+    captured_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))

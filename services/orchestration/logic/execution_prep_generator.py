@@ -1,4 +1,5 @@
 import uuid
+from typing import Optional
 from datetime import datetime, timedelta
 from shared.database.models import OrderTicket, ExecutionPrepLog
 from shared.types.execution_prep import ExecutionPrepSchema, PlatformFormats
@@ -11,7 +12,7 @@ class ExecutionPrepGenerator:
         self.config = load_exec_config()
         self.preflight = PreflightEngine(db)
 
-    def generate(self, ticket: OrderTicket, current_price: float, current_spread: float) -> ExecutionPrepSchema:
+    def generate(self, ticket: OrderTicket, current_price: Optional[float] = None, current_spread: Optional[float] = None) -> ExecutionPrepSchema:
         now = get_nairobi_time()
         ttl = self.config.get("ttl_seconds", 180)
         expires_at = now + timedelta(seconds=ttl)

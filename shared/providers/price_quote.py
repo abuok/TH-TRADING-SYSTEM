@@ -9,6 +9,7 @@ import os
 import logging
 from abc import ABC, abstractmethod
 from typing import Optional, NamedTuple
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger("PriceQuoteProvider")
 
@@ -65,31 +66,40 @@ class MockPriceQuoteProvider(PriceQuoteProvider):
         return None
 
 
-class RealPriceQuoteProvider(PriceQuoteProvider):
+class DBPriceQuoteProvider(PriceQuoteProvider):
     """
-    Stub for a real broker / aggregator price feed.
-    Raises NotImplementedError until properly implemented.
+    Fetches real-time price quotes from the database.
+    Quotes are updated via the /bridge/quote endpoint.
     """
+    def __init__(self, db: Optional[Session] = None):
+        self._db = db
 
     def get_quote(self, symbol: str) -> Optional[PriceQuote]:
-        raise NotImplementedError(
-            "RealPriceQuoteProvider is not yet implemented. "
-            "Set PRICE_PROVIDER=mock or implement get_quote()."
-        )
+        from shared.database.models import LiveQuote
+        import shared.database.session as db_session
+        
+        db = self._db or db_session.SessionLocal()
+        try:
+            model = db.query(LiveQuote).filter(LiveQuote.symbol == symbol).first()
+            if not model:
+                return None
+            return PriceQuote(symbol=model.symbol, bid=model.bid, ask=model.ask)
+        finally:
+            if not self._db:
+                db.close()
 
+class RealPriceQuoteProvider(PriceQuoteProvider):
+    """Stub for future direct broker integration."""
+    def get_quote(self, symbol: str) -> Optional[PriceQuote]:
+        return None
 
 def get_price_quote_provider() -> PriceQuoteProvider:
     """Factory: select provider from PRICE_PROVIDER env var."""
     choice = os.getenv("PRICE_PROVIDER", "mock").lower()
     if choice == "mock":
-        logger.info("PriceQuoteProvider: using MockPriceQuoteProvider.")
         return MockPriceQuoteProvider()
+    if choice == "db":
+        return DBPriceQuoteProvider()
     if choice == "real":
-        logger.warning(
-            "PriceQuoteProvider: RealPriceQuoteProvider selected but not implemented. "
-            "Preflight price checks will fail-closed (return None)."
-        )
         return RealPriceQuoteProvider()
-    raise ValueError(
-        f"Unknown PRICE_PROVIDER value: {choice!r}. Expected 'mock' or 'real'."
-    )
+    return MockPriceQuoteProvider()

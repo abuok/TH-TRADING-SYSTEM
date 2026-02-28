@@ -141,6 +141,61 @@
     </div>
 </div>
 
+<!-- Live Data Bridge Widget -->
+<div class="card">
+    <div class="header-section" style="margin-bottom: 10px;">
+        <h2>Live Data Bridge (MetaTrader 5)</h2>
+        <span class="badge badge-info">Ingestion Layer</span>
+    </div>
+    <div class="grid">
+        <div style="flex: 2;">
+            <h3 class="sub-header">LATEST QUOTES</h3>
+            {% if live_quotes %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Symbol</th>
+                        <th>Bid</th>
+                        <th>Ask</th>
+                        <th>Spread</th>
+                        <th>Synced At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for q in live_quotes %}
+                    <tr>
+                        <td class="util-db1172">{{ q.symbol }}</td>
+                        <td>{{ q.bid }}</td>
+                        <td>{{ q.ask }}</td>
+                        <td><span class="badge badge-info">{{ q.spread }}</span></td>
+                        <td class="util-e7992d">{{ q.captured_at.strftime('%H:%M:%S') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="util-acb67b">No live quotes reported from bridge.</p>
+            {% endif %}
+        </div>
+        <div style="flex: 1; margin-left: 20px;">
+            <h3 class="sub-header">SYMBOL SPECS</h3>
+            {% if symbol_specs %}
+            <ul class="list-unstyled">
+                {% for s in symbol_specs %}
+                <li style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #333;">
+                    <strong class="util-db1172">{{ s.symbol }}</strong><br>
+                    <small class="util-acb67b">Size: {{ s.contract_size }} | Tick: {{ s.tick_size }} | Min: {{ s.min_lot
+                        }}</small>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="util-acb67b">No symbol specs ingested.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
 <div class="card">
     <h2>Recent Incidents (Last 10)</h2>
     <table>

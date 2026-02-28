@@ -9,7 +9,7 @@ News-window check (check #5):
 import logging
 import yaml
 from datetime import datetime, timedelta
-from typing import List
+from typing import List, Optional, Dict
 
 from shared.database.models import KillSwitch, OrderTicket, Packet, IncidentLog
 from shared.types.execution_prep import PreflightCheck
@@ -51,11 +51,22 @@ class PreflightEngine:
     def run_checks(
         self,
         ticket: OrderTicket,
-        current_price: float,
-        current_spread: float,
+        current_price: Optional[float] = None,
+        current_spread: Optional[float] = None,
     ) -> List[PreflightCheck]:
         checks: List[PreflightCheck] = []
         now = get_nairobi_time()
+
+        # Fetch live data if not provided
+        if current_price is None or current_spread is None:
+            from shared.providers.price_quote import get_price_quote_provider
+            provider = get_price_quote_provider()
+            quote = provider.get_quote(ticket.pair)
+            if quote:
+                current_price = current_price if current_price is not None else quote.mid
+                current_spread = current_spread if current_spread is not None else quote.spread_pips
+            else:
+                self._log_incident("ERROR", f"No live quote found for {ticket.pair}. Preflight failing closed.")
 
         # ── 1. Expiry ────────────────────────────────────────────────────
         expires_at = ticket.expires_at
@@ -81,22 +92,34 @@ class PreflightEngine:
         ))
 
         # ── 3. Price Tolerance ───────────────────────────────────────────
-        deviation = abs(current_price - ticket.entry_price) / ticket.entry_price * 100
-        tolerance = self.config.get("price_tolerance_pct", 0.1)
+        if current_price is None:
+            status, details = "FAIL", "FAIL-CLOSED: Live price unavailable"
+        else:
+            deviation = abs(current_price - ticket.entry_price) / ticket.entry_price * 100
+            tolerance = self.config.get("price_tolerance_pct", 0.1)
+            status = "PASS" if deviation <= tolerance else "FAIL"
+            details = f"Current deviation {deviation:.3f}% (Max {tolerance}%)"
+
         checks.append(PreflightCheck(
             id="price_deviation",
             name="Price Tolerance",
-            status="PASS" if deviation <= tolerance else "FAIL",
-            details=f"Current deviation {deviation:.3f}% (Max {tolerance}%)",
+            status=status,
+            details=details,
         ))
 
         # ── 4. Spread ────────────────────────────────────────────────────
-        max_spread = self.config.get("max_spread_pips", 3.0)
+        if current_spread is None:
+            status, details = "FAIL", "FAIL-CLOSED: Live spread unavailable"
+        else:
+            max_spread = self.config.get("max_spread_pips", 3.0)
+            status = "PASS" if current_spread <= max_spread else "WARN"
+            details = f"Current spread {current_spread:.1f} pips (Max recommended {max_spread})"
+
         checks.append(PreflightCheck(
             id="spread",
             name="Market Spread",
-            status="PASS" if current_spread <= max_spread else "WARN",
-            details=f"Current spread {current_spread:.1f} pips (Max recommended {max_spread})",
+            status=status,
+            details=details,
         ))
 
         # ── 5. News Window — FAIL CLOSED ─────────────────────────────────

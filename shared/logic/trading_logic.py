@@ -35,30 +35,55 @@ def generate_order_ticket(
     # Direction
     direction = "BUY" if setup.take_profit > setup.entry_price else "SELL"
     
-    # Lot Sizing (Simple Contract Model for Demo)
-    # Dist = abs(Entry - SL)
-    # Lots = Risk / (Dist * ContractFactor)
-    dist = abs(setup.entry_price - setup.stop_loss)
-    if dist == 0:
-        lots = 0.1
+    # Lot Sizing via SymbolSpecProvider
+    from shared.providers.symbol_spec import get_symbol_spec_provider
+    spec_provider = get_symbol_spec_provider()
+    spec = spec_provider.get_spec(setup.asset_pair)
+    
+    status = "IN_REVIEW"
+    block_reason = None
+
+    if not spec:
+        # FAIL CLOSED: No symbol spec found for this pair
+        status = "BLOCKED"
+        block_reason = f"[BRIDGE] No SymbolSpec found for {setup.asset_pair}. Lot sizing impossible."
+        lots = 0.0
     else:
-        # XAUUSD: $1 move (100 pips) = $100 per lot. ContractFactor = 100.
-        # GBPJPY: 100 pips = approx $6.5 per lot. ContractFactor = 650.
-        factor = 100.0 if "XAU" in setup.asset_pair else 100000.0
-        lots = round(max(0.01, risk_usd / (dist * factor)), 2) if dist > 0 else 0.01
+        dist = abs(setup.entry_price - setup.stop_loss)
+        if dist == 0:
+            lots = spec.min_lot
+        else:
+            # Risk/Lot = RiskUSD / (Dist * TickValue/TickSize * ContractSize??)
+            # Standard MT5 formula: Lots = RiskUSD / (StopLossDistanceInTicks * TickValue)
+            # Here dist is in price units. Ticks = dist / tick_size.
+            ticks = dist / spec.tick_size
+            if ticks == 0:
+                lots = spec.min_lot
+            else:
+                # Formula: Risk = Lots * Ticks * TickValue
+                # => Lots = Risk / (Ticks * TickValue)
+                raw_lots = risk_usd / (ticks * spec.tick_value)
+                # Apply min_lot and lot_step
+                lots = round(max(spec.min_lot, raw_lots), 2) # simplified rounding
+                # Ensure it's a multiple of lot_step
+                remainder = lots % spec.lot_step
+                if remainder > 1e-9:
+                    lots = round(lots - remainder, 2)
+    
+    dist = abs(setup.entry_price - setup.stop_loss)
 
     # RR Ratios
     rr_tp1 = abs(setup.take_profit - setup.entry_price) / dist if dist > 0 else 0.0
     
-    # Status: guardrails hard_block takes precedence over risk engine
-    status = "IN_REVIEW"
-    block_reason = None
-    if guardrails and guardrails.hard_block:
-        status = "BLOCKED"
-        block_reason = f"[GUARDRAILS] {guardrails.primary_block_reason or 'Strategy constitution violation'}"
-    elif risk.status == "BLOCK":
-        status = "BLOCKED"
-        block_reason = ", ".join(risk.reasons) if risk.reasons else "Risk engine rejected."
+    # Status check: guardrails and risk engine logic
+    # Only update status if not already BLOCKED by bridge/missing spec
+    if status != "BLOCKED":
+        if guardrails and guardrails.hard_block:
+            status = "BLOCKED"
+            block_reason = f"[GUARDRAILS] {guardrails.primary_block_reason or 'Strategy constitution violation'}"
+        elif risk.status == "BLOCK":
+            status = "BLOCKED"
+            block_reason = ", ".join(risk.reasons) if risk.reasons else "Risk engine rejected."
 
     from datetime import timedelta
     expires_at = datetime.now(timezone.utc) + timedelta(minutes=15) if status == "IN_REVIEW" else None

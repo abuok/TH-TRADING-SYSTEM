@@ -374,8 +374,8 @@ async def api_approve_ticket(ticket_id: str, db: Session = Depends(db_session.ge
         
         # Generate Execution Prep
         generator = ExecutionPrepGenerator(db)
-        # Mocking current price/spread for now (in real system these would come from a price feed)
-        prep = generator.generate(t, current_price=t.entry_price, current_spread=1.2)
+        # The generator/preflight will now pull live data from the bridge
+        prep = generator.generate(t)
         
         log = ExecutionPrepLog(
             prep_id=prep.prep_id,

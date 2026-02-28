@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text, desc
 
 import shared.database.session as db_session
-from shared.database.models import Packet, KillSwitch, IncidentLog, OrderTicket, SessionBriefing
+from shared.database.models import Packet, KillSwitch, IncidentLog, OrderTicket, SessionBriefing, LiveQuote, SymbolSpec
 from shared.logic.sessions import get_nairobi_time, get_session_label
 from shared.types.trading import OrderTicketSchema
 
@@ -17,7 +17,8 @@ SERVICES = {
     "Technical": os.getenv("TECHNICAL_URL", "http://localhost:8002/health"),
     "Risk": os.getenv("RISK_URL", "http://localhost:8003/health"),
     "Journal": os.getenv("JOURNAL_URL", "http://localhost:8004/health"),
-    "Orchestrator": os.getenv("ORCHESTRATOR_URL", "http://localhost:8000/health")
+    "Orchestrator": os.getenv("ORCHESTRATOR_URL", "http://localhost:8000/health"),
+    "Bridge": os.getenv("BRIDGE_URL", "http://localhost:8005/health")
 }
 
 async def get_service_health() -> Dict[str, Any]:
@@ -87,9 +88,10 @@ def get_dashboard_data(db: Session):
             "reason": p.data.get("reason")
         })
         
-    # 5. Latest 10 Incidents
-    latest_incidents = db.query(IncidentLog).order_by(IncidentLog.created_at.desc()).limit(10).all()
-    
+    # 6. Live Bridge Data
+    live_quotes = db.query(LiveQuote).order_by(LiveQuote.captured_at.desc()).limit(5).all()
+    symbol_specs = db.query(SymbolSpec).order_by(SymbolSpec.captured_at.desc()).limit(5).all()
+
     return {
         "now_nairobi_str": now_nairobi.strftime("%Y-%m-%d %H:%M:%S"),
         "session_label": get_session_label(now_nairobi),
@@ -98,7 +100,9 @@ def get_dashboard_data(db: Session):
         "no_trade_windows": no_trade_windows,
         "latest_setups": latest_setups,
         "latest_decisions": latest_decisions,
-        "latest_incidents": latest_incidents
+        "latest_incidents": latest_incidents,
+        "live_quotes": live_quotes,
+        "symbol_specs": symbol_specs
     }
 
 async def get_tickets(pair: Optional[str] = None) -> List[OrderTicketSchema]:
