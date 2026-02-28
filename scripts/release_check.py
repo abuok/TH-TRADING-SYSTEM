@@ -17,16 +17,16 @@ def main():
     if not run_command("python -m pytest"):
         sys.exit(1)
     
-    # 2. Run Smoke Test
-    if not run_command("python scripts/smoke_test.py"):
-        sys.exit(1)
-    
-    # 3. Verify Artifacts
+    # 2. Verify Artifacts
     print("Verifying Artifacts...")
     for d in ["logs", "backups"]:
         if not os.path.exists(d):
             os.makedirs(d)
             print(f"Created directory: {d}")
+    
+    # 3. Run Smoke Test
+    if not run_command("python scripts/smoke_test.py"):
+        sys.exit(1)
             
     print("--- Release Validation PASSED ---")
 

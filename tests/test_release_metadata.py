@@ -26,6 +26,7 @@ def test_tuning_report_metadata(db):
 def test_pilot_scorecard_metadata(db):
     # build_pilot_scorecard needs some session logs to work properly if we want a full check,
     # but we just want to see if the metadata is attached to the object.
-    scorecard = build_pilot_scorecard(db)
+    today = datetime.now(timezone.utc).date()
+    scorecard = build_pilot_scorecard(db, today, today)
     assert scorecard.reproducibility.version == get_version()
     assert scorecard.reproducibility.git_commit == get_git_commit()
