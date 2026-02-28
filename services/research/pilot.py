@@ -52,10 +52,10 @@ def fetch_session_metrics(db: Session, target_date: date) -> PilotSessionRecord:
     }
 
     # 2. Performance Metrics
-    realized_r_total = sum(t.realized_r for t in approved if t.realized_r is not None)
-    missed_r_total = sum(t.hindsight_r for t in skipped if t.hindsight_r is not None)
+    realized_r_total = sum(t.manual_outcome_r for t in approved if t.manual_outcome_r is not None)
+    missed_r_total = sum(t.hindsight_realized_r for t in skipped if t.hindsight_realized_r is not None)
     
-    win_count = len([t for t in approved if (t.realized_r or 0) > 0])
+    win_count = len([t for t in approved if (t.manual_outcome_r or 0) > 0])
     win_rate = (win_count / len(approved) * 100) if approved else 0.0
     expectancy = (realized_r_total / len(approved)) if approved else 0.0
     
@@ -82,14 +82,14 @@ def fetch_session_metrics(db: Session, target_date: date) -> PilotSessionRecord:
     pair_stats = []
     for p in pairs:
         p_tickets = [t for t in approved if t.pair == p]
-        p_r = sum(t.realized_r for t in p_tickets if t.realized_r)
-        p_wr = (len([t for t in p_tickets if (t.realized_r or 0) > 0]) / len(p_tickets) * 100) if p_tickets else 0
+        p_r = sum(t.manual_outcome_r for t in p_tickets if t.manual_outcome_r)
+        p_wr = (len([t for t in p_tickets if (t.manual_outcome_r or 0) > 0]) / len(p_tickets) * 100) if p_tickets else 0
         pair_stats.append(PairStats(
             pair=p,
             trades_executed=len(p_tickets),
             win_rate_pct=p_wr,
             realized_r=p_r,
-            missed_r=sum(t.hindsight_r for t in skipped if t.pair == p and t.hindsight_r),
+            missed_r=sum(t.hindsight_realized_r for t in skipped if t.pair == p and t.hindsight_realized_r),
             max_drawdown_r=min(p_r, 0)
         ))
 
