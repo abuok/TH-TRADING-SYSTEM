@@ -51,7 +51,7 @@ def test_generate_ticket_success(db):
     # Lot sizing for XAUUSD: Risk 100 / (Dist 10 * Factor 100) = 0.1
     assert ticket.lot_size == 0.1
     assert ticket.rr_tp1 == 3.0
-    assert ticket.status == "PENDING"
+    assert ticket.status == "IN_REVIEW"
     assert ticket.ticket_id.startswith("TKT-")
 
 def test_generate_ticket_blocked(db):

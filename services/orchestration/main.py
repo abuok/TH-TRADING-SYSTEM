@@ -187,13 +187,13 @@ async def generate_briefing_now(
 
 
 from shared.logic.alerting import check_incident_alerts
-from shared.database.models import Incident
+from shared.database.models import IncidentLog
 from shared.types.incident import IncidentSchema
 
 @app.post("/incidents/log")
 async def log_incident(incident_data: IncidentSchema, db: Session = Depends(get_db)):
     """Logs a new incident and triggers alerts."""
-    incident = Incident(**incident_data.model_dump())
+    incident = IncidentLog(**incident_data.model_dump())
     db.add(incident)
     db.commit()
     db.refresh(incident) # Refresh to get the generated ID and created_at
