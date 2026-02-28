@@ -1,4 +1,8 @@
 import os
+
+# FORCE SQLite for all tests immediately before any imports trigger engine initialization
+os.environ["DATABASE_URL"] = "sqlite:///:memory:"
+
 import pytest
 from sqlalchemy.orm import sessionmaker
 import shared.database.session as session
@@ -6,8 +10,7 @@ from shared.database.models import Base
 
 @pytest.fixture(scope="session", autouse=True)
 def force_test_db():
-    # Force in-memory SQLite for the entire session
-    os.environ["DATABASE_URL"] = "sqlite:///:memory:"
+    pass
 
 @pytest.fixture(scope="function", autouse=True)
 def setup_db():
