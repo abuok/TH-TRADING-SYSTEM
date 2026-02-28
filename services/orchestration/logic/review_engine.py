@@ -31,11 +31,32 @@ class ReviewEngine:
         
         # 1. Performance
         tickets = self.db.query(OrderTicket).filter(OrderTicket.created_at >= start_date).all()
-        approved_tickets = [t for t in tickets if t.status == "APPROVED"]
-        
-        realized_r = sum(t.manual_outcome_r for t in approved_tickets if t.manual_outcome_r is not None)
-        wins = len([t for t in approved_tickets if t.manual_outcome_label == "WIN"])
-        
+        # 1. Performance — prefer bridge-captured R over manual entries
+        closed_tickets = [
+            t for t in tickets
+            if t.status in ("CLOSED", "EXECUTED", "APPROVED") and (
+                t.hindsight_realized_r is not None or t.manual_outcome_r is not None
+            )
+        ]
+
+        auto_captured = [t for t in closed_tickets if t.hindsight_realized_r is not None]
+        manual_only = [t for t in closed_tickets if t.hindsight_realized_r is None and t.manual_outcome_r is not None]
+        auto_capture_pct = (len(auto_captured) / len(closed_tickets) * 100) if closed_tickets else 0.0
+
+        def get_r(ticket):
+            """Return captured R first, fall back to manual."""
+            if ticket.hindsight_realized_r is not None:
+                return ticket.hindsight_realized_r
+            return ticket.manual_outcome_r or 0.0
+
+        def is_win(ticket):
+            if ticket.hindsight_realized_r is not None:
+                return ticket.hindsight_realized_r > 0
+            return ticket.manual_outcome_label == "WIN"
+
+        realized_r = sum(get_r(t) for t in closed_tickets)
+        wins = len([t for t in closed_tickets if is_win(t)])
+
         hindsight_logs = self.db.query(HindsightOutcomeLog).filter(HindsightOutcomeLog.computed_at >= start_date).all()
         missed_r = sum(h.realized_r for h in hindsight_logs if h.realized_r > 0)
         
@@ -54,18 +75,20 @@ class ReviewEngine:
         skipped_winners = len([h for h in hindsight_logs if h.outcome_label == "WIN"])
         skipped_losers = len([h for h in hindsight_logs if h.outcome_label == "LOSS"])
         approved_winners = wins
-        approved_losers = len([t for t in approved_tickets if t.manual_outcome_label == "LOSS"])
+        approved_losers = len([t for t in closed_tickets if not is_win(t) and get_r(t) < 0])
         
-        # 4. Regimes
+        # 4. Regimes — use combined R
+        approved_tickets = closed_tickets  # alias for downstream compat
         performance_by_policy = {}
-        for t in approved_tickets:
+        for t in closed_tickets:
             if t.active_policy_name:
-                performance_by_policy[t.active_policy_name] = performance_by_policy.get(t.active_policy_name, 0.0) + (t.manual_outcome_r or 0.0)
+                performance_by_policy[t.active_policy_name] = performance_by_policy.get(t.active_policy_name, 0.0) + get_r(t)
         
         # 5. Insights & Mistakes
         insights = [
             f"Policy Router effectively switched to RISK_OFF {self._count_switches(start_date, 'policy_risk_off')} times during high news density.",
-            f"Average Guardrails score for winners: {self._avg_winner_score(start_date, hindsight_logs):.1f}"
+            f"Average Guardrails score for winners: {self._avg_winner_score(start_date, hindsight_logs):.1f}",
+            f"Auto-capture rate (bridge fills): {auto_capture_pct:.1f}% ({len(auto_captured)} of {len(closed_tickets)} closed trades logged automatically)."
         ]
         
         mistakes = []
