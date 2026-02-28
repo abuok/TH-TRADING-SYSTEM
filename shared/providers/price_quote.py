@@ -91,7 +91,7 @@ class DBPriceQuoteProvider(PriceQuoteProvider):
 class RealPriceQuoteProvider(PriceQuoteProvider):
     """Stub for future direct broker integration."""
     def get_quote(self, symbol: str) -> Optional[PriceQuote]:
-        return None
+        raise NotImplementedError("RealPriceQuoteProvider is a stub.")
 
 def get_price_quote_provider() -> PriceQuoteProvider:
     """Factory: select provider from PRICE_PROVIDER env var."""

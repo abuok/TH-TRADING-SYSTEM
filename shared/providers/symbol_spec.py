@@ -59,14 +59,15 @@ class MockSymbolSpecProvider(SymbolSpecProvider):
     def __init__(self):
         self._specs = {
             "XAUUSD": SymbolSpec("XAUUSD", 100.0, 0.01, 0.01, 0.01, 0.01, 0.01),
-            "GBPJPY": SymbolSpec("GBPJPY", 100000.0, 0.001, 0.01, 0.01, 0.01, 0.01)
+            "GBPJPY": SymbolSpec("GBPJPY", 100000.0, 0.001, 0.01, 0.01, 0.01, 0.01),
+            "EURUSD": SymbolSpec("EURUSD", 100000.0, 0.00001, 1.0, 0.0001, 0.01, 0.01)
         }
 
     def get_spec(self, symbol: str) -> Optional[SymbolSpec]:
         return self._specs.get(symbol)
 
 def get_symbol_spec_provider() -> SymbolSpecProvider:
-    choice = os.getenv("SPEC_PROVIDER", "db").lower()
+    choice = os.getenv("SPEC_PROVIDER", "mock").lower()
     if choice == "mock":
         return MockSymbolSpecProvider()
     return DBSymbolSpecProvider()
