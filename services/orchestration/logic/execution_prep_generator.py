@@ -58,8 +58,11 @@ class ExecutionPrepGenerator:
             tp2=ticket.take_profit_2 or "N/A"
         )
         
+        ticket_data = ticket.__dict__.copy()
+        ticket_data.pop('_sa_instance_state', None)
+        
         return PlatformFormats(
             mt5_text=mt5_text,
             ctrader_text=ctrader_text,
-            json_data=ticket.__dict__.copy() # Simplified
+            json_data=ticket_data
         )

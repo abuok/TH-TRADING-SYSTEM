@@ -19,12 +19,18 @@ class PreflightEngine:
         now = get_nairobi_time()
 
         # 1. Expiry Check
-        is_expired = ticket.expires_at and now > ticket.expires_at
+        expires_at = ticket.expires_at
+        if expires_at and expires_at.tzinfo is None:
+            # If naive, assume it was stored as UTC and localize
+            import pytz
+            expires_at = pytz.utc.localize(expires_at).astimezone(pytz.timezone("Africa/Nairobi"))
+        
+        is_expired = expires_at and now > expires_at
         checks.append(PreflightCheck(
             id="expiry",
             name="Ticket Expiry",
             status="PASS" if not is_expired else "FAIL",
-            details="Ticket is active" if not is_expired else f"Ticket expired at {ticket.expires_at}"
+            details="Ticket is active" if not is_expired else f"Ticket expired at {expires_at}"
         ))
 
         # 2. Kill Switch Check
