@@ -8,7 +8,10 @@ os.environ["DATABASE_URL"] = "sqlite:///trading_db.sqlite"
 sys.path.append(os.getcwd())
 
 from shared.database.session import engine, SessionLocal, init_db
-from shared.database.models import LiveQuote, SymbolSpec, Packet, Run, KillSwitch, IncidentLog
+from shared.database.models import (
+    LiveQuote, SymbolSpec, Packet, Run, KillSwitch, IncidentLog, 
+    OrderTicket, HindsightOutcomeLog, PolicySelectionLog
+)
 
 def seed():
     print("Initializing Database...")

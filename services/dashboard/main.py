@@ -591,9 +591,13 @@ async def dashboard_hindsight(request: Request, date_str: Optional[str] = None, 
     summary = get_hindsight_summary(db, date_val)
     
     parsed_date = datetime.strptime(date_val, "%Y-%m-%d").date()
+    start_of_day = datetime.combine(parsed_date, datetime.min.time(), tzinfo=timezone.utc)
+    end_of_day = start_of_day + timedelta(days=1)
+    
     # Get the tickets that have hindsight done for this date
     tickets = db.query(OrderTicket).filter(
-        func.date(OrderTicket.created_at) == parsed_date,
+        OrderTicket.created_at >= start_of_day,
+        OrderTicket.created_at < end_of_day,
         OrderTicket.hindsight_status == "DONE"
     ).all()
     
