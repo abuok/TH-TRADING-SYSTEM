@@ -103,6 +103,11 @@ def get_price_quote_provider() -> PriceQuoteProvider:
         return _global_provider
         
     choice = os.getenv("PRICE_PROVIDER", "mock").lower()
+    is_prod = os.getenv("ENV", "dev").lower() == "prod"
+
+    if is_prod and choice == "mock":
+        raise RuntimeError("CRITICAL: PRICE_PROVIDER cannot be 'mock' in production.")
+
     if choice == "mock":
         return MockPriceQuoteProvider()
     if choice == "db":

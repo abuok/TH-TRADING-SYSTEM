@@ -26,15 +26,26 @@ class RiskEngine:
         return round(reward / risk, 2)
 
     def is_in_event_window(self, setup_time: datetime, context: MarketContextPacket) -> bool:
-        # Check if setup_time falls within any no-trade window
-        # For simplicity, we assume metrics or a specific field contains windows
-        # If not present, we skip.
+        # Ensure setup_time is timezone aware
+        if setup_time.tzinfo is None:
+            setup_time = setup_time.replace(tzinfo=pytz.UTC)
+
         windows = context.no_trade_windows
         for window in windows:
-            start = datetime.fromisoformat(window["start"])
-            end = datetime.fromisoformat(window["end"])
-            if start <= setup_time <= end:
-                return True
+            try:
+                start = datetime.fromisoformat(window["start"])
+                end = datetime.fromisoformat(window["end"])
+                
+                # Align timezones for comparison
+                if start.tzinfo is None:
+                    start = start.replace(tzinfo=pytz.UTC)
+                if end.tzinfo is None:
+                    end = end.replace(tzinfo=pytz.UTC)
+
+                if start <= setup_time <= end:
+                    return True
+            except (KeyError, ValueError, TypeError) as exc:
+                continue
         return False
 
     def evaluate(self, 

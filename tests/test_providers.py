@@ -129,10 +129,10 @@ class TestMockProviderBehaviour:
 # ── Real provider stubs trigger safe errors ──────────────────────────────────
 
 class TestRealProviderSafeBehaviour:
-    def test_real_proxy_raises_not_implemented(self):
+    def test_real_proxy_fails_closed_empty_dict(self):
+        """Real provider with no key returns empty dict (fail-closed)."""
         p = RealProxyProvider()
-        with pytest.raises(NotImplementedError):
-            p.get_snapshots()
+        assert p.get_snapshots() == {}
 
     def test_real_price_raises_not_implemented(self):
         p = RealPriceQuoteProvider()

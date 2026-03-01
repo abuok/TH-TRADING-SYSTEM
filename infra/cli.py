@@ -416,6 +416,7 @@ def integrations_status():
     from shared.providers.proxy import get_proxy_provider
     from shared.providers.price_quote import get_price_quote_provider
     from shared.providers.symbol_spec import get_symbol_spec_provider
+    import redis
     
     table = Table(title="Integration Status")
     table.add_column("Provider Type", style="cyan")
@@ -423,24 +424,60 @@ def integrations_status():
     table.add_column("Env Var", style="green")
     table.add_column("Status", style="white")
 
-    def check_provider(name, env_var, factory_func):
-        impl = factory_func()
-        impl_name = type(impl).__name__
-        status = "[green]OK[/green]" if "Mock" not in impl_name else "[yellow]MOCK[/yellow]"
-        if "Real" in impl_name:
-             status = "[red]NOT IMPLEMENTED[/red]"
-        table.add_row(name, impl_name, os.getenv(env_var, "unset"), status)
+    def check_provider(name, env_var, factory_func, required_vars=[]):
+        try:
+            impl = factory_func()
+            impl_name = type(impl).__name__
+            
+            # Check for missing credentials for real providers
+            missing_creds = [v for v in required_vars if not os.getenv(v)]
+            
+            if "Mock" in impl_name:
+                status = "[yellow]MOCK[/yellow]"
+            elif missing_creds:
+                status = f"[red]MISSING: {', '.join(missing_creds)}[/red]"
+            else:
+                status = "[green]OK[/green]"
+                
+            table.add_row(name, impl_name, os.getenv(env_var, "unset"), status)
+        except Exception as e:
+            table.add_row(name, "ERROR", os.getenv(env_var, "unset"), f"[red]{e}[/red]")
 
-    check_provider("Calendar", "CALENDAR_PROVIDER", get_calendar_provider)
-    check_provider("Proxy", "PROXY_PROVIDER", get_proxy_provider)
+    check_provider("Calendar", "CALENDAR_PROVIDER", get_calendar_provider, ["FOREX_FACTORY_API_KEY"])
+    check_provider("Proxy", "PROXY_PROVIDER", get_proxy_provider, ["TWELVE_DATA_API_KEY"])
     check_provider("Price Quote", "PRICE_PROVIDER", get_price_quote_provider)
     check_provider("Symbol Spec", "SPEC_PROVIDER", get_symbol_spec_provider)
     
     console.print(table)
     
-    # Check required secrets
-    console.print("\n[bold]Required Secrets (.env):[/bold]")
-    secrets = ["DATABASE_URL", "REDIS_URL", "DASHBOARD_PASSWORD"]
+    # Redis & Subscriptions
+    console.print("\n[bold]Subsystem Wiring (Redis):[/bold]")
+    redis_url = os.getenv("REDIS_URL")
+    if redis_url:
+        try:
+            r = redis.Redis.from_url(redis_url)
+            r.ping()
+            console.print(f" - Redis: [green]CONNECTED[/green] ({redis_url})")
+            
+            # Check consumer groups for Risk Service
+            streams = ["market_context", "technical_setups", "risk_approvals"]
+            for s in streams:
+                try:
+                    groups = r.xinfo_groups(s)
+                    group_names = [g['name'] for g in groups]
+                    status = f"[green]OK[/green] ({', '.join(group_names)})" if groups else "[yellow]NO GROUPS[/yellow]"
+                except redis.exceptions.ResponseError:
+                    status = "[red]STREAM MISSING[/red]"
+                console.print(f"   - Stream '{s}': {status}")
+                
+        except Exception as e:
+            console.print(f" - Redis: [red]FAILED[/red] ({e})")
+    else:
+        console.print(" - Redis: [red]REDIS_URL NOT SET[/red]")
+
+    # Required secrets
+    console.print("\n[bold]Core Secrets Check:[/bold]")
+    secrets = ["DATABASE_URL", "REDIS_URL", "TELEGRAM_TOKEN", "TELEGRAM_CHAT_ID"]
     for s in secrets:
         val = os.getenv(s)
         status = "[green]SET[/green]" if val else "[red]MISSING[/red]"

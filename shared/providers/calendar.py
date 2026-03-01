@@ -130,6 +130,11 @@ class ForexFactoryCalendarProvider(CalendarProvider):
 def get_calendar_provider() -> CalendarProvider:
     """Factory: select provider from CALENDAR_PROVIDER env var."""
     choice = os.getenv("CALENDAR_PROVIDER", "mock").lower()
+    is_prod = os.getenv("ENV", "dev").lower() == "prod"
+
+    if is_prod and choice == "mock":
+        raise RuntimeError("CRITICAL: CALENDAR_PROVIDER cannot be 'mock' in production.")
+
     if choice == "mock":
         logger.info("CalendarProvider: using MockCalendarProvider (no external calls).")
         return MockCalendarProvider()

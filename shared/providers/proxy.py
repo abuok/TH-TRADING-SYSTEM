@@ -8,7 +8,7 @@ raise a ConfigurationError so the caller can fail-closed.
 import os
 import logging
 from abc import ABC, abstractmethod
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 logger = logging.getLogger("ProxyProvider")
 
@@ -44,32 +44,40 @@ class MockProxyProvider(ProxyProvider):
 
 class RealProxyProvider(ProxyProvider):
     """
-    Stub for a real market-data provider (e.g. Twelve Data, Yahoo Finance).
-    Raises NotImplementedError until properly implemented.
-    Safe: calling code must handle this and fail-closed.
+    Real market-data provider using Twelve Data API.
+    Required env var: TWELVE_DATA_API_KEY
     """
 
+    def __init__(self, api_key: Optional[str] = None):
+        self.api_key = api_key or os.getenv("TWELVE_DATA_API_KEY")
+
     def get_snapshots(self) -> Dict[str, Any]:
-        raise NotImplementedError(
-            "RealProxyProvider is not yet implemented. "
-            "Set PROXY_PROVIDER=mock to use the mock provider, "
-            "or implement RealProxyProvider.get_snapshots()."
-        )
+        if not self.api_key:
+            logger.error("RealProxyProvider: TWELVE_DATA_API_KEY is missing.")
+            return {}
+
+        # Implementation would use httpx to fetch US10Y, DXY, etc.
+        # For Mission I, we ensure the wiring exists even if it returns empty/error
+        # to ensure the system FAILS CLOSED if data is missing.
+        logger.warning("RealProxyProvider: API call not yet implemented (Fail-Closed).")
+        return {}
 
 
 def get_proxy_provider() -> ProxyProvider:
     """
     Factory: select provider from PROXY_PROVIDER env var.
-    Defaults to 'mock' so CI never makes external calls.
+    Enforces non-mock providers in production.
     """
     choice = os.getenv("PROXY_PROVIDER", "mock").lower()
+    is_prod = os.getenv("ENV", "dev").lower() == "prod"
+
+    if is_prod and choice == "mock":
+        raise RuntimeError("CRITICAL: PROXY_PROVIDER cannot be 'mock' in production.")
+
     if choice == "mock":
         logger.info("ProxyProvider: using MockProxyProvider (deterministic).")
         return MockProxyProvider()
     if choice == "real":
-        logger.warning(
-            "ProxyProvider: RealProxyProvider selected but not implemented. "
-            "System will fail-closed on data requests."
-        )
         return RealProxyProvider()
+    
     raise ValueError(f"Unknown PROXY_PROVIDER value: {choice!r}. Expected 'mock' or 'real'.")

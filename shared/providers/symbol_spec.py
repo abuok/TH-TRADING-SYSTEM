@@ -67,7 +67,13 @@ class MockSymbolSpecProvider(SymbolSpecProvider):
         return self._specs.get(symbol)
 
 def get_symbol_spec_provider() -> SymbolSpecProvider:
+    """Factory: select spec provider. Enforces non-mock in production."""
     choice = os.getenv("SPEC_PROVIDER", "mock").lower()
+    is_prod = os.getenv("ENV", "dev").lower() == "prod"
+
+    if is_prod and choice == "mock":
+        raise RuntimeError("CRITICAL: SPEC_PROVIDER cannot be 'mock' in production.")
+
     if choice == "mock":
         return MockSymbolSpecProvider()
     return DBSymbolSpecProvider()

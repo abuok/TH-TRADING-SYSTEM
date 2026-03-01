@@ -11,17 +11,32 @@ logger = logging.getLogger("Alerting")
 
 def send_critical_alert(service: str, event_type: str, details: Dict[str, Any]):
     """
-    Sends a critical alert to the configured output (Console for now, extendable to Telegram/Slack).
+    Sends a critical alert to the configured output (Console and Telegram).
     """
     timestamp = datetime.now().isoformat()
-    alert_msg = f"!!! CRITICAL ALERT [{service}] !!!\nType: {event_type}\nTime: {timestamp}\nDetails: {details}"
+    alert_msg = f"<b>!!! CRITICAL ALERT [{service}] !!!</b>\n<b>Type:</b> {event_type}\n<b>Time:</b> {timestamp}\n<b>Details:</b> <code>{details}</code>"
     
-    # In production, this would use a notification adapter
-    logger.critical(alert_msg)
+    # 1. Console / File Log
+    logger.critical(alert_msg.replace("<b>", "").replace("</b>", "").replace("<code>", "").replace("</code>", ""))
     
-    # Placeholder for external notification (e.g. Telegram API call)
-    # if os.getenv("TELEGRAM_TOKEN"):
-    #     ... 
+    # 2. Telegram Notification (Fire and Forget)
+    import asyncio
+    from shared.providers.alerting.telegram import TelegramProvider
+    
+    tp = TelegramProvider()
+    try:
+        # Note: In a production sync context, we'd use a background task or queue.
+        # For simplicity here, we try to get the existing loop or create a temporary one.
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                loop.create_task(tp.send_message(alert_msg))
+            else:
+                loop.run_until_complete(tp.send_message(alert_msg))
+        except RuntimeError:
+            asyncio.run(tp.send_message(alert_msg))
+    except Exception as e:
+        logger.error(f"Alerting: Telegram send failed - {e}")
 
 def check_incident_alerts(incident_data: Dict[str, Any]):
     """
