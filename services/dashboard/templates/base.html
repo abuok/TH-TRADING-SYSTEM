@@ -47,156 +47,155 @@
             font-weight: 700;
         }
 
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 2rem;
-            background: rgba(13, 17, 23, 0.8);
-            -webkit-backdrop-filter: var(--glass-blur);
-            backdrop-filter: var(--glass-blur);
-            border-bottom: 1px solid var(--border-color);
-            position: sticky;
+        .sidebar {
+            position: fixed;
+            left: 0;
             top: 0;
+            width: 260px;
+            height: 100vh;
+            background-color: var(--surface-dark);
+            border-right: 1px solid var(--border-dim);
+            display: flex;
+            flex-direction: column;
             z-index: 1000;
+            transition: transform 0.3s ease;
         }
 
-        .navbar-brand {
-            font-size: 1.5rem;
+        .sidebar-header {
+            padding: 2rem 1.5rem;
+            border-bottom: 1px solid var(--border-dim);
+        }
+
+        .sidebar-brand {
+            font-size: 1.25rem;
             font-weight: 800;
             color: var(--accent-green);
             text-decoration: none;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.75rem;
+            font-family: 'Outfit';
         }
 
-        .nav-links {
-            display: flex;
-            gap: 1.5rem;
-        }
-
-        .nav-link {
-            text-decoration: none;
+        .sidebar-version {
+            font-size: 0.7rem;
             color: var(--text-muted);
-            font-weight: 600;
-            transition: color 0.3s ease;
+            margin-top: 0.25rem;
         }
 
-        .nav-link:hover,
-        .nav-link.active {
-            color: var(--text-primary);
+        .sidebar-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 1.5rem 0;
         }
 
-        .nav-link-queue {
-            border-bottom: 2px solid var(--accent-yellow);
+        .sidebar-section {
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-section-title {
+            padding: 0 1.5rem 0.75rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+        }
+
+        .sidebar-item {
+            margin-bottom: 2px;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            border-left: 3px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-link:hover {
+            background: rgba(230, 230, 240, 0.03);
+            color: var(--text-main);
+        }
+
+        .sidebar-link.active {
+            background: rgba(86, 204, 242, 0.05);
+            color: var(--accent-cyan);
+            border-left-color: var(--accent-cyan);
+            text-shadow: 0 0 10px rgba(86, 204, 242, 0.4);
+        }
+
+        .sidebar-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+            margin-right: 1rem;
+            opacity: 0.5;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         .container {
             max-width: 1400px;
             margin: 2rem auto;
             padding: 0 2rem;
+            flex-grow: 1;
         }
 
-        .card {
-            background: var(--card-bg);
-            -webkit-backdrop-filter: var(--glass-blur);
-            backdrop-filter: var(--glass-blur);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 1.5rem;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        /* Responsive Sidebar */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .mobile-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 1rem 2rem;
+                background: var(--surface-dark);
+                border-bottom: 1px solid var(--border-dim);
+                position: sticky;
+                top: 0;
+                z-index: 900;
+            }
+
+            .menu-toggle {
+                background: none;
+                border: none;
+                color: var(--text-main);
+                cursor: pointer;
+            }
         }
 
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 0.25rem 0.5rem;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .badge-success {
-            background: rgba(63, 185, 80, 0.2);
-            color: var(--accent-green);
-        }
-
-        .badge-danger {
-            background: rgba(248, 81, 73, 0.2);
-            color: var(--accent-red);
-        }
-
-        .badge-warning {
-            background: rgba(210, 153, 77, 0.2);
-            color: var(--accent-orange);
-        }
-
-        .badge-info {
-            background: rgba(88, 166, 255, 0.2);
-            color: var(--accent-blue);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-        }
-
-        th,
-        td {
-            text-align: left;
-            padding: 1rem;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        th {
-            color: var(--text-muted);
-            font-weight: 600;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-        }
-
-        .status-dot {
-            height: 10px;
-            width: 10px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 0.5rem;
-        }
-
-        .status-healthy {
-            background: var(--accent-green);
-            box-shadow: 0 0 8px var(--accent-green);
-        }
-
-        .status-unhealthy {
-            background: var(--accent-red);
-            box-shadow: 0 0 8px var(--accent-red);
-        }
-
-        .metric-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--text-primary);
-        }
-
-        .metric-label {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
+        @media (min-width: 1025px) {
+            .mobile-header {
+                display: none;
+            }
         }
 
         footer {
@@ -204,259 +203,196 @@
             padding: 2rem;
             color: var(--text-muted);
             font-size: 0.85rem;
-        }
-
-        /* Animations */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .animate-fade {
-            animation: fadeIn 0.5s ease forwards;
-        }
-
-        .header-section {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            margin-bottom: 2rem;
-        }
-
-        .header-title h1 {
-            font-size: 2.5rem;
-            color: var(--text-main);
-        }
-
-        .header-title p {
-            color: var(--text-muted);
-        }
-
-        .header-clock {
-            text-align: right;
-        }
-
-        .clock-display {
-            font-size: 1.5rem;
-            font-weight: 800;
-            font-family: 'Outfit';
-            color: var(--accent-blue);
-        }
-
-        .clock-label {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .card h2 {
-            margin-bottom: 1.5rem;
-        }
-
-        .sub-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-        }
-
-        .sub-header {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            margin-bottom: 1rem;
-            text-transform: uppercase;
-        }
-
-        .event-item {
-            margin-bottom: 0.75rem;
-            border-left: 2px solid var(--accent-orange);
-            padding-left: 0.75rem;
-        }
-
-        .event-title {
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .event-meta {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-
-        .safety-window {
-            margin-bottom: 1rem;
-            background: rgba(210, 153, 77, 0.1);
-            border-radius: 8px;
-            padding: 0.75rem;
-        }
-
-        .safety-header {
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: var(--accent-orange);
-        }
-
-        .safety-meta {
-            font-size: 0.75rem;
-        }
-
-        .clear-window {
-            background: rgba(63, 185, 80, 0.1);
-            border-radius: 8px;
-            padding: 0.75rem;
-        }
-
-        .clear-header {
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: var(--accent-green);
-        }
-
-        .list-unstyled {
-            list-style: none;
-        }
-
-        .mb-2rem {
-            margin-bottom: 2rem;
-        }
-
-        .util-db1172 {
-            color: var(--accent-cyan);
-        }
-
-        .util-accent-blue {
-            color: var(--accent-blue);
-        }
-
-        .util-f85149 {
-            color: var(--accent-red);
-        }
-
-        .util-e7992d {
-            color: var(--accent-orange);
-        }
-
-        .util-acb67b {
-            color: var(--text-muted);
-        }
-
-        .util-3fb950 {
-            color: var(--accent-green);
-        }
-
-        .execution-matched-box {
-            background: rgba(43, 85, 233, 0.05);
-            border: 1px solid rgba(43, 85, 233, 0.2);
-            padding: 1rem;
-            border-radius: 8px;
-        }
-
-        .mb-025rem {
-            margin-bottom: 0.25rem;
-        }
-
-        .mb-1rem {
-            margin-bottom: 1rem;
-        }
-
-        .mb-0 {
-            margin-bottom: 0;
-        }
-
-        .fs-125 {
-            font-size: 1.25rem;
-        }
-
-        .fs-075 {
-            font-size: 0.75rem;
-        }
-
-        .sub-header-small {
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: var(--text-muted);
-            text-transform: uppercase;
-        }
-
-        .text-muted-small {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-
-        .mb-02 {
-            margin-bottom: 0.5rem;
-        }
-
-        .mb-05 {
-            margin-bottom: 1rem;
+            border-top: 1px solid var(--border-dim);
         }
     </style>
 </head>
 
 <body>
-    <nav class="navbar">
-        <a href="/dashboard" class="navbar-brand">
+    <header class="mobile-header">
+        <a href="/dashboard" class="sidebar-brand">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                 stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
             </svg>
             TRADEHALL
         </a>
-        <div class="nav-links">
-            <a href="/dashboard" class="nav-link {% if active_page == 'overview' %}active{% endif %}">Overview</a>
-            <a href="/dashboard/incidents"
-                class="nav-link {% if active_page == 'incidents' %}active{% endif %}">Incidents</a>
-            <a href="/dashboard/fundamentals"
-                class="nav-link {% if active_page == 'fundamentals' %}active{% endif %}">Fundamentals</a>
-            <a href="/dashboard/setups" class="nav-link {% if active_page == 'setups' %}active{% endif %}">Technical</a>
-            <a href="/dashboard/risk" class="nav-link {% if active_page == 'risk' %}active{% endif %}">Risk</a>
-            <a href="/dashboard/tickets" class="nav-link {% if active_page == 'tickets' %}active{% endif %}">Tickets</a>
-            <a href="/dashboard/trades" class="nav-link {% if active_page == 'trades' %}active{% endif %}">Trades</a>
-            <a href="/dashboard/management"
-                class="nav-link {% if active_page == 'management' %}active{% endif %}">Management</a>
-            <a href="/dashboard/queue"
-                class="nav-link nav-link-queue {% if active_page == 'queue' %}active{% endif %}">Review Queue</a>
-            <a href="/dashboard/briefings"
-                class="nav-link {% if active_page == 'briefings' %}active{% endif %}">Briefings</a>
-            <a href="/dashboard/research"
-                class="nav-link {% if active_page == 'research' %}active{% endif %}">Research</a>
-            <a href="/dashboard/calibration"
-                class="nav-link {% if active_page == 'calibration' %}active{% endif %}">Calibration</a>
-            <a href="/dashboard/hindsight"
-                class="nav-link {% if active_page == 'hindsight' %}active{% endif %}">Hindsight</a>
-            <a href="/dashboard/policies"
-                class="nav-link {% if active_page == 'policies' %}active{% endif %}">Policies</a>
-            <a href="/dashboard/tuning" class="nav-link {% if active_page == 'tuning' %}active{% endif %}">Tuning</a>
-            <a href="/dashboard/pilot" class="nav-link {% if active_page == 'pilot' %}active{% endif %}">Pilot Run</a>
-            <a href="/dashboard/ops/daily" class="nav-link {% if active_page == 'ops' %}active{% endif %}">Ops
-                Playbook</a>
-            <a href="/dashboard/action-items" class="nav-link {% if active_page == 'actions' %}active{% endif %}">Action
-                Items</a>
-            <a href="/dashboard/reports" class="nav-link {% if active_page == 'reports' %}active{% endif %}">Reports</a>
-            <a href="/dashboard/theme" class="nav-link {% if active_page == 'theme' %}active{% endif %}"
-                style="border: 1px dashed var(--accent-cyan); color: var(--accent-cyan);">Theme</a>
+        <button class="menu-toggle" aria-label="Toggle Menu" title="Toggle Menu"
+            onclick="document.querySelector('.sidebar').classList.toggle('show')">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+    </header>
+
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="/dashboard" class="sidebar-brand">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                </svg>
+                TRADEHALL
+            </a>
+            <div class="sidebar-version">v1.0.0 Operator Control</div>
         </div>
-    </nav>
 
-    <div class="container animate-fade">
-        {% block content %}{% endblock %}
-    </div>
+        <div class="sidebar-content">
+            <section class="sidebar-section">
+                <div class="sidebar-section-title">Operations</div>
+                <ul class="sidebar-nav">
+                    <li class="sidebar-item">
+                        <a href="/dashboard" class="sidebar-link {% if active_page == 'overview' %}active{% endif %}">
+                            <span class="sidebar-dot"></span>Overview
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="/dashboard/ops/daily"
+                            class="sidebar-link {% if active_page == 'ops' %}active{% endif %}">
+                            <span class="sidebar-dot"></span>Ops Daily
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="/dashboard/briefings"
+                            class="sidebar-link {% if active_page == 'briefings' %}active{% endif %}">
+                            <span class="sidebar-dot"></span>Briefings
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="/dashboard/action-items"
+                            class="sidebar-link {% if active_page == 'actions' %}active{% endif %}">
+                            <span class="sidebar-dot"></span>Actions
+                        </a>
+                    </li>
+                </ul>
+            </section>
 
-    <footer>
-        &copy; 2026 Antigravity Trading Systems | Nairobi/Africa Timezone
-    </footer>
-</body>
+            <section class="sidebar-section">
+                <div class="sidebar-section-title">Trading</div>
+                <ul class="sidebar-nav">
+                    <li class="sidebar-item">
+                        <a href="/dashboard/queue"
+                            class="sidebar-link {% if active_page == 'queue' %}active{% endif %}">
+                            <span class="sidebar-dot"></span>Review Queue
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="/dashboard/tickets"
+                            class="sidebar-link {% if active_page == 'tickets' %}active{% endif %}">
+                            <span class="sidebar-dot"></span>Tickets
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="/dashboard/setups"
+                            class="sidebar-link {% if active_page == 'setups' %}active{% endif %}">
+                            <span class="sidebar-dot"></span>Execution Prep
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="/dashboard/trades"
+                            class="sidebar-link {% if active_page == 'trades' %}active{% endif %}">
+                            <span class="sidebar-dot"></span>Trades
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="/dashboard/management"
+                            class="sidebar-link {% if active_page == 'management' %}active{% endif %}">
+                            <span class="sidebar-dot"></span>Management
+                        </a>
+                    </li>
+                </ul>
+            </section>
+
+            <section class="sidebar-section">
+                <div class="sidebar-section-title">Analytics</div>
+                <ul class="sidebar-nav">
+                    <li class="sidebar-item">
+                        <a href="/dashboard/hindsight"
+                            class="sidebar-link {% if active_page == 'hindsight' %}active{% endif %}">
+                            <span class="sidebar-dot"></span>Hindsight
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="/dashboard/research"
+                            class="sidebar-link {% if active_page == 'research' %}active{% endif %}">
+                            <span class="sidebar-dot"></span>Research
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="/dashboard/calibration"
+                            class="sidebar-link {% if active_page == 'calibration' %}active{% endif %}">
+                            <span class="sidebar-dot"></span>Calibration
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="/dashboard/tuning"
+                            class="sidebar-link {% if active_page == 'tuning' %}active{% endif %}">
+                            <span class="sidebar-dot"></span>Tuning
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="/dashboard/pilot"
+                            class="sidebar-link {% if active_page == 'pilot' %}active{% endif %}">
+                            <span class="sidebar-dot"></span>Pilot Run
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="/dashboard/policies"
+                            class="sidebar-link {% if active_page == 'policies' %}active{% endif %}">
+                            <span class="sidebar-dot"></span>Policies
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="/dashboard/reports"
+                            class="sidebar-link {% if active_page == 'reports' %}active{% endif %}">
+                            <span class="sidebar-dot"></span>Reports
+                        </a>
+                    </li>
+                </ul>
+            </section>
+
+            <section class="sidebar-section">
+                <div class="sidebar-section-title">System</div>
+                <ul class="sidebar-nav">
+                    <li class="sidebar-item">
+                        <a href="/dashboard/fundamentals"
+                            class="sidebar-link {% if active_page == 'fundamentals' %}active{% endif %}">
+                            <span class="sidebar-dot"></span>Live Data
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="/dashboard/risk" class="sidebar-link {% if active_page == 'risk' %}active{% endif %}">
+                            <span class="sidebar-dot"></span>Risk
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="/dashboard/incidents"
+                            class="sidebar-link {% if active_page == 'incidents' %}active{% endif %}">
+                            <span class="sidebar-dot"></span>Incidents
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="/dashboard/theme"
+                            class="sidebar-link {% if active_page == 'theme' %}active{% endif %}">
+                            <span class="sidebar-dot"></span>Theme
+                        </a>
+                    </li>
+                </ul>
+            </section>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="container animate-fade">
+            {% block content %}{% endblock %}
+        </div>
+
+        <footer>
+            &copy; 2026 Antigravity Trading Systems | Nairobi/Africa Timezone
+        </footer>
+    </main>
 
 </html>
