@@ -14,190 +14,116 @@
 </head>
 
 <body>
-    <header class="mobile-header">
-        <a href="/dashboard" class="sidebar-brand">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-            </svg>
-            TRADEHALL
-        </a>
-        <button class="menu-toggle" aria-label="Toggle Menu" title="Toggle Menu"
-            onclick="document.querySelector('.sidebar').classList.toggle('show')">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round">
-                <line x1="3" y1="12" x2="21" y2="12"></line>
-                <line x1="3" y1="6" x2="21" y2="6"></line>
-                <line x1="3" y1="18" x2="21" y2="18"></line>
-            </svg>
-        </button>
-    </header>
+    <div class="hud-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="/dashboard" class="sidebar-brand">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                    </svg>
+                    TRADEHALL
+                </a>
+                <div class="sidebar-version">OPERATOR DASHBOARD v1.0.0</div>
+            </div>
 
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <a href="/dashboard" class="sidebar-brand">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-                </svg>
-                TRADEHALL
-            </a>
-            <div class="sidebar-version">v1.0.0 Operator Control</div>
-        </div>
+            <div class="sidebar-content">
+                <section class="sidebar-section">
+                    <h4 class="sidebar-section-title">Operations</h4>
+                    <ul class="sidebar-nav">
+                        <li class="sidebar-item">
+                            <a href="/dashboard" class="sidebar-link active">
+                                <span class="sidebar-dot"></span>Overview
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="/dashboard/ops/daily" class="sidebar-link">
+                                <span class="sidebar-dot"></span>Ops Daily
+                            </a>
+                        </li>
+                    </ul>
+                </section>
 
-        <div class="sidebar-content">
-            <section class="sidebar-section">
-                <div class="sidebar-section-title">Operations</div>
-                <ul class="sidebar-nav">
-                    <li class="sidebar-item">
-                        <a href="/dashboard" class="sidebar-link {% if active_page == 'overview' %}active{% endif %}">
-                            <span class="sidebar-dot"></span>Overview
-                        </a>
-                    </li>
-                    <li class="sidebar-item">
-                        <a href="/dashboard/ops/daily"
-                            class="sidebar-link {% if active_page == 'ops' %}active{% endif %}">
-                            <span class="sidebar-dot"></span>Ops Daily
-                        </a>
-                    </li>
-                    <li class="sidebar-item">
-                        <a href="/dashboard/briefings"
-                            class="sidebar-link {% if active_page == 'briefings' %}active{% endif %}">
-                            <span class="sidebar-dot"></span>Briefings
-                        </a>
-                    </li>
-                    <li class="sidebar-item">
-                        <a href="/dashboard/action-items"
-                            class="sidebar-link {% if active_page == 'actions' %}active{% endif %}">
-                            <span class="sidebar-dot"></span>Actions
-                        </a>
-                    </li>
-                </ul>
-            </section>
+                <section class="sidebar-section">
+                    <h4 class="sidebar-section-title">Trading</h4>
+                    <ul class="sidebar-nav">
+                        <li class="sidebar-item">
+                            <a href="/dashboard/queue" class="sidebar-link">
+                                <span class="sidebar-dot"></span>Queue
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="/dashboard/trades" class="sidebar-link">
+                                <span class="sidebar-dot"></span>Trades
+                            </a>
+                        </li>
+                    </ul>
+                </section>
 
-            <section class="sidebar-section">
-                <div class="sidebar-section-title">Trading</div>
-                <ul class="sidebar-nav">
-                    <li class="sidebar-item">
-                        <a href="/dashboard/queue"
-                            class="sidebar-link {% if active_page == 'queue' %}active{% endif %}">
-                            <span class="sidebar-dot"></span>Review Queue
-                        </a>
-                    </li>
-                    <li class="sidebar-item">
-                        <a href="/dashboard/tickets"
-                            class="sidebar-link {% if active_page == 'tickets' %}active{% endif %}">
-                            <span class="sidebar-dot"></span>Tickets
-                        </a>
-                    </li>
-                    <li class="sidebar-item">
-                        <a href="/dashboard/setups"
-                            class="sidebar-link {% if active_page == 'setups' %}active{% endif %}">
-                            <span class="sidebar-dot"></span>Execution Prep
-                        </a>
-                    </li>
-                    <li class="sidebar-item">
-                        <a href="/dashboard/trades"
-                            class="sidebar-link {% if active_page == 'trades' %}active{% endif %}">
-                            <span class="sidebar-dot"></span>Trades
-                        </a>
-                    </li>
-                    <li class="sidebar-item">
-                        <a href="/dashboard/management"
-                            class="sidebar-link {% if active_page == 'management' %}active{% endif %}">
-                            <span class="sidebar-dot"></span>Management
-                        </a>
-                    </li>
-                </ul>
-            </section>
+                <section class="sidebar-section">
+                    <h4 class="sidebar-section-title">Analytics</h4>
+                    <ul class="sidebar-nav">
+                        <li class="sidebar-item">
+                            <a href="/dashboard/pilot" class="sidebar-link">
+                                <span class="sidebar-dot"></span>Pilot
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="/dashboard/fundamentals" class="sidebar-link">
+                                <span class="sidebar-dot"></span>Fundamentals
+                            </a>
+                        </li>
+                    </ul>
+                </section>
 
-            <section class="sidebar-section">
-                <div class="sidebar-section-title">Analytics</div>
-                <ul class="sidebar-nav">
-                    <li class="sidebar-item">
-                        <a href="/dashboard/hindsight"
-                            class="sidebar-link {% if active_page == 'hindsight' %}active{% endif %}">
-                            <span class="sidebar-dot"></span>Hindsight
-                        </a>
-                    </li>
-                    <li class="sidebar-item">
-                        <a href="/dashboard/research"
-                            class="sidebar-link {% if active_page == 'research' %}active{% endif %}">
-                            <span class="sidebar-dot"></span>Research
-                        </a>
-                    </li>
-                    <li class="sidebar-item">
-                        <a href="/dashboard/calibration"
-                            class="sidebar-link {% if active_page == 'calibration' %}active{% endif %}">
-                            <span class="sidebar-dot"></span>Calibration
-                        </a>
-                    </li>
-                    <li class="sidebar-item">
-                        <a href="/dashboard/tuning"
-                            class="sidebar-link {% if active_page == 'tuning' %}active{% endif %}">
-                            <span class="sidebar-dot"></span>Tuning
-                        </a>
-                    </li>
-                    <li class="sidebar-item">
-                        <a href="/dashboard/pilot"
-                            class="sidebar-link {% if active_page == 'pilot' %}active{% endif %}">
-                            <span class="sidebar-dot"></span>Pilot Run
-                        </a>
-                    </li>
-                    <li class="sidebar-item">
-                        <a href="/dashboard/policies"
-                            class="sidebar-link {% if active_page == 'policies' %}active{% endif %}">
-                            <span class="sidebar-dot"></span>Policies
-                        </a>
-                    </li>
-                    <li class="sidebar-item">
-                        <a href="/dashboard/reports"
-                            class="sidebar-link {% if active_page == 'reports' %}active{% endif %}">
-                            <span class="sidebar-dot"></span>Reports
-                        </a>
-                    </li>
-                </ul>
-            </section>
+                <section class="sidebar-section">
+                    <h4 class="sidebar-section-title">System</h4>
+                    <ul class="sidebar-nav">
+                        <li class="sidebar-item">
+                            <a href="/dashboard/health" class="sidebar-link">
+                                <span class="sidebar-dot"></span>Health
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="/dashboard/theme" class="sidebar-link">
+                                <span class="sidebar-dot"></span>Theme
+                            </a>
+                        </li>
+                    </ul>
+                </section>
+            </div>
+        </aside>
 
-            <section class="sidebar-section">
-                <div class="sidebar-section-title">System</div>
-                <ul class="sidebar-nav">
-                    <li class="sidebar-item">
-                        <a href="/dashboard/fundamentals"
-                            class="sidebar-link {% if active_page == 'fundamentals' %}active{% endif %}">
-                            <span class="sidebar-dot"></span>Live Data
-                        </a>
-                    </li>
-                    <li class="sidebar-item">
-                        <a href="/dashboard/risk" class="sidebar-link {% if active_page == 'risk' %}active{% endif %}">
-                            <span class="sidebar-dot"></span>Risk
-                        </a>
-                    </li>
-                    <li class="sidebar-item">
-                        <a href="/dashboard/incidents"
-                            class="sidebar-link {% if active_page == 'incidents' %}active{% endif %}">
-                            <span class="sidebar-dot"></span>Incidents
-                        </a>
-                    </li>
-                    <li class="sidebar-item">
-                        <a href="/dashboard/theme"
-                            class="sidebar-link {% if active_page == 'theme' %}active{% endif %}">
-                            <span class="sidebar-dot"></span>Theme
-                        </a>
-                    </li>
-                </ul>
-            </section>
-        </div>
-    </aside>
+        <header class="hud-top-bar">
+            <div style="display: flex; flex: 1; align-items: center; gap: 1rem;">
+                <span class="badge badge-success Intense-glow-cyan">SYSTEM ARMED</span>
+                <span class="sidebar-version" style="margin: 0; opacity: 0.8;">SESSIONS: LDN / NY</span>
+            </div>
+            <div class="header-clock" style="display: flex; align-items: center; gap: 1.5rem;">
+                <div id="clock" class="clock-display"
+                    style="font-size: 1.2rem; font-family: monospace; color: var(--accent-cyan);">--:--:--</div>
+                <div class="clock-label"
+                    style="text-transform: uppercase; font-size: 0.7rem; letter-spacing: 1px; color: var(--text-muted);">
+                    UTC+3 (NAIROBI)</div>
+            </div>
+        </header>
 
-    <main class="main-content">
-        <div class="container animate-fade">
+        <main class="hud-main">
             {% block content %}{% endblock %}
-        </div>
+        </main>
+    </div>
 
-        <footer>
-            &copy; 2026 Antigravity Trading Systems | Nairobi/Africa Timezone
-        </footer>
-    </main>
+    <script>
+        function updateClock() {
+            const now = new Date();
+            const options = { timeZone: 'Africa/Nairobi', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            const timeStr = new Intl.DateTimeFormat('en-GB', options).format(now);
+            const clockEl = document.getElementById('clock');
+            if (clockEl) clockEl.textContent = timeStr;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
+</body>
 
 </html>

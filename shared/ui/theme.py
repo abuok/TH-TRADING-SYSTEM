@@ -50,3 +50,21 @@ def glow(accent_key_or_hex: str) -> str:
         f"border: 1px solid {color}; "
         f"box-shadow: 0 0 8px {outer}, inset 0 0 4px {inner};"
     )
+
+def glass_panel(opacity: float = 0.05, blur: int = 10) -> str:
+    """Returns CSS for a glassmorphism panel."""
+    return (
+        f"background: rgba(18, 18, 26, {opacity}); "
+        f"backdrop-filter: blur({blur}px); "
+        f"border: 1px solid rgba(42, 42, 53, 0.5);"
+    )
+
+def hud_ring(accent_key: str) -> str:
+    """Extra intense glow for critical HUD elements."""
+    color = ACCENTS.get(accent_key.lower(), accent_key)
+    outer = rgba(color, 0.6)
+    inner = rgba(color, 0.3)
+    return (
+        f"border: 2px solid {color}; "
+        f"box-shadow: 0 0 15px {outer}, inset 0 0 8px {inner};"
+    )
