@@ -29,7 +29,7 @@ class RiskEngine:
         # Check if setup_time falls within any no-trade window
         # For simplicity, we assume metrics or a specific field contains windows
         # If not present, we skip.
-        windows = context.metrics.get("no_trade_windows", [])
+        windows = context.no_trade_windows
         for window in windows:
             start = datetime.fromisoformat(window["start"])
             end = datetime.fromisoformat(window["end"])
@@ -52,6 +52,14 @@ class RiskEngine:
         reasons = []
         status = "ALLOW"
         is_approved = True
+
+        # 0. Context Staleness Check (Fail Closed)
+        now_utc = datetime.now(pytz.UTC)
+        context_age = (now_utc - context.timestamp).total_seconds()
+        if context_age > 7200: # 2 hours
+            status = "BLOCK"
+            is_approved = False
+            reasons.append(f"Market context is stale ({context_age/60:.1f} mins old). Fail-safe block triggered.")
         
         # 1. RR Check
         rr = self.calculate_rr(setup)

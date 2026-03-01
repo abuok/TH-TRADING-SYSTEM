@@ -140,9 +140,11 @@ def generate_html_report(result):
 # Add Research sub-app
 research_app = typer.Typer(help="Research algorithms and generation")
 pilot_app = typer.Typer(help="Pilot Protocol & Graduation Gate")
+infra_app = typer.Typer(help="Infrastructure & Integration status")
 
 app.add_typer(research_app, name="research")
 app.add_typer(pilot_app, name="pilot")
+app.add_typer(infra_app, name="infra")
 
 @research_app.command("run")
 def research_run(
@@ -402,6 +404,47 @@ def get_latest_scorecard():
     print(f"Scorecard: {latest.scorecard_id}")
     print(f"Dates Evaluated: {latest.date_range}")
     print(f"PASS/FAIL: {latest.pass_fail}")
+
+# --- INFRASTRUCTURE COMMANDS ---
+
+@infra_app.command("status")
+def integrations_status():
+    """
+    Print status of all external integrations and environment variables.
+    """
+    from shared.providers.calendar import get_calendar_provider
+    from shared.providers.proxy import get_proxy_provider
+    from shared.providers.price_quote import get_price_quote_provider
+    from shared.providers.symbol_spec import get_symbol_spec_provider
+    
+    table = Table(title="Integration Status")
+    table.add_column("Provider Type", style="cyan")
+    table.add_column("Active Implementation", style="magenta")
+    table.add_column("Env Var", style="green")
+    table.add_column("Status", style="white")
+
+    def check_provider(name, env_var, factory_func):
+        impl = factory_func()
+        impl_name = type(impl).__name__
+        status = "[green]OK[/green]" if "Mock" not in impl_name else "[yellow]MOCK[/yellow]"
+        if "Real" in impl_name:
+             status = "[red]NOT IMPLEMENTED[/red]"
+        table.add_row(name, impl_name, os.getenv(env_var, "unset"), status)
+
+    check_provider("Calendar", "CALENDAR_PROVIDER", get_calendar_provider)
+    check_provider("Proxy", "PROXY_PROVIDER", get_proxy_provider)
+    check_provider("Price Quote", "PRICE_PROVIDER", get_price_quote_provider)
+    check_provider("Symbol Spec", "SPEC_PROVIDER", get_symbol_spec_provider)
+    
+    console.print(table)
+    
+    # Check required secrets
+    console.print("\n[bold]Required Secrets (.env):[/bold]")
+    secrets = ["DATABASE_URL", "REDIS_URL", "DASHBOARD_PASSWORD"]
+    for s in secrets:
+        val = os.getenv(s)
+        status = "[green]SET[/green]" if val else "[red]MISSING[/red]"
+        console.print(f" - {s:20}: {status}")
 
 if __name__ == "__main__":
     app()

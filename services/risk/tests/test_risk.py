@@ -110,14 +110,12 @@ def test_risk_eval_block_event_window(engine):
         asset_pair="BTCUSD",
         price=60000.0,
         volume_24h=100.0,
-        metrics={
-            "no_trade_windows": [
-                {
-                    "start": (now - timedelta(minutes=5)).isoformat(),
-                    "end": (now + timedelta(minutes=5)).isoformat()
-                }
-            ]
-        }
+        no_trade_windows=[
+            {
+                "start": (now - timedelta(minutes=5)).isoformat(),
+                "end": (now + timedelta(minutes=5)).isoformat()
+            }
+        ]
     )
     
     account_state = {"daily_loss": 0.0, "total_loss": 0.0, "consecutive_losses": 0}
