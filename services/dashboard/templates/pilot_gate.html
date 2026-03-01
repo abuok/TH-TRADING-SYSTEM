@@ -30,7 +30,7 @@
                 <td class="util-ee8d52">
                     <span class="badge badge-info">{{ val }}</span>
                 </td>
-                <td class="util-a8ece1 util-1e8514" style="text-align: left;">
+                <td class="util-a8ece1 util-1e8514 util-e7fa6d">
                     {% if key == 'quote_freshness_pct' %}
                     Minimum uptime/freshness for live quote bridge data.
                     {% elif key == 'max_quote_stale_seconds' %}
@@ -71,7 +71,7 @@
     <div class="card-header">
         <h2>Gate Policy</h2>
     </div>
-    <div style="padding: 1.5rem; font-size: 0.95rem; color: #8b949e; line-height: 1.6;">
+    <div class="util-gate-policy-text">
         <p>The system graduation requires <strong>80% passing sessions</strong> over a 10-session rolling window.</p>
         <p>If any core metric (Drawdown or Expectancy) is breached, the scorecard is marked as a <strong>FAIL</strong>
             regardless of average aggregates.</p>

@@ -1181,3 +1181,32 @@
 .tuning-empty-title {
     color: var(--text-muted);
 }
+
+.util-grid-2-1 {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+}
+
+.util-grid-1-gap-1 {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+.util-bg-dark-subtle {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.util-pl-1-2 {
+    padding-left: 1.2rem;
+}
+
+.util-gate-policy-text {
+    padding: 1.5rem;
+    font-size: 0.95rem;
+    color: #8b949e;
+    line-height: 1.6;
+}

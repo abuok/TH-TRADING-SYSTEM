@@ -87,7 +87,8 @@
 </div>
 
 <div class="sub-header">Key Drivers</div>
-<ul class="list-unstyled util-d3297f">{%- for drv in latest.data.get('drivers', []) -%}
+<ul class="list-unstyled util-d3297f">
+    {%- for drv in latest.data.get('drivers', []) -%}
     <li class="event-item border-left-{{ 'green' if drv.impact > 0 else ('red' if drv.impact < 0 else 'muted') }}">
         <div class="event-title">{{ drv.text }}</div>
         <div class="event-meta">Impact: {{ drv.impact }}</div>

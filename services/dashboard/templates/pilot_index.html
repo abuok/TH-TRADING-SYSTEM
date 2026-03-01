@@ -11,7 +11,7 @@
     </div>
 </div>
 
-<div class="grid" style="grid-template-columns: 2fr 1fr; gap: 2rem;">
+<div class="grid util-grid-2-1">
     <div>
         <div class="card mb-2rem">
             <div class="card-header">
@@ -106,18 +106,18 @@
             {% set latest = scorecards[0].data %}
             <div class="util-dca860 mb-1rem">Based on latest scorecard: {{ scorecards[0].scorecard_id }}</div>
 
-            <div class="grid" style="grid-template-columns: 1fr; gap: 1rem;">
-                <div class="card" style="background: rgba(0,0,0,0.2); padding: 1rem;">
+            <div class="grid util-grid-1-gap-1">
+                <div class="card util-bg-dark-subtle">
                     <div class="util-fbd352">{{ latest.aggregates.passing_days }} / {{ latest.aggregates.total_days }}
                     </div>
                     <div class="util-e91b5f">Passing Days</div>
                 </div>
-                <div class="card" style="background: rgba(0,0,0,0.2); padding: 1rem;">
+                <div class="card util-bg-dark-subtle">
                     <div class="util-0739fc">{{ (latest.aggregates.passing_days / latest.aggregates.total_days * 100) |
                         round(1) }}%</div>
                     <div class="util-e91b5f">Reliability Rate</div>
                 </div>
-                <div class="card" style="background: rgba(0,0,0,0.2); padding: 1rem;">
+                <div class="card util-bg-dark-subtle">
                     <div class="util-fbd352">{{ latest.aggregates.net_realized_r | round(2) }}R</div>
                     <div class="util-e91b5f">Cumulative Return</div>
                 </div>
@@ -132,11 +132,8 @@
                 <h2>Next Week Plan Preview</h2>
             </div>
             {% if scorecards %}
-            <ul class="util-1e8514" style="padding-left: 1.2rem;">
-                {% for item in scorecards[0].data.next_week_plan %}
-                <li style="margin-bottom: 0.5rem;">{{ item }}</li>
-                {% endfor %}
-            </ul>
+            <ul class="util-1e8514 util-pl-1-2">{%- for item in scorecards[0].data.next_week_plan -%}<li
+                    class="mb-05rem">{{ item }}</li>{%- endfor -%}</ul>
             {% else %}
             <p class="util-d77719">No plan derived yet.</p>
             {% endif %}

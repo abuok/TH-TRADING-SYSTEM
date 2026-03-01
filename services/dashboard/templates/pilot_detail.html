@@ -43,7 +43,7 @@
     </div>
 </div>
 
-<div class="grid" style="grid-template-columns: 2fr 1fr; gap: 2rem;">
+<div class="grid util-grid-2-1">
     <div>
         <div class="card">
             <div class="card-header">
@@ -72,7 +72,7 @@
                             class="util-a8ece1 {% if s.performance_metrics.approved_expectancy_r > 0 %}util-20f3a9{% else %}util-49d8b4{% endif %}">
                             {{ s.performance_metrics.approved_expectancy_r | round(2) }}R
                         </td>
-                        <td class="util-4009b5 util-1e8514" style="font-size: 0.75rem;">
+                        <td class="util-4009b5 util-1e8514 util-af89d6">
                             {{ s.notes | join(', ') }}
                         </td>
                     </tr>
@@ -87,11 +87,8 @@
             <div class="card-header">
                 <h2>Next Week Plan</h2>
             </div>
-            <ul class="util-1e8514" style="padding-left: 1.2rem;">
-                {% for plan in scorecard.next_week_plan %}
-                <li style="margin-bottom: 0.5rem;">{{ plan }}</li>
-                {% endfor %}
-            </ul>
+            <ul class="util-1e8514 util-pl-1-2">{%- for plan in scorecard.next_week_plan -%}<li class="mb-05rem">{{ plan
+                    }}</li>{%- endfor -%}</ul>
         </div>
     </div>
 </div>

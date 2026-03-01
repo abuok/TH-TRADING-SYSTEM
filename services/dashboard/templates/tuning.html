@@ -88,9 +88,7 @@
                 </div>
                 <div>
                     <div class="sub-header-small">Supporting Evidence</div>
-                    <ul class="tuning-list">{% for ref in prop.evidence_refs %}
-                        <li>{{ ref }}</li>{% endfor %}
-                    </ul>
+                    <ul class="tuning-list">{%- for ref in prop.evidence_refs -%}<li>{{ ref }}</li>{%- endfor -%}</ul>
 
                     <div class="sub-header-small">Risk & Rollback</div>
                     <p class="tuning-risk">
