@@ -1,0 +1,28 @@
+# Mock & Missing Connections Audit Results
+
+## Executive Summary
+The system currently defaults to **Mock** providers for nearly all external data (Calendar, Prices, Quotes, Proxies). This is a **P0 PROD BLOCKER** because it bypasses safety gates (news windows, price deviation) and decision-quality checks (market proxies). Additionally, several internal logic bridges (Risk evaluation subscription, Lot sizing) are unimplemented.
+
+## Mock & Missing Connections Table
+
+| Subsystem | File Path | What is Mocked / Missing | Why it Matters | Severity | Connection Type | Providers | Implementation Plan | Config Keys |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Safety API** | [calendar.py](file:///c:/Users/Administrator/Desktop/TH/shared/providers/calendar.py) | `CALENDAR_PROVIDER` defaults to [mock](file:///c:/Users/Administrator/Desktop/TH/tests/test_mission_h_pilot.py#26-48). | Bypasses no-trade news windows. | **P0** | API/RSS | ForexFactory (Done), Myfxbook | Set [.env](file:///c:/Users/Administrator/Desktop/TH/.env) to `forexfactory`. | `CALENDAR_PROVIDER` |
+| **Risk Gate** | `risk.py:32` | [is_in_event_window](file:///c:/Users/Administrator/Desktop/TH/shared/logic/risk.py#28-39) uses wrong JSON path. | Ignores news even if provider is real. | **P0** | Logic Bug | N/A | Fix `context.metrics` -> `context`. | N/A |
+| **Risk Gate** | [risk/main.py](file:///c:/Users/Administrator/Desktop/TH/services/risk/main.py) | No event bus subscription. | Risk evaluation never actually happens. | **P0** | Event Bus | N/A | Subscribe to `technical_setups`. | N/A |
+| **Execution** | [price_quote.py](file:///c:/Users/Administrator/Desktop/TH/shared/providers/price_quote.py) | `PRICE_PROVIDER` defaults to [mock](file:///c:/Users/Administrator/Desktop/TH/tests/test_mission_h_pilot.py#26-48). | Bypasses price deviation validation. | **P0** | Database/MD | MT5 Bridge (Existing) | Set [.env](file:///c:/Users/Administrator/Desktop/TH/.env) to [db](file:///c:/Users/Administrator/Desktop/TH/test_journal.db). | `PRICE_PROVIDER` |
+| **Ingestion** | [proxy.py](file:///c:/Users/Administrator/Desktop/TH/shared/providers/proxy.py) | [RealProxyProvider](file:///c:/Users/Administrator/Desktop/TH/shared/providers/proxy.py#45-58) is a stub. | Market bias (DXY/US10Y) is static/random. | **P1** | Market Data API | Twelve Data, AlphaVantage | Implement `TwelveDataProxyProvider`. | `PROXY_PROVIDER=real` |
+| **Alerting** | [alerting.py](file:///c:/Users/Administrator/Desktop/TH/shared/logic/alerting.py) | Telegram/Slack is a placeholder. | Operators won't see critical failures. | **P1** | Webhook/API | Telegram, Slack | Implement `TelegramAdapter`. | `TELEGRAM_TOKEN` |
+| **Reporting** | `pilot.py:62` | `ticket_based_trades_pct` is stubbed. | Reliability scores are artificially 100%. | **P2** | DB Aggregate | N/A | Query [QuoteStaleLog](file:///c:/Users/Administrator/Desktop/TH/shared/database/models.py#322-328) & [OrderTicket](file:///c:/Users/Administrator/Desktop/TH/shared/database/models.py#49-99). | N/A |
+
+## Production Blockers (Top 10)
+1. **Unsafe Defaults**: `PRICE_PROVIDER`, `CALENDAR_PROVIDER`, `SPEC_PROVIDER` MUST be set to [db](file:///c:/Users/Administrator/Desktop/TH/test_journal.db) or `forexfactory` in `.env.prod`.
+2. **Disconnected Risk Service**: `services/risk` must subscribe to `market_context` and `technical_setups`.
+3. **Broken News Gate**: `RiskEngine` bug in `is_in_event_window` prevents news blocking.
+4. **Missing Proxy Data**: `RealProxyProvider` implementation needed for fundamental bias.
+5. **Static Lot Sizing**: Hardcoded `0.1` in risk engine is unsafe for various account sizes.
+6. **No Real-Time Alerts**: Lack of Telegram/Push notifications for P0 incidents.
+7. **Incomplete Symbol Specs**: `DBSymbolSpecProvider` depends on MT5 Bridge population; fallback needed.
+8. **Stale Data Risks**: Heuristic reliability metrics in Pilot reporting miss edge cases.
+9. **Sentiment Gap**: "Fundamentals" tab relies on `MarketContextPacket` which lacks macro sentiment fields.
+10. **Auth Placeholders**: Dashboard password check is a `compare_digest` with env var; needs proper session management for multiple users.
