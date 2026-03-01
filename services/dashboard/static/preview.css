@@ -1,0 +1,117 @@
+/* services/dashboard/static/preview.css */
+.theme-preview-container {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.preview-header {
+    color: var(--text-main);
+    margin-bottom: 2rem;
+}
+
+.section-title {
+    color: var(--text-muted);
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.accent-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 2rem;
+    margin-bottom: 4rem;
+}
+
+.accent-item {
+    text-align: center;
+}
+
+.accent-preview-ring {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    margin: 0 auto 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface-dark);
+}
+
+.accent-color-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+}
+
+.accent-label {
+    font-weight: bold;
+    color: var(--text-main);
+    text-transform: capitalize;
+}
+
+.accent-hex {
+    font-family: monospace;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.neutral-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 4rem;
+}
+
+.neutral-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--surface-dark);
+    border: 1px solid var(--border-dim);
+    border-radius: 8px;
+}
+
+.neutral-color-swatch {
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--border-dim);
+    border-radius: 4px;
+}
+
+.example-grid {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.example-card {
+    padding: 1.5rem;
+    border-radius: 12px;
+    width: 300px;
+}
+
+.status-col {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.status-pill {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 0.8rem;
+}
+
+.action-btn {
+    background: transparent;
+    color: var(--accent-cyan);
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+}

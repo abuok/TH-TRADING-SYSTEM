@@ -36,13 +36,9 @@
             <div>
                 <h3 class="sub-header">ACTIVE KILL SWITCHES</h3>
                 {% if kill_switches %}
-                <ul class="list-unstyled" style="background-color: var(--surface-dark);">{%- for ks in kill_switches -%}
-                    <li class="util-ac79cc">
-                        <span class="badge badge-danger">{{ ks.switch_type }}</span>
-                        <span class="util-e7992d">{{ ks.target or 'GLOBAL' }}</span>
-                    </li>
-                    {%- endfor -%}
-                </ul>
+                <ul class="list-unstyled bg-surface">{%- for ks in kill_switches -%}<li class="util-ac79cc"><span
+                            class="badge badge-danger">{{ ks.switch_type }}</span><span class="util-e7992d">{{ ks.target
+                            or 'GLOBAL' }}</span></li>{%- endfor -%}</ul>
                 {% else %}
                 <p class="util-ff6795">SYSTEM ARMED: No Active Kill Switches</p>
                 {% endif %}
@@ -143,12 +139,12 @@
 
 <!-- Live Data Bridge Widget -->
 <div class="card">
-    <div class="header-section" style="margin-bottom: 10px;">
+    <div class="header-section mb-10">
         <h2>Live Data Bridge (MetaTrader 5)</h2>
         <span class="badge badge-info">Ingestion Layer</span>
     </div>
     <div class="grid">
-        <div style="flex: 2;">
+        <div class="flex-2">
             <h3 class="sub-header">LATEST QUOTES</h3>
             {% if live_quotes %}
             <table>
@@ -164,7 +160,7 @@
                 <tbody>
                     {% for q in live_quotes %}
                     <tr>
-                        <td class="util-db1172" style="border: 1px solid var(--border-dim);">{{ q.symbol }}</td>
+                        <td class="util-db1172 border-theme">{{ q.symbol }}</td>
                         <td>{{ q.bid }}</td>
                         <td>{{ q.ask }}</td>
                         <td><span class="badge badge-info">{{ q.spread }}</span></td>
@@ -177,17 +173,12 @@
             <p class="util-acb67b">No live quotes reported from bridge.</p>
             {% endif %}
         </div>
-        <div style="flex: 1; margin-left: 20px;">
+        <div class="flex-1 ml-2">
             <h3 class="sub-header">SYMBOL SPECS</h3>
             {% if symbol_specs %}
-            <ul class="list-unstyled">
-                {% for s in symbol_specs %}
-                <li style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border-dim);">
-                    <strong class="util-db1172">{{ s.symbol }}</strong><br>
-                    <small class="util-acb67b">Size: {{ s.contract_size }} | Tick: {{ s.tick_size }} | Min: {{ s.min_lot
-                        }}</small>
-                </li>
-                {% endfor %}
+            <ul class="list-unstyled">{% for s in symbol_specs %}<li class="mb-15 pb-10 border-theme-bottom"><strong
+                        class="util-db1172">{{ s.symbol }}</strong><br><small class="util-acb67b">Size: {{
+                        s.contract_size }} | Tick: {{ s.tick_size }} | Min: {{ s.min_lot }}</small></li>{% endfor %}
             </ul>
             {% else %}
             <p class="util-acb67b">No symbol specs ingested.</p>

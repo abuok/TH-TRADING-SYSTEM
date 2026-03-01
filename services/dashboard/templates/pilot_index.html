@@ -132,8 +132,9 @@
                 <h2>Next Week Plan Preview</h2>
             </div>
             {% if scorecards %}
-            <ul class="util-1e8514 util-pl-1-2">{%- for item in scorecards[0].data.next_week_plan -%}<li
-                    class="mb-05rem">{{ item }}</li>{%- endfor -%}</ul>
+            <ul class="util-1e8514 pl-1-2">{%- for item in scorecards[0].data.next_week_plan -%}<li class="mb-05rem">{{
+                    item }}</li>{%- endfor -%}</ul>
+            </ul>
             {% else %}
             <p class="util-d77719">No plan derived yet.</p>
             {% endif %}
