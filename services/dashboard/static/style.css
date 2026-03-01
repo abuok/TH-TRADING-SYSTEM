@@ -1,3 +1,21 @@
+@import url("theme.css");
+
+:root {
+    --bg-primary: var(--bg-dark);
+    --bg-secondary: var(--surface-dark);
+    --bg-tertiary: #1e293b;
+    --text-primary: var(--text-main);
+    --text-secondary: var(--text-muted);
+    --border-color: var(--border-dim);
+    --accent-blue: var(--accent-cyan);
+    --accent-green: var(--accent-green);
+    --accent-red: var(--accent-pink);
+    --accent-orange: var(--accent-orange);
+    --warning-color: var(--accent-yellow);
+    --success-color: var(--accent-green);
+    --danger-color: var(--accent-pink);
+}
+
 .util-d2bc99 {
     text-align: center;
     padding: 4rem;
@@ -777,19 +795,19 @@
 
 /* Dynamic Session and Status Colors */
 .session-london {
-    border-left: 4px solid #10b981;
+    border-left: 4px solid var(--accent-green);
 }
 
 .session-new-york {
-    border-left: 4px solid #f59e0b;
+    border-left: 4px solid var(--accent-orange);
 }
 
 .session-asia {
-    border-left: 4px solid #6366f1;
+    border-left: 4px solid var(--accent-purple);
 }
 
 .session-default {
-    border-left: 4px solid #64748b;
+    border-left: 4px solid var(--text-muted);
 }
 
 .border-left-green {
@@ -1077,9 +1095,9 @@
 
 .tuning-input {
     padding: 0.4rem;
-    background: #0d1117;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #fff;
+    background: var(--bg-dark);
+    border: 1px solid var(--border-dim);
+    color: var(--text-main);
     border-radius: 4px;
     font-size: 0.8rem;
 }
@@ -1150,10 +1168,10 @@
 
 .tuning-yaml-box {
     margin-top: 1rem;
-    background: #0d1117;
+    background: var(--bg-dark);
     padding: 1rem;
     border-radius: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-dim);
 }
 
 .tuning-yaml-head {

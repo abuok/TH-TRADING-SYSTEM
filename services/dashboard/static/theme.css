@@ -1,0 +1,79 @@
+/* 
+   services/dashboard/static/theme.css
+   Unified color variables and glow utilities for the TradeHall Dashboard.
+*/
+
+:root {
+    /* Accents */
+    --accent-orange: #F2994A;
+    --accent-yellow: #F2C94C;
+    --accent-purple: #9B51E0;
+    --accent-cyan: #56CCF2;
+    --accent-green: #27AE60;
+    --accent-pink: #EB2F96;
+
+    /* Neutrals */
+    --bg-dark: #0B0B10;
+    --surface-dark: #12121A;
+    --border-dim: #2A2A35;
+    --text-main: #E6E6F0;
+    --text-muted: #A1A1B3;
+
+    /* Glow Alphas (internal use) */
+    --glow-outer-alpha: 0.35;
+    --glow-inner-alpha: 0.20;
+}
+
+/* Base resets based on theme */
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+}
+
+.surface {
+    background-color: var(--surface-dark);
+}
+
+.border-theme {
+    border: 1px solid var(--border-dim);
+}
+
+/* Glow Ring Utility Generator-like classes */
+.glow-ring-orange {
+    border: 1px solid var(--accent-orange);
+    box-shadow: 0 0 8px rgba(242, 153, 74, var(--glow-outer-alpha)), inset 0 0 4px rgba(242, 153, 74, var(--glow-inner-alpha));
+}
+
+.glow-ring-yellow {
+    border: 1px solid var(--accent-yellow);
+    box-shadow: 0 0 8px rgba(242, 201, 76, var(--glow-outer-alpha)), inset 0 0 4px rgba(242, 201, 76, var(--glow-inner-alpha));
+}
+
+.glow-ring-purple {
+    border: 1px solid var(--accent-purple);
+    box-shadow: 0 0 8px rgba(155, 81, 224, var(--glow-outer-alpha)), inset 0 0 4px rgba(155, 81, 224, var(--glow-inner-alpha));
+}
+
+.glow-ring-cyan {
+    border: 1px solid var(--accent-cyan);
+    box-shadow: 0 0 8px rgba(86, 204, 242, var(--glow-outer-alpha)), inset 0 0 4px rgba(86, 204, 242, var(--glow-inner-alpha));
+}
+
+.glow-ring-green {
+    border: 1px solid var(--accent-green);
+    box-shadow: 0 0 8px rgba(39, 174, 96, var(--glow-outer-alpha)), inset 0 0 4px rgba(39, 174, 96, var(--glow-inner-alpha));
+}
+
+.glow-ring-pink {
+    border: 1px solid var(--accent-pink);
+    box-shadow: 0 0 8px rgba(235, 47, 150, var(--glow-outer-alpha)), inset 0 0 4px rgba(235, 47, 150, var(--glow-inner-alpha));
+}
+
+/* Generic glow-ring class that uses a local variable for the color */
+.glow-ring {
+    --ring-color: var(--accent-cyan);
+    /* default */
+    border: 1px solid var(--ring-color);
+    box-shadow: 0 0 8px rgba(var(--ring-color-rgb), var(--glow-outer-alpha)),
+        inset 0 0 4px rgba(var(--ring-color-rgb), var(--glow-inner-alpha));
+}

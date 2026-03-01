@@ -27,6 +27,7 @@ import secrets
 security = HTTPBasic()
 
 app = FastAPI(title="Tradehall Trading System")
+from shared.ui.theme import ACCENTS, NEUTRALS
 
 # Templates setup (optional in lightweight test environments)
 try:
@@ -115,6 +116,16 @@ async def dashboard_overview(request: Request, auth: bool = Depends(verify_auth)
         "response_times": response_times,
         **data
     })
+
+@app.get("/dashboard/theme", response_class=HTMLResponse)
+async def dashboard_theme(request: Request):
+    context = {
+        "request": request,
+        "accents": ACCENTS,
+        "neutrals": NEUTRALS,
+        "active_page": "theme"
+    }
+    return render_template("theme_preview.html", context)
 
 @app.get("/dashboard/incidents", response_class=HTMLResponse)
 async def dashboard_incidents(request: Request, severity: Optional[str] = None, db: Session = Depends(db_session.get_db)):

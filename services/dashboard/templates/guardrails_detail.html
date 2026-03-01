@@ -17,7 +17,8 @@
 {% else %}
 {% set score = result.discipline_score %}
 {% set hard = result.hard_block %}
-{% set score_color = "#ef4444" if score < 60 else ("#f59e0b" if score < 80 else "#10b981" ) %} <!-- Score Banner -->
+{% set score_color = "var(--accent-pink)" if score < 60 else ("var(--accent-yellow)" if score < 80
+    else "var(--accent-green)" ) %} <!-- Score Banner -->
     <div
         class="card animate-fade border-left-{{ 'red' if score < 60 else ('warning' if score < 80 else 'green') }} flex-between-center padding-standard">
         <div>
