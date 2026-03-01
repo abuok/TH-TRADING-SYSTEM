@@ -36,7 +36,7 @@
             <div>
                 <h3 class="sub-header">ACTIVE KILL SWITCHES</h3>
                 {% if kill_switches %}
-                <ul class="list-unstyled">{%- for ks in kill_switches -%}
+                <ul class="list-unstyled" style="background-color: var(--surface-dark);">{%- for ks in kill_switches -%}
                     <li class="util-ac79cc">
                         <span class="badge badge-danger">{{ ks.switch_type }}</span>
                         <span class="util-e7992d">{{ ks.target or 'GLOBAL' }}</span>
@@ -164,7 +164,7 @@
                 <tbody>
                     {% for q in live_quotes %}
                     <tr>
-                        <td class="util-db1172">{{ q.symbol }}</td>
+                        <td class="util-db1172" style="border: 1px solid var(--border-dim);">{{ q.symbol }}</td>
                         <td>{{ q.bid }}</td>
                         <td>{{ q.ask }}</td>
                         <td><span class="badge badge-info">{{ q.spread }}</span></td>
@@ -182,7 +182,7 @@
             {% if symbol_specs %}
             <ul class="list-unstyled">
                 {% for s in symbol_specs %}
-                <li style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #333;">
+                <li style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border-dim);">
                     <strong class="util-db1172">{{ s.symbol }}</strong><br>
                     <small class="util-acb67b">Size: {{ s.contract_size }} | Tick: {{ s.tick_size }} | Min: {{ s.min_lot
                         }}</small>
