@@ -167,7 +167,8 @@ def handle_tag(tag_match):
         for pattern_str, cls in rule_to_class.items():
             if normalized_rule == pattern_str:
                 if cls:
-                    for c in cls.split(): new_classes.add(c)
+                    for c in cls.split():
+                        new_classes.add(c)
                 found = True
                 break
                 

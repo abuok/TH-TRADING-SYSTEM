@@ -246,7 +246,6 @@ async def get_report(filename: str):
 @app.get("/dashboard/research", response_class=HTMLResponse)
 async def dashboard_research(request: Request):
     runs = []
-    import json
 
     if os.path.exists("artifacts/research"):
         files = [
@@ -280,7 +279,6 @@ async def research_report_view(run_id: str):
 @app.get("/dashboard/calibration", response_class=HTMLResponse)
 async def dashboard_calibration(request: Request):
     reports = []
-    import json
 
     if os.path.exists("artifacts/research"):
         files = [
