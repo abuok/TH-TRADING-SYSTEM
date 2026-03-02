@@ -1,144 +1,141 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="header-section">
-    <div class="header-title">
-        <h1>Trade Order Tickets</h1>
-        <p>Human-reviewable execution plans and platform notes</p>
-    </div>
-    <div class="header-clock">
-        <form action="/dashboard/tickets" method="get" class="util-5fa1c6">
-            <input type="text" name="pair" placeholder="Filter by Pair (e.g. XAUUSD)" value="{{ selected_pair or '' }}"
-                class="util-922919">
-            <button type="submit" class="btn btn-primary util-0cf5a0">Filter</button>
-        </form>
-    </div>
-</div>
-
 <div class="hud-grid">
     <!-- Search & Filter Monitor -->
     <div class="hud-panel glass-panel col-span-12" data-hud-corner="top-left">
         <header class="hud-panel-header">
-            <div class="hud-panel-title">TICKET AUDIT & FILTER SYSTEM</div>
+            <div class="hud-panel-title">TICKET_AUDIT_SYSTEM // FILTER_RECORDS</div>
         </header>
-        <div style="padding: 1rem; display: flex; gap: 2rem; align-items: center;">
+        <div
+            style="padding: 1rem; display: flex; gap: 2rem; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05);">
             <form action="/dashboard/tickets" method="get" style="display: flex; gap: 0.5rem; flex-grow: 1;">
-                <input type="text" name="pair" placeholder="FILTER BY ASSET (E.G. XAUUSD)"
+                <input type="text" name="pair" placeholder="FILTER_BY_ASSET_VECTOR (E.G. XAUUSD)"
                     value="{{ selected_pair or '' }}"
-                    style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); color: var(--text-main); padding: 0.5rem 1rem; border-radius: 4px; flex-grow: 1; font-family: monospace;">
+                    style="background: rgba(0,0,0,0.4); border: 1px solid var(--border-main); color: var(--text-main); padding: 0.6rem 1rem; border-radius: 4px; flex-grow: 1; font-family: monospace; font-size: 0.8rem; outline: none; border-left: 2px solid var(--accent-cyan);">
                 <button type="submit" class="btn btn-primary"
-                    style="background: var(--accent-cyan); border-color: var(--accent-cyan); color: #000; font-weight: 700;">EXECUTE
-                    FILTER</button>
+                    style="background: var(--accent-cyan); border-color: var(--accent-cyan); color: #000; font-weight: 900; font-size: 0.7rem;">EXECUTE_FILTER</button>
             </form>
-            <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">
-                TOTAL TICKETS LOADED: <span style="color: var(--accent-yellow); font-weight: 700;">{{ tickets|length if
-                    tickets else 0 }}</span>
+            <div style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">
+                RECORDS_LOADED: <span style="color: var(--accent-yellow); font-weight: 900; font-family: monospace;">{{
+                    tickets|length if tickets else 0 }}</span>
             </div>
         </div>
     </div>
 
     {% if not tickets %}
-    <div class="hud-panel glass-panel col-span-12" style="padding: 4rem; text-align: center;">
-        <div style="font-size: 1.5rem; color: var(--accent-pink); font-weight: 800; margin-bottom: 1rem;">NO TICKETS IN
-            AUDIT LOG</div>
-        <div style="color: var(--text-muted); opacity: 0.5;">Generate an execution plan via the Orchestrator API to
-            populate this monitor.</div>
+    <div class="hud-panel glass-panel col-span-12" style="padding: 6rem; text-align: center;">
+        <div
+            style="font-size: 1rem; color: var(--accent-pink); font-weight: 900; margin-bottom: 1rem; letter-spacing: 2px;">
+            ZERO_TICKETS_IN_AUDIT_LOG</div>
+        <div style="color: var(--text-muted); font-size: 0.75rem; letter-spacing: 1px;">GENERATE EXECUTION PLAN VIA
+            ORCHESTRATOR API // SYSTEM_IDLE</div>
     </div>
     {% else %}
     {% for ticket in tickets %}
     <div class="hud-panel glass-panel col-span-12"
         data-hud-corner="{% if loop.last %}bottom-left{% else %}none{% endif %}"
-        style="border-left: 4px solid {{ 'var(--accent-green)' if ticket.status != 'BLOCKED' else 'var(--accent-pink)' }}; margin-bottom: 1rem;">
-        <header class="hud-panel-header">
+        style="border-left: 4px solid {{ 'var(--accent-green)' if ticket.status != 'BLOCKED' else 'var(--accent-pink)' }}; margin-bottom: 1.5rem; padding: 0;">
+        <header class="hud-panel-header" style="background: rgba(0,0,0,0.2);">
             <div style="display: flex; gap: 1rem; align-items: center;">
-                <div class="hud-panel-title">{{ ticket.pair }} // {{ ticket.direction }}</div>
-                <span class="badge {{ 'badge-success' if ticket.status != 'BLOCKED' else 'badge-danger' }}">{{
-                    ticket.status }}</span>
+                <div style="font-weight: 900; font-size: 1.25rem; color: var(--text-main);">{{ ticket.pair }} // {{
+                    ticket.direction }}</div>
+                <span class="badge"
+                    style="background: {{ 'rgba(39, 174, 96, 0.1)' if ticket.status != 'BLOCKED' else 'rgba(235, 47, 150, 0.1)' }}; color: {{ 'var(--accent-green)' if ticket.status != 'BLOCKED' else 'var(--accent-pink)' }}; border: 1px solid {{ 'var(--accent-green)' if ticket.status != 'BLOCKED' else 'var(--accent-pink)' }}; font-size: 0.55rem; font-weight: 900;">STATUS:
+                    {{ ticket.status }}</span>
 
                 {% if ticket.hindsight_status == 'DONE' and ticket.hindsight_outcome_label %}
-                {% set hs_class = '' %}
                 {% set hs_color = 'var(--text-muted)' %}
                 {% if ticket.hindsight_outcome_label == 'WIN' %}{% set hs_color = 'var(--accent-green)' %}
                 {% elif ticket.hindsight_outcome_label == 'LOSS' %}{% set hs_color = 'var(--accent-pink)' %}
                 {% elif ticket.hindsight_outcome_label == 'BE' %}{% set hs_color = 'var(--accent-yellow)' %}
                 {% endif %}
                 <span class="badge"
-                    style="border: 1px solid {{ hs_color }}; color: {{ hs_color }}; background: transparent;">
+                    style="border: 1px solid {{ hs_color }}; color: {{ hs_color }}; background: transparent; font-size: 0.55rem; font-weight: 900;">
                     HINDSIGHT: {{ ticket.hindsight_outcome_label }}
                     {% if ticket.hindsight_realized_r %}({{ "{:+.2f}".format(ticket.hindsight_realized_r) }}R){% endif
                     %}
                 </span>
                 {% endif %}
             </div>
-            <div style="font-family: monospace; font-size: 0.7rem; color: var(--text-muted);">
-                ID: {{ ticket.ticket_id }} | {{ ticket.created_at.strftime('%Y-%m-%d %H:%M:%S') }} EAT
+            <div style="font-family: monospace; font-size: 0.6rem; color: var(--text-muted); opacity: 0.7;">
+                IDENT: {{ ticket.ticket_id }} // {{ ticket.created_at.strftime('%Y-%m-%d %H:%M:%S') }} EAT
             </div>
         </header>
 
-        <div class="hud-scroll-body" style="padding: 1rem;">
+        <div style="padding: 1.25rem;">
             {% if ticket.status == 'BLOCKED' %}
             <div
-                style="background: rgba(235, 47, 150, 0.1); border: 1px solid var(--accent-pink); padding: 0.75rem; border-radius: 4px; margin-bottom: 1rem; color: var(--accent-pink); font-size: 0.85rem;">
-                <strong>BLOCK REASON:</strong> {{ ticket.block_reason }}
+                style="background: rgba(235, 47, 150, 0.05); border: 1px solid var(--accent-pink); padding: 0.75rem; border-radius: 4px; margin-bottom: 1.25rem; color: var(--accent-pink); font-size: 0.75rem; font-family: monospace; font-weight: 900; letter-spacing: 0.5px;">
+                DIAGNOSTIC_BLOCK: {{ ticket.block_reason }}
             </div>
             {% endif %}
 
-            <div style="display: grid; grid-template-columns: 2fr 3fr; gap: 1.5rem;">
+            <div style="display: grid; grid-template-columns: 2fr 3fr; gap: 2rem;">
                 <!-- Params & Execution Result -->
                 <div>
                     <div
                         style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
                         <div class="hud-scanline"
-                            style="background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 2px; border: 1px solid rgba(255,255,255,0.05);">
-                            <div style="font-size: 0.6rem; color: var(--text-muted);">ENTRY ({{ ticket.entry_type }})
-                            </div>
-                            <div style="font-family: monospace; font-weight: 700;">{{ "%.5f" |
-                                format(ticket.entry_price) }}</div>
+                            style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.05); padding: 0.6rem;">
+                            <div style="font-size: 0.5rem; color: var(--text-muted); text-transform: uppercase;">
+                                ENTRY_({{ ticket.entry_type }})</div>
+                            <div
+                                style="font-family: monospace; font-weight: 900; font-size: 1rem; color: var(--text-main);">
+                                {{ "%.5f" | format(ticket.entry_price) }}</div>
                         </div>
                         <div class="hud-scanline"
-                            style="background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 2px; border: 1px solid rgba(255,255,255,0.05);">
-                            <div style="font-size: 0.6rem; color: var(--accent-pink);">STOP LOSS</div>
-                            <div style="font-family: monospace; font-weight: 700; color: var(--accent-pink);">{{ "%.5f"
-                                | format(ticket.stop_loss) }}</div>
+                            style="background: rgba(235, 47, 150, 0.03); border: 1px solid rgba(235, 47, 150, 0.1); padding: 0.6rem;">
+                            <div style="font-size: 0.5rem; color: var(--accent-pink); text-transform: uppercase;">
+                                STOP_LOSS</div>
+                            <div
+                                style="font-family: monospace; font-weight: 900; font-size: 1rem; color: var(--accent-pink);">
+                                {{ "%.5f" | format(ticket.stop_loss) }}</div>
                         </div>
                         <div class="hud-scanline"
-                            style="background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 2px; border: 1px solid rgba(255,255,255,0.05);">
-                            <div style="font-size: 0.6rem; color: var(--accent-green);">TP ({{ "%.1f" |
-                                format(ticket.rr_tp1) }}R)</div>
-                            <div style="font-family: monospace; font-weight: 700; color: var(--accent-green);">{{ "%.5f"
-                                | format(ticket.take_profit_1) }}</div>
+                            style="background: rgba(39, 174, 96, 0.03); border: 1px solid rgba(39, 174, 96, 0.1); padding: 0.6rem;">
+                            <div style="font-size: 0.5rem; color: var(--accent-green); text-transform: uppercase;">
+                                TARGET_({{ "%.1f" | format(ticket.rr_tp1) }}R)</div>
+                            <div
+                                style="font-family: monospace; font-weight: 900; font-size: 1rem; color: var(--accent-green);">
+                                {{ "%.5f" | format(ticket.take_profit_1) }}</div>
                         </div>
                     </div>
 
                     {% if ticket.broker_trade_id %}
                     <div
-                        style="background: rgba(86, 204, 242, 0.05); border: 1px solid rgba(86, 204, 242, 0.2); padding: 0.75rem; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+                        style="background: rgba(86, 204, 242, 0.05); border: 1px solid rgba(86, 204, 242, 0.2); padding: 1rem; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; border-left: 3px solid var(--accent-cyan);">
                         <div>
-                            <div style="font-size: 0.8rem; font-weight: 800; color: var(--accent-cyan);">LIVE EXECUTION
-                                MATCHED</div>
-                            <div style="font-size: 0.65rem; color: var(--text-muted); font-family: monospace;">MT5 ID:
-                                {{ ticket.broker_trade_id }} | {{ ticket.executed_at.strftime('%H:%M:%S') if
-                                ticket.executed_at else 'TIME PENDING' }}</div>
+                            <div
+                                style="font-size: 0.75rem; font-weight: 900; color: var(--accent-cyan); letter-spacing: 1px;">
+                                MT5_EXECUTION_MATCHED</div>
+                            <div
+                                style="font-size: 0.6rem; color: var(--text-muted); font-family: monospace; margin-top: 0.2rem;">
+                                BROKER_ID: {{ ticket.broker_trade_id }} // {{ ticket.executed_at.strftime('%H:%M:%S') if
+                                ticket.executed_at else 'PENDING' }}</div>
                         </div>
                         {% if ticket.realized_r is not none %}
                         <div style="text-align: right;">
                             <div
-                                style="font-size: 1.25rem; font-weight: 800; color: {{ 'var(--accent-green)' if ticket.realized_r >= 0 else 'var(--accent-pink)' }}; line-height: 1;">
+                                style="font-size: 1.5rem; font-weight: 900; color: {{ 'var(--accent-green)' if ticket.realized_r >= 0 else 'var(--accent-pink)' }}; line-height: 1;">
                                 {{ "{:+.2f}".format(ticket.realized_r) }}R</div>
-                            <div style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase;">
-                                REALIZED</div>
+                            <div
+                                style="font-size: 0.55rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; opacity: 0.7;">
+                                REALIZED_VAL</div>
                         </div>
                         {% endif %}
                     </div>
                     {% endif %}
 
                     <div
-                        style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.1); padding: 0.5rem 1rem; border-radius: 4px;">
-                        <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-main);">{{ ticket.lot_size }}
-                            LOTS</div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted);">RISK: <span
-                                style="color: var(--accent-yellow); font-weight: 700;">${{ ticket.risk_usd }}</span> ({{
-                            ticket.risk_pct }}%)</div>
+                        style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 0.75rem 1rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.03);">
+                        <div
+                            style="font-size: 0.9rem; font-weight: 900; color: var(--text-main); font-family: monospace;">
+                            {{ ticket.lot_size }} LOTS</div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">TOTAL_RISK: <span
+                                style="color: var(--accent-yellow); font-family: monospace;">${{ ticket.risk_usd
+                                }}</span> // <span style="color: var(--accent-yellow); font-family: monospace;">{{
+                                ticket.risk_pct }}%</span></div>
                     </div>
                 </div>
 
@@ -146,17 +143,18 @@
                 <div>
                     {% if ticket.status == 'APPROVED' %}
                     <div id="prep-panel-{{ ticket.ticket_id }}"
-                        style="background: rgba(39, 174, 96, 0.03); border: 1px solid rgba(39, 174, 96, 0.2); border-radius: 4px; padding: 0.75rem; margin-bottom: 1rem;">
+                        style="background: rgba(39, 174, 96, 0.03); border: 1px solid rgba(39, 174, 96, 0.2); border-radius: 4px; padding: 0.75rem; margin-bottom: 1.25rem;">
                         <div
-                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.25rem;">
-                            <div style="font-size: 0.8rem; font-weight: 800; color: var(--accent-green);">EXECUTION PREP
-                                ACTIVE</div>
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.4rem;">
+                            <div style="font-size: 0.75rem; font-weight: 900; color: var(--accent-green);">
+                                EXECUTION_PREP_ACTIVE</div>
                             <span id="timer-{{ ticket.ticket_id }}" class="badge"
-                                style="font-size: 0.6rem; border: 1px solid var(--accent-yellow); color: var(--accent-yellow);">LOADING...</span>
+                                style="font-size: 0.55rem; background: rgba(242, 201, 76, 0.1); border: 1px solid var(--accent-yellow); color: var(--accent-yellow); font-weight: 900;">SYNC...</span>
                         </div>
                         <div id="prep-content-{{ ticket.ticket_id }}">
-                            <div style="font-size: 0.7rem; color: var(--text-muted); padding: 0.5rem;">SYNCING PREFLIGHT
-                                DATA...</div>
+                            <div
+                                style="font-size: 0.65rem; color: var(--text-muted); padding: 0.5rem; font-family: monospace;">
+                                FETCHING_PREFLIGHT_TELEMETRY...</div>
                         </div>
                     </div>
                     <script>
@@ -168,8 +166,8 @@
                                     const content = document.getElementById('prep-content-{{ ticket.ticket_id }}');
                                     const timer = document.getElementById('timer-{{ ticket.ticket_id }}');
                                     timer.setAttribute('data-expiry', p.expires_at);
-                                    const checkHtml = p.preflight_checks.map(c => `<div style="display:flex; justify-content:space-between; margin-bottom: 0.25rem; font-size: 0.65rem;"><span style="color:var(--text-muted);">${c.name}</span><span class="badge ${c.status === 'PASS' ? 'badge-success' : 'badge-warning'}" style="font-size: 0.5rem;">${c.status}</span></div>`).join('');
-                                    content.innerHTML = `<div>${checkHtml}</div><code style="display:block; background:rgba(0,0,0,0.3); padding:0.4rem; font-size:0.65rem; color:var(--accent-cyan); margin-top:0.5rem; font-family:monospace; border-radius:2px; overflow:hidden; text-overflow:ellipsis;">MT5: ${p.platform_formats.mt5_text}</code>`;
+                                    const checkHtml = p.preflight_checks.map(c => `<div style="display:flex; justify-content:space-between; margin-bottom: 0.35rem; font-size: 0.65rem; font-family: monospace;"><span style="color:var(--text-muted); text-transform: uppercase;">${c.name}</span><span class="badge" style="background: ${c.status === 'PASS' ? 'rgba(39, 174, 96, 0.1)' : 'rgba(242, 201, 76, 0.1)'}; color: ${c.status === 'PASS' ? 'var(--accent-green)' : 'var(--accent-yellow)'}; border: 1px solid ${c.status === 'PASS' ? 'var(--accent-green)' : 'var(--accent-yellow)'}; font-size: 0.5rem; font-weight: 900; padding: 1px 6px;">${c.status}</span></div>`).join('');
+                                    content.innerHTML = `<div>${checkHtml}</div><div style="display:flex; gap:0.5rem; align-items:center; margin-top:0.75rem;"><code style="display:block; background:rgba(0,0,0,0.4); padding:0.5rem; font-size:0.65rem; color:var(--accent-cyan); border:1px solid rgba(86, 204, 242, 0.2); border-radius:2px; overflow:hidden; text-overflow:ellipsis; font-family:monospace; flex-grow: 1;">MT5: ${p.platform_formats.mt5_text}</code><button onclick="copyToClipboard('${p.platform_formats.mt5_text}')" class="btn btn-secondary btn-tiny">COPY</button></div>`;
                                 } else { document.getElementById('prep-panel-{{ ticket.ticket_id }}').style.display = 'none'; }
                             } catch (e) { console.error(e); }
                         })();
@@ -178,21 +176,19 @@
 
                     <!-- Platform Notes Section -->
                     <div
-                        style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 4px; padding: 0.75rem;">
+                        style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 4px; padding: 1rem;">
                         <div
-                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                            <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">
-                                PLATFORM NOTES LOG</div>
-                            <div style="display: flex; gap: 0.25rem;">
-                                <button onclick="copyText('mt5-{{ ticket.ticket_id }}', 'MT5 Copied')"
-                                    class="btn btn-secondary btn-small"
-                                    style="font-size: 0.6rem; padding: 2px 6px;">MT5</button>
-                                <button onclick="copyText('ctrader-{{ ticket.ticket_id }}', 'cTrader Copied')"
-                                    class="btn btn-secondary btn-small"
-                                    style="font-size: 0.6rem; padding: 2px 6px;">cTrader</button>
-                                <button onclick="copyText('json-{{ ticket.ticket_id }}', 'JSON Copied')"
-                                    class="btn btn-secondary btn-small"
-                                    style="font-size: 0.6rem; padding: 2px 6px;">JSON</button>
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                            <div
+                                style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">
+                                PLATFORM_NOTES_BRIDGE</div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button onclick="copyText('mt5-{{ ticket.ticket_id }}', 'MT5_VECTOR_COPIED')"
+                                    class="btn btn-secondary btn-tiny">MT5</button>
+                                <button onclick="copyText('ctrader-{{ ticket.ticket_id }}', 'CTRADER_VECTOR_COPIED')"
+                                    class="btn btn-secondary btn-tiny">CTR</button>
+                                <button onclick="copyText('json-{{ ticket.ticket_id }}', 'JSON_AUDIT_COPIED')"
+                                    class="btn btn-secondary btn-tiny">JSON</button>
                             </div>
                         </div>
                         <div style="height: 0; overflow: hidden; position: absolute;">
@@ -201,9 +197,9 @@
                             <textarea id="json-{{ ticket.ticket_id }}">{{ ticket.model_dump_json(indent=2) }}</textarea>
                         </div>
                         <div
-                            style="font-size: 0.65rem; color: var(--text-muted); font-family: monospace; opacity: 0.6; line-height: 1.4;">
-                            * Click buttons above to copy execution strings for MetaTrader 5 or cTrader to your
-                            clipboard. Audit JSON data also available.
+                            style="font-size: 0.6rem; color: var(--text-muted); font-family: monospace; opacity: 0.5; line-height: 1.5;">
+                            * SYSTEM_INSTRUCTION: COPY VECTORS TO MT5 OR CTRADER FOR EXECUTION AUDIT. JSON DATA
+                            AVAILABLE FOR FORENSIC REVIEW.
                         </div>
                     </div>
                 </div>
@@ -213,6 +209,43 @@
     {% endfor %}
     {% endif %}
 </div>
+
+<script>
+    function startTimers() {
+        if (window.timerInterval) clearInterval(window.timerInterval);
+        window.timerInterval = setInterval(() => {
+            const now = new Date();
+            document.querySelectorAll('[data-expiry]').forEach(el => {
+                const expiry = new Date(el.getAttribute('data-expiry'));
+                const diff = Math.floor((expiry - now) / 1000);
+
+                if (diff <= 0) {
+                    el.innerText = "EXPIRED";
+                    el.style.color = "var(--accent-pink)";
+                    el.style.borderColor = "var(--accent-pink)";
+                } else {
+                    const m = Math.floor(diff / 60);
+                    const s = diff % 60;
+                    el.innerText = `TTL: ${m}m ${s.toString().padStart(2, '0')}s`;
+                }
+            });
+        }, 1000);
+    }
+    startTimers();
+
+    function copyText(id, msg) {
+        const text = document.getElementById(id).value;
+        navigator.clipboard.writeText(text).then(() => {
+            alert(msg);
+        });
+    }
+
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            alert('VECTOR_COPIED');
+        });
+    }
+</script>
 
 <script>
     function startTimers() {
