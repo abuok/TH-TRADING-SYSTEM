@@ -1,33 +1,36 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="header-section mb-6">
-    <h1 class="text-3xl font-bold text-white mb-2">Trade Management Assistant</h1>
-    <p class="text-gray-400">Rule-based management suggestions for active positions. Execution must be done manually in
-        MT5.</p>
-</div>
-
 <div class="hud-grid">
     <!-- Recommendations Monitor -->
     <div class="hud-panel glass-panel col-span-12" data-hud-corner="top-left">
         <header class="hud-panel-header">
-            <div class="hud-panel-title">ACTIVE MANAGEMENT RECOMMENDATIONS</div>
-            <span class="badge"
-                style="background: rgba(86, 204, 242, 0.1); color: var(--accent-cyan); border: 1px solid var(--accent-cyan);">{{
-                suggestions|length }} ALERTS DETECTED</span>
+            <div class="hud-panel-title">MANAGEMENT_ASSISTANT // ACTIVE_RECOMMENDATIONS</div>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <span class="badge"
+                    style="background: rgba(155, 81, 224, 0.1); color: var(--accent-purple); border: 1px solid var(--accent-purple); font-size: 0.6rem;">TH_ENGINE_LEVEL:
+                    DELTA_4</span>
+                <span class="badge"
+                    style="background: rgba(86, 204, 242, 0.1); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); font-size: 0.6rem;">{{
+                    suggestions|length }} ALERTS</span>
+            </div>
         </header>
 
-        <div class="hud-scroll-body">
+        <div
+            style="padding: 1rem; color: var(--text-muted); font-size: 0.75rem; letter-spacing: 1px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+            RULE-BASED SUGGESTIONS FOR ACTIVE POSITIONS // MANUAL_EXECUTION_REQUIRED</div>
+
+        <div class="hud-scroll-body" style="height: 400px;">
             {% if suggestions %}
             <table class="hud-compact-table">
                 <thead>
                     <tr>
-                        <th>TYPE</th>
-                        <th>SYMBOL</th>
-                        <th style="text-align: center;">CURRENT R</th>
-                        <th>REASON</th>
-                        <th>INSTRUCTION</th>
-                        <th style="text-align: center;">ACTION</th>
+                        <th style="width: 120px;">SEVERITY_TYPE</th>
+                        <th style="width: 150px;">SYMBOL_VECTOR</th>
+                        <th style="text-align: center; width: 100px;">CURRENT_R</th>
+                        <th>DIAGNOSTIC_REASONS</th>
+                        <th style="width: 250px;">COMMAND_INSTRUCTION</th>
+                        <th style="text-align: right; width: 100px;">INTERFACE</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -35,32 +38,39 @@
                     <tr>
                         <td>
                             {% if sug.severity == 'CRITICAL' %}
-                            <span class="badge badge-danger" style="font-weight: 800;">{{ sug.suggestion_type }}</span>
+                            <span class="badge"
+                                style="background: rgba(235, 47, 150, 0.1); color: var(--accent-pink); border: 1px solid var(--accent-pink); font-size: 0.55rem; font-weight: 900;">{{
+                                sug.suggestion_type }}</span>
                             {% elif sug.severity == 'WARN' %}
-                            <span class="badge badge-warning">{{ sug.suggestion_type }}</span>
+                            <span class="badge"
+                                style="background: rgba(242, 201, 76, 0.1); color: var(--accent-yellow); border: 1px solid var(--accent-yellow); font-size: 0.55rem; font-weight: 800;">{{
+                                sug.suggestion_type }}</span>
                             {% else %}
-                            <span class="badge badge-info">{{ sug.suggestion_type }}</span>
+                            <span class="badge"
+                                style="background: rgba(86, 204, 242, 0.1); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); font-size: 0.55rem;">{{
+                                sug.suggestion_type }}</span>
                             {% endif %}
                         </td>
                         <td>
-                            <div style="font-weight: 700;">{{ sug.symbol }}</div>
-                            <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">{{
-                                sug.side }} {{ sug.lots }} LOTS</div>
+                            <div style="font-weight: 900; color: var(--text-main);">{{ sug.symbol }}</div>
+                            <div
+                                style="font-size: 0.6rem; color: var(--text-muted); font-family: monospace; letter-spacing: 0.5px;">
+                                {{ sug.side }} // {{ sug.lots }} LOTS</div>
                         </td>
                         <td
-                            style="text-align: center; font-weight: 800; color: {{ 'var(--accent-green)' if sug.current_r >= 1.0 else 'var(--text-main)' }};">
-                            {{ sug.current_r|round(2) }}R
+                            style="text-align: center; font-weight: 900; color: {{ 'var(--accent-green)' if sug.current_r >= 1.0 else 'var(--text-main)' }}; font-family: monospace;">
+                            {{ "%.2f"|format(sug.current_r) }}R
                         </td>
-                        <td style="font-size: 0.75rem; color: var(--text-muted);">
-                            {{ sug.reasons|join(', ') }}
+                        <td style="font-size: 0.7rem; color: var(--text-muted); line-height: 1.4;">
+                            {{ sug.reasons|join(' // ') }}
                         </td>
                         <td>
                             <code
-                                style="background: rgba(0,0,0,0.3); padding: 0.25rem 0.5rem; border-radius: 3px; color: var(--accent-cyan); font-family: monospace; font-size: 0.8rem;">{{ sug.instruction }}</code>
+                                style="background: rgba(0,0,0,0.4); padding: 0.35rem 0.6rem; border: 1px solid rgba(86, 204, 242, 0.2); border-radius: 2px; color: var(--accent-cyan); font-family: monospace; font-size: 0.7rem; display: block;">{{ sug.instruction }}</code>
                         </td>
-                        <td style="text-align: center;">
+                        <td style="text-align: right;">
                             <button onclick="copyToClipboard('{{ sug.instruction }}')"
-                                class="btn btn-secondary btn-small" title="COPY INSTRUCTION">COPY</button>
+                                class="btn btn-secondary btn-tiny">COPY_CMD</button>
                         </td>
                     </tr>
                     {% endfor %}
@@ -68,8 +78,8 @@
             </table>
             {% else %}
             <div
-                style="padding: 3rem; text-align: center; color: var(--text-muted); opacity: 0.5; font-size: 0.9rem; letter-spacing: 2px;">
-                SYSTEM NOMINAL: NO ACTIVE RECOMMENDATIONS</div>
+                style="padding: 4rem; text-align: center; color: var(--text-muted); font-weight: 800; letter-spacing: 2px;">
+                SYSTEM_NOMINAL // ZERO_SUGGESTIONS</div>
             {% endif %}
         </div>
     </div>
@@ -77,39 +87,45 @@
     <!-- Live Position Reference -->
     <div class="hud-panel glass-panel col-span-12" data-hud-corner="bottom-left">
         <header class="hud-panel-header">
-            <div class="hud-panel-title">LIVE POSITION CONTEXT REFERENCE</div>
+            <div class="hud-panel-title">LIVE_POSITION_CONTEXT // REAL-TIME MONITOR</div>
         </header>
 
-        <div class="hud-scroll-body">
+        <div class="hud-scroll-body" style="height: 350px;">
             {% if positions %}
             <table class="hud-compact-table">
                 <thead>
                     <tr>
-                        <th>SYMBOL</th>
-                        <th style="text-align: right;">AVG PRICE</th>
-                        <th style="text-align: center;">SL / TP ENV</th>
-                        <th style="text-align: right;">PNL ($)</th>
-                        <th style="text-align: right;">LAST SYNC</th>
+                        <th style="width: 150px;">SYMBOL_EXPOSURE</th>
+                        <th style="text-align: right; width: 120px;">ENTRY_AVG</th>
+                        <th style="text-align: center; width: 250px;">PROTECTION_ENV (SL / TP)</th>
+                        <th style="text-align: right; width: 150px;">PNL_DELTA ($)</th>
+                        <th style="text-align: right;">SYNC_TELEMETRY</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for pos in positions %}
                     <tr>
                         <td>
-                            <span style="font-weight: 800; color: var(--text-main);">{{ pos.symbol }}</span>
-                            <span class="badge {{ 'badge-success' if pos.side == 'BUY' else 'badge-danger' }}"
-                                style="margin-left: 0.5rem; font-size: 0.6rem;">{{ pos.side }} {{ pos.lots }}</span>
+                            <span style="font-weight: 900; color: var(--text-main);">{{ pos.symbol }}</span>
+                            <span class="badge"
+                                style="background: {{ 'rgba(39, 174, 96, 0.1)' if pos.side == 'BUY' else 'rgba(235, 47, 150, 0.1)' }}; color: {{ 'var(--accent-green)' if pos.side == 'BUY' else 'var(--accent-pink)' }}; border: 1px solid {{ 'var(--accent-green)' if pos.side == 'BUY' else 'var(--accent-pink)' }}; font-size: 0.55rem; font-weight: 900; margin-left: 0.5rem;">
+                                {{ pos.side }} {{ pos.lots }}
+                            </span>
                         </td>
-                        <td style="text-align: right; font-family: monospace;">{{ pos.avg_price }}</td>
-                        <td style="text-align: center; font-size: 0.7rem; color: var(--text-muted);">
-                            <span style="color: var(--accent-pink);">SL: {{ pos.sl }}</span> | <span
-                                style="color: var(--accent-green);">TP: {{ pos.tp }}</span>
+                        <td style="text-align: right; font-family: monospace; font-size: 0.75rem;">{{ pos.avg_price }}
                         </td>
                         <td
-                            style="text-align: right; font-weight: 700; color: {{ 'var(--accent-green)' if pos.floating_pnl >= 0 else 'var(--accent-pink)' }}; font-family: monospace;">
+                            style="text-align: center; font-size: 0.7rem; color: var(--text-muted); font-family: monospace;">
+                            <span style="color: var(--accent-pink);">SL: {{ pos.sl or '---' }}</span> <span
+                                style="margin: 0 0.5rem; opacity: 0.2;">//</span> <span
+                                style="color: var(--accent-green);">TP: {{ pos.tp or '---' }}</span>
+                        </td>
+                        <td
+                            style="text-align: right; font-weight: 900; color: {{ 'var(--accent-green)' if pos.floating_pnl >= 0 else 'var(--accent-pink)' }}; font-family: monospace;">
                             ${{ "%.2f"|format(pos.floating_pnl) }}
                         </td>
-                        <td style="text-align: right; font-size: 0.75rem; color: var(--text-muted);">
+                        <td
+                            style="text-align: right; font-family: monospace; font-size: 0.65rem; color: var(--text-muted);">
                             {{ pos.updated_at_eat.strftime('%H:%M:%S') if pos.updated_at_eat else 'OFFLINE' }}
                         </td>
                     </tr>
@@ -117,8 +133,9 @@
                 </tbody>
             </table>
             {% else %}
-            <div style="padding: 2rem; text-align: center; color: var(--text-muted); opacity: 0.5;">NO ACTIVE POSITIONS
-                LOADED</div>
+            <div
+                style="padding: 4rem; text-align: center; color: var(--text-muted); font-weight: 800; letter-spacing: 2px;">
+                ZERO_ACTIVE_POSITIONS_BRIDGE</div>
             {% endif %}
         </div>
     </div>
@@ -127,14 +144,9 @@
 <script>
     function copyToClipboard(text) {
         navigator.clipboard.writeText(text).then(() => {
-            alert('Instruction copied to clipboard!');
+            // Visual feedback using existing toast system if available, else simple alert
+            alert('INSTRUCTION_COPIED: ' + text);
         });
     }
 </script>
-
-<style>
-    .bg-gray-750 {
-        background-color: var(--surface-dark);
-    }
-</style>
 {% endblock %}

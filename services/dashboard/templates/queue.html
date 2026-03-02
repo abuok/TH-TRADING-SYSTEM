@@ -5,29 +5,37 @@
     <!-- Left monitor: Daily Stats -->
     <div class="hud-panel glass-panel col-span-3 row-span-3" data-hud-corner="top-left">
         <header class="hud-panel-header">
-            <div class="hud-panel-title">SESSION PERFORMANCE MONITOR</div>
+            <div class="hud-panel-title">PERFORMANCE_MONITOR // ROLLING</div>
         </header>
-        <div class="hud-scanline"
-            style="background: rgba(255,255,255,0.02); padding: 1.5rem; border-radius: 4px; border: 1px solid rgba(86, 204, 242, 0.1); margin-bottom: 1rem;">
-            <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 1rem;">
-                OPERATOR DECISIONS TODAY</div>
-            <div id="stats-approved"
-                style="font-size: 1.25rem; font-weight: 700; color: var(--accent-green); margin-bottom: 0.5rem;">
-                APPROVE: 0</div>
-            <div id="stats-skipped"
-                style="font-size: 1.25rem; font-weight: 700; color: var(--accent-yellow); margin-bottom: 0.5rem;">SKIP:
-                0</div>
-            <div id="stats-expired" style="font-size: 1.25rem; font-weight: 700; color: var(--accent-pink);">EXPIRED: 0
-            </div>
-        </div>
 
-        <div class="hud-scanline"
-            style="background: rgba(255,255,255,0.02); padding: 1.5rem; border-radius: 4px; border: 1px solid rgba(155, 81, 224, 0.2);">
-            <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 1rem;">
-                CLOSED REALIZED OUTCOMES</div>
-            <div id="stats-closed" style="font-size: 1rem; color: var(--text-main); margin-bottom: 0.5rem;">CLOSED
-                TICKETS: 0</div>
-            <div id="stats-avgr" style="font-size: 1.5rem; font-weight: 800; color: var(--accent-purple);">0.0R AVG
+        <div style="padding: 1rem;">
+            <div class="hud-scanline"
+                style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); padding: 1.25rem; margin-bottom: 1rem;">
+                <div
+                    style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem;">
+                    DECISION_VECTORS // TODAY</div>
+                <div id="stats-approved"
+                    style="font-size: 1.5rem; font-weight: 900; color: var(--accent-green); line-height: 1.2;">APPROVE:
+                    0</div>
+                <div id="stats-skipped"
+                    style="font-size: 1.5rem; font-weight: 900; color: var(--accent-yellow); line-height: 1.2;">SKIP: 0
+                </div>
+                <div id="stats-expired"
+                    style="font-size: 1.5rem; font-weight: 900; color: var(--accent-pink); line-height: 1.2;">EXPIRED: 0
+                </div>
+            </div>
+
+            <div class="hud-scanline"
+                style="background: rgba(155, 81, 224, 0.05); border: 1px solid rgba(155, 81, 224, 0.2); padding: 1.25rem;">
+                <div
+                    style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem;">
+                    REALIZED_OUTCOMES // SESSION</div>
+                <div id="stats-closed"
+                    style="font-size: 0.75rem; color: var(--text-main); margin-bottom: 0.5rem; font-weight: 700;">
+                    CLOSED_TICKETS: 0</div>
+                <div id="stats-avgr"
+                    style="font-size: 2rem; font-weight: 900; color: var(--accent-purple); line-height: 1;">0.0R AVG
+                </div>
             </div>
         </div>
     </div>
@@ -35,37 +43,47 @@
     <!-- Top Right: Execution Prep Monitor -->
     <div class="hud-panel glass-panel col-span-9" data-hud-corner="top-right">
         <header class="hud-panel-header">
-            <div class="hud-panel-title">EXECUTION PREP LAYER (APPROVED PLANS)</div>
+            <div class="hud-panel-title">EXECUTION_PREP_LAYER // APPROVED_PLANS</div>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <span class="badge"
+                    style="background: rgba(39, 174, 96, 0.1); color: var(--accent-green); border: 1px solid var(--accent-green); font-size: 0.55rem;">CORE_READY</span>
+            </div>
         </header>
-        <div id="prep-container" class="hud-scroll-body" style="max-height: 250px;">
-            <div style="padding: 1rem; text-align: center; color: var(--text-muted); opacity: 0.5;">INITIALIZING PREP
-                LAYER...</div>
+        <div id="prep-container" class="hud-scroll-body" style="height: 250px;">
+            <div
+                style="padding: 4rem; text-align: center; color: var(--text-muted); font-size: 0.7rem; font-weight: 800; letter-spacing: 2px;">
+                INITIALIZING_PREP_LAYER...</div>
         </div>
     </div>
 
     <!-- Bottom Right: Review Queue Monitor -->
     <div class="hud-panel glass-panel col-span-9 row-span-2" data-hud-corner="bottom-right">
         <header class="hud-panel-header">
-            <div class="hud-panel-title">MANUAL REVIEW QUEUE (INCOMING SETUPS)</div>
+            <div class="hud-panel-title">SCANNER_QUEUE // PENDING_MANUAL_REVIEW</div>
+            <div id="queue-status-badge"></div>
         </header>
-        <div id="queue-container" class="hud-scroll-body">
-            <div style="padding: 2rem; text-align: center; color: var(--text-muted); opacity: 0.5;">SCANNING NETWORK FOR
-                TICKETS...</div>
+        <div id="queue-container" class="hud-scroll-body" style="height: 600px;">
+            <div
+                style="padding: 6rem; text-align: center; color: var(--text-muted); font-size: 0.7rem; font-weight: 800; letter-spacing: 2px;">
+                SCANNING_NETWORK_FOR_TICKETS...</div>
         </div>
     </div>
 </div>
 
 <!-- skip modal -->
-<div id="skipModal" class="modal util-39c6d3">
-    <div class="card util-2aec1d">
-        <div class="card-header">
-            <h3>Skip Ticket</h3>
-            <span id="skip-ticket-id" class="badge badge-warning"></span>
-        </div>
-        <div class="card-body">
-            <div class="util-4986ec">
-                <label class="util-c1739c" for="skip-reason">Reason</label>
-                <select id="skip-reason" class="badge util-28de3a" title="Skip Reason">
+<div id="skipModal" class="modal" style="background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);">
+    <div class="hud-panel glass-panel" style="width: 500px; padding: 0;" data-hud-corner="top-right">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">SKIP_SIGNAL_REQ // PROTOCOL</div>
+            <span id="skip-ticket-id" class="badge"
+                style="background: rgba(242, 201, 76, 0.1); color: var(--accent-yellow); border: 1px solid var(--accent-yellow); font-family: monospace;"></span>
+        </header>
+        <div style="padding: 1.5rem;">
+            <div style="margin-bottom: 1.5rem;">
+                <label
+                    style="display: block; font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 1px;">PRIMARY_REASON</label>
+                <select id="skip-reason"
+                    style="width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--border-main); color: var(--text-main); padding: 0.75rem; font-size: 0.8rem; border-radius: 4px; font-family: monospace; outline: none;">
                     <option value="NEWS_WINDOW">News Window</option>
                     <option value="STALE">Stale / Too Late</option>
                     <option value="SPREAD_TOO_HIGH">Spread Too High</option>
@@ -76,15 +94,18 @@
                     <option value="PERSONAL_RULE">Personal Rule</option>
                 </select>
             </div>
-            <div>
-                <label class="util-c1739c" for="skip-notes">Notes (Optional)</label>
-                <textarea id="skip-notes" rows="3" class="util-5b64ac" title="Skip Notes"
-                    placeholder="Add any additional context..."></textarea>
+            <div style="margin-bottom: 2rem;">
+                <label
+                    style="display: block; font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 1px;">OBSERVATIONAL_NOTES</label>
+                <textarea id="skip-notes" rows="3"
+                    style="width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--border-main); color: var(--text-main); padding: 0.75rem; font-size: 0.8rem; border-radius: 4px; resize: none; outline: none;"
+                    placeholder="Log additional context..."></textarea>
             </div>
-            <div class="util-6d2a0b">
-                <button onclick="closeModal('skipModal')" class="badge util-24b531">Cancel</button>
-                <button onclick="submitSkip()" class="badge badge-warning util-24b531">Confirm
-                    Skip</button>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                <button onclick="closeModal('skipModal')" class="btn btn-secondary"
+                    style="font-size: 0.7rem;">ABORT_CANCEL</button>
+                <button onclick="submitSkip()" class="btn btn-primary"
+                    style="background: var(--accent-yellow); border-color: var(--accent-yellow); color: #000; font-weight: 900; font-size: 0.7rem;">CONFIRM_SKIP</button>
             </div>
         </div>
     </div>
@@ -97,11 +118,11 @@
         try {
             const res = await fetch('/api/tickets/stats');
             const data = await res.json();
-            document.getElementById('stats-approved').innerText = `Approve: ${data.approved}`;
-            document.getElementById('stats-skipped').innerText = `Skip: ${data.skipped}`;
-            document.getElementById('stats-expired').innerText = `Expired: ${data.expired}`;
-            document.getElementById('stats-closed').innerText = `Closed Outcomes: ${data.closed}`;
-            document.getElementById('stats-avgr').innerText = `Avg R: ${data.avg_r}`;
+            document.getElementById('stats-approved').innerText = `APPROVE: ${data.approved}`;
+            document.getElementById('stats-skipped').innerText = `SKIP: ${data.skipped}`;
+            document.getElementById('stats-expired').innerText = `EXPIRED: ${data.expired}`;
+            document.getElementById('stats-closed').innerText = `CLOSED_TICKETS: ${data.closed}`;
+            document.getElementById('stats-avgr').innerText = `${data.avg_r}R AVG`;
         } catch (e) {
             console.error("Stats Error:", e);
         }
@@ -112,57 +133,64 @@
             const res = await fetch('/api/tickets/queue');
             const tickets = await res.json();
             const container = document.getElementById('queue-container');
+            const statusBadge = document.getElementById('queue-status-badge');
 
             if (tickets.length === 0) {
-                container.innerHTML = `<div style="padding: 3rem; text-align: center; color: var(--text-muted); opacity: 0.5; font-size: 0.9rem; letter-spacing: 2px;">QUEUE CLEAR: NO PENDING REVIEWS</div>`;
+                container.innerHTML = `<div style="padding: 6rem; text-align: center; color: var(--text-muted); font-size: 0.7rem; font-weight: 800; letter-spacing: 2px;">QUEUE_NOMINAL // ZERO_PENDING</div>`;
+                statusBadge.innerHTML = `<span class="badge" style="background: rgba(39, 174, 96, 0.1); color: var(--accent-green); border: 1px solid var(--accent-green); font-size: 0.55rem;">NOMINAL</span>`;
                 return;
             }
+
+            statusBadge.innerHTML = `<span class="badge" style="background: rgba(242, 201, 76, 0.1); color: var(--accent-yellow); border: 1px solid var(--accent-yellow); font-size: 0.55rem;">ACTIVE: ${tickets.length}</span>`;
 
             let html = '';
             tickets.forEach(t => {
                 const isBlocked = t.guardrails_hard_block || (t.block_reason && t.block_reason.includes('BLOCK'));
-                const blockWarning = isBlocked ? `<div class="badge badge-danger" style="margin-bottom: 1rem; width: 100%; text-align: center;">BLOCKED: ${t.block_reason}</div>` : '';
+                const blockWarning = isBlocked ? `<div class="badge" style="background: rgba(235, 47, 150, 0.1); color: var(--accent-pink); border: 1px solid var(--accent-pink); margin-bottom: 1.5rem; width: 100%; text-align: center; font-size: 0.65rem; font-weight: 900; letter-spacing: 1px;">HARD_BLOCK: ${t.block_reason}</div>` : '';
 
-                const scoreColor = t.guardrails_score >= 80 ? 'success' : (t.guardrails_score >= 50 ? 'warning' : 'danger');
+                const scoreAccent = t.guardrails_score >= 80 ? 'var(--accent-green)' : (t.guardrails_score >= 50 ? 'var(--accent-yellow)' : 'var(--accent-pink)');
+                const borderAccent = t.direction === 'BUY' ? 'var(--accent-green)' : 'var(--accent-pink)';
 
                 html += `
-                <div id="card-${t.ticket_id}" class="hud-scanline" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(86, 204, 242, 0.1); border-radius: 4px; padding: 1rem; margin-bottom: 1rem; border-left: 4px solid ${t.direction === 'BUY' ? 'var(--accent-green)' : 'var(--accent-pink)'};">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem;">
-                        <div>
-                            <span style="font-weight: 800; font-size: 1.1rem; color: var(--text-main);">${t.pair}</span>
-                            <span class="badge ${t.direction === 'BUY' ? 'badge-success' : 'badge-danger'}" style="margin-left: 0.5rem;">${t.direction}</span>
-                            <span style="font-family: monospace; font-size: 0.75rem; color: var(--text-muted); margin-left: 1rem;">ID: ${t.ticket_id}</span>
+                <div id="card-${t.ticket_id}" class="hud-panel glass-panel" style="margin-bottom: 1.5rem; border-left: 4px solid ${borderAccent}; padding: 0;">
+                    <header class="hud-panel-header" style="background: rgba(0,0,0,0.2);">
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <div style="font-weight: 900; font-size: 1.25rem; color: var(--text-main);">${t.pair}</div>
+                            <span class="badge" style="background: ${t.direction === 'BUY' ? 'rgba(39, 174, 96, 0.1)' : 'rgba(235, 47, 150, 0.1)'}; color: ${t.direction === 'BUY' ? 'var(--accent-green)' : 'var(--accent-pink)'}; border: 1px solid ${t.direction === 'BUY' ? 'var(--accent-green)' : 'var(--accent-pink)'}; font-size: 0.6rem; font-weight: 900;">${t.direction}</span>
+                            <span style="font-family: monospace; font-size: 0.65rem; color: var(--text-muted); letter-spacing: 0.5px;">IDENT: ${t.ticket_id}</span>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 1rem;">
-                            <div style="font-size: 0.7rem; color: var(--text-muted);">DISCP SCORE: <span class="badge badge-${scoreColor}">${t.guardrails_score || 'N/A'}</span></div>
-                            <span data-expiry="${t.expires_at}" id="timer-${t.ticket_id}" class="badge" style="border: 1px solid var(--accent-yellow); color: var(--accent-yellow);">EXP MONITOR: SYNCING...</span>
+                        <div style="display: flex; align-items: center; gap: 1.5rem;">
+                            <div style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase;">SCORE: <span class="badge" style="background: rgba(255,255,255,0.05); color: ${scoreAccent}; border: 1px solid ${scoreAccent}; font-size: 0.6rem; font-weight: 900;">${t.guardrails_score || '---'}</span></div>
+                            <span data-expiry="${t.expires_at}" id="timer-${t.ticket_id}" class="badge" style="background: rgba(242, 201, 76, 0.05); border: 1px solid var(--accent-yellow); color: var(--accent-yellow); font-size: 0.6rem; font-weight: 900;">TTL_SYNC...</span>
                         </div>
-                    </div>
+                    </header>
                     
-                    ${blockWarning}
-                    
-                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
-                        <div style="background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 2px;">
-                            <div style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase;">ENTRY</div>
-                            <div style="font-family: monospace; font-weight: 700;">${t.entry_price}</div>
+                    <div style="padding: 1.25rem;">
+                        ${blockWarning}
+                        
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+                            <div class="hud-scanline" style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.05); padding: 0.75rem;">
+                                <div style="font-size: 0.55rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.25rem;">ENTRY_PRICE</div>
+                                <div style="font-family: monospace; font-weight: 900; font-size: 1.1rem; color: var(--text-main);">${t.entry_price}</div>
+                            </div>
+                            <div class="hud-scanline" style="background: rgba(235, 47, 150, 0.03); border: 1px solid rgba(235, 47, 150, 0.2); padding: 0.75rem;">
+                                <div style="font-size: 0.55rem; color: var(--accent-pink); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.25rem;">STOP_LOSS</div>
+                                <div style="font-family: monospace; font-weight: 900; font-size: 1.1rem; color: var(--accent-pink);">${t.stop_loss}</div>
+                            </div>
+                            <div class="hud-scanline" style="background: rgba(39, 174, 96, 0.03); border: 1px solid rgba(39, 174, 96, 0.2); padding: 0.75rem;">
+                                <div style="font-size: 0.55rem; color: var(--accent-green); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.25rem;">TARGET_1 (${t.rr_tp1.toFixed(2)}R)</div>
+                                <div style="font-family: monospace; font-weight: 900; font-size: 1.1rem; color: var(--accent-green);">${t.take_profit_1}</div>
+                            </div>
+                            <div class="hud-scanline" style="background: rgba(242, 201, 76, 0.03); border: 1px solid rgba(242, 201, 76, 0.2); padding: 0.75rem;">
+                                <div style="font-size: 0.55rem; color: var(--accent-yellow); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.25rem;">ALLOC (${t.lot_size} LOTS)</div>
+                                <div style="font-weight: 900; font-size: 1.1rem; color: var(--accent-yellow);">$${t.risk_usd.toFixed(2)}</div>
+                            </div>
                         </div>
-                        <div style="background: rgba(235, 47, 150, 0.05); padding: 0.5rem; border-radius: 2px;">
-                            <div style="font-size: 0.6rem; color: var(--accent-pink); text-transform: uppercase;">STOP LOSS</div>
-                            <div style="font-family: monospace; font-weight: 700; color: var(--accent-pink);">${t.stop_loss}</div>
-                        </div>
-                        <div style="background: rgba(39, 174, 96, 0.05); padding: 0.5rem; border-radius: 2px;">
-                            <div style="font-size: 0.6rem; color: var(--accent-green); text-transform: uppercase;">TAKE PROFIT 1</div>
-                            <div style="font-family: monospace; font-weight: 700; color: var(--accent-green);">${t.take_profit_1} (${t.rr_tp1.toFixed(2)}R)</div>
-                        </div>
-                        <div style="background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 2px;">
-                            <div style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase;">RISK ALLOCATION</div>
-                            <div style="font-weight: 700; color: var(--accent-yellow);">$${t.risk_usd.toFixed(2)} (${t.lot_size} LOTS)</div>
-                        </div>
-                    </div>
 
-                    <div style="display: flex; gap: 1rem; justify-content: flex-end;">
-                        <button onclick="openSkipModal('${t.ticket_id}')" class="btn btn-secondary btn-small" style="font-size: 0.7rem;">SKIP SIGNAL</button>
-                        <button onclick="approveTicket('${t.ticket_id}')" class="btn btn-primary btn-small" style="background: var(--accent-green); border-color: var(--accent-green); font-size: 0.7rem; color: #fff;">APPROVE EXECUTION PLAN</button>
+                        <div style="display: flex; gap: 1rem; justify-content: flex-end; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1.25rem;">
+                            <button onclick="openSkipModal('${t.ticket_id}')" class="btn btn-secondary btn-tiny">ABORT_SIGNAL</button>
+                            <button onclick="approveTicket('${t.ticket_id}')" class="btn btn-primary btn-tiny" style="background: var(--accent-green); border-color: var(--accent-green); color: #000; font-weight: 900;">AUTHORIZE_EXECUTION_PLAN</button>
+                        </div>
                     </div>
                 </div>
                 `;
@@ -175,7 +203,8 @@
     }
 
     function startTimers() {
-        setInterval(() => {
+        if (window.timerInterval) clearInterval(window.timerInterval);
+        window.timerInterval = setInterval(() => {
             const now = new Date();
             document.querySelectorAll('[data-expiry]').forEach(el => {
                 const expiry = new Date(el.getAttribute('data-expiry'));
@@ -183,13 +212,12 @@
 
                 if (diff <= 0) {
                     el.innerText = "EXPIRED";
-                    el.style.color = "var(--danger-color)";
-                    el.style.borderColor = "var(--danger-color)";
-                    // Optionally automatically remove card after a few seconds or rely on refresh
+                    el.style.color = "var(--accent-pink)";
+                    el.style.borderColor = "var(--accent-pink)";
                 } else {
                     const m = Math.floor(diff / 60);
                     const s = diff % 60;
-                    el.innerText = `Exp: ${m}m ${s.toString().padStart(2, '0')}s`;
+                    el.innerText = `TTL: ${m}m ${s.toString().padStart(2, '0')}s`;
                 }
             });
         }, 1000);
@@ -201,9 +229,9 @@
             if (res.ok) {
                 document.getElementById(`card-${id}`).remove();
                 fetchStats();
-                fetchActivePreps(); // Show prep immediately
+                fetchActivePreps();
             } else {
-                alert("Failed to approve ticket");
+                alert("ERR_AUTH_FAILED");
             }
         } catch (e) {
             console.error(e);
@@ -238,7 +266,7 @@
                 closeModal('skipModal');
                 fetchStats();
             } else {
-                alert("Failed to skip ticket");
+                alert("ERR_SKIP_FAILED");
             }
         } catch (e) {
             console.error(e);
@@ -252,48 +280,48 @@
             const container = document.getElementById('prep-container');
 
             if (preps.length === 0) {
-                container.innerHTML = `<div style="padding: 1rem; text-align: center; color: var(--text-muted); opacity: 0.5; font-size: 0.8rem;">NO ACTIVE EXECUTION PREPS</div>`;
+                container.innerHTML = `<div style="padding: 4rem; text-align: center; color: var(--text-muted); font-size: 0.7rem; font-weight: 800; letter-spacing: 2px; opacity: 0.4;">ZERO_ACTIVE_PREPS</div>`;
                 return;
             }
 
             let html = '';
             preps.forEach(p => {
                 const checkHtml = p.preflight_checks.map(c => `
-                    <div style="display:flex; justify-content:space-between; margin-bottom: 0.4rem; font-size: 0.75rem;">
-                        <span style="color: var(--text-muted);">${c.name}</span>
-                        <span class="badge ${c.status === 'PASS' ? 'badge-success' : (c.status === 'WARN' ? 'badge-warning' : 'badge-danger')}" style="font-size: 0.6rem; padding: 1px 6px;">${c.status}</span>
+                    <div style="display:flex; justify-content:space-between; margin-bottom: 0.5rem; font-size: 0.7rem; font-family: monospace;">
+                        <span style="color: var(--text-muted); text-transform: uppercase;">${c.name}</span>
+                        <span class="badge" style="background: ${c.status === 'PASS' ? 'rgba(39, 174, 96, 0.1)' : (c.status === 'WARN' ? 'rgba(242, 201, 76, 0.1)' : 'rgba(235, 47, 150, 0.1)')}; color: ${c.status === 'PASS' ? 'var(--accent-green)' : (c.status === 'WARN' ? 'var(--accent-yellow)' : 'var(--accent-pink)')}; border: 1px solid ${c.status === 'PASS' ? 'var(--accent-green)' : (c.status === 'WARN' ? 'var(--accent-yellow)' : 'var(--accent-pink)')}; font-size: 0.5rem; padding: 1px 6px; font-weight: 900;">${c.status}</span>
                     </div>
                 `).join('');
 
                 const overrideBtn = p.override_required ?
-                    `<button onclick="openOverrideModal('${p.ticket_id}')" class="btn btn-primary btn-small" style="background: var(--accent-pink); border-color: var(--accent-pink); width: 100%; margin-top: 0.5rem; font-size: 0.65rem;">MANUAL OVERRIDE REQUIRED</button>` : '';
+                    `<button onclick="openOverrideModal('${p.ticket_id}')" class="btn btn-primary" style="background: var(--accent-pink); border-color: var(--accent-pink); width: 100%; margin-top: 0.75rem; font-size: 0.6rem; font-weight: 900; color: #000;">BYPASS_REQ // OVERRIDE</button>` : '';
 
                 html += `
-                <div id="prep-${p.ticket_id}" class="hud-scanline" style="background: rgba(39, 174, 96, 0.05); border: 1px solid rgba(39, 174, 96, 0.2); border-radius: 4px; padding: 1rem; margin-bottom: 0.75rem; border-left: 3px solid var(--accent-green);">
-                    <div style="display: flex; gap: 1.5rem;">
+                <div id="prep-${p.ticket_id}" class="hud-panel glass-panel" style="background: rgba(39, 174, 96, 0.02); border: 1px solid rgba(39, 174, 96, 0.2); border-left: 3px solid var(--accent-green); margin-bottom: 1rem; padding: 1rem;">
+                    <div style="display: flex; gap: 2rem;">
                         <!-- Checks -->
-                        <div style="flex: 1; border-right: 1px solid rgba(255,255,255,0.05); padding-right: 1rem;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-                                <div style="font-weight: 800; font-size: 0.85rem; color: var(--accent-green);">EXE PREP: ${p.ticket_id}</div>
-                                <span data-expiry="${p.expires_at}" class="badge" style="font-size: 0.6rem; border: 1px solid var(--accent-yellow); color: var(--accent-yellow);">SYNCING...</span>
+                        <div style="flex: 1; border-right: 1px solid rgba(255,255,255,0.05); padding-right: 1.5rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <div style="font-weight: 900; font-size: 0.75rem; color: var(--accent-green); font-family: monospace;">EXE_PREP: ${p.ticket_id}</div>
+                                <span data-expiry="${p.expires_at}" class="badge" style="font-size: 0.55rem; border: 1px solid var(--accent-yellow); color: var(--accent-yellow); font-weight: 900;">EXP_SYNC...</span>
                             </div>
                             ${checkHtml}
                             ${overrideBtn}
                         </div>
                         <!-- Formats -->
                         <div style="flex: 2;">
-                            <div style="margin-bottom: 0.75rem;">
-                                <div style="font-size: 0.6rem; color:var(--text-muted); text-transform: uppercase; margin-bottom: 0.25rem;">MT5 EXECUTION STRING</div>
+                            <div style="margin-bottom: 1rem;">
+                                <div style="font-size: 0.55rem; color:var(--text-muted); text-transform: uppercase; margin-bottom: 0.4rem; letter-spacing: 1px;">MT5_EXECUTION_VECTOR</div>
                                 <div style="display:flex; gap: 0.5rem; align-items: center;">
-                                    <code style="background: rgba(0,0,0,0.4); padding: 0.5rem; border-radius: 3px; font-size: 0.75rem; flex-grow:1; border: 1px solid rgba(255,255,255,0.05); color: var(--accent-cyan); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${p.platform_formats.mt5_text}</code>
-                                    <button onclick="copyToClipboard('${p.platform_formats.mt5_text}')" class="btn btn-secondary btn-small" style="font-size: 0.6rem; padding: 4px 8px;">COPY</button>
+                                    <code style="background: rgba(0,0,0,0.4); padding: 0.6rem; border-radius: 2px; font-size: 0.7rem; flex-grow:1; border: 1px solid rgba(86, 204, 242, 0.1); color: var(--accent-cyan); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: monospace;">${p.platform_formats.mt5_text}</code>
+                                    <button onclick="copyToClipboard('${p.platform_formats.mt5_text}')" class="btn btn-secondary btn-tiny">COPY</button>
                                 </div>
                             </div>
                             <div>
-                                <div style="font-size: 0.6rem; color:var(--text-muted); text-transform: uppercase; margin-bottom: 0.25rem;">CTRADER EXECUTION STRING</div>
+                                <div style="font-size: 0.55rem; color:var(--text-muted); text-transform: uppercase; margin-bottom: 0.4rem; letter-spacing: 1px;">CTRADER_EXECUTION_VECTOR</div>
                                 <div style="display:flex; gap: 0.5rem; align-items: center;">
-                                    <code style="background: rgba(0,0,0,0.4); padding: 0.5rem; border-radius: 3px; font-size: 0.75rem; flex-grow:1; border: 1px solid rgba(255,255,255,0.05); color: var(--accent-cyan); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${p.platform_formats.ctrader_text}</code>
-                                    <button onclick="copyToClipboard('${p.platform_formats.ctrader_text}')" class="btn btn-secondary btn-small" style="font-size: 0.6rem; padding: 4px 8px;">COPY</button>
+                                    <code style="background: rgba(0,0,0,0.4); padding: 0.6rem; border-radius: 2px; font-size: 0.7rem; flex-grow:1; border: 1px solid rgba(86, 204, 242, 0.1); color: var(--accent-cyan); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: monospace;">${p.platform_formats.ctrader_text}</code>
+                                    <button onclick="copyToClipboard('${p.platform_formats.ctrader_text}')" class="btn btn-secondary btn-tiny">COPY</button>
                                 </div>
                             </div>
                         </div>
@@ -309,7 +337,7 @@
 
     function copyToClipboard(text) {
         navigator.clipboard.writeText(text).then(() => {
-            alert("Copied to clipboard");
+            alert("VECTOR_COPIED_TO_CLIPBOARD");
         });
     }
 
@@ -322,7 +350,7 @@
 
     async function submitOverride() {
         const reason = document.getElementById('override-reason').value;
-        if (!reason) return alert("Reason required");
+        if (!reason) return alert("ERR_REASON_REQ");
         try {
             const res = await fetch(`/api/execution-prep/${currentOverrideId}/override?reason=${encodeURIComponent(reason)}`, { method: 'POST' });
             if (res.ok) {
@@ -332,14 +360,14 @@
         } catch (e) { console.error(e); }
     }
 
-    // Update global refresh
+    // Refresh telemetry
     setInterval(() => {
         fetchQueue();
         fetchActivePreps();
         fetchStats();
-    }, 20000);
+    }, 15000);
 
-    // Initial load updates
+    // Bootstrap
     fetchStats();
     fetchQueue();
     fetchActivePreps();
