@@ -1,12 +1,14 @@
 import pytz
 from datetime import datetime, time
 
+
 class SessionManager:
     """
     Manages trading sessions in Africa/Nairobi (UTC+3).
     """
+
     TIMEZONE = pytz.timezone("Africa/Nairobi")
-    
+
     # Sessions in EAT
     SESSIONS = {
         "LONDON": {"start": time(10, 0), "end": time(19, 0)},

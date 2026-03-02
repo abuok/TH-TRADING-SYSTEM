@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import datetime
 
+
 class HindsightOutcome(BaseModel):
     ticket_id: str
     computed_at: datetime

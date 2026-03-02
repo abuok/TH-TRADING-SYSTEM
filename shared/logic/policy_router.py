@@ -2,17 +2,19 @@
 shared/logic/policy_router.py
 Regime-Adaptive Policy Router for selecting guardrails profiles based on market conditions.
 """
+
 import os
 import yaml
 import hashlib
 import logging
 from datetime import datetime
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Dict, List, Any
 from pydantic import BaseModel
 
 from shared.logic.sessions import get_session_label
 
 logger = logging.getLogger("PolicyRouter")
+
 
 class PolicyDecision(BaseModel):
     policy_name: str
@@ -20,6 +22,7 @@ class PolicyDecision(BaseModel):
     policy_config: Dict[str, Any]
     reasons: List[str]
     regime_signals: Dict[str, Any]
+
 
 class PolicyRouter:
     def __init__(self, policies_dir: str = "config/policies"):
@@ -43,16 +46,20 @@ class PolicyRouter:
                     if config and "policy_name" in config:
                         name = config["policy_name"]
                         self.policies[name] = config
-                        self.policy_hashes[name] = hashlib.sha256(content.encode()).hexdigest()[:8]
-        
-        logger.info(f"Loaded {len(self.policies)} policy profiles: {list(self.policies.keys())}")
+                        self.policy_hashes[name] = hashlib.sha256(
+                            content.encode()
+                        ).hexdigest()[:8]
+
+        logger.info(
+            f"Loaded {len(self.policies)} policy profiles: {list(self.policies.keys())}"
+        )
 
     def select_policy(
         self,
         movers_data: Any,
         context_data: Any,
         pair_fundamentals: Any,
-        now_nairobi: datetime
+        now_nairobi: datetime,
     ) -> PolicyDecision:
         """
         Deterministic logic to select the best policy profile.
@@ -60,12 +67,12 @@ class PolicyRouter:
         """
         reasons = []
         signals = {}
-        
+
         # 1. Extract Signals (Handle Dict or Pydantic Model)
         def _get(obj, key, default=None):
-            if hasattr(obj, "dict"): # Pydantic v1
+            if hasattr(obj, "dict"):  # Pydantic v1
                 return getattr(obj, key, default)
-            if hasattr(obj, "model_dump"): # Pydantic v2
+            if hasattr(obj, "model_dump"):  # Pydantic v2
                 return getattr(obj, key, default)
             if isinstance(obj, dict):
                 return obj.get(key, default)
@@ -84,7 +91,7 @@ class PolicyRouter:
         signals["confidence"] = confidence
 
         # 2. Selection Logic
-        
+
         # A. RISK OFF (Highest Priority)
         # Check for RISK_OFF flag or very poor sentiment
         if "RISK_OFF" in sentiment_flags:
@@ -94,24 +101,34 @@ class PolicyRouter:
         # B. EVENT HEAVY
         # Check for upcoming high-impact events (e.g., > 2 events in current context)
         if len(events) >= 3:
-            reasons.append(f"High event density detected ({len(events)} red-folder events).")
+            reasons.append(
+                f"High event density detected ({len(events)} red-folder events)."
+            )
             return self._build_decision("Event Heavy", reasons, signals)
 
         # C. BEST CONDITIONS
         # Strong bias, high confidence, and in core sessions
-        if (session in ["LONDON", "NEW YORK"] and 
-            abs(bias_score) >= 4.0 and 
-            confidence == "HIGH"):
-            reasons.append(f"Strong confluence: {session} session + High confidence bias ({bias_score}).")
+        if (
+            session in ["LONDON", "NEW YORK"]
+            and abs(bias_score) >= 4.0
+            and confidence == "HIGH"
+        ):
+            reasons.append(
+                f"Strong confluence: {session} session + High confidence bias ({bias_score})."
+            )
             return self._build_decision("Best Conditions", reasons, signals)
 
         # D. DEFAULT
         reasons.append("No specialized market regime detected. Using baseline policy.")
         return self._build_decision("Default", reasons, signals)
 
-    def _build_decision(self, name: str, reasons: List[str], signals: Dict[str, Any]) -> PolicyDecision:
+    def _build_decision(
+        self, name: str, reasons: List[str], signals: Dict[str, Any]
+    ) -> PolicyDecision:
         if name not in self.policies:
-            logger.error(f"Selected policy '{name}' not found in loaded policies. Falling back to Default.")
+            logger.error(
+                f"Selected policy '{name}' not found in loaded policies. Falling back to Default."
+            )
             name = "Default"
             reasons.append("FALLBACK: Selected policy was missing from config.")
 
@@ -129,5 +146,5 @@ class PolicyRouter:
             policy_hash=self.policy_hashes.get(name, "unknown"),
             policy_config=config,
             reasons=reasons,
-            regime_signals=signals
+            regime_signals=signals,
         )

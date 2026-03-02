@@ -6,6 +6,7 @@ Provider selection:
   CALENDAR_PROVIDER=mock|forexfactory   (default: mock)
   PROXY_PROVIDER=mock|real              (default: mock)
 """
+
 import asyncio
 import logging
 
@@ -63,7 +64,8 @@ async def ingest_calendar() -> None:
                 proxies = proxy_provider.get_snapshots()
             except NotImplementedError as exc:
                 _log_incident(
-                    "ERROR", "IngestionService",
+                    "ERROR",
+                    "IngestionService",
                     f"ProxyProvider not implemented — failing closed: {exc}",
                 )
                 proxies = {}
@@ -71,7 +73,7 @@ async def ingest_calendar() -> None:
             packet = MarketContextPacket(
                 schema_version="1.0.1",
                 source=f"Calendar={type(calendar_provider).__name__},"
-                       f"Proxy={type(proxy_provider).__name__}",
+                f"Proxy={type(proxy_provider).__name__}",
                 asset_pair="ALL",
                 price=0.0,
                 volume_24h=0.0,
@@ -87,12 +89,14 @@ async def ingest_calendar() -> None:
             event_bus.publish("market_context", packet.model_dump(mode="json"))
             logger.info(
                 "Ingestion: emitted MarketContextPacket — %d events, %d no-trade windows.",
-                len(events), len(windows),
+                len(events),
+                len(windows),
             )
 
         except Exception as exc:  # noqa: BLE001
             _log_incident(
-                "ERROR", "IngestionService",
+                "ERROR",
+                "IngestionService",
                 f"Unhandled ingestion error: {exc}",
             )
             logger.error("Ingestion loop error: %s", exc, exc_info=True)
@@ -113,12 +117,19 @@ async def health_check():
         return {
             "status": "healthy",
             "service": "ingestion",
-            "proxy_provider": type(_proxy_provider).__name__ if _proxy_provider else "uninitialised",
-            "calendar_provider": type(_calendar_provider).__name__ if _calendar_provider else "uninitialised",
+            "proxy_provider": type(_proxy_provider).__name__
+            if _proxy_provider
+            else "uninitialised",
+            "calendar_provider": type(_calendar_provider).__name__
+            if _calendar_provider
+            else "uninitialised",
         }
     except Exception as exc:
         from fastapi.responses import JSONResponse
-        return JSONResponse(status_code=503, content={"status": "unhealthy", "error": str(exc)})
+
+        return JSONResponse(
+            status_code=503, content={"status": "unhealthy", "error": str(exc)}
+        )
 
 
 @app.get("/trigger")

@@ -3,6 +3,7 @@ from typing import List, Dict, Tuple
 from shared.types.packets import Candle
 import pytz
 
+
 class TradingSessions:
     # Nairobi is UTC+3
     # Standard Session Ranges (Nairobi Time)
@@ -10,17 +11,19 @@ class TradingSessions:
     LONDON_OPEN_WINDOW = (time(11, 0), time(14, 0))
     LONDON_RANGE = (time(11, 0), time(20, 0))
     NY_WINDOW = (time(16, 0), time(19, 0))
-    NY_RANGE = (time(16, 0), time(1, 0)) # Note: Crosses midnight
+    NY_RANGE = (time(16, 0), time(1, 0))  # Note: Crosses midnight
 
     @staticmethod
     def is_in_range(t: time, start: time, end: time) -> bool:
         if start <= end:
             return start <= t <= end
-        else: # Crosses midnight
+        else:  # Crosses midnight
             return t >= start or t <= end
 
     @classmethod
-    def get_session_candles(cls, candles: List[Candle], session_range: Tuple[time, time]) -> List[Candle]:
+    def get_session_candles(
+        cls, candles: List[Candle], session_range: Tuple[time, time]
+    ) -> List[Candle]:
         start, end = session_range
         session_candles = []
         for candle in candles:
@@ -36,7 +39,7 @@ class TradingSessions:
             return {}
         return {
             "high": max(c.high for c in candles),
-            "low": min(c.low for c in candles)
+            "low": min(c.low for c in candles),
         }
 
     @classmethod
@@ -44,10 +47,10 @@ class TradingSessions:
         """Compute High/Low for Asia and London sessions."""
         asia_candles = cls.get_session_candles(candles, cls.ASIA_RANGE)
         london_candles = cls.get_session_candles(candles, cls.LONDON_RANGE)
-        
+
         asia_hl = cls.get_high_low(asia_candles)
         london_hl = cls.get_high_low(london_candles)
-        
+
         levels = {}
         if asia_hl:
             levels["asia_high"] = asia_hl["high"]
@@ -55,12 +58,14 @@ class TradingSessions:
         if london_hl:
             levels["london_high"] = london_hl["high"]
             levels["london_low"] = london_hl["low"]
-            
+
         return levels
+
 
 def get_nairobi_time() -> datetime:
     """Returns the current time in Africa/Nairobi."""
     return datetime.now(pytz.timezone("Africa/Nairobi"))
+
 
 def get_session_label(now_nairobi: datetime) -> str:
     """Returns a label for the current trading session."""

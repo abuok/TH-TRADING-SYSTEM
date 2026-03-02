@@ -8,6 +8,7 @@ from services.research.tuning import generate_tuning_report
 from services.research.pilot import build_pilot_scorecard
 from shared.utils.metadata import get_version, get_git_commit
 
+
 @pytest.fixture
 def db():
     engine = create_engine("sqlite:///:memory:")
@@ -17,11 +18,13 @@ def db():
     yield session
     session.close()
 
+
 def test_tuning_report_metadata(db):
     report = generate_tuning_report(db, days_back=1)
     assert report.reproducibility.version == get_version()
     assert report.reproducibility.git_commit == get_git_commit()
     assert report.reproducibility.guardrails_version != ""
+
 
 def test_pilot_scorecard_metadata(db):
     # build_pilot_scorecard needs some session logs to work properly if we want a full check,

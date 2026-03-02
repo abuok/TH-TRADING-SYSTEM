@@ -2,8 +2,11 @@ from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime
 
+
 class TradeFillEvent(BaseModel):
-    broker_trade_id: str = Field(..., description="Unique ID from the broker (MT5 deal/order ID)")
+    broker_trade_id: str = Field(
+        ..., description="Unique ID from the broker (MT5 deal/order ID)"
+    )
     symbol: str
     side: str  # BUY, SELL
     lots: float
@@ -18,6 +21,7 @@ class TradeFillEvent(BaseModel):
     account_id: str
     source: str = "MT5"
 
+
 class PositionSnapshot(BaseModel):
     position_id: str
     symbol: str
@@ -31,8 +35,10 @@ class PositionSnapshot(BaseModel):
     updated_at_eat: datetime
     account_id: str
 
+
 class TradeFillBatch(BaseModel):
     fills: List[TradeFillEvent]
+
 
 class PositionSnapshotBatch(BaseModel):
     snapshots: List[PositionSnapshot]

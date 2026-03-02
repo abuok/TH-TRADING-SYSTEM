@@ -2,14 +2,17 @@ import pytest
 from datetime import datetime, timezone
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from shared.database.models import Base, Packet, OrderTicket
+from shared.database.models import Base, OrderTicket
 from shared.types.packets import TechnicalSetupPacket, RiskApprovalPacket
 from shared.logic.trading_logic import generate_order_ticket
 
 # In-memory DB for testing
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
 
 @pytest.fixture
 def db():
@@ -21,6 +24,7 @@ def db():
         db.close()
         Base.metadata.drop_all(bind=engine)
 
+
 def test_generate_ticket_success(db):
     setup = TechnicalSetupPacket(
         schema_version="1.0.0",
@@ -30,7 +34,7 @@ def test_generate_ticket_success(db):
         stop_loss=1990.0,
         take_profit=2030.0,
         timeframe="1H",
-        timestamp=datetime.now(timezone.utc)
+        timestamp=datetime.now(timezone.utc),
     )
     risk = RiskApprovalPacket(
         schema_version="1.0.0",
@@ -41,11 +45,11 @@ def test_generate_ticket_success(db):
         max_position_size=1.0,
         rr_ratio=3.0,
         approver="RiskEngine",
-        timestamp=datetime.now(timezone.utc)
+        timestamp=datetime.now(timezone.utc),
     )
 
     ticket = generate_order_ticket(setup, risk, db, risk_usd=100.0)
-    
+
     assert ticket.pair == "XAUUSD"
     assert ticket.direction == "BUY"
     # Lot sizing for XAUUSD: Risk 100 / (Dist 10 * Factor 100) = 0.1
@@ -53,6 +57,7 @@ def test_generate_ticket_success(db):
     assert ticket.rr_tp1 == 3.0
     assert ticket.status == "IN_REVIEW"
     assert ticket.ticket_id.startswith("TKT-")
+
 
 def test_generate_ticket_blocked(db):
     setup = TechnicalSetupPacket(
@@ -63,7 +68,7 @@ def test_generate_ticket_blocked(db):
         stop_loss=1.0900,
         take_profit=1.1200,
         timeframe="1H",
-        timestamp=datetime.now(timezone.utc)
+        timestamp=datetime.now(timezone.utc),
     )
     risk = RiskApprovalPacket(
         schema_version="1.0.0",
@@ -75,13 +80,14 @@ def test_generate_ticket_blocked(db):
         rr_ratio=2.0,
         approver="RiskEngine",
         reasons=["Max daily loss reached"],
-        timestamp=datetime.now(timezone.utc)
+        timestamp=datetime.now(timezone.utc),
     )
 
     ticket = generate_order_ticket(setup, risk, db)
-    
+
     assert ticket.status == "BLOCKED"
     assert "Max daily loss reached" in ticket.block_reason
+
 
 def test_ticket_idempotency(db):
     setup = TechnicalSetupPacket(
@@ -92,7 +98,7 @@ def test_ticket_idempotency(db):
         stop_loss=1995.0,
         take_profit=2010.0,
         timeframe="1H",
-        timestamp=datetime(2026, 1, 1, tzinfo=timezone.utc)
+        timestamp=datetime(2026, 1, 1, tzinfo=timezone.utc),
     )
     risk = RiskApprovalPacket(
         schema_version="1.0.0",
@@ -103,17 +109,19 @@ def test_ticket_idempotency(db):
         max_position_size=2.0,
         rr_ratio=2.0,
         approver="RiskEngine",
-        timestamp=datetime(2026, 1, 1, 0, 1, tzinfo=timezone.utc)
+        timestamp=datetime(2026, 1, 1, 0, 1, tzinfo=timezone.utc),
     )
 
     t1 = generate_order_ticket(setup, risk, db)
     t2 = generate_order_ticket(setup, risk, db)
-    
+
     assert t1.id == t2.id
     assert db.query(OrderTicket).count() == 1
 
+
 def test_platform_formatters():
     from shared.types.trading import OrderTicketSchema
+
     ticket = OrderTicketSchema(
         ticket_id="TKT-TEST",
         setup_packet_id=1,
@@ -127,13 +135,13 @@ def test_platform_formatters():
         risk_usd=100.0,
         risk_pct=0.5,
         rr_tp1=3.0,
-        idempotency_key="key"
+        idempotency_key="key",
     )
-    
+
     mt5 = ticket.to_mt5_note()
     assert "MT5 TRADE PLAN" in mt5
     assert "Size: 0.10 Lots" in mt5
-    
+
     ctrader = ticket.to_ctrader_note()
     assert "cTrader Order" in ctrader
     assert "Volume: 0.10 Lots" in ctrader
