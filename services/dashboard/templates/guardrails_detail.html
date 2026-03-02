@@ -6,7 +6,7 @@
     <div class="hud-panel glass-panel col-span-12" data-hud-corner="top-left">
         <header class="hud-panel-header">
             <div class="hud-panel-title">GUARDRAILS EVALUATION // SETUP: {{ setup_id }}</div>
-            <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <div class="flex gap-3 align-center">
                 <span class="badge"
                     style="border: 1px solid var(--accent-cyan); color: var(--accent-cyan); background: transparent;">{{
                     pair }}</span>
@@ -45,20 +45,20 @@
 
                 <div
                     style="display: flex; gap: 1rem; width: 100%; justify-content: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem;">
-                    <div style="text-align: center;">
+                    <div class="text-center">
                         <div style="font-size: 0.9rem; font-weight: 900; color: var(--accent-green);">{{
                             result.rule_checks | selectattr("status","equalto","PASS") | list | length }}</div>
-                        <div style="font-size: 0.5rem; color: var(--text-muted);">PASS</div>
+                        <div class="text-micro text-muted">PASS</div>
                     </div>
-                    <div style="text-align: center;">
+                    <div class="text-center">
                         <div style="font-size: 0.9rem; font-weight: 900; color: var(--accent-yellow);">{{
                             result.rule_checks | selectattr("status","equalto","WARN") | list | length }}</div>
-                        <div style="font-size: 0.5rem; color: var(--text-muted);">WARN</div>
+                        <div class="text-micro text-muted">WARN</div>
                     </div>
-                    <div style="text-align: center;">
+                    <div class="text-center">
                         <div style="font-size: 0.9rem; font-weight: 900; color: var(--accent-pink);">{{
                             result.rule_checks | selectattr("status","equalto","FAIL") | list | length }}</div>
-                        <div style="font-size: 0.5rem; color: var(--text-muted);">FAIL</div>
+                        <div class="text-micro text-muted">FAIL</div>
                     </div>
                 </div>
 
@@ -81,7 +81,7 @@
             <header class="hud-panel-header">
                 <div class="hud-panel-title">RISK ANALYSIS SUMMARY</div>
             </header>
-            <div style="padding: 1.5rem;">
+            <div class="p-5">
                 {% if hard and result.primary_block_reason %}
                 <div
                     style="background: rgba(235, 47, 150, 0.05); border: 1px solid var(--accent-pink); border-radius: 4px; padding: 1rem; margin-bottom: 1rem;">
@@ -127,9 +127,9 @@
                 <table class="hud-compact-table">
                     <thead>
                         <tr>
-                            <th style="width: 100px;">ID</th>
+                            <th class="w-100">ID</th>
                             <th>RULE DESCRIPTION</th>
-                            <th style="width: 100px;">STATUS</th>
+                            <th class="w-100">STATUS</th>
                             <th style="width: 100px; text-align: right;">DEDUCTION</th>
                             <th>EVOLUTION / DETAILS</th>
                         </tr>
@@ -139,7 +139,7 @@
                         {% set s_color = "var(--accent-green)" if check.status == "PASS" else ("var(--accent-yellow)" if
                         check.status == "WARN" else "var(--accent-pink)") %}
                         <tr>
-                            <td style="font-family: monospace; font-size: 0.65rem; color: var(--text-muted);">{{
+                            <td class="text-mono text-xxs text-muted">{{
                                 check.id }}</td>
                             <td style="font-weight: 700; color: var(--text-main);">{{ check.name }}</td>
                             <td>
@@ -158,7 +158,7 @@
                             <td colspan="5" style="padding: 0.5rem 1rem;">
                                 <div style="display: flex; flex-wrap: wrap; gap: 1rem; font-size: 0.6rem;">
                                     {% for ev in check.evidence_refs %}
-                                    <span style="color: var(--text-muted);">
+                                    <span class="text-muted">
                                         {{ ev.key | upper }}: <strong style="color: var(--accent-cyan);">{{ ev.value
                                             }}</strong>
                                     </span>

@@ -6,16 +6,14 @@
         <header class="hud-panel-header">
             <div class="hud-panel-title">🌍 MACRO HUD // GLOBAL SENTIMENT Snapshot</div>
             {% if movers %}
-            <div style="display: flex; gap: 0.5rem;">
+            <div class="flex gap-3">
                 {% for flag in movers.data.get('sentiment_flags', []) %}
-                <span class="badge"
-                    style="background: rgba(86, 204, 242, 0.1); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); font-size: 0.6rem;">{{
+                <span class="badge badge-cyan text-xxs">{{
                     flag }}</span>
                 {% endfor %}
             </div>
             {% else %}
-            <span class="badge"
-                style="background: rgba(242, 201, 76, 0.1); color: var(--accent-yellow); border: 1px solid var(--accent-yellow);">DATA_OFFLINE</span>
+            <span class="badge badge-yellow">DATA_OFFLINE</span>
             {% endif %}
         </header>
 
@@ -28,17 +26,17 @@
                     <div class="hud-panel-title" style="font-size: 0.65rem; color: var(--text-muted);">{{ sym }} //
                         PROXY</div>
                 </header>
-                <div style="padding: 1rem;">
+                <div class="p-3">
                     <div style="font-size: 1.5rem; font-weight: 900; color: var(--text-main); line-height: 1;">{{
                         proxy.current_value }}</div>
                     {% set delta = proxy.delta_pct %}
                     <div style="margin-top: 0.5rem; font-family: monospace; font-size: 0.8rem; font-weight: 800;">
                         {% if delta %}
                         {% if delta > 0 %}
-                        <span style="color: var(--accent-green);">+{{ delta }}%</span>
-                        {% elif delta < 0 %} <span style="color: var(--accent-pink);">{{ delta }}%</span>
+                        <span class="text-green">+{{ delta }}%</span>
+                        {% elif delta < 0 %} <span class="text-pink">{{ delta }}%</span>
                             {% else %}
-                            <span style="color: var(--text-muted);">0.00%</span>
+                            <span class="text-muted">0.00%</span>
                             {% endif %}
                             {% else %}
                             <span style="color: var(--text-muted); opacity: 0.4;">NO_PREV</span>
@@ -76,7 +74,7 @@
         {% if latest %}
         <div class="hud-scroll-body" style="height: 400px; padding: 1rem;">
             <!-- Bias Score Gauge -->
-            <div style="margin-bottom: 2rem;">
+            <div class="mb-4">
                 <div
                     style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem;">
                     BIAS CONFLUENCE SCORE</div>
@@ -102,7 +100,7 @@
             </div>
 
             <!-- Drivers Stream -->
-            <div style="margin-bottom: 2rem;">
+            <div class="mb-4">
                 <div
                     style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.75rem;">
                     FUNDAMENTAL VECTORS</div>

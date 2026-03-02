@@ -6,10 +6,9 @@
     <div class="hud-panel glass-panel col-span-12" data-hud-corner="top-left">
         <header class="hud-panel-header">
             <div class="hud-panel-title">TACTICAL BRIEFING // {{ record.session_label }} // {{ record.date }}</div>
-            <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <div class="flex gap-3 align-center">
                 {% if record.is_delta %}
-                <span class="badge"
-                    style="background: rgba(235, 47, 150, 0.1); color: var(--accent-pink); border: 1px solid var(--accent-pink);">DELTA
+                <span class="badge badge-pink">DELTA
                     UPDATE</span>
                 {% else %}
                 <span class="badge"
@@ -22,7 +21,7 @@
             <div style="font-family: monospace; font-size: 0.75rem; color: var(--text-muted);">
                 ID: {{ record.briefing_id }} // GENERATED: {{ record.created_at.strftime('%Y-%m-%d %H:%M:%S') }} EAT
             </div>
-            <div style="display: flex; gap: 0.5rem;">
+            <div class="flex gap-3">
                 <a href="/dashboard/briefings" class="btn btn-secondary btn-small">&larr; BACK TO FEED</a>
                 <a href="/dashboard/briefings/{{ record.briefing_id }}/print" target="_blank"
                     class="btn btn-primary btn-small">PRINT / PDF HUB</a>
@@ -50,7 +49,7 @@
         <header class="hud-panel-header">
             <div class="hud-panel-title">SYSTEM STATUS // INTERVENTIONS</div>
         </header>
-        <div class="hud-scroll-body" style="padding: 1rem;">
+        <div class="hud-scroll-body p-3">
             {% set sys = d.get("system_status", {}) %}
             <div style="margin-bottom: 1.5rem;">
                 <div
@@ -59,8 +58,7 @@
                 {% if sys.get("active_kill_switches") %}
                 <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
                     {% for sw in sys["active_kill_switches"] %}
-                    <span class="badge"
-                        style="background: rgba(235, 47, 150, 0.1); color: var(--accent-pink); border: 1px solid var(--accent-pink);">{{
+                    <span class="badge badge-pink">{{
                         sw }}</span>
                     {% endfor %}
                 </div>
@@ -96,7 +94,7 @@
                         <span style="font-size: 0.75rem; font-weight: 800; color: var(--text-main);">{{ action.category
                             }}</span>
                     </div>
-                    <div style="font-size: 0.7rem; color: var(--text-muted); line-height: 1.4;">{{ action.description }}
+                    <div class="text-xs text-muted line-height-relaxed">{{ action.description }}
                     </div>
                 </div>
                 {% endfor %}
@@ -109,7 +107,7 @@
         <header class="hud-panel-header">
             <div class="hud-panel-title">PAIR OVERVIEWS // QUANTITATIVE ANALYSIS</div>
         </header>
-        <div class="hud-scroll-body" style="padding: 1rem;">
+        <div class="hud-scroll-body p-3">
             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem;">
                 {% for po in d.get("pair_overviews", []) %}
                 <div class="hud-scanline"
@@ -117,8 +115,7 @@
                     <div
                         style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.75rem;">
                         <span style="font-size: 1rem; font-weight: 800; color: var(--accent-cyan);">{{ po.pair }}</span>
-                        <span class="badge"
-                            style="background: rgba(86, 204, 242, 0.1); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); font-size: 0.6rem;">{{
+                        <span class="badge badge-cyan text-xxs">{{
                             po.bias }}</span>
                     </div>
 

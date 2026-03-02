@@ -6,29 +6,28 @@
     <div class="hud-panel glass-panel col-span-12" data-hud-corner="top-left">
         <header class="hud-panel-header">
             <div class="hud-panel-title">TRADE CAPTURE BRIDGE // CURRENT POSITIONS Snapshot</div>
-            <div style="display: flex; gap: 0.5rem; align-items: center;">
-                <span class="badge"
-                    style="background: rgba(86, 204, 242, 0.1); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); font-size: 0.6rem;">METATRADER_5_LINK:
+            <div class="flex gap-3 align-center">
+                <span class="badge badge-cyan text-xxs">METATRADER_5_LINK:
                     ACTIVE</span>
             </div>
         </header>
 
         <div
-            style="padding: 1rem; color: var(--text-muted); font-size: 0.75rem; letter-spacing: 1px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+            class="hud-panel-desc text-xs border-divider">
             LIVE PORTFOLIO EXPOSURE // REAL-TIME FILL TRACKING FROM META-BRIDGE</div>
 
-        <div class="hud-scroll-body" style="height: 350px;">
+        <div class="hud-scroll-body h-350">
             {% if positions %}
             <table class="hud-compact-table">
                 <thead>
                     <tr>
-                        <th style="width: 150px;">POSITION_ID</th>
-                        <th style="width: 120px;">SYMBOL</th>
-                        <th style="text-align: center; width: 100px;">SIDE</th>
-                        <th style="text-align: right; width: 100px;">LOTS</th>
-                        <th style="text-align: right; width: 150px;">AVG_AVG_PRICE</th>
-                        <th style="text-align: right; width: 150px;">PNL_UNREALIZED ($)</th>
-                        <th style="text-align: right;">LAST_TELEMETRY</th>
+                        <th class="w-150">POSITION_ID</th>
+                        <th class="w-120">SYMBOL</th>
+                        <th class="text-center w-100">SIDE</th>
+                        <th class="text-right w-100">LOTS</th>
+                        <th class="text-right w-150">AVG_AVG_PRICE</th>
+                        <th class="text-right w-150">PNL_UNREALIZED ($)</th>
+                        <th class="text-right">LAST_TELEMETRY</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -37,22 +36,22 @@
                         <td
                             style="font-family: monospace; font-size: 0.7rem; color: var(--accent-cyan); font-weight: 800;">
                             {{ p.position_id }}</td>
-                        <td style="font-weight: 900; color: var(--text-main);">{{ p.symbol }}</td>
-                        <td style="text-align: center;">
+                        <td class="text-black text-main">{{ p.symbol }}</td>
+                        <td class="text-center">
                             <span class="badge"
                                 style="background: {{ 'rgba(39, 174, 96, 0.1)' if p.side == 'BUY' else 'rgba(235, 47, 150, 0.1)' }}; color: {{ 'var(--accent-green)' if p.side == 'BUY' else 'var(--accent-pink)' }}; border: 1px solid {{ 'var(--accent-green)' if p.side == 'BUY' else 'var(--accent-pink)' }}; font-size: 0.55rem; font-weight: 900;">
                                 {{ p.side }}
                             </span>
                         </td>
                         <td style="text-align: right; font-family: monospace; font-weight: 800;">{{ p.lots }}</td>
-                        <td style="text-align: right; font-family: monospace; font-size: 0.75rem;">{{ p.avg_price }}
+                        <td class="text-mono text-xs text-right">{{ p.avg_price }}
                         </td>
                         <td
                             style="text-align: right; font-weight: 900; color: {{ 'var(--accent-green)' if p.floating_pnl >= 0 else 'var(--accent-pink)' }};">
                             {{ "%.2f" | format(p.floating_pnl) }}
                         </td>
                         <td
-                            style="text-align: right; font-family: monospace; font-size: 0.65rem; color: var(--text-muted);">
+                            class="text-mono text-xxs text-muted text-right">
                             {{ p.updated_at_eat.strftime('%H:%M:%S') }}
                         </td>
                     </tr>
@@ -61,7 +60,7 @@
             </table>
             {% else %}
             <div
-                style="padding: 4rem; text-align: center; color: var(--text-muted); font-weight: 800; letter-spacing: 2px;">
+                class="hud-empty-state">
                 ZERO_ACTIVE_EXPOSURE_DETECTED</div>
             {% endif %}
         </div>
@@ -81,36 +80,36 @@
             <table class="hud-compact-table">
                 <thead>
                     <tr>
-                        <th style="width: 120px;">TIME (EAT)</th>
-                        <th style="width: 120px;">SYMBOL</th>
+                        <th class="w-120">TIME (EAT)</th>
+                        <th class="w-120">SYMBOL</th>
                         <th style="text-align: center; width: 120px;">EVENT_TYPE</th>
-                        <th style="text-align: center; width: 100px;">SIDE</th>
-                        <th style="text-align: right; width: 100px;">LOTS</th>
-                        <th style="text-align: right; width: 120px;">EXEC_PRICE</th>
-                        <th style="text-align: center;">LOCAL_TICKET_ID</th>
-                        <th style="text-align: right; width: 150px;">BROKER_FILL_ID</th>
+                        <th class="text-center w-100">SIDE</th>
+                        <th class="text-right w-100">LOTS</th>
+                        <th class="text-right w-120">EXEC_PRICE</th>
+                        <th class="text-center">LOCAL_TICKET_ID</th>
+                        <th class="text-right w-150">BROKER_FILL_ID</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for f in fills %}
                     <tr>
-                        <td style="font-family: monospace; font-size: 0.65rem; color: var(--text-muted);">{{
+                        <td class="text-mono text-xxs text-muted">{{
                             f.time_eat.strftime('%H:%M:%S') }}</td>
-                        <td style="font-weight: 900; color: var(--text-main);">{{ f.symbol }}</td>
-                        <td style="text-align: center;">
+                        <td class="text-black text-main">{{ f.symbol }}</td>
+                        <td class="text-center">
                             <span class="badge"
                                 style="background: rgba(86, 204, 242, 0.05); color: var(--accent-cyan); border: 1px solid rgba(86, 204, 242, 0.3); font-size: 0.5rem;">{{
                                 f.event_type }}</span>
                         </td>
-                        <td style="text-align: center;">
+                        <td class="text-center">
                             <span class="badge"
                                 style="background: {{ 'rgba(39, 174, 96, 0.1)' if f.side == 'BUY' else 'rgba(235, 47, 150, 0.1)' }}; color: {{ 'var(--accent-green)' if f.side == 'BUY' else 'var(--accent-pink)' }}; border: 1px solid {{ 'var(--accent-green)' if f.side == 'BUY' else 'var(--accent-pink)' }}; font-size: 0.55rem; font-weight: 900;">
                                 {{ f.side }}
                             </span>
                         </td>
                         <td style="text-align: right; font-family: monospace; font-weight: 800;">{{ f.lots }}</td>
-                        <td style="text-align: right; font-family: monospace; font-size: 0.75rem;">{{ f.price }}</td>
-                        <td style="text-align: center;">
+                        <td class="text-mono text-xs text-right">{{ f.price }}</td>
+                        <td class="text-center">
                             {% if f.ticket_id %}
                             <a href="/dashboard/tickets?pair={{ f.symbol }}#{{ f.ticket_id }}"
                                 style="color: var(--accent-cyan); text-decoration: none; font-family: monospace; font-weight: 900; font-size: 0.75rem; letter-spacing: 0.5px;">[{{
@@ -121,7 +120,7 @@
                             {% endif %}
                         </td>
                         <td
-                            style="text-align: right; font-family: monospace; font-size: 0.65rem; color: var(--text-muted);">
+                            class="text-mono text-xxs text-muted text-right">
                             #{{ f.broker_trade_id }}</td>
                     </tr>
                     {% endfor %}
@@ -129,7 +128,7 @@
             </table>
             {% else %}
             <div
-                style="padding: 4rem; text-align: center; color: var(--text-muted); font-weight: 800; letter-spacing: 2px;">
+                class="hud-empty-state">
                 ZERO_FILL_VECTORS_RECORDED</div>
             {% endif %}
         </div>

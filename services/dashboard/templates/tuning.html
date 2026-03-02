@@ -7,7 +7,7 @@
         <header class="hud-panel-header">
             <div class="hud-panel-title">TUNING ASSISTANT // PARAMETER OPTIMIZATION HUB</div>
         </header>
-        <div style="padding: 1rem; color: var(--text-muted); font-size: 0.8rem; letter-spacing: 1px;">EVIDENCE-BASED
+        <div class="hud-panel-desc">EVIDENCE-BASED
             PROPOSALS DERIVED FROM HINDSIGHT, QUEUE, AND GUARDRAILS DATA</div>
     </div>
 
@@ -19,14 +19,14 @@
             <div style="display: flex; gap: 1rem; align-items: center;">
                 <div class="hud-panel-title">REPORT: {{ report.report_id }}</div>
                 <span
-                    class="badge {% if report.status == 'OPEN' %}badge-warning{% elif report.status == 'REVIEWED' %}badge-success{% else %}badge-info{% endif %}">{{
+                    class="badge {% if report.status == 'OPEN' %}badge-warning{% elif 'REVIEWED' %}badge-success{% else %}badge-info{% endif %}">{{
                     report.status }}</span>
             </div>
-            <div style="font-family: monospace; font-size: 0.7rem; color: var(--text-muted);">{{ report.created_at }} |
+            <div class="text-mono text-xs text-muted">{{ report.created_at }} |
                 EVAL: {{ report.data.get("date_range", "N/A") }}</div>
         </header>
 
-        <div style="padding: 1rem;">
+        <div class="p-3">
             <!-- Metrics Grid -->
             <div
                 style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; background: rgba(0,0,0,0.2); padding: 0.75rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.05);">
@@ -57,8 +57,7 @@
                                 <h3 style="font-size: 0.9rem; font-weight: 800; margin: 0; color: var(--text-main);">{{
                                     prop.title }}</h3>
                                 <span
-                                    class="badge {% if prop.status == 'ACCEPT' %}badge-success{% elif prop.status == 'REJECT' %}badge-danger{% else %}badge-warning{% endif %}"
-                                    style="font-size: 0.55rem;">{{ prop.status | default('PENDING') }}</span>
+                                    class="badge {% if prop.status == 'ACCEPT' %}badge-success{% elif 'REJECT' %}badge-danger{% else %}badge-warning{% endif %} text-mini">{{ prop.status | default('PENDING') }}</span>
                             </div>
                             <div
                                 style="font-size: 0.65rem; color: var(--text-muted); font-family: monospace; margin-top: 0.2rem;">
@@ -80,7 +79,7 @@
                         </div>
                         {% else %}
                         <div style="font-size: 0.65rem; color: var(--text-muted); text-align: right;">
-                            <div style="font-weight: 800; color: var(--text-main);">REVIEW NOTES</div>
+                            <div class="text-bold text-main">REVIEW NOTES</div>
                             <div style="font-style: italic;">{{ prop.reviewer_notes | default('NO NOTES LOGGED') }}
                             </div>
                         </div>
@@ -146,7 +145,7 @@
         data-hud-corner="bottom-left">
         <div style="font-size: 1.5rem; color: var(--text-muted); font-weight: 800; margin-bottom: 1rem;">NO TUNING
             REPORTS AVAILABLE</div>
-        <div style="color: var(--text-muted); opacity: 0.5;">Tuning reports are generated periodically based on
+        <div class="text-muted opacity-50">Tuning reports are generated periodically based on
             hindsight data.</div>
     </div>
     {% endif %}

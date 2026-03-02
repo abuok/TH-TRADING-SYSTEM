@@ -8,7 +8,7 @@
             <div class="hud-panel-title">PERFORMANCE_MONITOR // ROLLING</div>
         </header>
 
-        <div style="padding: 1rem;">
+        <div class="p-3">
             <div class="hud-scanline"
                 style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); padding: 1.25rem; margin-bottom: 1rem;">
                 <div
@@ -44,7 +44,7 @@
     <div class="hud-panel glass-panel col-span-9" data-hud-corner="top-right">
         <header class="hud-panel-header">
             <div class="hud-panel-title">EXECUTION_PREP_LAYER // APPROVED_PLANS</div>
-            <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <div class="flex gap-3 align-center">
                 <span class="badge"
                     style="background: rgba(39, 174, 96, 0.1); color: var(--accent-green); border: 1px solid var(--accent-green); font-size: 0.55rem;">CORE_READY</span>
             </div>
@@ -78,7 +78,7 @@
             <span id="skip-ticket-id" class="badge"
                 style="background: rgba(242, 201, 76, 0.1); color: var(--accent-yellow); border: 1px solid var(--accent-yellow); font-family: monospace;"></span>
         </header>
-        <div style="padding: 1.5rem;">
+        <div class="p-5">
             <div style="margin-bottom: 1.5rem;">
                 <label
                     style="display: block; font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 1px;">PRIMARY_REASON</label>
@@ -94,7 +94,7 @@
                     <option value="PERSONAL_RULE">Personal Rule</option>
                 </select>
             </div>
-            <div style="margin-bottom: 2rem;">
+            <div class="mb-4">
                 <label
                     style="display: block; font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 1px;">OBSERVATIONAL_NOTES</label>
                 <textarea id="skip-notes" rows="3"
@@ -159,13 +159,13 @@
                             <span class="badge" style="background: ${t.direction === 'BUY' ? 'rgba(39, 174, 96, 0.1)' : 'rgba(235, 47, 150, 0.1)'}; color: ${t.direction === 'BUY' ? 'var(--accent-green)' : 'var(--accent-pink)'}; border: 1px solid ${t.direction === 'BUY' ? 'var(--accent-green)' : 'var(--accent-pink)'}; font-size: 0.6rem; font-weight: 900;">${t.direction}</span>
                             <span style="font-family: monospace; font-size: 0.65rem; color: var(--text-muted); letter-spacing: 0.5px;">IDENT: ${t.ticket_id}</span>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 1.5rem;">
+                        <div class="flex align-center gap-5">
                             <div style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase;">SCORE: <span class="badge" style="background: rgba(255,255,255,0.05); color: ${scoreAccent}; border: 1px solid ${scoreAccent}; font-size: 0.6rem; font-weight: 900;">${t.guardrails_score || '---'}</span></div>
                             <span data-expiry="${t.expires_at}" id="timer-${t.ticket_id}" class="badge" style="background: rgba(242, 201, 76, 0.05); border: 1px solid var(--accent-yellow); color: var(--accent-yellow); font-size: 0.6rem; font-weight: 900;">TTL_SYNC...</span>
                         </div>
                     </header>
                     
-                    <div style="padding: 1.25rem;">
+                    <div class="p-4">
                         ${blockWarning}
                         
                         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2rem;">

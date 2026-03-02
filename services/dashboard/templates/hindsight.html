@@ -14,7 +14,7 @@
             <div style="color: var(--text-muted); font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase;">
                 REVIEW_DETERMINISTIC_OUTCOMES // SKIPPED_EXP_VECTORS
             </div>
-            <form id="dateForm" style="display: flex; gap: 0.5rem; align-items: center;">
+            <form id="dateForm" class="flex gap-3 align-center">
                 <input type="date" id="datePicker" name="date_str" value="{{ date_str }}"
                     title="Select date to load hindsight archive" aria-label="Hindsight Archive Date"
                     style="background: rgba(0,0,0,0.4); border: 1px solid var(--border-main); color: var(--text-main); padding: 0.5rem 0.75rem; border-radius: 4px; font-family: monospace; font-size: 0.75rem; border-left: 2px solid var(--accent-cyan);">
@@ -27,9 +27,9 @@
     </div>
 
     {% if summary.total == 0 %}
-    <div class="hud-panel glass-panel col-span-12" style="padding: 6rem; text-align: center;">
+    <div class="hud-panel glass-panel col-span-12 hud-empty-state p-5">
         <div
-            style="font-size: 1rem; color: var(--accent-pink); font-weight: 900; margin-bottom: 1rem; letter-spacing: 2px;">
+            class="text-sm text-pink text-black mb-3 letter-spacing-2">
             ZERO_EVALUATIONS_IN_CACHE</div>
         <div style="color: var(--text-muted); font-size: 0.75rem; letter-spacing: 1px;">NO HINDSIGHT DATA FOR {{
             date_str }} // INITIATE "RUN_BATCH" TO ANALYZE VECTORS</div>
@@ -93,7 +93,7 @@
             <table class="hud-compact-table">
                 <thead>
                     <tr>
-                        <th style="font-size: 0.6rem;">BIAS_CATEGORY</th>
+                        <th class="text-xxs">BIAS_CATEGORY</th>
                         <th style="text-align: center; font-size: 0.6rem;">VOLUME_COUNT</th>
                         <th style="text-align: right; font-size: 0.6rem;">WIN_PROBABILITY_(%)</th>
                         <th style="text-align: right; font-size: 0.6rem;">AVG_IMAGINARY_YIELD_(R)</th>
@@ -126,7 +126,7 @@
         <header class="hud-panel-header">
             <div class="hud-panel-title">EVALUATED_TICKET_STREAM</div>
         </header>
-        <div class="hud-scroll-body" style="padding: 1.25rem;">
+        <div class="hud-scroll-body p-4">
             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
                 {% for t in tickets %}
                 <div class="hud-panel glass-panel"
@@ -145,7 +145,7 @@
                             style="background: transparent; border: 1px solid {{ h_color }}; color: {{ h_color }}; font-size: 0.5rem; font-weight: 900;">RESULT_{{
                             t.hindsight_outcome_label }}</span>
                     </header>
-                    <div style="padding: 1rem;">
+                    <div class="p-3">
                         <div
                             style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; align-items: center;">
                             <span

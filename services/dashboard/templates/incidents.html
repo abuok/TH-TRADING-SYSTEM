@@ -7,7 +7,7 @@
         <header class="hud-panel-header">
             <div class="hud-panel-title">SYSTEM INCIDENTS // GOVERNANCE AUDIT TRAIL</div>
         </header>
-        <div style="padding: 1rem; color: var(--text-muted); font-size: 0.8rem; letter-spacing: 1px;">CENTRALIZED
+        <div class="hud-panel-desc">CENTRALIZED
             TRANSCRIPTION OF SERVICE FAILURES AND MANUAL INTERVENTIONS</div>
     </div>
 
@@ -30,8 +30,7 @@
     <div class="hud-panel glass-panel col-span-12" data-hud-corner="bottom-left">
         <header class="hud-panel-header">
             <div class="hud-panel-title">INCIDENT ARCHIVE // RAW STREAM</div>
-            <span class="badge"
-                style="background: rgba(235, 47, 150, 0.1); color: var(--accent-pink); border: 1px solid var(--accent-pink);">{{
+            <span class="badge badge-pink">{{
                 incidents|length }} EVENTS LOGGED</span>
         </header>
         <div class="hud-scroll-body">
@@ -41,19 +40,18 @@
                         <th style="width: 180px;">TIMESTAMP (UTC)</th>
                         <th>COMPONENT</th>
                         <th>CODE</th>
-                        <th style="width: 100px;">SEVERITY</th>
+                        <th class="w-100">SEVERITY</th>
                         <th>TRANSMISSION MESSAGE</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for incident in incidents %}
                     <tr>
-                        <td style="font-family: monospace; font-size: 0.7rem; color: var(--text-muted);">{{
+                        <td class="text-mono text-xs text-muted">{{
                             incident.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-                        <td><span class="badge"
-                                style="background: rgba(86, 204, 242, 0.05); color: var(--accent-cyan); border: 1px solid rgba(86, 204, 242, 0.2); font-size: 0.55rem;">{{
+                        <td><span class="badge badge-cyan-dim badge-sm">{{
                                 incident.component }}</span></td>
-                        <td style="font-family: monospace; font-size: 0.7rem; color: var(--text-muted);">{{
+                        <td class="text-mono text-xs text-muted">{{
                             incident.error_code }}</td>
                         <td>
                             <span class="badge"
@@ -67,7 +65,7 @@
                     {% if not incidents %}
                     <tr>
                         <td colspan="5"
-                            style="padding: 4rem; text-align: center; color: var(--text-muted); font-weight: 800; letter-spacing: 2px;">
+                            class="hud-empty-state">
                             ZERO INCIDENTS DETECTED IN SELECTED RANGE</td>
                     </tr>
                     {% endif %}

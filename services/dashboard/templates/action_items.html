@@ -7,7 +7,7 @@
         <header class="hud-panel-header">
             <div class="hud-panel-title">ACTION ITEMS TRACKER // STRATEGIC IMPROVEMENTS</div>
         </header>
-        <div style="padding: 1rem; color: var(--text-muted); font-size: 0.8rem; letter-spacing: 1px;">STRATEGIC
+        <div class="hud-panel-desc">STRATEGIC
             DIRECTIVES DERIVED FROM SYSTEM AUDITS AND WEEKLY PERFORMANCE REVIEWS</div>
     </div>
 
@@ -15,50 +15,46 @@
     <div class="hud-panel glass-panel col-span-12" data-hud-corner="bottom-left">
         <header class="hud-panel-header">
             <div class="hud-panel-title">PENDING DIRECTIVES // OPEN TASKS</div>
-            <span class="badge"
-                style="background: rgba(155, 81, 224, 0.1); color: var(--accent-purple); border: 1px solid var(--accent-purple);">{{
+            <span class="badge badge-purple">{{
                 items|length }} ACTIVE ITEMS</span>
         </header>
         <div class="hud-scroll-body">
             {% if not items %}
             <div
-                style="padding: 4rem; text-align: center; color: var(--accent-green); font-weight: 800; letter-spacing: 2px;">
+                class="hud-empty-state-green">
                 NOMINAL STATUS: SYSTEM OPERATING AT PEAK EFFICIENCY</div>
             {% else %}
             <table class="hud-compact-table">
                 <thead>
                     <tr>
-                        <th style="width: 120px;">CREATED</th>
-                        <th style="width: 120px;">SOURCE</th>
+                        <th class="w-120">CREATED</th>
+                        <th class="w-120">SOURCE</th>
                         <th>DIRECTIVE / NOTES</th>
-                        <th style="width: 120px;">SEVERITY</th>
-                        <th style="width: 120px;">STATUS</th>
-                        <th style="width: 150px;">INTERVENTIONS</th>
+                        <th class="w-120">SEVERITY</th>
+                        <th class="w-120">STATUS</th>
+                        <th class="w-150">INTERVENTIONS</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for item in items %}
                     <tr id="item-{{ item.id }}">
-                        <td style="font-family: monospace; font-size: 0.7rem; color: var(--text-muted);">{{
+                        <td class="text-mono text-xs text-muted">{{
                             item.created_at.strftime('%Y-%m-%d') }}</td>
-                        <td><span class="badge"
-                                style="background: rgba(86, 204, 242, 0.05); color: var(--accent-cyan); border: 1px solid rgba(86, 204, 242, 0.2); font-size: 0.55rem;">{{
+                        <td><span class="badge badge-cyan-dim badge-sm">{{
                                 item.source }}</span></td>
                         <td>
-                            <div style="font-weight: 800; color: var(--text-main); margin-bottom: 0.25rem;">{{
+                            <div class="text-bold text-main mb-1">{{
                                 item.title }}</div>
-                            <div style="font-size: 0.65rem; color: var(--text-muted); line-height: 1.4;">{{ item.notes
+                            <div class="text-xxs text-muted line-height-relaxed">{{ item.notes
                                 }}</div>
                         </td>
                         <td>
-                            <span class="badge"
-                                style="background: {% if item.severity == 'CRITICAL' %}rgba(235, 47, 150, 0.1){% elif item.severity == 'WARNING' %}rgba(242, 201, 76, 0.1){% else %}rgba(86, 204, 242, 0.1){% endif %}; color: {% if item.severity == 'CRITICAL' %}var(--accent-pink){% elif item.severity == 'WARNING' %}var(--accent-yellow){% else %}var(--accent-cyan){% endif %}; border: 1px solid {% if item.severity == 'CRITICAL' %}var(--accent-pink){% elif item.severity == 'WARNING' %}var(--accent-yellow){% else %}var(--accent-cyan){% endif %}; font-size: 0.55rem; font-weight: 900;">
+                            <span class="badge badge-sm {% if item.severity == 'CRITICAL' %}badge-pink{% elif 'WARNING' %}badge-yellow{% else %}badge-cyan{% endif %}">
                                 {{ item.severity }}
                             </span>
                         </td>
                         <td>
-                            <span class="badge"
-                                style="background: {% if item.status == 'OPEN' %}rgba(242, 201, 76, 0.1){% else %}rgba(39, 174, 96, 0.1){% endif %}; color: {% if item.status == 'OPEN' %}var(--accent-yellow){% else %}var(--accent-green){% endif %}; border: 1px solid {% if item.status == 'OPEN' %}var(--accent-yellow){% else %}var(--accent-green){% endif %}; font-size: 0.55rem; font-weight: 900;">
+                            <span class="badge badge-sm {% if item.status == 'OPEN' %}badge-yellow{% else %}badge-green{% endif %}">
                                 {{ item.status }}
                             </span>
                         </td>

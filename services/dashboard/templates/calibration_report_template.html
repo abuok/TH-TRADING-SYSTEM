@@ -182,8 +182,7 @@
         <div class="hud-panel glass-panel col-span-12">
             <header class="hud-panel-header">
                 <div class="hud-panel-title">CALIBRATION_REPORT // REPORT_ID: {{ report.report_id }}</div>
-                <span class="badge"
-                    style="background: rgba(86, 204, 242, 0.1); color: var(--accent-cyan); border: 1px solid var(--accent-cyan);">GENERATED:
+                <span class="badge badge-cyan">GENERATED:
                     {{ report.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
             </header>
             <div style="padding: 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
@@ -217,13 +216,12 @@
             <header class="hud-panel-header">
                 <div class="hud-panel-title">POLICY_RECOMMENDATIONS // CALIBRATION_DELTA</div>
                 {% if report.recommendations %}
-                <span class="badge"
-                    style="background: rgba(242, 201, 76, 0.1); color: var(--accent-yellow); border: 1px solid var(--accent-yellow);">
+                <span class="badge badge-yellow">
                     {{ report.recommendations | length }} RECOMMENDATIONS_QUEUED
                 </span>
                 {% endif %}
             </header>
-            <div style="padding: 1.25rem;">
+            <div class="p-4">
                 {% if report.recommendations %}
                 {% for rec in report.recommendations %}
                 {% set conf = rec.confidence | upper %}
@@ -252,21 +250,21 @@
                     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                         <div>
                             <div
-                                style="font-size: 0.55rem; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 0.4rem;">
+                                class="text-mini text-muted text-upper letter-spacing-1 mb-2">
                                 PROPOSED_CHANGE</div>
                             <div style="font-size: 0.7rem; color: var(--text-main); line-height: 1.5;">{{
                                 rec.proposed_change }}</div>
                         </div>
                         <div>
                             <div
-                                style="font-size: 0.55rem; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 0.4rem;">
+                                class="text-mini text-muted text-upper letter-spacing-1 mb-2">
                                 EXPECTED_IMPACT</div>
                             <div style="font-size: 0.7rem; color: var(--accent-cyan); line-height: 1.5;">{{
                                 rec.expected_impact }}</div>
                         </div>
                         <div>
                             <div
-                                style="font-size: 0.55rem; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 0.4rem;">
+                                class="text-mini text-muted text-upper letter-spacing-1 mb-2">
                                 RATIONALE</div>
                             <div style="font-size: 0.7rem; color: var(--text-main); line-height: 1.5;">{{ rec.rationale
                                 }}</div>
@@ -326,11 +324,11 @@
                     <thead>
                         <tr>
                             <th>VARIANT_LABEL</th>
-                            <th style="text-align: center;">WIN_RATE</th>
-                            <th style="text-align: right;">EXPECTANCY_(R)</th>
-                            <th style="text-align: right;">MAX_DD_(R)</th>
-                            <th style="text-align: center;">PROFIT_FACTOR</th>
-                            <th style="text-align: right;">TRADES_(EXEC/TOTAL)</th>
+                            <th class="text-center">WIN_RATE</th>
+                            <th class="text-right">EXPECTANCY_(R)</th>
+                            <th class="text-right">MAX_DD_(R)</th>
+                            <th class="text-center">PROFIT_FACTOR</th>
+                            <th class="text-right">TRADES_(EXEC/TOTAL)</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -344,7 +342,7 @@
                                     style="background: rgba(86, 204, 242, 0.1); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); font-size: 0.45rem; margin-left: 0.5rem;">BASELINE</span>{%
                                 endif %}
                             </td>
-                            <td style="text-align: center;">
+                            <td class="text-center">
                                 <span class="badge"
                                     style="background: {{ 'rgba(39, 174, 96, 0.1)' if metrics.win_rate_pct >= 50 else 'rgba(235, 47, 150, 0.1)' }}; color: {{ 'var(--accent-green)' if metrics.win_rate_pct >= 50 else 'var(--accent-pink)' }}; border: 1px solid {{ 'var(--accent-green)' if metrics.win_rate_pct >= 50 else 'var(--accent-pink)' }}; font-size: 0.65rem; font-weight: 900;">
                                     {{ "%.1f"|format(metrics.win_rate_pct) }}%
@@ -358,9 +356,9 @@
                                 {{ "%.2f"|format(metrics.max_drawdown_r) }}R</td>
                             <td style="text-align: center; font-family: monospace; font-weight: 900;">{{
                                 "%.2f"|format(metrics.profit_factor) }}</td>
-                            <td style="text-align: right; font-family: monospace; font-size: 0.75rem;">
-                                <span style="color: var(--text-main);">{{ metrics.executed_trades }}</span> / <span
-                                    style="color: var(--text-muted);">{{ metrics.total_trades }}</span>
+                            <td class="text-mono text-xs text-right">
+                                <span class="text-main">{{ metrics.executed_trades }}</span> / <span
+                                    class="text-muted">{{ metrics.total_trades }}</span>
                             </td>
                         </tr>
                         {% endfor %}

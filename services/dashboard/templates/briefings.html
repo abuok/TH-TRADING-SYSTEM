@@ -21,15 +21,14 @@
     <div class="hud-panel glass-panel col-span-12" style="padding: 5rem; text-align: center;">
         <div style="font-size: 1.5rem; color: var(--accent-pink); font-weight: 800; margin-bottom: 1rem;">ZERO BRIEFINGS
             GENERATED</div>
-        <div style="color: var(--text-muted); opacity: 0.5;">Awaiting automated trigger at session starts (London/NY) or
+        <div class="text-muted opacity-50">Awaiting automated trigger at session starts (London/NY) or
             manual generation.</div>
     </div>
     {% else %}
     <div class="hud-panel glass-panel col-span-12" data-hud-corner="bottom-left">
         <header class="hud-panel-header">
             <div class="hud-panel-title">BRIEFING FEED // ARCHIVE STREAMS</div>
-            <span class="badge"
-                style="background: rgba(86, 204, 242, 0.1); color: var(--accent-cyan); border: 1px solid var(--accent-cyan);">{{
+            <span class="badge badge-cyan">{{
                 briefings|length }} PACKS</span>
         </header>
         <div class="hud-scroll-body">
@@ -43,7 +42,7 @@
                 {% endif %}
                 <div class="hud-scanline"
                     style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 4px; border-left: 3px solid {{ s_color }}; overflow: hidden;">
-                    <div style="padding: 1rem;">
+                    <div class="p-3">
                         <div
                             style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
                             <div>
@@ -58,10 +57,10 @@
                                         style="font-size: 0.5rem; border: 1px solid var(--accent-cyan); color: var(--accent-cyan); background: transparent;">PRE-SESSION</span>
                                     {% endif %}
                                 </div>
-                                <div style="font-family: monospace; font-size: 0.65rem; color: var(--text-muted);">{{
+                                <div class="text-mono text-xxs text-muted">{{
                                     b.date }} // {{ b.created_at.strftime('%H:%M:%S') }} EAT</div>
                             </div>
-                            <div style="text-align: right;">
+                            <div class="text-right">
                                 <div
                                     style="font-family: monospace; font-size: 0.6rem; color: var(--text-muted); margin-bottom: 0.2rem;">
                                     ID: {{ b.briefing_id[-8:] }}</div>

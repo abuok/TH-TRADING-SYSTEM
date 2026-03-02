@@ -27,16 +27,15 @@
     <section class="hud-panel glass-panel col-span-3">
         <header class="hud-panel-header">
             <h2 class="hud-panel-title">CAPITAL ALLOCATION</h2>
-            <span class="badge"
-                style="background: rgba(155, 81, 224, 0.1); color: var(--accent-purple); border: 1px solid var(--accent-purple);">LIVE</span>
+            <span class="badge badge-purple">LIVE</span>
         </header>
         <div style="padding: 0.75rem; display: flex; flex-direction: column; gap: 0.4rem;">
             <div style="display: flex; justify-content: space-between; align-items: baseline;">
-                <span style="font-size: 0.6rem; color: var(--text-muted);">FUNDED BALANCE</span>
+                <span class="text-xxs text-muted">FUNDED BALANCE</span>
                 <span style="font-size: 1.1rem; font-weight: 800; font-family: monospace;">$100,000.00</span>
             </div>
             <div style="display: flex; justify-content: space-between; align-items: baseline;">
-                <span style="font-size: 0.6rem; color: var(--text-muted);">UNREALIZED PNL</span>
+                <span class="text-xxs text-muted">UNREALIZED PNL</span>
                 <span
                     style="font-size: 1.1rem; font-weight: 800; font-family: monospace; color: var(--accent-green);">+$1,240.50</span>
             </div>
@@ -48,7 +47,7 @@
             </div>
             <div style="display: flex; justify-content: space-between; font-size: 0.55rem; color: var(--text-muted);">
                 <span>MAX DD (5.0%)</span>
-                <span style="color: var(--accent-pink);">CURRENT: 1.2%</span>
+                <span class="text-pink">CURRENT: 1.2%</span>
             </div>
         </div>
     </section>
@@ -57,8 +56,7 @@
     <section class="hud-panel glass-panel col-span-6" data-hud-corner="top-right">
         <header class="hud-panel-header">
             <h2 class="hud-panel-title">SESSION CONTEXT // TEMPORAL AWARENESS</h2>
-            <span class="badge"
-                style="background: rgba(242, 201, 76, 0.1); color: var(--accent-yellow); border: 1px solid var(--accent-yellow);">LONDON
+            <span class="badge badge-yellow">LONDON
                 ACTIVE</span>
         </header>
         <div style="padding: 0.75rem; display: flex; gap: 1rem;">
@@ -97,7 +95,7 @@
     <section class="hud-panel glass-panel col-span-8 row-span-2" data-hud-corner="bottom-left">
         <header class="hud-panel-header">
             <h2 class="hud-panel-title">PRIMARY SENSORS // ACTIVE SIGNAL STREAMS</h2>
-            <div style="font-size: 0.6rem; color: var(--text-muted);">SCAN RATE: 1.0Hz</div>
+            <div class="text-xxs text-muted">SCAN RATE: 1.0Hz</div>
         </header>
         <div class="hud-scroll-body" style="height: 400px;">
             <table class="hud-compact-table">
@@ -106,25 +104,24 @@
                         <th style="width: 15px;">#</th>
                         <th>SYMBOL</th>
                         <th>STAGE</th>
-                        <th style="text-align: center;">SIGNAL SCORE</th>
+                        <th class="text-center">SIGNAL SCORE</th>
                         <th>HEALTH</th>
-                        <th style="text-align: right;">TEMPORAL AGE</th>
+                        <th class="text-right">TEMPORAL AGE</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for setup in latest_setups %}
                     <tr>
                         <td style="font-size: 0.6rem; color: var(--text-muted); opacity: 0.5;">{{ loop.index }}</td>
-                        <td style="font-weight: 800; color: var(--accent-cyan);">{{ setup.asset_pair }}</td>
-                        <td><span class="badge"
-                                style="background: rgba(86, 204, 242, 0.05); color: var(--accent-cyan); border: 1px solid rgba(86, 204, 242, 0.2); font-size: 0.55rem;">{{
+                        <td class="text-bold text-cyan">{{ setup.asset_pair }}</td>
+                        <td><span class="badge badge-cyan-dim badge-sm">{{
                                 setup.stage }}</span></td>
                         <td
                             style="text-align: center; font-family: monospace; font-size: 1rem; font-weight: 800; color: {{ 'var(--accent-green)' if setup.score|float >= 7 else ('var(--accent-yellow)' if setup.score|float >= 5 else 'var(--text-muted)') }};">
                             {{ "%.1f" | format(setup.score|float) }}
                         </td>
                         <td>
-                            <div style="display: flex; align-items: center; gap: 0.4rem;">
+                            <div class="flex align-center gap-2">
                                 <span class="status-dot {{ 'status-healthy' if setup.is_fresh else 'status-error' }}"
                                     style="width: 6px; height: 6px;"></span>
                                 <span
@@ -189,11 +186,11 @@
         <header class="hud-panel-header">
             <h2 class="hud-panel-title">METATRADER 5 BRIDGE // RAW DATA INGESTION STREAM</h2>
             <div style="display: flex; gap: 1rem;">
-                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                <div class="flex align-center gap-2">
                     <span class="status-dot status-healthy"></span>
                     <span style="font-size: 0.6rem; font-weight: 800; color: var(--accent-green);">LINK STABLE</span>
                 </div>
-                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                <div class="flex align-center gap-2">
                     <span class="status-dot status-healthy Intense-glow-cyan" style="width: 6px; height: 6px;"></span>
                     <span style="font-size: 0.6rem; font-weight: 800; color: var(--accent-cyan);">FEED HOT</span>
                 </div>
@@ -205,10 +202,10 @@
                     <thead>
                         <tr>
                             <th>SYMBOL</th>
-                            <th style="text-align: right;">BID</th>
-                            <th style="text-align: right;">ASK</th>
-                            <th style="text-align: center;">SPREAD (PIPS)</th>
-                            <th style="text-align: right;">LAST SYNC</th>
+                            <th class="text-right">BID</th>
+                            <th class="text-right">ASK</th>
+                            <th class="text-center">SPREAD (PIPS)</th>
+                            <th class="text-right">LAST SYNC</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -217,7 +214,7 @@
                             <td style="font-weight: 800; color: var(--accent-yellow);">{{ q.symbol }}</td>
                             <td style="text-align: right; font-family: monospace; font-size: 1rem;">{{ q.bid }}</td>
                             <td style="text-align: right; font-family: monospace; font-size: 1rem;">{{ q.ask }}</td>
-                            <td style="text-align: center;">
+                            <td class="text-center">
                                 <span class="badge"
                                     style="background: rgba(86, 204, 242, 0.1); color: var(--accent-cyan); font-family: monospace; font-size: 0.8rem;">{{
                                     q.spread }}</span>
@@ -257,7 +254,7 @@
     <!-- FOOTER: INCIDENT TICKER -->
     <section class="hud-panel col-span-12"
         style="background: rgba(0,0,0,0.6); padding: 0.4rem 1rem; border-color: rgba(235, 47, 150, 0.3);">
-        <div style="display: flex; align-items: center; gap: 1.5rem;">
+        <div class="flex align-center gap-5">
             <span class="badge"
                 style="background: var(--accent-pink); color: #fff; font-size: 0.55rem; font-weight: 900; border: none; padding: 2px 8px;">INCIDENT
                 TICKER</span>

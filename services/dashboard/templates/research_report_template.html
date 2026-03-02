@@ -18,7 +18,7 @@
                         run.end_date.strftime('%Y-%m-%d') }} // TIMEFRAMES: {{ run.timeframes | join(', ') }}
                     </div>
                 </div>
-                <div style="text-align: right;">
+                <div class="text-right">
                     <div
                         style="font-size: 1.5rem; font-weight: 900; color: var(--accent-cyan); font-family: monospace;">
                         {{ variants | length }}</div>
@@ -39,13 +39,13 @@
             <table class="hud-compact-table">
                 <thead>
                     <tr>
-                        <th style="font-size: 0.6rem;">VARIANT_CONFIG</th>
+                        <th class="text-xxs">VARIANT_CONFIG</th>
                         <th style="font-size: 0.6rem; text-align: center;">WIN_RATE</th>
-                        <th style="font-size: 0.6rem; text-align: right;">EXPECTANCY_(R)</th>
-                        <th style="font-size: 0.6rem; text-align: right;">MAX_DD_(R)</th>
+                        <th class="text-xxs text-right">EXPECTANCY_(R)</th>
+                        <th class="text-xxs text-right">MAX_DD_(R)</th>
                         <th style="font-size: 0.6rem; text-align: center;">PROFIT_FACTOR</th>
-                        <th style="font-size: 0.6rem; text-align: right;">TOTAL_PnL_(R)</th>
-                        <th style="font-size: 0.6rem; text-align: right;">TRADES_(V/T)</th>
+                        <th class="text-xxs text-right">TOTAL_PnL_(R)</th>
+                        <th class="text-xxs text-right">TRADES_(V/T)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -62,7 +62,7 @@
                                 DUP_SUP_MIN: {{ variant.config.duplicate_suppression_minutes or '60' }}m
                             </div>
                         </td>
-                        <td style="text-align: center;">
+                        <td class="text-center">
                             <span class="badge"
                                 style="background: {{ 'rgba(39, 174, 96, 0.1)' if variant.metrics.win_rate_pct >= 50 else 'rgba(235, 47, 150, 0.1)' }}; color: {{ 'var(--accent-green)' if variant.metrics.win_rate_pct >= 50 else 'var(--accent-pink)' }}; border: 1px solid {{ 'var(--accent-green)' if variant.metrics.win_rate_pct >= 50 else 'var(--accent-pink)' }}; font-size: 0.65rem; font-weight: 900;">
                                 {{ variant.metrics.win_rate_pct }}%
@@ -75,15 +75,15 @@
                             {{ variant.metrics.max_drawdown_r }}R</td>
                         <td style="text-align: center; font-family: monospace; font-weight: 900;">{{
                             variant.metrics.profit_factor }}</td>
-                        <td style="text-align: right;">
+                        <td class="text-right">
                             <span
                                 style="font-family: monospace; font-weight: 900; font-size: 1rem; color: {{ 'var(--accent-green)' if variant.metrics.total_r > 0 else ('var(--accent-pink)' if variant.metrics.total_r < 0 else 'var(--text-muted)') }}">
                                 {% if variant.metrics.total_r > 0 %}+{% endif %}{{ variant.metrics.total_r }}R
                             </span>
                         </td>
-                        <td style="text-align: right; font-family: monospace; font-size: 0.75rem;">
-                            <span style="color: var(--text-main);">{{ variant.metrics.executed_trades }}</span> / <span
-                                style="color: var(--text-muted);">{{ variant.metrics.total_trades }}</span>
+                        <td class="text-mono text-xs text-right">
+                            <span class="text-main">{{ variant.metrics.executed_trades }}</span> / <span
+                                class="text-muted">{{ variant.metrics.total_trades }}</span>
                         </td>
                     </tr>
                     {% endfor %}
@@ -102,7 +102,7 @@
         </header>
 
         {% for name, variant in run.variants.items() %}
-        <div class="hud-panel glass-panel" style="margin-bottom: 2rem;">
+        <div class="hud-panel glass-panel mb-4">
             <header class="hud-panel-header" style="background: rgba(0,0,0,0.2);">
                 <div class="hud-panel-title">TRACT_LOG: {{ name | upper }}</div>
                 <div style="font-size: 0.6rem; color: var(--text-muted); font-family: monospace; opacity: 0.7;">
@@ -118,25 +118,25 @@
                 <table class="hud-compact-table">
                     <thead>
                         <tr>
-                            <th style="font-size: 0.55rem;">TICKET_IDENT</th>
+                            <th class="text-mini">TICKET_IDENT</th>
                             <th style="font-size: 0.55rem; text-align: center;">DIR</th>
                             <th style="font-size: 0.55rem; text-align: center;">SIM_OUTCOME</th>
-                            <th style="font-size: 0.55rem;">EXIT_TIMESTAMP</th>
+                            <th class="text-mini">EXIT_TIMESTAMP</th>
                             <th style="font-size: 0.55rem; text-align: right;">REALIZED_R</th>
-                            <th style="font-size: 0.55rem;">GUARDRAIL_STATUS</th>
+                            <th class="text-mini">GUARDRAIL_STATUS</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for t in variant.trades[-20:] %}
                         <tr>
-                            <td style="font-family: monospace; font-size: 0.7rem; color: var(--text-muted);">{{
+                            <td class="text-mono text-xs text-muted">{{
                                 t.ticket_id }}</td>
-                            <td style="text-align: center;">
+                            <td class="text-center">
                                 <span class="badge"
                                     style="background: {{ 'rgba(39, 174, 96, 0.1)' if t.direction == 'LONG' else 'rgba(235, 47, 150, 0.1)' }}; color: {{ 'var(--accent-green)' if t.direction == 'LONG' else 'var(--accent-pink)' }}; border: 1px solid {{ 'var(--accent-green)' if t.direction == 'LONG' else 'var(--accent-pink)' }}; font-size: 0.5rem; font-weight: 900;">{{
                                     t.direction }}</span>
                             </td>
-                            <td style="text-align: center;">
+                            <td class="text-center">
                                 {% set res_color = 'var(--text-muted)' %}
                                 {% if t.status.startswith('WIN') %}{% set res_color = 'var(--accent-green)' %}
                                 {% elif t.status == 'LOSS' %}{% set res_color = 'var(--accent-pink)' %}
@@ -147,10 +147,10 @@
                                     style="border: 1px solid {{ res_color }}; color: {{ res_color }}; background: transparent; font-size: 0.5rem; font-weight: 900;">{{
                                     t.status }}</span>
                             </td>
-                            <td style="font-family: monospace; font-size: 0.7rem; color: var(--text-muted);">
+                            <td class="text-mono text-xs text-muted">
                                 {{ t.exit_time.strftime('%Y-%m-%d %H:%M') if t.exit_time else 'OPEN/BLOCKED' }}
                             </td>
-                            <td style="text-align: right;">
+                            <td class="text-right">
                                 <span
                                     style="font-family: monospace; font-weight: 900; font-size: 0.8rem; color: {{ 'var(--accent-green)' if t.realized_r > 0 else ('var(--accent-pink)' if t.realized_r < 0 else 'var(--text-muted)') }}">
                                     {% if t.realized_r > 0 %}+{% endif %}{{ t.realized_r | round(2) }}R

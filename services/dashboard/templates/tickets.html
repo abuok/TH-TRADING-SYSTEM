@@ -24,9 +24,9 @@
     </div>
 
     {% if not tickets %}
-    <div class="hud-panel glass-panel col-span-12" style="padding: 6rem; text-align: center;">
+    <div class="hud-panel glass-panel col-span-12 hud-empty-state p-5">
         <div
-            style="font-size: 1rem; color: var(--accent-pink); font-weight: 900; margin-bottom: 1rem; letter-spacing: 2px;">
+            class="text-sm text-pink text-black mb-3 letter-spacing-2">
             ZERO_TICKETS_IN_AUDIT_LOG</div>
         <div style="color: var(--text-muted); font-size: 0.75rem; letter-spacing: 1px;">GENERATE EXECUTION PLAN VIA
             ORCHESTRATOR API // SYSTEM_IDLE</div>
@@ -63,7 +63,7 @@
             </div>
         </header>
 
-        <div style="padding: 1.25rem;">
+        <div class="p-4">
             {% if ticket.status == 'BLOCKED' %}
             <div
                 style="background: rgba(235, 47, 150, 0.05); border: 1px solid var(--accent-pink); padding: 0.75rem; border-radius: 4px; margin-bottom: 1.25rem; color: var(--accent-pink); font-size: 0.75rem; font-family: monospace; font-weight: 900; letter-spacing: 0.5px;">
@@ -115,7 +115,7 @@
                                 ticket.executed_at else 'PENDING' }}</div>
                         </div>
                         {% if ticket.realized_r is not none %}
-                        <div style="text-align: right;">
+                        <div class="text-right">
                             <div
                                 style="font-size: 1.5rem; font-weight: 900; color: {{ 'var(--accent-green)' if ticket.realized_r >= 0 else 'var(--accent-pink)' }}; line-height: 1;">
                                 {{ "{:+.2f}".format(ticket.realized_r) }}R</div>
@@ -182,7 +182,7 @@
                             <div
                                 style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">
                                 PLATFORM_NOTES_BRIDGE</div>
-                            <div style="display: flex; gap: 0.5rem;">
+                            <div class="flex gap-3">
                                 <button onclick="copyText('mt5-{{ ticket.ticket_id }}', 'MT5_VECTOR_COPIED')"
                                     class="btn btn-secondary btn-tiny">MT5</button>
                                 <button onclick="copyText('ctrader-{{ ticket.ticket_id }}', 'CTRADER_VECTOR_COPIED')"

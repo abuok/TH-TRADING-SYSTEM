@@ -6,25 +6,25 @@
     <div class="hud-panel glass-panel col-span-8 row-span-2" data-hud-corner="top-left">
         <header class="hud-panel-header">
             <div class="hud-panel-title">PILOT RUN PROTOCOL // GRADUATION TRACKING</div>
-            <div style="display: flex; gap: 0.5rem;">
+            <div class="flex gap-3">
                 <a href="/dashboard/pilot/gate" class="btn btn-secondary btn-tiny">GRADUATION GATE_REQ</a>
             </div>
         </header>
 
         <div
-            style="padding: 1rem; color: var(--text-muted); font-size: 0.75rem; letter-spacing: 1px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+            class="hud-panel-desc text-xs border-divider">
             MONITORING ROLLING 10-SESSION PERFORMANCE VECTORS FOR SYSTEM PROMOTION</div>
 
-        <div class="hud-scroll-body" style="height: 350px;">
+        <div class="hud-scroll-body h-350">
             <header class="hud-panel-header"
                 style="background: rgba(0,0,0,0.2); border-bottom: 1px solid rgba(255,255,255,0.05);">
-                <div class="hud-panel-title" style="font-size: 0.6rem;">ACTIVE SCORECARDS // STRATEGIC SUMMARY</div>
+                <div class="hud-panel-title text-xxs">ACTIVE SCORECARDS // STRATEGIC SUMMARY</div>
             </header>
             {% if scorecards %}
             <table class="hud-compact-table">
                 <thead>
                     <tr>
-                        <th style="width: 150px;">IDENTIFIER</th>
+                        <th class="w-150">IDENTIFIER</th>
                         <th>TEMPORAL RANGE</th>
                         <th style="width: 150px; text-align: center;">VALUATION</th>
                         <th style="width: 150px; text-align: right;">INTERVENTION</th>
@@ -36,13 +36,13 @@
                         <td style="font-family: monospace; font-size: 0.7rem; color: var(--accent-cyan);">{{
                             sc.scorecard_id }}</td>
                         <td style="font-size: 0.75rem; color: var(--text-main);">{{ sc.date_range }}</td>
-                        <td style="text-align: center;">
+                        <td class="text-center">
                             <span class="badge"
                                 style="background: {{ 'rgba(39, 174, 96, 0.1)' if sc.pass_fail == 'PASS' else 'rgba(235, 47, 150, 0.1)' }}; color: {{ 'var(--accent-green)' if sc.pass_fail == 'PASS' else 'var(--accent-pink)' }}; border: 1px solid {{ 'var(--accent-green)' if sc.pass_fail == 'PASS' else 'var(--accent-pink)' }}; font-size: 0.55rem; font-weight: 900;">
                                 {{ sc.pass_fail }}
                             </span>
                         </td>
-                        <td style="text-align: right;">
+                        <td class="text-right">
                             <a href="/dashboard/pilot/{{ sc.scorecard_id }}"
                                 class="btn btn-primary btn-tiny">ANALYZE_FULL_DATA</a>
                         </td>
@@ -52,7 +52,7 @@
             </table>
             {% else %}
             <div
-                style="padding: 4rem; text-align: center; color: var(--text-muted); font-weight: 800; letter-spacing: 2px;">
+                class="hud-empty-state">
                 ZERO_SCORECARDS_GENERATED</div>
             {% endif %}
         </div>
@@ -60,28 +60,28 @@
         <div class="hud-scroll-body" style="height: 450px;">
             <header class="hud-panel-header"
                 style="background: rgba(0,0,0,0.2); border-bottom: 1px solid rgba(255,255,255,0.05); border-top: 2px solid var(--border-main);">
-                <div class="hud-panel-title" style="font-size: 0.6rem;">HISTORICAL SESSION OUTCOMES // AUDIT TRAIL</div>
+                <div class="hud-panel-title text-xxs">HISTORICAL SESSION OUTCOMES // AUDIT TRAIL</div>
             </header>
             {% if recent_sessions %}
             <table class="hud-compact-table">
                 <thead>
                     <tr>
-                        <th style="width: 120px;">DATE</th>
-                        <th style="width: 150px;">SESSION_ID</th>
-                        <th style="text-align: center; width: 100px;">STATUS</th>
-                        <th style="text-align: right; width: 120px;">EXPECTANCY_R</th>
-                        <th style="text-align: right; width: 100px;">MAX_STALE</th>
-                        <th style="text-align: right; width: 100px;">DD_MAX</th>
+                        <th class="w-120">DATE</th>
+                        <th class="w-150">SESSION_ID</th>
+                        <th class="text-center w-100">STATUS</th>
+                        <th class="text-right w-120">EXPECTANCY_R</th>
+                        <th class="text-right w-100">MAX_STALE</th>
+                        <th class="text-right w-100">DD_MAX</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for s in recent_sessions %}
                     <tr>
-                        <td style="font-family: monospace; font-size: 0.65rem; color: var(--text-muted);">{{ s.date }}
+                        <td class="text-mono text-xxs text-muted">{{ s.date }}
                         </td>
                         <td style="font-family: monospace; font-size: 0.65rem; color: var(--accent-cyan);">{{
                             s.session_id }}</td>
-                        <td style="text-align: center;">
+                        <td class="text-center">
                             <span class="badge"
                                 style="background: {{ 'rgba(39, 174, 96, 0.1)' if s.pass_fail == 'PASS' else 'rgba(235, 47, 150, 0.1)' }}; color: {{ 'var(--accent-green)' if s.pass_fail == 'PASS' else 'var(--accent-pink)' }}; border: 1px solid {{ 'var(--accent-green)' if s.pass_fail == 'PASS' else 'var(--accent-pink)' }}; font-size: 0.55rem; font-weight: 900;">
                                 {{ s.pass_fail }}
@@ -103,7 +103,7 @@
             </table>
             {% else %}
             <div
-                style="padding: 4rem; text-align: center; color: var(--text-muted); font-weight: 800; letter-spacing: 2px;">
+                class="hud-empty-state">
                 ZERO_SESSIONS_RECORDED</div>
             {% endif %}
         </div>
@@ -115,7 +115,7 @@
             <div class="hud-panel-title">AGGREGATE PILOT METRICS // ROLLING</div>
         </header>
 
-        <div style="padding: 1.5rem;">
+        <div class="p-5">
             {% if scorecards %}
             {% set latest = scorecards[0].data %}
             <div

@@ -6,7 +6,7 @@
     <div class="hud-panel glass-panel col-span-12" data-hud-corner="top-left">
         <header class="hud-panel-header">
             <div class="hud-panel-title">SCORECARD ANALYTICS // ID: {{ scorecard.scorecard_id }}</div>
-            <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <div class="flex gap-3 align-center">
                 <span class="badge"
                     style="background: {{ 'rgba(39, 174, 96, 0.1)' if scorecard.pass_fail_summary == 'PASS' else 'rgba(235, 47, 150, 0.1)' }}; color: {{ 'var(--accent-green)' if scorecard.pass_fail_summary == 'PASS' else 'var(--accent-pink)' }}; border: 1px solid {{ 'var(--accent-green)' if scorecard.pass_fail_summary == 'PASS' else 'var(--accent-pink)' }}; font-size: 0.6rem; font-weight: 900;">
                     STATUS: {{ scorecard.pass_fail_summary }}
@@ -16,8 +16,8 @@
         </header>
 
         <div
-            style="padding: 1rem; color: var(--text-muted); font-size: 0.75rem; letter-spacing: 1px; border-bottom: 1px solid rgba(255,255,255,0.05);">
-            EVALUATED WINDOW: <strong style="color: var(--text-main);">{{ scorecard.date_range }}</strong></div>
+            class="hud-panel-desc text-xs border-divider">
+            EVALUATED WINDOW: <strong class="text-main">{{ scorecard.date_range }}</strong></div>
 
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; padding: 1.5rem;">
             <div class="hud-scanline"
@@ -27,7 +27,7 @@
                         style="font-size: 0.8rem; color: var(--text-muted); margin: 0 0.3rem;">/</span>{{
                     scorecard.aggregates.total_days }}</div>
                 <div
-                    style="font-size: 0.55rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 0.5rem;">
+                    class="text-mini text-muted text-upper letter-spacing-1 mt-2">
                     PASSING_SESSION_COUNT</div>
             </div>
 
@@ -36,7 +36,7 @@
                 <div style="font-size: 2rem; font-weight: 900; color: var(--text-main); line-height: 1;">{{
                     scorecard.aggregates.total_tickets_approved }}</div>
                 <div
-                    style="font-size: 0.55rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 0.5rem;">
+                    class="text-mini text-muted text-upper letter-spacing-1 mt-2">
                     APPROVED_SIGNAL_LOAD</div>
             </div>
 
@@ -45,7 +45,7 @@
                 <div style="font-size: 2rem; font-weight: 900; color: var(--accent-green); line-height: 1;">{{
                     "%.2f"|format(scorecard.aggregates.net_realized_r) }}R</div>
                 <div
-                    style="font-size: 0.55rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 0.5rem;">
+                    class="text-mini text-muted text-upper letter-spacing-1 mt-2">
                     NET_REALIZED_GAIN</div>
             </div>
 
@@ -56,7 +56,7 @@
                     if scorecard.aggregates.total_tickets_approved > 0 else "0.00" }}R
                 </div>
                 <div
-                    style="font-size: 0.55rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 0.5rem;">
+                    class="text-mini text-muted text-upper letter-spacing-1 mt-2">
                     MEAN_EXPECTANCY_R</div>
             </div>
         </div>
@@ -72,18 +72,18 @@
             <table class="hud-compact-table">
                 <thead>
                     <tr>
-                        <th style="width: 120px;">SESSION_DATE</th>
-                        <th style="text-align: center; width: 100px;">GATE_VAL</th>
-                        <th style="text-align: right; width: 120px;">EXPECTANCY_R</th>
+                        <th class="w-120">SESSION_DATE</th>
+                        <th class="text-center w-100">GATE_VAL</th>
+                        <th class="text-right w-120">EXPECTANCY_R</th>
                         <th>QUALITATIVE_DIAGNOSTICS / FAIL_REASONS</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for s in scorecard.sessions %}
                     <tr>
-                        <td style="font-family: monospace; font-size: 0.7rem; color: var(--text-muted);">{{ s.date }}
+                        <td class="text-mono text-xs text-muted">{{ s.date }}
                         </td>
-                        <td style="text-align: center;">
+                        <td class="text-center">
                             <span class="badge"
                                 style="background: {{ 'rgba(39, 174, 96, 0.1)' if s.pass_fail == 'PASS' else 'rgba(235, 47, 150, 0.1)' }}; color: {{ 'var(--accent-green)' if s.pass_fail == 'PASS' else 'var(--accent-pink)' }}; border: 1px solid {{ 'var(--accent-green)' if s.pass_fail == 'PASS' else 'var(--accent-pink)' }}; font-size: 0.55rem; font-weight: 900;">
                                 {{ s.pass_fail }}
@@ -93,7 +93,7 @@
                             style="text-align: right; font-weight: 800; color: {{ 'var(--accent-green)' if s.performance_metrics.approved_expectancy_r > 0 else 'var(--accent-pink)' }};">
                             {{ "%.2f"|format(s.performance_metrics.approved_expectancy_r) }}R
                         </td>
-                        <td style="font-size: 0.7rem; color: var(--text-muted); line-height: 1.4;">
+                        <td class="text-xs text-muted line-height-relaxed">
                             {{ s.notes | join(' // ') or 'SESSION_STABLE' }}
                         </td>
                     </tr>

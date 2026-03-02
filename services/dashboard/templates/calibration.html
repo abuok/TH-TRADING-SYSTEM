@@ -7,7 +7,7 @@
         <header class="hud-panel-header">
             <div class="hud-panel-title">SYSTEM CALIBRATION // POLICY RECOMMENDATION LOGS</div>
         </header>
-        <div style="padding: 1rem; color: var(--text-muted); font-size: 0.8rem; letter-spacing: 1px;">AUTOMATIC POLICY
+        <div class="hud-panel-desc">AUTOMATIC POLICY
             REFINEMENTS GENERATED FROM CROSS-VARIANT COUNTERFACTUALS</div>
     </div>
 
@@ -15,8 +15,7 @@
     <div class="hud-panel glass-panel col-span-12" data-hud-corner="bottom-left">
         <header class="hud-panel-header">
             <div class="hud-panel-title">COMPLETED CALIBRATION ARCHIVE</div>
-            <span class="badge"
-                style="background: rgba(86, 204, 242, 0.1); color: var(--accent-cyan); border: 1px solid var(--accent-cyan);">{{
+            <span class="badge badge-cyan">{{
                 reports|length }} REPORTS LOGGED</span>
         </header>
 
@@ -28,8 +27,8 @@
                         <th style="width: 250px;">REPORT ID</th>
                         <th>GENERATED (EAT)</th>
                         <th>PAIR</th>
-                        <th style="text-align: center;">RECOMMENDATIONS</th>
-                        <th style="text-align: right;">ACTION</th>
+                        <th class="text-center">RECOMMENDATIONS</th>
+                        <th class="text-right">ACTION</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -39,11 +38,10 @@
                             report.report_id }}</td>
                         <td style="font-size: 0.75rem; color: var(--text-muted);">{{ report.created_at[:16] |
                             replace('T', ' ') }}</td>
-                        <td style="font-weight: 800; color: var(--text-main);">{{ report.pair }}</td>
-                        <td style="text-align: center;">
+                        <td class="text-bold text-main">{{ report.pair }}</td>
+                        <td class="text-center">
                             {% if report.recommendations|length > 0 %}
-                            <span class="badge"
-                                style="background: rgba(39, 174, 96, 0.1); color: var(--accent-green); border: 1px solid var(--accent-green);">{{
+                            <span class="badge badge-green">{{
                                 report.recommendations|length }} DETECTED</span>
                             {% else %}
                             <span class="badge"
@@ -51,7 +49,7 @@
                                 FOUND</span>
                             {% endif %}
                         </td>
-                        <td style="text-align: right;">
+                        <td class="text-right">
                             <a href="/dashboard/calibration/{{ report.report_id }}"
                                 class="btn btn-secondary btn-small">VIEW FINDINGS &rarr;</a>
                         </td>

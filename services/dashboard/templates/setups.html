@@ -7,7 +7,7 @@
         <header class="hud-panel-header">
             <div class="hud-panel-title">TECHNICAL SETUPS // PHX SENSOR CORE</div>
         </header>
-        <div style="padding: 1rem; color: var(--text-muted); font-size: 0.8rem; letter-spacing: 1px;">REAL-TIME
+        <div class="hud-panel-desc">REAL-TIME
             MONITORING OF PATTERN RECOGNITION AND AUTOMATED SETUP DETECTIONS</div>
     </div>
 
@@ -15,28 +15,27 @@
     <div class="hud-panel glass-panel col-span-12" data-hud-corner="bottom-left">
         <header class="hud-panel-header">
             <div class="hud-panel-title">LIVE DETECTION STREAM // ACTIVE SENSORS</div>
-            <span class="badge"
-                style="background: rgba(86, 204, 242, 0.1); color: var(--accent-cyan); border: 1px solid var(--accent-cyan);">{{
+            <span class="badge badge-cyan">{{
                 setups|length }} DETECTIONS IN RADIUS</span>
         </header>
         <div class="hud-scroll-body">
             <table class="hud-compact-table">
                 <thead>
                     <tr>
-                        <th style="width: 150px;">TIMESTAMP (UTC)</th>
-                        <th style="width: 150px;">ASSET PAIR</th>
-                        <th style="width: 150px;">STAGE</th>
-                        <th style="width: 100px;">SCORE</th>
-                        <th style="width: 100px;">BIAS</th>
+                        <th class="w-150">TIMESTAMP (UTC)</th>
+                        <th class="w-150">ASSET PAIR</th>
+                        <th class="w-150">STAGE</th>
+                        <th class="w-100">SCORE</th>
+                        <th class="w-100">BIAS</th>
                         <th>FRESHNESS STATUS</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for setup in setups %}
                     <tr>
-                        <td style="font-family: monospace; font-size: 0.7rem; color: var(--text-muted);">{{
+                        <td class="text-mono text-xs text-muted">{{
                             setup.created_at.strftime('%H:%M:%S') }}</td>
-                        <td style="font-weight: 800; color: var(--accent-cyan);">{{ setup.data.asset_pair }}</td>
+                        <td class="text-bold text-cyan">{{ setup.data.asset_pair }}</td>
                         <td><span class="badge"
                                 style="background: rgba(155, 81, 224, 0.1); color: var(--accent-purple); border: 1px solid var(--accent-purple); font-size: 0.55rem;">{{
                                 setup.data.stage }}</span></td>
@@ -55,7 +54,7 @@
                     {% if not setups %}
                     <tr>
                         <td colspan="6"
-                            style="padding: 4rem; text-align: center; color: var(--text-muted); font-weight: 800; letter-spacing: 2px;">
+                            class="hud-empty-state">
                             SCANNING FOR TECHNICAL CONFLUENCE... NO SETUPS DETECTED</td>
                     </tr>
                     {% endif %}

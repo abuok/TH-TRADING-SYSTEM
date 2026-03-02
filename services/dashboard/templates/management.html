@@ -6,18 +6,17 @@
     <div class="hud-panel glass-panel col-span-12" data-hud-corner="top-left">
         <header class="hud-panel-header">
             <div class="hud-panel-title">MANAGEMENT_ASSISTANT // ACTIVE_RECOMMENDATIONS</div>
-            <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <div class="flex gap-3 align-center">
                 <span class="badge"
                     style="background: rgba(155, 81, 224, 0.1); color: var(--accent-purple); border: 1px solid var(--accent-purple); font-size: 0.6rem;">TH_ENGINE_LEVEL:
                     DELTA_4</span>
-                <span class="badge"
-                    style="background: rgba(86, 204, 242, 0.1); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); font-size: 0.6rem;">{{
+                <span class="badge badge-cyan text-xxs">{{
                     suggestions|length }} ALERTS</span>
             </div>
         </header>
 
         <div
-            style="padding: 1rem; color: var(--text-muted); font-size: 0.75rem; letter-spacing: 1px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+            class="hud-panel-desc text-xs border-divider">
             RULE-BASED SUGGESTIONS FOR ACTIVE POSITIONS // MANUAL_EXECUTION_REQUIRED</div>
 
         <div class="hud-scroll-body" style="height: 400px;">
@@ -25,12 +24,12 @@
             <table class="hud-compact-table">
                 <thead>
                     <tr>
-                        <th style="width: 120px;">SEVERITY_TYPE</th>
-                        <th style="width: 150px;">SYMBOL_VECTOR</th>
-                        <th style="text-align: center; width: 100px;">CURRENT_R</th>
+                        <th class="w-120">SEVERITY_TYPE</th>
+                        <th class="w-150">SYMBOL_VECTOR</th>
+                        <th class="text-center w-100">CURRENT_R</th>
                         <th>DIAGNOSTIC_REASONS</th>
                         <th style="width: 250px;">COMMAND_INSTRUCTION</th>
-                        <th style="text-align: right; width: 100px;">INTERFACE</th>
+                        <th class="text-right w-100">INTERFACE</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -52,7 +51,7 @@
                             {% endif %}
                         </td>
                         <td>
-                            <div style="font-weight: 900; color: var(--text-main);">{{ sug.symbol }}</div>
+                            <div class="text-black text-main">{{ sug.symbol }}</div>
                             <div
                                 style="font-size: 0.6rem; color: var(--text-muted); font-family: monospace; letter-spacing: 0.5px;">
                                 {{ sug.side }} // {{ sug.lots }} LOTS</div>
@@ -61,14 +60,14 @@
                             style="text-align: center; font-weight: 900; color: {{ 'var(--accent-green)' if sug.current_r >= 1.0 else 'var(--text-main)' }}; font-family: monospace;">
                             {{ "%.2f"|format(sug.current_r) }}R
                         </td>
-                        <td style="font-size: 0.7rem; color: var(--text-muted); line-height: 1.4;">
+                        <td class="text-xs text-muted line-height-relaxed">
                             {{ sug.reasons|join(' // ') }}
                         </td>
                         <td>
                             <code
                                 style="background: rgba(0,0,0,0.4); padding: 0.35rem 0.6rem; border: 1px solid rgba(86, 204, 242, 0.2); border-radius: 2px; color: var(--accent-cyan); font-family: monospace; font-size: 0.7rem; display: block;">{{ sug.instruction }}</code>
                         </td>
-                        <td style="text-align: right;">
+                        <td class="text-right">
                             <button onclick="copyToClipboard('{{ sug.instruction }}')"
                                 class="btn btn-secondary btn-tiny">COPY_CMD</button>
                         </td>
@@ -78,7 +77,7 @@
             </table>
             {% else %}
             <div
-                style="padding: 4rem; text-align: center; color: var(--text-muted); font-weight: 800; letter-spacing: 2px;">
+                class="hud-empty-state">
                 SYSTEM_NOMINAL // ZERO_SUGGESTIONS</div>
             {% endif %}
         </div>
@@ -90,42 +89,42 @@
             <div class="hud-panel-title">LIVE_POSITION_CONTEXT // REAL-TIME MONITOR</div>
         </header>
 
-        <div class="hud-scroll-body" style="height: 350px;">
+        <div class="hud-scroll-body h-350">
             {% if positions %}
             <table class="hud-compact-table">
                 <thead>
                     <tr>
-                        <th style="width: 150px;">SYMBOL_EXPOSURE</th>
-                        <th style="text-align: right; width: 120px;">ENTRY_AVG</th>
+                        <th class="w-150">SYMBOL_EXPOSURE</th>
+                        <th class="text-right w-120">ENTRY_AVG</th>
                         <th style="text-align: center; width: 250px;">PROTECTION_ENV (SL / TP)</th>
-                        <th style="text-align: right; width: 150px;">PNL_DELTA ($)</th>
-                        <th style="text-align: right;">SYNC_TELEMETRY</th>
+                        <th class="text-right w-150">PNL_DELTA ($)</th>
+                        <th class="text-right">SYNC_TELEMETRY</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for pos in positions %}
                     <tr>
                         <td>
-                            <span style="font-weight: 900; color: var(--text-main);">{{ pos.symbol }}</span>
+                            <span class="text-black text-main">{{ pos.symbol }}</span>
                             <span class="badge"
                                 style="background: {{ 'rgba(39, 174, 96, 0.1)' if pos.side == 'BUY' else 'rgba(235, 47, 150, 0.1)' }}; color: {{ 'var(--accent-green)' if pos.side == 'BUY' else 'var(--accent-pink)' }}; border: 1px solid {{ 'var(--accent-green)' if pos.side == 'BUY' else 'var(--accent-pink)' }}; font-size: 0.55rem; font-weight: 900; margin-left: 0.5rem;">
                                 {{ pos.side }} {{ pos.lots }}
                             </span>
                         </td>
-                        <td style="text-align: right; font-family: monospace; font-size: 0.75rem;">{{ pos.avg_price }}
+                        <td class="text-mono text-xs text-right">{{ pos.avg_price }}
                         </td>
                         <td
                             style="text-align: center; font-size: 0.7rem; color: var(--text-muted); font-family: monospace;">
-                            <span style="color: var(--accent-pink);">SL: {{ pos.sl or '---' }}</span> <span
+                            <span class="text-pink">SL: {{ pos.sl or '---' }}</span> <span
                                 style="margin: 0 0.5rem; opacity: 0.2;">//</span> <span
-                                style="color: var(--accent-green);">TP: {{ pos.tp or '---' }}</span>
+                                class="text-green">TP: {{ pos.tp or '---' }}</span>
                         </td>
                         <td
                             style="text-align: right; font-weight: 900; color: {{ 'var(--accent-green)' if pos.floating_pnl >= 0 else 'var(--accent-pink)' }}; font-family: monospace;">
                             ${{ "%.2f"|format(pos.floating_pnl) }}
                         </td>
                         <td
-                            style="text-align: right; font-family: monospace; font-size: 0.65rem; color: var(--text-muted);">
+                            class="text-mono text-xxs text-muted text-right">
                             {{ pos.updated_at_eat.strftime('%H:%M:%S') if pos.updated_at_eat else 'OFFLINE' }}
                         </td>
                     </tr>
@@ -134,7 +133,7 @@
             </table>
             {% else %}
             <div
-                style="padding: 4rem; text-align: center; color: var(--text-muted); font-weight: 800; letter-spacing: 2px;">
+                class="hud-empty-state">
                 ZERO_ACTIVE_POSITIONS_BRIDGE</div>
             {% endif %}
         </div>

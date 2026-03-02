@@ -7,7 +7,7 @@
         <header class="hud-panel-header">
             <div class="hud-panel-title">ADAPTIVE POLICY ROUTER // REGIME-BASED GUARDRAILS</div>
         </header>
-        <div style="padding: 1rem; color: var(--text-muted); font-size: 0.8rem; letter-spacing: 1px;">DYNAMIC REGIME
+        <div class="hud-panel-desc">DYNAMIC REGIME
             ADAPTATION ENGINE — CONTINUOUS MONITORING OF MARKET CONDITIONS</div>
     </div>
 
@@ -16,11 +16,10 @@
     <div class="hud-panel glass-panel col-span-4 hud-scanline">
         <header class="hud-panel-header">
             <div class="hud-panel-title">{{ policy.pair }}</div>
-            <span class="badge"
-                style="background: rgba(86, 204, 242, 0.1); color: var(--accent-cyan); border: 1px solid var(--accent-cyan);">{{
+            <span class="badge badge-cyan">{{
                 policy.policy_name }}</span>
         </header>
-        <div style="padding: 1rem;">
+        <div class="p-3">
             <div style="font-family: monospace; font-size: 0.6rem; color: var(--text-muted); margin-bottom: 1rem;">#{{
                 policy.policy_hash[:16] }}</div>
 
@@ -42,7 +41,7 @@
             <div
                 style="font-size: 0.6rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 1px;">
                 SELECTION RATIONALE</div>
-            <div style="font-size: 0.65rem; color: var(--text-muted); line-height: 1.4;">
+            <div class="text-xxs text-muted line-height-relaxed">
                 {% for reason in policy.reasons %}
                 <div style="margin-bottom: 0.2rem;">&bull; {{ reason }}</div>
                 {% endfor %}
@@ -60,16 +59,15 @@
     <div class="hud-panel glass-panel col-span-12" data-hud-corner="bottom-left">
         <header class="hud-panel-header">
             <div class="hud-panel-title">POLICY SWITCH TIMELINE // ARCHIVE FEED</div>
-            <span class="badge"
-                style="background: rgba(155, 81, 224, 0.1); color: var(--accent-purple); border: 1px solid var(--accent-purple);">LAST
+            <span class="badge badge-purple">LAST
                 {{ history|length }} TRANSITIONS</span>
         </header>
         <div class="hud-scroll-body">
             <table class="hud-compact-table">
                 <thead>
                     <tr>
-                        <th style="width: 150px;">TIME (EAT)</th>
-                        <th style="width: 150px;">PAIR</th>
+                        <th class="w-150">TIME (EAT)</th>
+                        <th class="w-150">PAIR</th>
                         <th>SELECTION</th>
                         <th>REGIME SIGNALS / RATIONALE</th>
                     </tr>
@@ -77,9 +75,9 @@
                 <tbody>
                     {% for entry in history %}
                     <tr>
-                        <td style="font-family: monospace; font-size: 0.7rem; color: var(--text-muted);">{{
+                        <td class="text-mono text-xs text-muted">{{
                             entry.created_at.strftime('%H:%M:%S') }}</td>
-                        <td style="font-weight: 800; color: var(--text-main);">{{ entry.pair }}</td>
+                        <td class="text-bold text-main">{{ entry.pair }}</td>
                         <td>
                             <div style="display: flex; align-items: center; gap: 0.5rem;">
                                 <span class="badge"
