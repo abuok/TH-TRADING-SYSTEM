@@ -1,7 +1,6 @@
 import json
 import os
 from datetime import datetime
-from typing import Dict, Any
 
 from jinja2 import Environment, FileSystemLoader
 

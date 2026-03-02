@@ -4,7 +4,7 @@ from datetime import datetime, timezone, timedelta
 from unittest.mock import MagicMock, patch
 
 from services.orchestration.runner import Orchestrator
-from shared.types.packets import MarketContextPacket, TechnicalSetupPacket
+from shared.types.packets import MarketContextPacket
 import shared.database.session as db_session
 from shared.database.models import KillSwitch, IncidentLog
 
@@ -19,8 +19,7 @@ def risk_config():
         "account_balance": 1000.0
     }
 
-@pytest.mark.asyncio
-async def test_kill_switch_halt_all(risk_config):
+def test_kill_switch_halt_all(risk_config):
     db = db_session.SessionLocal()
     # Activate global kill switch
     ks = KillSwitch(switch_type="HALT_ALL", is_active=1)
@@ -29,12 +28,11 @@ async def test_kill_switch_halt_all(risk_config):
     
     orchestrator = Orchestrator(risk_config, dry_run=True)
     with patch("services.orchestration.runner.logger") as mock_logger:
-        await orchestrator.live_loop("BTCUSD")
+        asyncio.run(orchestrator.live_loop("BTCUSD"))
         # Should have logged that it's halted
         assert any("HALTED by kill switch" in call.args[0] for call in mock_logger.warning.call_args_list)
 
-@pytest.mark.asyncio
-async def test_kill_switch_halt_pair(risk_config):
+def test_kill_switch_halt_pair(risk_config):
     db = db_session.SessionLocal()
     # Activate pair kill switch
     ks = KillSwitch(switch_type="HALT_PAIR", target="BTCUSD", is_active=1)
@@ -43,11 +41,10 @@ async def test_kill_switch_halt_pair(risk_config):
     
     orchestrator = Orchestrator(risk_config, dry_run=True)
     with patch("services.orchestration.runner.logger") as mock_logger:
-        await orchestrator.live_loop("BTCUSD")
+        asyncio.run(orchestrator.live_loop("BTCUSD"))
         assert any("Pair BTCUSD HALTED by kill switch" in call.args[0] for call in mock_logger.warning.call_args_list)
 
-@pytest.mark.asyncio
-async def test_stale_packet_rejection(risk_config):
+def test_stale_packet_rejection(risk_config):
     orchestrator = Orchestrator(risk_config, dry_run=True)
     
     # Create a stale packet (31 seconds old, TTL is 30)
@@ -59,7 +56,7 @@ async def test_stale_packet_rejection(risk_config):
     
     with patch.object(orchestrator, 'get_latest_market_context', return_value=stale_context):
         with patch("services.orchestration.runner.logger") as mock_logger:
-            await orchestrator.live_loop("BTCUSD")
+            asyncio.run(orchestrator.live_loop("BTCUSD"))
             assert any("Abandoning loop iteration" in call.args[0] for call in mock_logger.error.call_args_list)
     
     # Verify incident was logged to DB
@@ -68,8 +65,7 @@ async def test_stale_packet_rejection(risk_config):
     assert incident is not None
     assert incident.error_code == "STALE_PACKET"
 
-@pytest.mark.asyncio
-async def test_notif_idempotency(risk_config):
+def test_notif_idempotency(risk_config):
     mock_notifier = MagicMock()
     orchestrator = Orchestrator(risk_config, dry_run=True, notifier=mock_notifier)
     
@@ -83,17 +79,17 @@ async def test_notif_idempotency(risk_config):
     )
     
     with patch.object(orchestrator, 'get_latest_market_context', return_value=context):
-        await orchestrator.live_loop("BTCUSD")
+        asyncio.run(orchestrator.live_loop("BTCUSD"))
         forming_calls = [call for call in mock_notifier.notify.call_args_list if "Setup Forming" in call.args[0]]
         assert len(forming_calls) == 1
         
         # Second run with same score - should NOT notify again
-        await orchestrator.live_loop("BTCUSD")
+        asyncio.run(orchestrator.live_loop("BTCUSD"))
         forming_calls = [call for call in mock_notifier.notify.call_args_list if "Setup Forming" in call.args[0]]
         assert len(forming_calls) == 1
         
         # Third run with different score (significantly changed) - SHOULD notify
         detector.get_score.return_value = 75
-        await orchestrator.live_loop("BTCUSD")
+        asyncio.run(orchestrator.live_loop("BTCUSD"))
         forming_calls = [call for call in mock_notifier.notify.call_args_list if "Setup Forming" in call.args[0]]
         assert len(forming_calls) == 2

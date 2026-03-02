@@ -4,7 +4,7 @@ Unit + integration tests for Session Briefing Pack assembly, delta computation,
 and Dashboard rendering.  Uses in-memory SQLite + mocked Nairobi time.
 """
 import pytest
-from datetime import datetime, timezone, timedelta, date as date_type
+from datetime import datetime, timezone, timedelta
 from unittest.mock import patch
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -268,9 +268,8 @@ def test_persist_briefing_creates_record(db, tmp_path, monkeypatch):
 
 def test_dashboard_briefings_route(db, tmp_path, monkeypatch):
     """Verify the FastAPI dashboard route returns 200 with briefings page."""
-    import sys, os
     from fastapi.testclient import TestClient
-    from unittest.mock import patch, AsyncMock
+    from unittest.mock import AsyncMock
     import shared.database.session as db_session
 
     # Override DB dependency to use our in-memory DB

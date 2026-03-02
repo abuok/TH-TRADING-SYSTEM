@@ -1,9 +1,9 @@
 import pytest
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from shared.database.models import Base, OrderTicket, PositionSnapshot, TicketTradeLink, ManagementSuggestionLog, LiveQuote, Packet, Run
+from shared.database.models import Base, OrderTicket, PositionSnapshot, TicketTradeLink, ManagementSuggestionLog, Packet, Run
 from shared.logic.trade_management_engine import run_management_cycle
 from shared.providers.price_quote import MockPriceQuoteProvider, set_price_quote_provider
 

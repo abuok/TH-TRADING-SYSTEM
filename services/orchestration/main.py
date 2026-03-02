@@ -4,11 +4,11 @@ Orchestration Service API — tickets + briefings.
 """
 import asyncio
 import logging
-from fastapi import FastAPI, Depends, HTTPException, Query, BackgroundTasks
+from fastapi import FastAPI, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
 from typing import List, Optional, Dict, Any
-from datetime import datetime, date, timezone
+from datetime import datetime
 
 import shared.database.session as db_session
 from shared.database.models import OrderTicket, Packet, SessionBriefing
@@ -20,17 +20,13 @@ from shared.logic.sessions import get_nairobi_time, get_session_label, TradingSe
 from shared.logic.notifications import NotificationService, ConsoleNotificationAdapter
 from shared.types.packets import TechnicalSetupPacket, RiskApprovalPacket
 from shared.types.trading import OrderTicketSchema
-from shared.types.guardrails import GuardrailsResult
 from shared.logic.policy_router import PolicyRouter
 from services.orchestration.logic.ops_engine import OpsEngine
 from services.orchestration.logic.review_engine import ReviewEngine
-from services.orchestration.logic.execution_prep_generator import ExecutionPrepGenerator
-from shared.database.models import ActionItem, OpsReportLog, ExecutionPrepLog
-from shared.types.execution_prep import ExecutionPrepSchema
+from shared.database.models import OpsReportLog
 from shared.logic.logging import setup_production_logging
 from shared.logic.metrics import metrics_registry
 from shared.logic.trade_management_engine import run_management_cycle
-from fastapi.responses import Response
 import httpx
 
 logging.basicConfig(level=logging.INFO)

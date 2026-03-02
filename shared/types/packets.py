@@ -1,6 +1,6 @@
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 class Candle(BaseModel):
     timestamp: datetime
@@ -14,7 +14,8 @@ class BasePacket(BaseModel):
     schema_version: str = Field(..., description="SemVer version of the packet schema")
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
-    @validator("timestamp")
+    @field_validator("timestamp")
+    @classmethod
     def ensure_timezone_aware(cls, v):
         if v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)

@@ -1,7 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import patch, MagicMock
-from datetime import datetime, timezone
 import sys
 import os
 
@@ -9,7 +8,6 @@ import os
 sys.path.append(os.getcwd())
 
 from services.dashboard.main import app
-import shared.database.session as db_session
 
 client = TestClient(app)
 

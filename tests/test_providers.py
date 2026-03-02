@@ -5,17 +5,15 @@ Verify:
   2. Missing real provider triggers safe behavior (NotImplementedError / None / failure).
   3. Preflight news-window check fails-closed when no MarketContextPacket is in DB.
 """
-import os
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from shared.database.models import Base, KillSwitch, OrderTicket, Packet
+from shared.database.models import Base, OrderTicket, Packet
 from shared.providers.proxy import MockProxyProvider, RealProxyProvider, get_proxy_provider
 from shared.providers.calendar import MockCalendarProvider, ForexFactoryCalendarProvider, get_calendar_provider
 from shared.providers.price_quote import MockPriceQuoteProvider, RealPriceQuoteProvider, get_price_quote_provider
 from shared.logic.execution_logic import PreflightEngine
-from shared.types.execution_prep import PreflightCheck
 
 # ── In-memory DB ──────────────────────────────────────────────────────────────
 

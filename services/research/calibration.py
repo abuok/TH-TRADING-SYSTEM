@@ -5,7 +5,7 @@ from typing import List, Dict, Any, Optional
 
 import pytz
 
-from shared.types.research import ResearchRunResult, ResearchMetrics, ResearchVariant
+from shared.types.research import ResearchRunResult, ResearchMetrics
 from shared.types.calibration import CalibrationReport, Recommendation
 from shared.utils.metadata import get_system_metadata
 

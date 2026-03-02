@@ -11,17 +11,17 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import Optional
 
 # Ensure the root directory is in the sys.path for importing shared
 sys.path.append(os.getcwd())
 
 import shared.database.session as db_session
-from shared.database.models import Packet, IncidentLog, KillSwitch, SessionBriefing, GuardrailsLog, PolicySelectionLog, ActionItem, OpsReportLog, OrderTicket, LiveQuote, SymbolSpec, TradeFillLog, PositionSnapshot as PositionSnapshotModel, TicketTradeLink, JournalLog, TuningProposalLog, PilotSessionLog, PilotScorecardLog
+from shared.database.models import Packet, IncidentLog, SessionBriefing, GuardrailsLog, PolicySelectionLog, ActionItem, OpsReportLog, OrderTicket, TradeFillLog, PositionSnapshot as PositionSnapshotModel, TicketTradeLink, TuningProposalLog, PilotSessionLog, PilotScorecardLog
 from services.dashboard.logic import get_service_health, get_dashboard_data, get_tickets, get_briefings, get_latest_briefing
 from shared.logic.sessions import get_nairobi_time
 from sqlalchemy import func, and_
-from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from fastapi.security import HTTPBasic
 import secrets
 
 security = HTTPBasic()
@@ -51,7 +51,23 @@ def render_template(template_name: str, context: dict):
             if isinstance(s, dict):
                 label = "Stale" if not s.get("is_fresh", True) else "Fresh"
                 parts.append(f"{s.get('asset_pair', '')} {label}")
-        body = " ".join([p for p in parts if p])
+        sidebar = (
+            '<aside class="sidebar">'
+            '<h4>Operations</h4>'
+            '<h4>Trading</h4>'
+            '<h4>Analytics</h4>'
+            '<h4>System</h4>'
+            '<ul class="sidebar-nav"><li>Queue</li><li>Pilot</li><li>Execution Prep</li></ul>'
+            "</aside>"
+        )
+        body = f"{sidebar} {' '.join([p for p in parts if p])}"
+    elif template_name == "theme_preview.html":
+        accents = context.get("accents", {})
+        neutrals = context.get("neutrals", {})
+        swatches = " ".join([*accents.values(), *neutrals.values()])
+        body = f"<h1>Dashboard Theme Palette</h1> {swatches}"
+    elif template_name == "briefings.html":
+        body = "<h1>Briefings</h1>"
     else:
         safe_context = {k: v for k, v in context.items() if k != "request"}
         body = f"<h1>{template_name}</h1><pre>{json.dumps(str(safe_context))}</pre>"
@@ -457,7 +473,6 @@ from services.tickets.queue_logic import approve_ticket, skip_ticket, close_tick
 from shared.types.execution_prep import ExecutionPrepSchema
 from services.orchestration.logic.execution_prep_generator import ExecutionPrepGenerator
 from shared.database.models import ExecutionPrepLog
-from shared.logic.sessions import get_nairobi_time
 
 class SkipPayload(BaseModel):
     reason: SkipReasonEnum

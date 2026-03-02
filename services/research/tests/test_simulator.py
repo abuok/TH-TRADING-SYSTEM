@@ -1,5 +1,4 @@
 import pytest
-import os
 import csv
 from datetime import datetime, timedelta
 from shared.types.research import CounterfactualConfig

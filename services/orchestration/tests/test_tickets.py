@@ -2,7 +2,7 @@ import pytest
 from datetime import datetime, timezone
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from shared.database.models import Base, Packet, OrderTicket
+from shared.database.models import Base, OrderTicket
 from shared.types.packets import TechnicalSetupPacket, RiskApprovalPacket
 from shared.logic.trading_logic import generate_order_ticket
 

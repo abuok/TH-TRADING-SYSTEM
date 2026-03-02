@@ -2,7 +2,6 @@ import feedparser
 import pytz
 from datetime import datetime, timedelta
 from typing import List, Dict
-import os
 
 class EconomicCalendar:
     # Source: Forex Factory RSS Feed

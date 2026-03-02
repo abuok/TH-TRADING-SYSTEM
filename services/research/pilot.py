@@ -1,14 +1,11 @@
 import yaml
 from datetime import datetime, timedelta, date, timezone
 from sqlalchemy.orm import Session
-from sqlalchemy import func
 from typing import List, Dict, Any, Tuple
 from shared.database.models import (
-    OrderTicket, TradeFillLog, PolicySelectionLog, GuardrailsLog, 
-    ExecutionPrepLog, PilotSessionLog, PilotScorecardLog, TuningProposalLog, QuoteStaleLog
+    OrderTicket, ExecutionPrepLog, PilotSessionLog, PilotScorecardLog, TuningProposalLog, QuoteStaleLog
 )
 from shared.types.pilot import PilotSessionRecord, PilotScorecard, PairStats
-from shared.logic.sessions import get_nairobi_time
 from shared.utils.metadata import get_system_metadata
 
 def load_pilot_config(path: str = "config/pilot_gate.yaml") -> Dict[str, Any]:

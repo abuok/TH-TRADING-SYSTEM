@@ -233,7 +233,6 @@ def run_hindsight_for_date(db: Session, target_date: str, csv_path: str) -> dict
 
 def get_hindsight_summary(db: Session, target_date: str) -> dict:
     """Aggregates decision quality metrics for a given date."""
-    from sqlalchemy import func
     from datetime import timedelta
     parsed_date = datetime.strptime(target_date, "%Y-%m-%d").date()
     start_of_day = datetime.combine(parsed_date, datetime.min.time(), tzinfo=timezone.utc)

@@ -3,9 +3,8 @@ import uuid
 from datetime import datetime, timezone, timedelta
 import shared.database.session as db_session
 from shared.database.models import OrderTicket, TradeFillLog, TicketTradeLink, PositionSnapshot, Run, Packet, ExecutionPrepLog
-from shared.types.trade_capture import TradeFillEvent, PositionSnapshotBatch, TradeFillBatch
+from shared.types.trade_capture import TradeFillEvent
 from shared.logic.trade_lifecycle import process_trade_fill
-from shared.logic.sessions import get_nairobi_time
 
 # NOTE: conftest.py handles SQLite engine setup via setup_db autouse fixture
 

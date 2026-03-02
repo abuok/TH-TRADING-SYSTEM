@@ -4,12 +4,11 @@ Unit + integration tests for the Strategy Guardrails Engine.
 Uses in-memory SQLite + deterministic Nairobi datetime mocks.
 """
 import pytest
-from datetime import datetime, timezone, timedelta, time
-from unittest.mock import patch
+from datetime import datetime, timedelta
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from shared.database.models import Base, Packet, Run, KillSwitch, OrderTicket, GuardrailsLog
+from shared.database.models import Base, Run, OrderTicket, GuardrailsLog
 from shared.logic.guardrails import (
     GuardrailsEngine, load_config,
     _rule_session_window, _rule_news_window, _rule_phx_sequence,

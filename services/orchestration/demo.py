@@ -3,10 +3,9 @@ import logging
 import os
 import requests
 from datetime import datetime, timezone, timedelta
-from typing import List
 
 from shared.logic.notifications import NotificationService, ConsoleNotificationAdapter
-from shared.types.packets import TechnicalSetupPacket, Candle
+from shared.types.packets import Candle
 from services.orchestration.runner import Orchestrator
 from shared.database.session import init_db
 

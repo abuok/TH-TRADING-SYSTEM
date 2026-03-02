@@ -1,4 +1,3 @@
-import pytest
 from datetime import datetime
 from shared.logic.fundamentals_engine import evaluate_fundamentals, evaluate_xauusd, evaluate_gbpjpy
 from shared.types.fundamentals import ProxySnapshot

@@ -1,7 +1,7 @@
 import asyncio
 import logging
-from datetime import datetime, timezone, timedelta
-from typing import List, Optional, Dict
+from datetime import datetime, timezone
+from typing import Optional, Dict
 
 from shared.logic.sessions import TradingSessions
 from shared.logic.phx_detector import PHXDetector
