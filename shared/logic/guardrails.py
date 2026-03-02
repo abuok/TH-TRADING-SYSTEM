@@ -47,6 +47,7 @@ def load_config(path: str = _DEFAULT_CONFIG_PATH) -> Dict[str, Any]:
 
     # Apply env overrides for scalar values
     scalar_keys = [
+        "quote_staleness_limit_seconds",
         "news_buffer_minutes",
         "phx_min_stages_required",
         "displacement_min_candle_ratio",
@@ -74,6 +75,7 @@ def load_config(path: str = _DEFAULT_CONFIG_PATH) -> Dict[str, Any]:
     cfg.setdefault("max_consecutive_losses", 3)
     cfg.setdefault("max_daily_loss_pct", 2.0)
     cfg.setdefault("duplicate_suppression_window_minutes", 60)
+    cfg.setdefault("quote_staleness_limit_seconds", 15.0)
     cfg.setdefault("score_deduction_fail", 20)
     cfg.setdefault("score_deduction_warn", 5)
     cfg.setdefault("news_window_hard_block", True)
@@ -507,6 +509,59 @@ def _rule_duplicate_signal(
     )
 
 
+def _rule_quote_staleness(setup_data: Dict, cfg: Dict, db: Session) -> RuleCheck:
+    """GR-Q01: Check if the live quotes for this pair are unacceptably stale."""
+    from shared.database.models import QuoteStaleLog
+    from sqlalchemy import func
+    
+    limit = float(cfg.get("quote_staleness_limit_seconds", 15.0))
+    pair = setup_data.get("asset_pair", "")
+    hard = True  # Staleness is inherently a life-safety issue, fail-closed.
+    
+    cutoff = datetime.now(timezone.utc) - timedelta(minutes=2)
+    
+    # Get max stale duration in the last 2 minutes for this pair
+    max_stale = (
+        db.query(func.max(QuoteStaleLog.stale_duration_seconds))
+        .filter(
+            QuoteStaleLog.symbol == pair,
+            QuoteStaleLog.created_at >= cutoff
+        )
+        .scalar()
+    )
+    
+    max_stale = float(max_stale) if max_stale is not None else 0.0
+    evidence = [
+        EvidenceRef(
+            ref_type="metric", 
+            key="max_quote_stale_seconds", 
+            value=round(max_stale, 1),
+            description=f"Max staleness in last 2 mins"
+        )
+    ]
+    
+    if max_stale > limit:
+        return RuleCheck(
+            id="GR-Q01",
+            name="Quote Staleness Check",
+            status="FAIL",
+            details=f"Max quote staleness {max_stale:.1f}s > limit {limit}s. Broker feeds may be lagging/offline.",
+            is_mandatory=hard,
+            deduction=cfg["score_deduction_fail"],
+            evidence_refs=evidence,
+        )
+        
+    return RuleCheck(
+        id="GR-Q01",
+        name="Quote Staleness Check",
+        status="PASS",
+        details=f"Quotes are fresh (max staleness {max_stale:.1f}s ≤ {limit}s).",
+        is_mandatory=hard,
+        deduction=0,
+        evidence_refs=evidence,
+    )
+
+
 # ──────────────────────────────────────────────────────────────────────────
 # Main Engine
 # ──────────────────────────────────────────────────────────────────────────
@@ -574,9 +629,13 @@ class GuardrailsEngine:
         checks.append(_rule_risk_state(account_state, effective_cfg, setup_data))
 
         # GR-U01 Duplicate signal (requires DB)
+        # GR-Q01 Quote staleness (requires DB)
         if db is not None:
             checks.append(
                 _rule_duplicate_signal(setup_data, effective_cfg, db, now_nairobi)
+            )
+            checks.append(
+                _rule_quote_staleness(setup_data, effective_cfg, db)
             )
         else:
             checks.append(
@@ -585,6 +644,16 @@ class GuardrailsEngine:
                     name="Duplicate Signal Suppression",
                     status="WARN",
                     details="DB not available for duplicate check — skipping.",
+                    is_mandatory=False,
+                    deduction=effective_cfg["score_deduction_warn"],
+                )
+            )
+            checks.append(
+                RuleCheck(
+                    id="GR-Q01",
+                    name="Quote Staleness Check",
+                    status="WARN",
+                    details="DB not available for staleness check — skipping.",
                     is_mandatory=False,
                     deduction=effective_cfg["score_deduction_warn"],
                 )

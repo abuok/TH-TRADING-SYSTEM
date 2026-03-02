@@ -130,12 +130,12 @@ class ForexFactoryCalendarProvider(CalendarProvider):
             # Total fetch failure — log and return empty so callers fail-closed
             logger.error(
                 "CalendarProvider: total fetch failure — %s. "
-                "Returning empty event list. Downstream safety gates will treat this as "
-                "an unknown/unsafe state.",
+                "Raising exception. Downstream ingestion will drop the iteration, "
+                "causing downstream safety gates to fail-closed on missing context.",
                 exc,
                 exc_info=True,
             )
-            return []
+            raise RuntimeError(f"Calendar fetch failed: {exc}") from exc
 
 
 def get_calendar_provider() -> CalendarProvider:
