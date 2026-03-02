@@ -244,6 +244,51 @@ def _rule_news_window(
     )
 
 
+def _rule_eod_gap(now_nairobi: datetime, cfg: Dict) -> RuleCheck:
+    """GR-E01: Block trading around broker End Of Day (00:00 EET) due to spread widening."""
+    # Convert Nairobi time to broker time (EET/EEST)
+    eet_tz = pytz.timezone("EET")
+    now_eet = now_nairobi.astimezone(eet_tz)
+    t = now_eet.time()
+    
+    # Block from 23:55 to 00:10 broker server time
+    hard = True
+    eod_start = time_(23, 55)
+    eod_end = time_(0, 10)
+    
+    # Check if time crosses midnight broker time
+    is_gap = t >= eod_start or t <= eod_end
+    
+    evidence = [
+        EvidenceRef(
+            ref_type="metric", 
+            key="broker_eet_time", 
+            value=now_eet.strftime("%H:%M"),
+            description="Broker Server Time (EET/EEST)"
+        )
+    ]
+    
+    if is_gap:
+        return RuleCheck(
+            id="GR-E01",
+            name="End of Day Broker Gap",
+            status="FAIL",
+            details=f"Current broker time {now_eet.strftime('%H:%M')} is inside the EOD rollover spread-widening gap (23:55-00:10).",
+            is_mandatory=hard,
+            deduction=cfg.get("score_deduction_fail", 20),
+            evidence_refs=evidence,
+        )
+    return RuleCheck(
+        id="GR-E01",
+        name="End of Day Broker Gap",
+        status="PASS",
+        details=f"Current broker time {now_eet.strftime('%H:%M')} is outside EOD gap.",
+        is_mandatory=hard,
+        deduction=0,
+        evidence_refs=evidence,
+    )
+
+
 def _rule_phx_sequence(setup_data: Dict, cfg: Dict) -> RuleCheck:
     """GR-P01: Does the setup reach the minimum required PHX stage?"""
     stage_name = setup_data.get(
@@ -612,6 +657,9 @@ class GuardrailsEngine:
 
         # GR-S01 Session window
         checks.append(_rule_session_window(now_nairobi, effective_cfg, setup_data))
+
+        # GR-E01 End of Day Gap (Broker Spread Widening)
+        checks.append(_rule_eod_gap(now_nairobi, effective_cfg))
 
         # GR-N01 News window
         checks.append(_rule_news_window(now_nairobi, effective_cfg, context_data))
