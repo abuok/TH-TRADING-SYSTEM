@@ -592,7 +592,7 @@ def _rule_quote_staleness(setup_data: Dict, cfg: Dict, db: Session) -> RuleCheck
             status="FAIL",
             details=f"Max quote staleness {max_stale:.1f}s > limit {limit}s. Broker feeds may be lagging/offline.",
             is_mandatory=hard,
-            deduction=cfg["score_deduction_fail"],
+            deduction=cfg.get("score_deduction_fail", 20),
             evidence_refs=evidence,
         )
         
