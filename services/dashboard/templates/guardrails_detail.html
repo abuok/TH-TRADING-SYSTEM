@@ -1,117 +1,177 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="header-section">
-    <div class="header-title">
-        <h1>Guardrails Detail</h1>
-        <p>Setup: {{ setup_id }} — {{ pair }}</p>
-    </div>
-    <a href="/dashboard/setups" class="btn btn-secondary">← Setups</a>
-</div>
-
-{% if not result %}
-<div class="card util-ad69dd">
-    <h2 class="util-697a24">No Guardrails Record Found</h2>
-    <p>Guardrails are generated when a setup is evaluated via the Orchestrator.</p>
-</div>
-{% else %}
-{% set score = result.discipline_score %}
-{% set hard = result.hard_block %}
-{% set score_color = "var(--accent-pink)" if score < 60 else ("var(--accent-yellow)" if score < 80
-    else "var(--accent-green)" ) %} <!-- Score Banner -->
-    <div
-        class="card animate-fade border-left-{{ 'red' if score < 60 else ('warning' if score < 80 else 'green') }} flex-between-center padding-standard">
-        <div>
-            <div
-                class="text-{{ 'red' if score < 60 else ('warning' if score < 80 else 'green') }} util-14fa87 util-be8e63">
-                {{ score }}<span class="util-6788df">/100</span></div>
-            <p class="util-366b05">Discipline Score</p>
-        </div>
-        <div class="util-ba9b3f">
-            <div class="util-539b04">
-                <div class="util-0739fc">{{ result.rule_checks |
-                    selectattr("status","equalto","PASS") | list | length }}</div>
-                <div class="util-dca860">PASS</div>
+<div class="hud-grid">
+    <!-- Header Monitor -->
+    <div class="hud-panel glass-panel col-span-12" data-hud-corner="top-left">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">GUARDRAILS EVALUATION // SETUP: {{ setup_id }}</div>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <span class="badge"
+                    style="border: 1px solid var(--accent-cyan); color: var(--accent-cyan); background: transparent;">{{
+                    pair }}</span>
+                <a href="/dashboard/setups" class="btn btn-secondary btn-tiny">&larr; BACK TO SENSORS</a>
             </div>
-            <div class="util-539b04">
-                <div class="util-40ff30">{{ result.rule_checks |
-                    selectattr("status","equalto","WARN") | list | length }}</div>
-                <div class="util-dca860">WARN</div>
-            </div>
-            <div class="util-539b04">
-                <div class="util-094f09">{{ result.rule_checks |
-                    selectattr("status","equalto","FAIL") | list | length }}</div>
-                <div class="util-dca860">FAIL</div>
-            </div>
-        </div>
-        <div>
-            {% if hard %}
-            <span class="badge badge-danger util-698acb">⛔ HARD BLOCK</span>
-            {% else %}
-            <span class="badge badge-success util-698acb">✅ ALLOWED</span>
-            {% endif %}
+        </header>
+        <div style="padding: 1rem; color: var(--text-muted); font-size: 0.75rem; font-family: monospace;">
+            TRANSACTION ID: {{ setup_id }} // ASSET: {{ pair }} // VERSION: {{ result.guardrails_version if result else
+            'N/A' }}
         </div>
     </div>
 
-    {% if hard and result.primary_block_reason %}
-    <div class="card util-0e7c87">
-        <strong class="util-25cb8a">⛔ Block Reason:</strong>
-        <p class="util-3b2b4f">{{ result.primary_block_reason }}</p>
+    {% if not result %}
+    <div class="hud-panel glass-panel col-span-12" style="padding: 3rem; text-align: center;">
+        <div
+            style="font-size: 1.5rem; font-weight: 800; color: var(--accent-pink); margin-bottom: 1rem; letter-spacing: 2px;">
+            NO GUARDRAILS RECORD FOUND</div>
+        <div style="color: var(--text-muted); font-size: 0.8rem;">Evaluations are generated during active Orchestrator
+            cycles.</div>
     </div>
-    {% endif %}
+    {% else %}
 
-    <!-- Rule Checks Table -->
-    <div class="card animate-fade">
-        <h2 class="sub-header">Rule Evaluations</h2>
-        <table class="util-32d39d">
-            <thead>
-                <tr class="util-87ccbb">
-                    <th class="util-e7fa6d">Rule</th>
-                    <th class="util-e7fa6d">Name</th>
-                    <th class="util-7613c8">Status</th>
-                    <th class="util-a8ece1">Deduction</th>
-                    <th class="util-e7fa6d">Details</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for check in result.rule_checks %}
-                {% set s_color = "success" if check.status == "PASS" else ("warning" if check.status == "WARN" else
-                "danger") %}
-                <tr class="util-788560">
-                    <td class="util-384bdf">{{ check.id }}</td>
-                    <td class="util-4009b5">{{ check.name }}</td>
-                    <td class="util-ee8d52">
-                        <span class="badge badge-{{ s_color }}">{{ check.status }}</span>
-                    </td>
-                    <td class="text-{{ s_color }} td-standard-right">
-                        {% if check.deduction > 0 %}−{{ check.deduction }}{% else %}&mdash;{% endif %}
-                    </td>
-                    <td class="util-198019">{{
-                        check.details }}</td>
-                </tr>
-                {% if check.evidence_refs %}
-                <tr class="util-80d73c">
-                    <td colspan="5" class="util-cf731c">
-                        <div class="util-423c8c">
-                            {% for ev in check.evidence_refs %}
-                            <span class="util-4890f8">
-                                {{ ev.key }}: <strong>{{ ev.value }}</strong>
-                            </span>
-                            {% endfor %}
-                        </div>
-                    </td>
-                </tr>
+    {% set score = result.discipline_score %}
+    {% set hard = result.hard_block %}
+    {% set score_color = "var(--accent-pink)" if score < 60 else ("var(--accent-yellow)" if score < 80
+        else "var(--accent-green)" ) %} <!-- [4] Discipline Score Monitor -->
+        <div class="hud-panel glass-panel col-span-4 hud-scanline">
+            <header class="hud-panel-header">
+                <div class="hud-panel-title">DISCIPLINE SCORE</div>
+            </header>
+            <div style="padding: 1.5rem; display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+                <div
+                    style="font-size: 4rem; font-weight: 900; color: {{ score_color }}; text-shadow: 0 0 20px {{ score_color }}44; line-height: 1;">
+                    {{ score }}<span style="font-size: 1.5rem; opacity: 0.5;">%</span>
+                </div>
+
+                <div
+                    style="display: flex; gap: 1rem; width: 100%; justify-content: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 0.9rem; font-weight: 900; color: var(--accent-green);">{{
+                            result.rule_checks | selectattr("status","equalto","PASS") | list | length }}</div>
+                        <div style="font-size: 0.5rem; color: var(--text-muted);">PASS</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 0.9rem; font-weight: 900; color: var(--accent-yellow);">{{
+                            result.rule_checks | selectattr("status","equalto","WARN") | list | length }}</div>
+                        <div style="font-size: 0.5rem; color: var(--text-muted);">WARN</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 0.9rem; font-weight: 900; color: var(--accent-pink);">{{
+                            result.rule_checks | selectattr("status","equalto","FAIL") | list | length }}</div>
+                        <div style="font-size: 0.5rem; color: var(--text-muted);">FAIL</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 0.5rem;">
+                    {% if hard %}
+                    <span class="badge"
+                        style="background: rgba(235, 47, 150, 0.1); color: var(--accent-pink); border: 2px solid var(--accent-pink); padding: 0.4rem 1rem; font-weight: 900; letter-spacing: 1px;">⛔
+                        HARD BLOCK ACTIVE</span>
+                    {% else %}
+                    <span class="badge"
+                        style="background: rgba(39, 174, 96, 0.1); color: var(--accent-green); border: 2px solid var(--accent-green); padding: 0.4rem 1rem; font-weight: 900; letter-spacing: 1px;">✅
+                        TRANSMISSION ALLOWED</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- [8] Primary Alert / Block Reason -->
+        <div class="hud-panel glass-panel col-span-8">
+            <header class="hud-panel-header">
+                <div class="hud-panel-title">RISK ANALYSIS SUMMARY</div>
+            </header>
+            <div style="padding: 1.5rem;">
+                {% if hard and result.primary_block_reason %}
+                <div
+                    style="background: rgba(235, 47, 150, 0.05); border: 1px solid var(--accent-pink); border-radius: 4px; padding: 1rem; margin-bottom: 1rem;">
+                    <div
+                        style="font-size: 0.6rem; color: var(--accent-pink); font-weight: 900; text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 1px;">
+                        CRITICAL BLOCK INITIATED</div>
+                    <div style="font-size: 1rem; color: var(--text-main); line-height: 1.4; font-weight: 700;">{{
+                        result.primary_block_reason }}</div>
+                </div>
+                {% else %}
+                <div
+                    style="background: rgba(39, 174, 96, 0.05); border: 1px solid var(--accent-green); border-radius: 4px; padding: 1rem;">
+                    <div
+                        style="font-size: 0.6rem; color: var(--accent-green); font-weight: 900; text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 1px;">
+                        NOMINAL RISK STANDING</div>
+                    <div style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">Setup satisfies all
+                        primary hard constraints. Execution may proceed subject to secondary warnings and qualitative
+                        filters.</div>
+                </div>
                 {% endif %}
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
 
-    <!-- Metadata -->
-    <div class="card animate-fade util-71a414">
-        <strong>Evaluated:</strong> {{ result.created_at }}&nbsp;EAT &nbsp;|&nbsp;
-        <strong>Version:</strong> {{ result.guardrails_version }} &nbsp;|&nbsp;
-        <strong>Pair:</strong> {{ result.pair }}
-    </div>
-    {% endif %}
-    {% endblock %}
+                <div style="margin-top: 2rem; display: flex; gap: 2rem;">
+                    <div>
+                        <div style="font-size: 0.55rem; color: var(--text-muted); margin-bottom: 0.25rem;">EVALUATION
+                            TIME</div>
+                        <div style="font-family: monospace; font-size: 0.75rem;">{{ result.created_at }} EAT</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.55rem; color: var(--text-muted); margin-bottom: 0.25rem;">GUARDRAILS
+                            VERSION</div>
+                        <div style="font-family: monospace; font-size: 0.75rem;">{{ result.guardrails_version }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- [12] Rule Evaluations Table -->
+        <div class="hud-panel glass-panel col-span-12" data-hud-corner="bottom-left">
+            <header class="hud-panel-header">
+                <div class="hud-panel-title">RULE EVALUATIONS // GRANULAR BREAKDOWN</div>
+            </header>
+            <div class="hud-scroll-body">
+                <table class="hud-compact-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 100px;">ID</th>
+                            <th>RULE DESCRIPTION</th>
+                            <th style="width: 100px;">STATUS</th>
+                            <th style="width: 100px; text-align: right;">DEDUCTION</th>
+                            <th>EVOLUTION / DETAILS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for check in result.rule_checks %}
+                        {% set s_color = "var(--accent-green)" if check.status == "PASS" else ("var(--accent-yellow)" if
+                        check.status == "WARN" else "var(--accent-pink)") %}
+                        <tr>
+                            <td style="font-family: monospace; font-size: 0.65rem; color: var(--text-muted);">{{
+                                check.id }}</td>
+                            <td style="font-weight: 700; color: var(--text-main);">{{ check.name }}</td>
+                            <td>
+                                <span class="badge"
+                                    style="background: {{ s_color }}11; color: {{ s_color }}; border: 1px solid {{ s_color }}33; font-size: 0.55rem; font-weight: 900;">{{
+                                    check.status }}</span>
+                            </td>
+                            <td
+                                style="text-align: right; font-family: monospace; font-weight: 800; color: {{ s_color }};">
+                                {% if check.deduction > 0 %}-{{ check.deduction }}{% else %}0{% endif %}
+                            </td>
+                            <td style="font-size: 0.7rem; color: var(--text-muted);">{{ check.details }}</td>
+                        </tr>
+                        {% if check.evidence_refs %}
+                        <tr style="background: rgba(0,0,0,0.15);">
+                            <td colspan="5" style="padding: 0.5rem 1rem;">
+                                <div style="display: flex; flex-wrap: wrap; gap: 1rem; font-size: 0.6rem;">
+                                    {% for ev in check.evidence_refs %}
+                                    <span style="color: var(--text-muted);">
+                                        {{ ev.key | upper }}: <strong style="color: var(--accent-cyan);">{{ ev.value
+                                            }}</strong>
+                                    </span>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+</div>
+{% endblock %}

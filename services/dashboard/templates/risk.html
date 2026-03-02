@@ -1,37 +1,62 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="util-257995">
-    <h1>Risk Decisions</h1>
-    <p class="util-7abb3a">Audit log of ALLOW/BLOCK decisions from the Risk Engine</p>
-</div>
+<div class="hud-grid">
+    <!-- Header Monitor -->
+    <div class="hud-panel glass-panel col-span-12" data-hud-corner="top-left">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">RISK DECISIONS // GOVERNANCE LOG</div>
+        </header>
+        <div style="padding: 1rem; color: var(--text-muted); font-size: 0.8rem; letter-spacing: 1px;">AUDIT TRAIL OF
+            FINANCIAL ADI-VALVE DECISIONS (ALLOW/BLOCK) FROM THE RISK ENGINE</div>
+    </div>
 
-<div class="card">
-    <table>
-        <thead>
-            <tr>
-                <th>Time (UTC)</th>
-                <th>Asset Pair</th>
-                <th>Action</th>
-                <th>Reason</th>
-                <th>Trade ID</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for decision in decisions %}
-            <tr>
-                <td>{{ decision.created_at.strftime('%H:%M:%S') }}</td>
-                <td class="util-be8e63">{{ decision.data.asset_pair }}</td>
-                <td>
-                    <span class="badge badge-{{ 'success' if decision.data.action == 'ALLOW' else 'danger' }}">
-                        {{ decision.data.action }}
-                    </span>
-                </td>
-                <td class="util-eec58d">{{ decision.data.reason }}</td>
-                <td class="util-acf620">{{ decision.data.trade_id or '-' }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <!-- Decision Stream -->
+    <div class="hud-panel glass-panel col-span-12" data-hud-corner="bottom-left">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">LIVE RISK TELEMETRY // DECISION FEED</div>
+            <span class="badge"
+                style="background: rgba(155, 81, 224, 0.1); color: var(--accent-purple); border: 1px solid var(--accent-purple);">{{
+                decisions|length }} DECISIONS LOGGED</span>
+        </header>
+        <div class="hud-scroll-body">
+            <table class="hud-compact-table">
+                <thead>
+                    <tr>
+                        <th style="width: 150px;">TIMESTAMP (UTC)</th>
+                        <th style="width: 150px;">ASSET PAIR</th>
+                        <th style="width: 120px;">ACTION</th>
+                        <th>RATIONALE / REASON</th>
+                        <th style="width: 150px;">TRADE ID</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for decision in decisions %}
+                    <tr>
+                        <td style="font-family: monospace; font-size: 0.7rem; color: var(--text-muted);">{{
+                            decision.created_at.strftime('%H:%M:%S') }}</td>
+                        <td style="font-weight: 800; color: var(--accent-cyan);">{{ decision.data.asset_pair }}</td>
+                        <td>
+                            <span class="badge"
+                                style="background: {{ 'rgba(39, 174, 96, 0.1)' if decision.data.action == 'ALLOW' else 'rgba(235, 47, 150, 0.1)' }}; color: {{ 'var(--accent-green)' if decision.data.action == 'ALLOW' else 'var(--accent-pink)' }}; border: 1px solid {{ 'var(--accent-green)' if decision.data.action == 'ALLOW' else 'var(--accent-pink)' }}; font-size: 0.55rem; font-weight: 900;">
+                                {{ decision.data.action }}
+                            </span>
+                        </td>
+                        <td style="color: var(--text-muted); font-size: 0.75rem;">{{ decision.data.reason }}</td>
+                        <td style="font-family: monospace; font-size: 0.7rem; color: var(--text-muted);">{{
+                            decision.data.trade_id or '—' }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% if not decisions %}
+                    <tr>
+                        <td colspan="5"
+                            style="padding: 4rem; text-align: center; color: var(--text-muted); font-weight: 800; letter-spacing: 2px;">
+                            ZERO RISK DECISIONS DETECTED IN SELECTED RANGE</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 {% endblock %}

@@ -1,75 +1,103 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="header-section">
-    <div class="header-title">
-        <h1>Adaptive Policy Router</h1>
-        <p>Regime-based guardrails adaptation for current market conditions.</p>
+<div class="hud-grid">
+    <!-- Header Monitor -->
+    <div class="hud-panel glass-panel col-span-12" data-hud-corner="top-left">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">ADAPTIVE POLICY ROUTER // REGIME-BASED GUARDRAILS</div>
+        </header>
+        <div style="padding: 1rem; color: var(--text-muted); font-size: 0.8rem; letter-spacing: 1px;">DYNAMIC REGIME
+            ADAPTATION ENGINE — CONTINUOUS MONITORING OF MARKET CONDITIONS</div>
     </div>
-</div>
 
-<div class="grid">
-    <!-- Active Policies per Pair -->
+    <!-- Active Policies Grid -->
     {% for policy in active_policies %}
-    <div class="card">
-        <div class="card-header">
-            <span class="metric-label">{{ policy.pair }}</span>
-            <span class="badge badge-info">{{ policy.policy_name }}</span>
-        </div>
-        <div class="metric-value util-3f60e0">{{ policy.policy_hash }}</div>
+    <div class="hud-panel glass-panel col-span-4 hud-scanline">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">{{ policy.pair }}</div>
+            <span class="badge"
+                style="background: rgba(86, 204, 242, 0.1); color: var(--accent-cyan); border: 1px solid var(--accent-cyan);">{{
+                policy.policy_name }}</span>
+        </header>
+        <div style="padding: 1rem;">
+            <div style="font-family: monospace; font-size: 0.6rem; color: var(--text-muted); margin-bottom: 1rem;">#{{
+                policy.policy_hash[:16] }}</div>
 
-        <div class="sub-header">Signals</div>
-        <div class="util-d3297f">
-            {% for key, val in policy.regime_signals.items() %}
-            <div class="util-acb67b text-small">
-                <strong>{{ key | replace('_', ' ') | title }}:</strong> {{ val }}
+            <div
+                style="font-size: 0.6rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 1px;">
+                REGIME SIGNALS</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem;">
+                {% for key, val in policy.regime_signals.items() %}
+                <div style="background: rgba(255,255,255,0.03); padding: 0.4rem; border-radius: 2px;">
+                    <div style="font-size: 0.5rem; color: var(--text-muted); text-transform: uppercase;">{{ key |
+                        replace('_', ' ') }}</div>
+                    <div
+                        style="font-size: 0.7rem; font-weight: 700; color: var(--accent-cyan); font-family: monospace;">
+                        {{ val }}</div>
+                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
-        </div>
 
-        <div class="sub-header">Reasons</div>
-        <ul class="list-unstyled">{% for reason in policy.reasons %}
-            <li class="util-e7992d text-small p-0">• {{ reason }}</li>
-            {% endfor %}
-        </ul>
+            <div
+                style="font-size: 0.6rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 1px;">
+                SELECTION RATIONALE</div>
+            <div style="font-size: 0.65rem; color: var(--text-muted); line-height: 1.4;">
+                {% for reason in policy.reasons %}
+                <div style="margin-bottom: 0.2rem;">&bull; {{ reason }}</div>
+                {% endfor %}
+            </div>
 
-        <div class="clock-label util-f8a732 mt-10">
-            Selected: {{ policy.created_at.strftime('%H:%M:%S') }} EAT
+            <div
+                style="margin-top: 1rem; font-family: monospace; font-size: 0.55rem; color: var(--accent-cyan); text-align: right; opacity: 0.5;">
+                DETERMINED: {{ policy.created_at.strftime('%H:%M:%S') }} EAT
+            </div>
         </div>
     </div>
     {% endfor %}
-</div>
 
-<!-- Policy Switch History -->
-<div class="card mt-20">
-    <h2>Policy Switch Timeline (Last 30)</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Time (EAT)</th>
-                <th>Pair</th>
-                <th>Selection</th>
-                <th>Regime Signals</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for entry in history %}
-            <tr>
-                <td class="util-e7992d">{{ entry.created_at.strftime('%H:%M:%S') }}</td>
-                <td><strong>{{ entry.pair }}</strong></td>
-                <td>
-                    <span class="badge badge-info">{{ entry.policy_name }}</span>
-                    <span class="util-acb67b text-xs">#{{ entry.policy_hash }}</span>
-                </td>
-                <td>
-                    <div class="util-acb67b text-xs">
-                        {{ entry.reasons | join(' | ') }}
-                    </div>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <!-- Policy Switch Timeline -->
+    <div class="hud-panel glass-panel col-span-12" data-hud-corner="bottom-left">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">POLICY SWITCH TIMELINE // ARCHIVE FEED</div>
+            <span class="badge"
+                style="background: rgba(155, 81, 224, 0.1); color: var(--accent-purple); border: 1px solid var(--accent-purple);">LAST
+                {{ history|length }} TRANSITIONS</span>
+        </header>
+        <div class="hud-scroll-body">
+            <table class="hud-compact-table">
+                <thead>
+                    <tr>
+                        <th style="width: 150px;">TIME (EAT)</th>
+                        <th style="width: 150px;">PAIR</th>
+                        <th>SELECTION</th>
+                        <th>REGIME SIGNALS / RATIONALE</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in history %}
+                    <tr>
+                        <td style="font-family: monospace; font-size: 0.7rem; color: var(--text-muted);">{{
+                            entry.created_at.strftime('%H:%M:%S') }}</td>
+                        <td style="font-weight: 800; color: var(--text-main);">{{ entry.pair }}</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span class="badge"
+                                    style="background: rgba(86, 204, 242, 0.05); color: var(--accent-cyan); border: 1px solid rgba(86, 204, 242, 0.2);">{{
+                                    entry.policy_name }}</span>
+                                <span style="font-family: monospace; font-size: 0.6rem; color: var(--text-muted);">#{{
+                                    entry.policy_hash[:8] }}</span>
+                            </div>
+                        </td>
+                        <td style="font-size: 0.65rem; color: var(--text-muted);">
+                            {{ entry.reasons | join(' // ') }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 {% endblock %}

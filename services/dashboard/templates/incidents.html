@@ -1,49 +1,79 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="util-257995">
-    <h1>System Incidents</h1>
-    <p class="util-7abb3a">Audit trail of governance events and service failures</p>
-</div>
-
-<div class="card">
-    <div class="util-17295e">
-        <span class="badge badge-info">Filters:</span>
-        <a href="?severity=ERROR" class="nav-link util-af89d6">ERROR</a>
-        <a href="?severity=WARNING" class="nav-link util-af89d6">WARNING</a>
-        <a href="?" class="nav-link util-af89d6">CLEAR</a>
+<div class="hud-grid">
+    <!-- Header Monitor -->
+    <div class="hud-panel glass-panel col-span-12" data-hud-corner="top-left">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">SYSTEM INCIDENTS // GOVERNANCE AUDIT TRAIL</div>
+        </header>
+        <div style="padding: 1rem; color: var(--text-muted); font-size: 0.8rem; letter-spacing: 1px;">CENTRALIZED
+            TRANSCRIPTION OF SERVICE FAILURES AND MANUAL INTERVENTIONS</div>
     </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Time (UTC)</th>
-                <th>Component</th>
-                <th>Code</th>
-                <th>Severity</th>
-                <th>Message</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for incident in incidents %}
-            <tr>
-                <td>{{ incident.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-                <td><span class="badge badge-info">{{ incident.component }}</span></td>
-                <td class="util-9a7094">{{ incident.error_code }}</td>
-                <td>
-                    <span class="badge badge-{{ 'danger' if incident.severity == 'ERROR' else 'warning' }}">
-                        {{ incident.severity }}
-                    </span>
-                </td>
-                <td class="util-33dd45">{{ incident.message }}</td>
-            </tr>
-            {% endfor %}
-            {% if not incidents %}
-            <tr>
-                <td colspan="5" class="util-01a995">No incidents found.</td>
-            </tr>
-            {% endif %}
-        </tbody>
-    </table>
+    <!-- Filter Console -->
+    <div class="hud-panel glass-panel col-span-12">
+        <div style="padding: 0.75rem; display: flex; align-items: center; gap: 1.5rem;">
+            <div style="font-size: 0.6rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">
+                Filter Stream:</div>
+            <div style="display: flex; gap: 0.75rem;">
+                <a href="?severity=ERROR" class="btn btn-secondary btn-tiny"
+                    style="color: var(--accent-pink); border-color: rgba(235, 47, 150, 0.3);">ERROR ONLY</a>
+                <a href="?severity=WARNING" class="btn btn-secondary btn-tiny"
+                    style="color: var(--accent-yellow); border-color: rgba(242, 201, 76, 0.3);">WARNING ONLY</a>
+                <a href="?" class="btn btn-secondary btn-tiny" style="opacity: 0.6;">RESET ALL</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Incident Log -->
+    <div class="hud-panel glass-panel col-span-12" data-hud-corner="bottom-left">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">INCIDENT ARCHIVE // RAW STREAM</div>
+            <span class="badge"
+                style="background: rgba(235, 47, 150, 0.1); color: var(--accent-pink); border: 1px solid var(--accent-pink);">{{
+                incidents|length }} EVENTS LOGGED</span>
+        </header>
+        <div class="hud-scroll-body">
+            <table class="hud-compact-table">
+                <thead>
+                    <tr>
+                        <th style="width: 180px;">TIMESTAMP (UTC)</th>
+                        <th>COMPONENT</th>
+                        <th>CODE</th>
+                        <th style="width: 100px;">SEVERITY</th>
+                        <th>TRANSMISSION MESSAGE</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for incident in incidents %}
+                    <tr>
+                        <td style="font-family: monospace; font-size: 0.7rem; color: var(--text-muted);">{{
+                            incident.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        <td><span class="badge"
+                                style="background: rgba(86, 204, 242, 0.05); color: var(--accent-cyan); border: 1px solid rgba(86, 204, 242, 0.2); font-size: 0.55rem;">{{
+                                incident.component }}</span></td>
+                        <td style="font-family: monospace; font-size: 0.7rem; color: var(--text-muted);">{{
+                            incident.error_code }}</td>
+                        <td>
+                            <span class="badge"
+                                style="background: {{ 'rgba(235, 47, 150, 0.1)' if incident.severity == 'ERROR' else 'rgba(242, 201, 76, 0.1)' }}; color: {{ 'var(--accent-pink)' if incident.severity == 'ERROR' else 'var(--accent-yellow)' }}; border: 1px solid {{ 'var(--accent-pink)' if incident.severity == 'ERROR' else 'var(--accent-yellow)' }}; font-size: 0.55rem; font-weight: 900;">
+                                {{ incident.severity }}
+                            </span>
+                        </td>
+                        <td style="color: var(--text-muted); font-size: 0.75rem;">{{ incident.message }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% if not incidents %}
+                    <tr>
+                        <td colspan="5"
+                            style="padding: 4rem; text-align: center; color: var(--text-muted); font-weight: 800; letter-spacing: 2px;">
+                            ZERO INCIDENTS DETECTED IN SELECTED RANGE</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 {% endblock %}
