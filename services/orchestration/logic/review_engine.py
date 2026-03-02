@@ -31,9 +31,12 @@ class ReviewEngine:
             self.jinja_env = jinja2.Environment(
                 loader=jinja2.FileSystemLoader(TEMPLATE_DIR)
             )
+<<<<<<< HEAD
             self.jinja_env.globals["url_for"] = lambda endpoint, **kwargs: (
                 f"/{endpoint}/{kwargs.get('path', '')}"
             )
+=======
+>>>>>>> a131891 (Add minimal Ruff pre-commit hooks and helper targets)
 
     def generate_weekly_report(self) -> WeeklyReviewReport:
         now = get_nairobi_time()

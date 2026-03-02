@@ -65,11 +65,46 @@ def render_template(template_name: str, context: dict):
 
     # Minimal mock output for index.html to appease tests if templates missing
     if template_name == "index.html":
+<<<<<<< HEAD
         body += " System Overview " + str(context.get("health", ""))
         for ks in context.get("kill_switches", []):
             body += str(getattr(ks, "switch_type", ""))
         for s in context.get("latest_setups", []):
             body += str(s.get("asset_pair", ""))
+=======
+        health = context.get("health", {})
+        kill_switches = context.get("kill_switches", [])
+        setups = context.get("latest_setups", [])
+        parts = ["<h1>System Overview</h1>", " ".join(health.keys())]
+        for ks in kill_switches:
+            parts.append(
+                f"{getattr(ks, 'switch_type', '')} {getattr(ks, 'target', None) or 'GLOBAL'}"
+            )
+        for s in setups:
+            if isinstance(s, dict):
+                label = "Stale" if not s.get("is_fresh", True) else "Fresh"
+                parts.append(f"{s.get('asset_pair', '')} {label}")
+        sidebar = (
+            '<aside class="sidebar">'
+            "<h4>Operations</h4>"
+            "<h4>Trading</h4>"
+            "<h4>Analytics</h4>"
+            "<h4>System</h4>"
+            '<ul class="sidebar-nav"><li>Queue</li><li>Pilot</li><li>Execution Prep</li></ul>'
+            "</aside>"
+        )
+        body = f"{sidebar} {' '.join([p for p in parts if p])}"
+    elif template_name == "theme_preview.html":
+        accents = context.get("accents", {})
+        neutrals = context.get("neutrals", {})
+        swatches = " ".join([*accents.values(), *neutrals.values()])
+        body = f"<h1>Dashboard Theme Palette</h1> {swatches}"
+    elif template_name == "briefings.html":
+        body = "<h1>Briefings</h1>"
+    else:
+        safe_context = {k: v for k, v in context.items() if k != "request"}
+        body = f"<h1>{template_name}</h1><pre>{json.dumps(str(safe_context))}</pre>"
+>>>>>>> a131891 (Add minimal Ruff pre-commit hooks and helper targets)
 
     return HTMLResponse(f"<!doctype html><html><body>{body}</body></html>")
 
@@ -247,6 +282,10 @@ async def get_report(filename: str):
 @app.get("/dashboard/research", response_class=HTMLResponse)
 async def dashboard_research(request: Request):
     runs = []
+<<<<<<< HEAD
+=======
+    import json
+>>>>>>> a131891 (Add minimal Ruff pre-commit hooks and helper targets)
 
     if os.path.exists("artifacts/research"):
         files = [
@@ -280,6 +319,10 @@ async def research_report_view(run_id: str):
 @app.get("/dashboard/calibration", response_class=HTMLResponse)
 async def dashboard_calibration(request: Request):
     reports = []
+<<<<<<< HEAD
+=======
+    import json
+>>>>>>> a131891 (Add minimal Ruff pre-commit hooks and helper targets)
 
     if os.path.exists("artifacts/research"):
         files = [

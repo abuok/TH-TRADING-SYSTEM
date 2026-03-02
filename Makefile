@@ -79,3 +79,10 @@ dashboard:
 
 orchestrate:
 	python services/orchestration/main.py
+
+
+precommit-install:
+	pre-commit install
+
+precommit-run:
+	pre-commit run --all-files

@@ -54,3 +54,17 @@ make test
 ```
 
 For more detailed information on the E2E flow, see [docs/END_TO_END_DEMO.md](docs/END_TO_END_DEMO.md).
+
+## Pre-commit (ruff)
+Install and enable pre-commit hooks:
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+Run hooks across all files:
+
+```bash
+pre-commit run --all-files
+```

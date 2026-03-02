@@ -41,6 +41,7 @@ def test_dashboard_overview_basic():
         assert "SYSTEM ARMED" in response.text
 
 
+
 def test_dashboard_kill_switches_reflected():
     """Verify active kill switches are shown in the UI."""
     with (
@@ -94,6 +95,7 @@ def test_dashboard_stale_packets_reflected():
         assert response.status_code == 200
         assert "BTC-USD" in response.text
         assert "STALE" in response.text
+
 
 
 def test_dashboard_routes_render():
