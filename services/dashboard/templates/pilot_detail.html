@@ -11,68 +11,81 @@
     </div>
 </div>
 
-<div class="card mb-2rem">
-    <div class="card-header">
-        <h2>Graduation Status:
+<div class="hud-grid">
+    <!-- Graduation Status Monitor -->
+    <div class="hud-panel glass-panel col-span-12" data-hud-corner="top-left">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">GRADUATION STATUS: {{ scorecard.scorecard_id }}</div>
             <span
                 class="badge {% if scorecard.pass_fail_summary == 'PASS' %}badge-success{% else %}badge-danger{% endif %}">
                 {{ scorecard.pass_fail_summary }}
             </span>
-        </h2>
-    </div>
-    <div class="grid tuning-grid-4">
-        <div class="card tuning-metric-card">
-            <div class="metric-value">{{ scorecard.aggregates.passing_days }} / {{ scorecard.aggregates.total_days }}
-            </div>
-            <div class="metric-label">Passing Days</div>
-        </div>
-        <div class="card tuning-metric-card">
-            <div class="metric-value">{{ scorecard.aggregates.total_tickets_approved }}</div>
-            <div class="metric-label">Total Approved</div>
-        </div>
-        <div class="card tuning-metric-card">
-            <div class="metric-value">{{ scorecard.aggregates.net_realized_r | round(2) }}R</div>
-            <div class="metric-label">Net Realized R</div>
-        </div>
-        <div class="card tuning-metric-card">
-            <div class="metric-value">{{ (scorecard.aggregates.net_realized_r /
-                scorecard.aggregates.total_tickets_approved) | round(2) if scorecard.aggregates.total_tickets_approved >
-                0 else 0 }}R</div>
-            <div class="metric-label">Avg Expectancy</div>
-        </div>
-    </div>
-</div>
+        </header>
 
-<div class="grid util-grid-2-1">
-    <div>
-        <div class="card">
-            <div class="card-header">
-                <h2>Session Breakdown</h2>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
+            <div class="hud-scanline"
+                style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 4px; border: 1px solid rgba(86, 204, 242, 0.1);">
+                <div style="font-size: 1.5rem; font-weight: 700; color: var(--accent-cyan);">{{
+                    scorecard.aggregates.passing_days }} / {{ scorecard.aggregates.total_days }}</div>
+                <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">PASSING DAYS</div>
             </div>
-            <table class="util-32d39d">
+            <div class="hud-scanline"
+                style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 4px; border: 1px solid rgba(86, 204, 242, 0.1);">
+                <div style="font-size: 1.5rem; font-weight: 700; color: var(--text-main);">{{
+                    scorecard.aggregates.total_tickets_approved }}</div>
+                <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">TOTAL APPROVED
+                </div>
+            </div>
+            <div class="hud-scanline"
+                style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 4px; border: 1px solid rgba(86, 204, 242, 0.1);">
+                <div style="font-size: 1.5rem; font-weight: 700; color: var(--accent-green);">{{
+                    scorecard.aggregates.net_realized_r | round(2) }}R</div>
+                <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">NET REALIZED R
+                </div>
+            </div>
+            <div class="hud-scanline"
+                style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 4px; border: 1px solid rgba(86, 204, 242, 0.1);">
+                <div style="font-size: 1.5rem; font-weight: 700; color: var(--accent-yellow);">
+                    {{ (scorecard.aggregates.net_realized_r / scorecard.aggregates.total_tickets_approved) | round(2) if
+                    scorecard.aggregates.total_tickets_approved > 0 else 0 }}R
+                </div>
+                <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">AVG EXPECTANCY
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Session Breakdown Monitor -->
+    <div class="hud-panel glass-panel col-span-8" data-hud-corner="bottom-left">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">SESSION BREAKDOWN</div>
+        </header>
+
+        <div class="hud-scroll-body" style="max-height: 600px;">
+            <table class="hud-compact-table">
                 <thead>
-                    <tr class="util-87ccbb">
-                        <th class="util-e7fa6d">Date</th>
-                        <th class="util-7613c8">Gate Status</th>
-                        <th class="util-a8ece1">Expectancy R</th>
-                        <th class="util-e7fa6d">Fail Reasons</th>
+                    <tr>
+                        <th>DATE</th>
+                        <th style="text-align: center;">GATE STATUS</th>
+                        <th style="text-align: right;">EXPECTANCY R</th>
+                        <th>FAIL REASONS</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for s in scorecard.sessions %}
-                    <tr class="util-788560">
-                        <td class="util-4009b5">{{ s.date }}</td>
-                        <td class="util-ee8d52">
+                    <tr>
+                        <td style="font-family: monospace;">{{ s.date }}</td>
+                        <td style="text-align: center;">
                             <span
                                 class="badge {% if s.pass_fail == 'PASS' %}badge-success{% else %}badge-danger{% endif %}">
                                 {{ s.pass_fail }}
                             </span>
                         </td>
                         <td
-                            class="util-a8ece1 {% if s.performance_metrics.approved_expectancy_r > 0 %}util-20f3a9{% else %}util-49d8b4{% endif %}">
+                            style="text-align: right; color: {{ 'var(--accent-green)' if s.performance_metrics.approved_expectancy_r > 0 else 'var(--accent-pink)' }}; font-weight: 700;">
                             {{ s.performance_metrics.approved_expectancy_r | round(2) }}R
                         </td>
-                        <td class="util-4009b5 util-1e8514 util-af89d6">
+                        <td style="font-size: 0.75rem; color: var(--text-muted);">
                             {{ s.notes | join(', ') }}
                         </td>
                     </tr>
@@ -82,13 +95,21 @@
         </div>
     </div>
 
-    <div>
-        <div class="card mb-2rem">
-            <div class="card-header">
-                <h2>Next Week Plan</h2>
+    <!-- Strategy Monitor -->
+    <div class="hud-panel glass-panel col-span-4" data-hud-corner="bottom-right">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">NEXT WEEK PLAN</div>
+        </header>
+
+        <div class="hud-scroll-body">
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                {%- for plan in scorecard.next_week_plan -%}
+                <div
+                    style="background: rgba(242, 201, 76, 0.03); padding: 0.75rem; border-left: 2px solid var(--accent-yellow); font-size: 0.8rem; color: var(--text-main);">
+                    {{ plan }}
+                </div>
+                {%- endfor -%}
             </div>
-            <ul class="util-1e8514 pl-1-2">{%- for plan in scorecard.next_week_plan -%}<li class="mb-05rem">{{ plan }}
-                </li>{%- endfor -%}</ul>
         </div>
     </div>
 </div>

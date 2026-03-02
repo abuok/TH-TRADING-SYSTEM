@@ -1,40 +1,56 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="header-section">
-    <h1>Manual Review Queue</h1>
-    <p>Incoming setups requiring operator approval before execution or expiry.</p>
-</div>
+<div class="hud-grid">
+    <!-- Left monitor: Daily Stats -->
+    <div class="hud-panel glass-panel col-span-3 row-span-3" data-hud-corner="top-left">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">SESSION PERFORMANCE MONITOR</div>
+        </header>
+        <div class="hud-scanline"
+            style="background: rgba(255,255,255,0.02); padding: 1.5rem; border-radius: 4px; border: 1px solid rgba(86, 204, 242, 0.1); margin-bottom: 1rem;">
+            <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 1rem;">
+                OPERATOR DECISIONS TODAY</div>
+            <div id="stats-approved"
+                style="font-size: 1.25rem; font-weight: 700; color: var(--accent-green); margin-bottom: 0.5rem;">
+                APPROVE: 0</div>
+            <div id="stats-skipped"
+                style="font-size: 1.25rem; font-weight: 700; color: var(--accent-yellow); margin-bottom: 0.5rem;">SKIP:
+                0</div>
+            <div id="stats-expired" style="font-size: 1.25rem; font-weight: 700; color: var(--accent-pink);">EXPIRED: 0
+            </div>
+        </div>
 
-<div class="dashboard-grid util-166b71">
-    <!-- Left Column: Daily Stats -->
-    <div class="stats util-f48bc2">
-        <div class="stat-card util-62348e">
-            <h3>My Decisions Today</h3>
-            <p id="stats-approved" class="util-1318a0">Approve: 0</p>
-            <p id="stats-skipped" class="util-f21f51">Skip: 0</p>
-            <p id="stats-expired" class="util-888083">Expired: 0</p>
-            <hr class="util-3adc79">
-            <p id="stats-closed" class="util-d43a1a">Closed Outcomes: 0</p>
-            <p id="stats-avgr" class="util-d43a1a">Avg R: 0.0</p>
+        <div class="hud-scanline"
+            style="background: rgba(255,255,255,0.02); padding: 1.5rem; border-radius: 4px; border: 1px solid rgba(155, 81, 224, 0.2);">
+            <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 1rem;">
+                CLOSED REALIZED OUTCOMES</div>
+            <div id="stats-closed" style="font-size: 1rem; color: var(--text-main); margin-bottom: 0.5rem;">CLOSED
+                TICKETS: 0</div>
+            <div id="stats-avgr" style="font-size: 1.5rem; font-weight: 800; color: var(--accent-purple);">0.0R AVG
+            </div>
         </div>
     </div>
 
-    <!-- Right Column: The Queue + Active Preps -->
-    <div>
-        <div class="header-section mt-0 mb-1">
-            <h2>Execution Prep Layer</h2>
-            <p>Approved plans ready for manual execution.</p>
+    <!-- Top Right: Execution Prep Monitor -->
+    <div class="hud-panel glass-panel col-span-9" data-hud-corner="top-right">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">EXECUTION PREP LAYER (APPROVED PLANS)</div>
+        </header>
+        <div id="prep-container" class="hud-scroll-body" style="max-height: 250px;">
+            <div style="padding: 1rem; text-align: center; color: var(--text-muted); opacity: 0.5;">INITIALIZING PREP
+                LAYER...</div>
         </div>
-        <div id="prep-container" class="mb-2">
-            <p>No active execution preps.</p>
-        </div>
+    </div>
 
-        <div class="header-section mt-0 mb-1">
-            <h2>Review Queue</h2>
-        </div>
-        <div id="queue-container">
-            <p>Loading queue...</p>
+    <!-- Bottom Right: Review Queue Monitor -->
+    <div class="hud-panel glass-panel col-span-9 row-span-2" data-hud-corner="bottom-right">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">MANUAL REVIEW QUEUE (INCOMING SETUPS)</div>
+        </header>
+        <div id="queue-container" class="hud-scroll-body">
+            <div style="padding: 2rem; text-align: center; color: var(--text-muted); opacity: 0.5;">SCANNING NETWORK FOR
+                TICKETS...</div>
         </div>
     </div>
 </div>
@@ -98,56 +114,55 @@
             const container = document.getElementById('queue-container');
 
             if (tickets.length === 0) {
-                container.innerHTML = `<div class="card"><p class="util-141b39">No tickets currently in review.</p></div>`;
+                container.innerHTML = `<div style="padding: 3rem; text-align: center; color: var(--text-muted); opacity: 0.5; font-size: 0.9rem; letter-spacing: 2px;">QUEUE CLEAR: NO PENDING REVIEWS</div>`;
                 return;
             }
 
             let html = '';
             tickets.forEach(t => {
                 const isBlocked = t.guardrails_hard_block || (t.block_reason && t.block_reason.includes('BLOCK'));
-                const blockWarning = isBlocked ? `<div class="badge badge-danger util-4986ec">Blocked: ${t.block_reason}</div>` : '';
+                const blockWarning = isBlocked ? `<div class="badge badge-danger" style="margin-bottom: 1rem; width: 100%; text-align: center;">BLOCKED: ${t.block_reason}</div>` : '';
 
                 const scoreColor = t.guardrails_score >= 80 ? 'success' : (t.guardrails_score >= 50 ? 'warning' : 'danger');
 
                 html += `
-                <div  id="card-${t.ticket_id}" class="card util-4215ba">
-                    <div class="card-header util-695916">
+                <div id="card-${t.ticket_id}" class="hud-scanline" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(86, 204, 242, 0.1); border-radius: 4px; padding: 1rem; margin-bottom: 1rem; border-left: 4px solid ${t.direction === 'BUY' ? 'var(--accent-green)' : 'var(--accent-pink)'};">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem;">
                         <div>
-                            <h3 class="util-418266">
-                                ${t.pair} 
-                                <span class="badge ${t.direction === 'BUY' ? 'badge-success' : 'badge-danger'}">${t.direction}</span>
-                            </h3>
-                            <p class="util-bdc6c3">${t.ticket_id} | Discp: <span class="badge badge-${scoreColor}">${t.guardrails_score || 'N/A'}</span></p>
+                            <span style="font-weight: 800; font-size: 1.1rem; color: var(--text-main);">${t.pair}</span>
+                            <span class="badge ${t.direction === 'BUY' ? 'badge-success' : 'badge-danger'}" style="margin-left: 0.5rem;">${t.direction}</span>
+                            <span style="font-family: monospace; font-size: 0.75rem; color: var(--text-muted); margin-left: 1rem;">ID: ${t.ticket_id}</span>
                         </div>
-                        <div class="util-7851db">
-                            <span   data-expiry="${t.expires_at}" id="timer-${t.ticket_id}" class="badge util-3ae8f1">Expires...</span>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div style="font-size: 0.7rem; color: var(--text-muted);">DISCP SCORE: <span class="badge badge-${scoreColor}">${t.guardrails_score || 'N/A'}</span></div>
+                            <span data-expiry="${t.expires_at}" id="timer-${t.ticket_id}" class="badge" style="border: 1px solid var(--accent-yellow); color: var(--accent-yellow);">EXP MONITOR: SYNCING...</span>
                         </div>
                     </div>
-                    <div class="card-body">
-                        ${blockWarning}
-                        <div class="util-69c764">
-                            <div>
-                                <div class="util-467127">Entry</div>
-                                <div>${t.entry_price}</div>
-                            </div>
-                            <div>
-                                <div class="util-467127">Stop Loss</div>
-                                <div>${t.stop_loss}</div>
-                            </div>
-                            <div>
-                                <div class="util-467127">Take Profit 1</div>
-                                <div>${t.take_profit_1} (${t.rr_tp1.toFixed(2)}R)</div>
-                            </div>
-                            <div>
-                                <div class="util-467127">Risk</div>
-                                <div>$${t.risk_usd.toFixed(2)} (${t.lot_size} Lots)</div>
-                            </div>
+                    
+                    ${blockWarning}
+                    
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+                        <div style="background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 2px;">
+                            <div style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase;">ENTRY</div>
+                            <div style="font-family: monospace; font-weight: 700;">${t.entry_price}</div>
                         </div>
+                        <div style="background: rgba(235, 47, 150, 0.05); padding: 0.5rem; border-radius: 2px;">
+                            <div style="font-size: 0.6rem; color: var(--accent-pink); text-transform: uppercase;">STOP LOSS</div>
+                            <div style="font-family: monospace; font-weight: 700; color: var(--accent-pink);">${t.stop_loss}</div>
+                        </div>
+                        <div style="background: rgba(39, 174, 96, 0.05); padding: 0.5rem; border-radius: 2px;">
+                            <div style="font-size: 0.6rem; color: var(--accent-green); text-transform: uppercase;">TAKE PROFIT 1</div>
+                            <div style="font-family: monospace; font-weight: 700; color: var(--accent-green);">${t.take_profit_1} (${t.rr_tp1.toFixed(2)}R)</div>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 2px;">
+                            <div style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase;">RISK ALLOCATION</div>
+                            <div style="font-weight: 700; color: var(--accent-yellow);">$${t.risk_usd.toFixed(2)} (${t.lot_size} LOTS)</div>
+                        </div>
+                    </div>
 
-                        <div class="util-e77fd6">
-                            <button onclick="openSkipModal('${t.ticket_id}')" class="badge util-58b1e4">Skip</button>
-                            <button onclick="approveTicket('${t.ticket_id}')" class="badge badge-success util-f584b9">Approve Plan</button>
-                        </div>
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                        <button onclick="openSkipModal('${t.ticket_id}')" class="btn btn-secondary btn-small" style="font-size: 0.7rem;">SKIP SIGNAL</button>
+                        <button onclick="approveTicket('${t.ticket_id}')" class="btn btn-primary btn-small" style="background: var(--accent-green); border-color: var(--accent-green); font-size: 0.7rem; color: #fff;">APPROVE EXECUTION PLAN</button>
                     </div>
                 </div>
                 `;
@@ -237,54 +252,48 @@
             const container = document.getElementById('prep-container');
 
             if (preps.length === 0) {
-                container.innerHTML = `<div class="card"><p class="util-bdc6c3">No active execution preps.</p></div>`;
+                container.innerHTML = `<div style="padding: 1rem; text-align: center; color: var(--text-muted); opacity: 0.5; font-size: 0.8rem;">NO ACTIVE EXECUTION PREPS</div>`;
                 return;
             }
 
             let html = '';
             preps.forEach(p => {
                 const checkHtml = p.preflight_checks.map(c => `
-                    <div class="util-bdc6c3" style="display:flex; justify-content:space-between; margin-bottom: 0.25rem;">
-                        <span>${c.name}</span>
-                        <span class="badge ${c.status === 'PASS' ? 'badge-success' : (c.status === 'WARN' ? 'badge-warning' : 'badge-danger')}">${c.status}</span>
+                    <div style="display:flex; justify-content:space-between; margin-bottom: 0.4rem; font-size: 0.75rem;">
+                        <span style="color: var(--text-muted);">${c.name}</span>
+                        <span class="badge ${c.status === 'PASS' ? 'badge-success' : (c.status === 'WARN' ? 'badge-warning' : 'badge-danger')}" style="font-size: 0.6rem; padding: 1px 6px;">${c.status}</span>
                     </div>
                 `).join('');
 
                 const overrideBtn = p.override_required ?
-                    `<button onclick="openOverrideModal('${p.ticket_id}')" class="badge badge-danger util-f584b9">Manual Override</button>` : '';
+                    `<button onclick="openOverrideModal('${p.ticket_id}')" class="btn btn-primary btn-small" style="background: var(--accent-pink); border-color: var(--accent-pink); width: 100%; margin-top: 0.5rem; font-size: 0.65rem;">MANUAL OVERRIDE REQUIRED</button>` : '';
 
                 html += `
-                <div id="prep-${p.ticket_id}" class="card" style="border-left: 4px solid var(--accent-green); margin-bottom: 1rem;">
-                    <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
-                        <h3>EXE Prep: ${p.ticket_id}</h3>
-                        <span data-expiry="${p.expires_at}" class="badge badge-warning">Prep Expires...</span>
-                    </div>
-                    <div class="card-body">
-                        <div class="dashboard-grid" style="grid-template-columns: 1fr 1.5fr; gap: 2rem;">
-                            <!-- Checks -->
-                            <div>
-                                <h4 style="margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-muted);">Preflight Checklist</h4>
-                                ${checkHtml}
-                                <div style="margin-top: 1rem;">
-                                    ${overrideBtn}
+                <div id="prep-${p.ticket_id}" class="hud-scanline" style="background: rgba(39, 174, 96, 0.05); border: 1px solid rgba(39, 174, 96, 0.2); border-radius: 4px; padding: 1rem; margin-bottom: 0.75rem; border-left: 3px solid var(--accent-green);">
+                    <div style="display: flex; gap: 1.5rem;">
+                        <!-- Checks -->
+                        <div style="flex: 1; border-right: 1px solid rgba(255,255,255,0.05); padding-right: 1rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                                <div style="font-weight: 800; font-size: 0.85rem; color: var(--accent-green);">EXE PREP: ${p.ticket_id}</div>
+                                <span data-expiry="${p.expires_at}" class="badge" style="font-size: 0.6rem; border: 1px solid var(--accent-yellow); color: var(--accent-yellow);">SYNCING...</span>
+                            </div>
+                            ${checkHtml}
+                            ${overrideBtn}
+                        </div>
+                        <!-- Formats -->
+                        <div style="flex: 2;">
+                            <div style="margin-bottom: 0.75rem;">
+                                <div style="font-size: 0.6rem; color:var(--text-muted); text-transform: uppercase; margin-bottom: 0.25rem;">MT5 EXECUTION STRING</div>
+                                <div style="display:flex; gap: 0.5rem; align-items: center;">
+                                    <code style="background: rgba(0,0,0,0.4); padding: 0.5rem; border-radius: 3px; font-size: 0.75rem; flex-grow:1; border: 1px solid rgba(255,255,255,0.05); color: var(--accent-cyan); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${p.platform_formats.mt5_text}</code>
+                                    <button onclick="copyToClipboard('${p.platform_formats.mt5_text}')" class="btn btn-secondary btn-small" style="font-size: 0.6rem; padding: 4px 8px;">COPY</button>
                                 </div>
                             </div>
-                            <!-- Formats -->
                             <div>
-                                <h4 style="margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-muted);">Execution Strings</h4>
-                                <div style="margin-bottom: 1rem;">
-                                    <div style="font-size: 0.75rem; color:var(--text-muted); margin-bottom: 0.2rem;">MT5 Format</div>
-                                    <div style="display:flex; gap: 0.5rem;">
-                                        <code style="background: rgba(0,0,0,0.3); padding: 0.4rem; border-radius: 4px; font-size: 0.85rem; flex-grow:1;">${p.platform_formats.mt5_text}</code>
-                                        <button onclick="copyToClipboard('${p.platform_formats.mt5_text}')" class="badge">Copy</button>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div style="font-size: 0.75rem; color:var(--text-muted); margin-bottom: 0.2rem;">cTrader Format</div>
-                                    <div style="display:flex; gap: 0.5rem;">
-                                        <code style="background: rgba(0,0,0,0.3); padding: 0.4rem; border-radius: 4px; font-size: 0.85rem; flex-grow:1;">${p.platform_formats.ctrader_text}</code>
-                                        <button onclick="copyToClipboard('${p.platform_formats.ctrader_text}')" class="badge">Copy</button>
-                                    </div>
+                                <div style="font-size: 0.6rem; color:var(--text-muted); text-transform: uppercase; margin-bottom: 0.25rem;">CTRADER EXECUTION STRING</div>
+                                <div style="display:flex; gap: 0.5rem; align-items: center;">
+                                    <code style="background: rgba(0,0,0,0.4); padding: 0.5rem; border-radius: 3px; font-size: 0.75rem; flex-grow:1; border: 1px solid rgba(255,255,255,0.05); color: var(--accent-cyan); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${p.platform_formats.ctrader_text}</code>
+                                    <button onclick="copyToClipboard('${p.platform_formats.ctrader_text}')" class="btn btn-secondary btn-small" style="font-size: 0.6rem; padding: 4px 8px;">COPY</button>
                                 </div>
                             </div>
                         </div>

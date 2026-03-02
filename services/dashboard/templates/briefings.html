@@ -1,52 +1,84 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="header-section">
-    <div class="header-title">
-        <h1>Session Briefings</h1>
-        <p>Daily and intraday briefing packs — Africa/Nairobi time</p>
+<div class="hud-grid">
+    <!-- Header Monitor -->
+    <div class="hud-panel glass-panel col-span-12" data-hud-corner="top-left">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">SESSION BRIEFINGS // TACTICAL OPERATIONS HUB</div>
+        </header>
+        <div style="padding: 1rem; display: flex; justify-content: space-between; align-items: center;">
+            <div style="color: var(--text-muted); font-size: 0.8rem; letter-spacing: 1px;">DAILY AND INTRADAY BRIEFING
+                PACKS — EAT SYNC (AFRICA/NAIROBI)</div>
+            {% if latest %}
+            <a href="/dashboard/briefings/{{ latest.briefing_id }}" class="btn btn-primary btn-small">VIEW LATEST
+                PACK</a>
+            {% endif %}
+        </div>
     </div>
-    {% if latest %}
-    <div>
-        <a href="/dashboard/briefings/{{ latest.briefing_id }}" class="btn btn-primary">View Latest</a>
+
+    {% if not briefings %}
+    <div class="hud-panel glass-panel col-span-12" style="padding: 5rem; text-align: center;">
+        <div style="font-size: 1.5rem; color: var(--accent-pink); font-weight: 800; margin-bottom: 1rem;">ZERO BRIEFINGS
+            GENERATED</div>
+        <div style="color: var(--text-muted); opacity: 0.5;">Awaiting automated trigger at session starts (London/NY) or
+            manual generation.</div>
+    </div>
+    {% else %}
+    <div class="hud-panel glass-panel col-span-12" data-hud-corner="bottom-left">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">BRIEFING FEED // ARCHIVE STREAMS</div>
+            <span class="badge"
+                style="background: rgba(86, 204, 242, 0.1); color: var(--accent-cyan); border: 1px solid var(--accent-cyan);">{{
+                briefings|length }} PACKS</span>
+        </header>
+        <div class="hud-scroll-body">
+            <div
+                style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1rem; padding: 1rem;">
+                {% for b in briefings %}
+                {% set s_color = 'var(--text-muted)' %}
+                {% if b.session_label == 'LONDON' %}{% set s_color = 'var(--accent-cyan)' %}
+                {% elif b.session_label == 'NEW YORK' %}{% set s_color = 'var(--accent-yellow)' %}
+                {% elif b.session_label == 'ASIA' %}{% set s_color = 'var(--accent-purple)' %}
+                {% endif %}
+                <div class="hud-scanline"
+                    style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 4px; border-left: 3px solid {{ s_color }}; overflow: hidden;">
+                    <div style="padding: 1rem;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                            <div>
+                                <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.2rem;">
+                                    <span style="font-size: 0.9rem; font-weight: 800; color: {{ s_color }};">{{
+                                        b.session_label }}</span>
+                                    {% if b.is_delta %}
+                                    <span class="badge"
+                                        style="font-size: 0.5rem; background: rgba(235, 47, 150, 0.1); color: var(--accent-pink); border: 1px solid var(--accent-pink);">DELTA</span>
+                                    {% else %}
+                                    <span class="badge"
+                                        style="font-size: 0.5rem; border: 1px solid var(--accent-cyan); color: var(--accent-cyan); background: transparent;">PRE-SESSION</span>
+                                    {% endif %}
+                                </div>
+                                <div style="font-family: monospace; font-size: 0.65rem; color: var(--text-muted);">{{
+                                    b.date }} // {{ b.created_at.strftime('%H:%M:%S') }} EAT</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div
+                                    style="font-family: monospace; font-size: 0.6rem; color: var(--text-muted); margin-bottom: 0.2rem;">
+                                    ID: {{ b.briefing_id[-8:] }}</div>
+                                <div style="display: flex; gap: 0.4rem;">
+                                    <a href="/dashboard/briefings/{{ b.briefing_id }}"
+                                        class="btn btn-secondary btn-tiny">VIEW</a>
+                                    <a href="/dashboard/briefings/{{ b.briefing_id }}/print" target="_blank"
+                                        class="btn btn-secondary btn-tiny" style="opacity: 0.6;">🖨</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
     </div>
     {% endif %}
 </div>
-
-{% if not briefings %}
-<div class="card util-d2bc99">
-    <h2 class="util-697a24">No Briefings Yet</h2>
-    <p>Briefings are generated automatically at the start of London and NY sessions,<br>
-        or can be triggered via <code>POST /briefings/generate</code>.</p>
-</div>
-{% else %}
-<div class="grid util-6b19d8">
-    {% for b in briefings %}
-    {% set session_class = {"LONDON": "session-london", "NEW YORK": "session-new-york", "ASIA":
-    "session-asia"}.get(b.session_label, "session-default") %}
-    <div class="card animate-fade {{ session_class }} flex-between-center padding-briefing">
-        <div>
-            <div class="util-127af0">
-                <span class="util-fbd352">{{ b.session_label }}</span>
-                {% if b.is_delta %}
-                <span class="badge util-1c08ee">DELTA</span>
-                {% else %}
-                <span class="badge badge-info">PRE-SESSION</span>
-                {% endif %}
-                <span class="util-e91b5f">{{ b.date }}</span>
-            </div>
-            <p class="util-99dbd5">
-                {{ b.briefing_id }} &mdash;
-                {{ b.created_at.strftime('%H:%M:%S') }} EAT
-            </p>
-        </div>
-        <div class="util-3f184f">
-            <a href="/dashboard/briefings/{{ b.briefing_id }}" class="btn btn-secondary">View</a>
-            <a href="/dashboard/briefings/{{ b.briefing_id }}/print" target="_blank" class="btn btn-secondary">🖨
-                Print</a>
-        </div>
-    </div>
-    {% endfor %}
-</div>
-{% endif %}
 {% endblock %}

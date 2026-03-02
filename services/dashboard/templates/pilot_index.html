@@ -11,80 +11,83 @@
     </div>
 </div>
 
-<div class="grid util-grid-2-1">
-    <div>
-        <div class="card mb-2rem">
-            <div class="card-header">
-                <h2>Active Scorecards</h2>
-            </div>
+<div class="hud-grid">
+    <!-- Main Logistics Monitor -->
+    <div class="hud-panel glass-panel col-span-8 row-span-2" data-hud-corner="top-left">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">ACTIVE SCORECARDS: GRADUATION TRACKING</div>
+        </header>
+
+        <div class="hud-scroll-body">
             {% if scorecards %}
-            <table class="util-32d39d">
+            <table class="hud-compact-table">
                 <thead>
-                    <tr class="util-87ccbb">
-                        <th class="util-e7fa6d">ID</th>
-                        <th class="util-e7fa6d">Date Range</th>
-                        <th class="util-7613c8">Graduation Status</th>
-                        <th class="util-a8ece1">Actions</th>
+                    <tr>
+                        <th>ID</th>
+                        <th>DATE RANGE</th>
+                        <th style="text-align: center;">GRADUATION STATUS</th>
+                        <th style="text-align: right;">ACTIONS</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for sc in scorecards %}
-                    <tr class="util-788560">
-                        <td class="util-4009b5">{{ sc.scorecard_id }}</td>
-                        <td class="util-4009b5">{{ sc.date_range }}</td>
-                        <td class="util-ee8d52">
+                    <tr>
+                        <td>{{ sc.scorecard_id }}</td>
+                        <td>{{ sc.date_range }}</td>
+                        <td style="text-align: center;">
                             <span
                                 class="badge {% if sc.pass_fail == 'PASS' %}badge-success{% else %}badge-danger{% endif %}">
                                 {{ sc.pass_fail }}
                             </span>
                         </td>
-                        <td class="util-a8ece1">
-                            <a href="/dashboard/pilot/{{ sc.scorecard_id }}" class="btn btn-small">View Full Report</a>
+                        <td style="text-align: right;">
+                            <a href="/dashboard/pilot/{{ sc.scorecard_id }}" class="btn btn-small">VIEW FULL REPORT</a>
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
             {% else %}
-            <div class="util-141b39">No scorecards generated yet. Run via CLI.</div>
+            <div style="padding: 2rem; text-align: center; color: var(--text-muted); opacity: 0.5;">NO SCORECARDS
+                GENERATED</div>
             {% endif %}
         </div>
 
-        <div class="card">
-            <div class="card-header">
-                <h2>Recent Session Outcomes</h2>
-            </div>
+        <header class="hud-panel-header" style="margin-top: 2rem;">
+            <div class="hud-panel-title">RECENT SESSION OUTCOMES</div>
+        </header>
+        <div class="hud-scroll-body">
             {% if recent_sessions %}
-            <table class="util-32d39d">
+            <table class="hud-compact-table">
                 <thead>
-                    <tr class="util-87ccbb">
-                        <th class="util-e7fa6d">Date</th>
-                        <th class="util-e7fa6d">Session ID</th>
-                        <th class="util-7613c8">Status</th>
-                        <th class="util-a8ece1">Expectancy R</th>
-                        <th class="util-a8ece1">Max Stale</th>
-                        <th class="util-a8ece1">DD Session</th>
+                    <tr>
+                        <th>DATE</th>
+                        <th>SESSION ID</th>
+                        <th style="text-align: center;">STATUS</th>
+                        <th style="text-align: right;">EXPECTANCY R</th>
+                        <th style="text-align: right;">MAX STALE</th>
+                        <th style="text-align: right;">DD SESSION</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for s in recent_sessions %}
-                    <tr class="util-788560">
-                        <td class="util-4009b5">{{ s.date }}</td>
-                        <td class="util-4009b5">{{ s.session_id }}</td>
-                        <td class="util-ee8d52">
+                    <tr>
+                        <td>{{ s.date }}</td>
+                        <td>{{ s.session_id }}</td>
+                        <td style="text-align: center;">
                             <span
                                 class="badge {% if s.pass_fail == 'PASS' %}badge-success{% else %}badge-danger{% endif %}">
                                 {{ s.pass_fail }}
                             </span>
                         </td>
                         <td
-                            class="util-a8ece1 {% if s.data.performance_metrics.approved_expectancy_r > 0 %}util-20f3a9{% else %}util-49d8b4{% endif %}">
+                            style="text-align: right; color: {{ 'var(--accent-green)' if s.data.performance_metrics.approved_expectancy_r > 0 else 'var(--accent-pink)' }};">
                             {{ s.data.performance_metrics.approved_expectancy_r | round(2) }}R
                         </td>
-                        <td class="util-a8ece1">
+                        <td style="text-align: right;">
                             {{ s.data.reliability_metrics.max_quote_stale_seconds | round(1) }}s
                         </td>
-                        <td class="util-a8ece1">
+                        <td style="text-align: right; color: var(--accent-pink);">
                             {{ s.data.performance_metrics.max_drawdown_r | round(2) }}R
                         </td>
                     </tr>
@@ -92,51 +95,71 @@
                 </tbody>
             </table>
             {% else %}
-            <div class="util-141b39">No sessions logged.</div>
+            <div style="padding: 2rem; text-align: center; color: var(--text-muted); opacity: 0.5;">NO SESSIONS LOGGED
+            </div>
             {% endif %}
         </div>
     </div>
 
-    <div>
-        <div class="card mb-2rem">
-            <div class="card-header">
-                <h2>Pilot Stats (Rolling)</h2>
-            </div>
-            {% if scorecards %}
-            {% set latest = scorecards[0].data %}
-            <div class="util-dca860 mb-1rem">Based on latest scorecard: {{ scorecards[0].scorecard_id }}</div>
+    <!-- Stats & Intelligence Monitor -->
+    <div class="hud-panel glass-panel col-span-4" data-hud-corner="top-right">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">PILOT STATS (ROLLING)</div>
+        </header>
 
-            <div class="grid util-grid-1-gap-1">
-                <div class="card util-bg-dark-subtle">
-                    <div class="util-fbd352">{{ latest.aggregates.passing_days }} / {{ latest.aggregates.total_days }}
-                    </div>
-                    <div class="util-e91b5f">Passing Days</div>
-                </div>
-                <div class="card util-bg-dark-subtle">
-                    <div class="util-0739fc">{{ (latest.aggregates.passing_days / latest.aggregates.total_days * 100) |
-                        round(1) }}%</div>
-                    <div class="util-e91b5f">Reliability Rate</div>
-                </div>
-                <div class="card util-bg-dark-subtle">
-                    <div class="util-fbd352">{{ latest.aggregates.net_realized_r | round(2) }}R</div>
-                    <div class="util-e91b5f">Cumulative Return</div>
-                </div>
-            </div>
-            {% else %}
-            <p class="util-6b19d8 util-0cc7c6">Cumulative stats will appear here.</p>
-            {% endif %}
+        {% if scorecards %}
+        {% set latest = scorecards[0].data %}
+        <div style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 1rem; text-transform: uppercase;">
+            BASED ON LATEST SCORECARD: {{ scorecards[0].scorecard_id }}
         </div>
 
-        <div class="card">
-            <div class="card-header">
-                <h2>Next Week Plan Preview</h2>
+        <div style="display: grid; grid-template-columns: 1fr; gap: 0.75rem;">
+            <div class="hud-scanline"
+                style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 4px; border: 1px solid rgba(86, 204, 242, 0.1);">
+                <div style="font-size: 1.5rem; font-weight: 700; color: var(--accent-cyan);">{{
+                    latest.aggregates.passing_days }} / {{ latest.aggregates.total_days }}</div>
+                <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">PASSING DAYS</div>
             </div>
+            <div class="hud-scanline"
+                style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 4px; border: 1px solid rgba(86, 204, 242, 0.1);">
+                <div style="font-size: 1.5rem; font-weight: 700; color: var(--accent-green);">{{
+                    (latest.aggregates.passing_days / latest.aggregates.total_days * 100) | round(1) }}%</div>
+                <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">RELIABILITY RATE
+                </div>
+            </div>
+            <div class="hud-scanline"
+                style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 4px; border: 1px solid rgba(86, 204, 242, 0.1);">
+                <div style="font-size: 1.5rem; font-weight: 700; color: var(--text-main);">{{
+                    latest.aggregates.net_realized_r | round(2) }}R</div>
+                <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">CUMULATIVE RETURN
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div style="padding: 2rem; text-align: center; color: var(--text-muted); opacity: 0.5;">STATS WILL APPEAR HERE
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Planning Monitor -->
+    <div class="hud-panel glass-panel col-span-4" data-hud-corner="bottom-right">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">NEXT WEEK PLAN PREVIEW</div>
+        </header>
+
+        <div class="hud-scroll-body">
             {% if scorecards %}
-            <ul class="util-1e8514 pl-1-2">{%- for item in scorecards[0].data.next_week_plan -%}<li class="mb-05rem">{{
-                    item }}</li>{%- endfor -%}</ul>
-            </ul>
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                {%- for item in scorecards[0].data.next_week_plan -%}
+                <div
+                    style="background: rgba(86, 204, 242, 0.03); padding: 0.75rem; border-left: 2px solid var(--accent-cyan); font-size: 0.8rem; color: var(--text-main);">
+                    {{ item }}
+                </div>
+                {%- endfor -%}
+            </div>
             {% else %}
-            <p class="util-d77719">No plan derived yet.</p>
+            <div style="padding: 2rem; text-align: center; color: var(--text-muted); opacity: 0.5;">NO PLAN DERIVED YET
+            </div>
             {% endif %}
         </div>
     </div>

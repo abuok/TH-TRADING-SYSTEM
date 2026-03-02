@@ -3,92 +3,93 @@
 {% block title %}Hindsight Scoring - TH V1{% endblock %}
 
 {% block content %}
-<div class="space-y-6">
-    <!-- Header & Controls -->
-    <div class="flex justify-between items-center mb-6">
-        <div>
-            <h1 class="text-3xl font-bold tracking-tight">Hindsight Scoring</h1>
-            <p class="text-muted-foreground mt-1">Review deterministic simulated outcomes of skipped and expired
-                tickets.</p>
+<div class="hud-grid">
+    <!-- Header & Controls Monitor -->
+    <div class="hud-panel glass-panel col-span-12" data-hud-corner="top-left">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">HINDSIGHT AUDIT // DEED-BASED SIMULATION</div>
+        </header>
+        <div style="padding: 1rem; display: flex; justify-content: space-between; align-items: center;">
+            <div style="color: var(--text-muted); font-size: 0.8rem; letter-spacing: 1px;">REVIEW DETERMINISTIC OUTCOMES
+                OF SKIPPED/EXPIRED TICKET PATHS</div>
+            <form id="dateForm" style="display: flex; gap: 0.5rem; align-items: center;">
+                <input type="date" id="datePicker" name="date_str" value="{{ date_str }}"
+                    style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); color: var(--text-main); padding: 0.4rem 1rem; border-radius: 4px; font-family: monospace; font-size: 0.8rem;">
+                <button type="submit" class="btn btn-primary btn-small">LOAD ARCHIVE</button>
+                <button type="button" onclick="runHindsight()" class="btn btn-secondary btn-small"
+                    style="background: var(--accent-yellow); color: #000; border-color: var(--accent-yellow);">RUN
+                    BATCH</button>
+            </form>
         </div>
-
-        <form id="dateForm" class="flex gap-2">
-            <input type="date" id="datePicker" name="date_str" value="{{ date_str }}" title="Select Date"
-                placeholder="YYYY-MM-DD"
-                class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
-            <button type="submit"
-                class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
-                Load Date
-            </button>
-            <button type="button" onclick="runHindsight()"
-                class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-secondary text-secondary-foreground hover:bg-secondary/80 h-10 px-4 py-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                    class="mr-2 lucide lucide-play">
-                    <polygon points="6 3 20 12 6 21 6 3" />
-                </svg>
-                Run Batch
-            </button>
-        </form>
     </div>
 
     {% if summary.total == 0 %}
-    <div class="rounded-lg border bg-card text-card-foreground shadow-sm p-6 text-center text-muted-foreground">
-        No hindsight evaluations found for {{ date_str }}. Click "Run Batch" to check for pending skipped/expired
-        tickets.
+    <div class="hud-panel glass-panel col-span-12" style="padding: 4rem; text-align: center;">
+        <div style="font-size: 1.5rem; color: var(--accent-pink); font-weight: 800; margin-bottom: 1rem;">ZERO
+            EVALUATIONS IN CACHE</div>
+        <div style="color: var(--text-muted); opacity: 0.5;">No hindsight data for {{ date_str }}. Initiate "RUN BATCH"
+            to analyze skipped/expired tickets.</div>
     </div>
     {% else %}
 
     <!-- Top Level Stats -->
-    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <div class="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-            <div class="font-medium text-sm text-muted-foreground">Total Evaluated</div>
-            <div class="text-3xl font-bold mt-2">{{ summary.total }}</div>
+    <div class="hud-panel glass-panel col-span-4">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">TOTAL EVALUATED</div>
+        </header>
+        <div style="padding: 1.5rem; text-align: center;">
+            <div style="font-size: 3rem; font-weight: 800; color: var(--accent-cyan); line-height: 1;">{{ summary.total
+                }}</div>
+            <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.5rem;">TICKETS IN BATCH</div>
         </div>
-
-        {% if summary.costliest_miss %}
-        <div
-            class="col-span-3 rounded-lg border bg-card text-card-foreground shadow-sm p-6 border-l-4 border-l-orange-500 bg-orange-50/10">
-            <div class="font-medium text-sm text-orange-600 dark:text-orange-400">Costliest Missed Opportunity</div>
-            <div class="flex items-center gap-4 mt-2">
-                <div class="text-2xl font-bold text-orange-500">+{{ summary.costliest_miss.missed_r }} R</div>
-                <div class="text-sm">
-                    Ticket <b>{{ summary.costliest_miss.ticket_id }}</b> was skipped due to
-                    <span class="px-2 py-1 text-xs rounded bg-secondary capitalize">{{ summary.costliest_miss.reason
-                        }}</span>
-                </div>
-            </div>
-        </div>
-        {% endif %}
     </div>
 
-    <!-- Breakdown Table -->
-    <div class="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
-        <div class="p-6 border-b">
-            <h3 class="font-semibold text-lg">Skip Reasons Breakdown</h3>
-            <p class="text-sm text-muted-foreground">Aggregate hypothetical outcomes mapped by human skip bias.</p>
+    {% if summary.costliest_miss %}
+    <div class="hud-panel glass-panel col-span-8"
+        style="background: rgba(242, 153, 74, 0.05); border-left: 4px solid var(--accent-orange);">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title" style="color: var(--accent-orange);">COSTLIEST MISSED OPPORTUNITY</div>
+        </header>
+        <div style="padding: 1rem; display: flex; align-items: center; gap: 2rem;">
+            <div style="font-size: 2.5rem; font-weight: 800; color: var(--accent-orange);">+{{
+                summary.costliest_miss.missed_r }}R</div>
+            <div>
+                <div style="font-size: 0.9rem; font-weight: 700;">TICKET: {{ summary.costliest_miss.ticket_id }}</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">SKIPPED DUE TO: <span class="badge"
+                        style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-color);">{{
+                        summary.costliest_miss.reason }}</span></div>
+            </div>
         </div>
-        <div class="p-0">
-            <table class="w-full text-sm text-left">
-                <thead class="bg-muted/50 text-muted-foreground">
+    </div>
+    {% endif %}
+
+    <!-- Breakdown Table -->
+    <div class="hud-panel glass-panel col-span-12">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">SKIP BIAS BREAKDOWN // AGGREGATE OUTCOMES</div>
+        </header>
+        <div class="hud-scroll-body">
+            <table class="hud-compact-table">
+                <thead>
                     <tr>
-                        <th class="px-6 py-3 font-medium">Skip Reason</th>
-                        <th class="px-6 py-3 font-medium text-center">Count</th>
-                        <th class="px-6 py-3 font-medium text-right">Win Rate</th>
-                        <th class="px-6 py-3 font-medium text-right">Avg Imaginary Output (R)</th>
+                        <th>SKIP REASON</th>
+                        <th style="text-align: center;">VOLUME</th>
+                        <th style="text-align: right;">WIN RATE (%)</th>
+                        <th style="text-align: right;">AVG IMAGINARY OUTPUT (R)</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y">
+                <tbody>
                     {% for item in summary.reasons %}
-                    <tr class="hover:bg-muted/50 transition-colors">
-                        <td class="px-6 py-4 font-medium capitalize">{{ item.reason.replace("_", " ") }}</td>
-                        <td class="px-6 py-4 text-center">{{ item.count }}</td>
+                    <tr>
+                        <td style="font-weight: 700; text-transform: uppercase;">{{ item.reason.replace("_", " ") }}
+                        </td>
+                        <td style="text-align: center;">{{ item.count }}</td>
                         <td
-                            class="px-6 py-4 text-right {% if item.win_rate > 50 %}text-green-600{% elif item.win_rate < 30 %}text-red-600{% endif %}">
+                            style="text-align: right; font-weight: 700; color: {% if item.win_rate > 50 %}var(--accent-green){% elif item.win_rate < 30 %}var(--accent-pink){% else %}var(--text-main){% endif %};">
                             {{ item.win_rate }}%
                         </td>
                         <td
-                            class="px-6 py-4 text-right font-medium {% if item.avg_r > 0 %}text-green-600{% elif item.avg_r < 0 %}text-red-600{% endif %}">
+                            style="text-align: right; font-family: monospace; font-weight: 800; color: {% if item.avg_r > 0 %}var(--accent-green){% elif item.avg_r < 0 %}var(--accent-pink){% else %}var(--text-muted){% endif %};">
                             {{ "{:+.2f}".format(item.avg_r) }} R
                         </td>
                     </tr>
@@ -99,57 +100,61 @@
     </div>
 
     <!-- Tickets List -->
-    <div class="space-y-4">
-        <h3 class="font-semibold text-lg mt-8">Evaluated Tickets</h3>
-
-        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {% for t in tickets %}
+    <div class="hud-panel glass-panel col-span-12" data-hud-corner="bottom-left">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">EVALUATED TICKET STREAM</div>
+        </header>
+        <div class="hud-scroll-body">
             <div
-                class="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden transition-all hover:shadow-md">
-                <div class="p-4 border-b flex justify-between items-center bg-muted/20">
-                    <div class="font-mono text-sm font-bold">{{ t.ticket_id }}</div>
-
-                    {% set badge_color = 'bg-gray-100 text-gray-800' %}
-                    {% if t.hindsight_outcome_label == 'WIN' %}
-                    {% set badge_color = 'bg-green-100 text-green-800 border-green-200' %}
-                    {% elif t.hindsight_outcome_label == 'LOSS' %}
-                    {% set badge_color = 'bg-red-100 text-red-800 border-red-200' %}
-                    {% elif t.hindsight_outcome_label == 'BE' %}
-                    {% set badge_color = 'bg-yellow-100 text-yellow-800 border-yellow-200' %}
-                    {% endif %}
-
-                    <span
-                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border {{ badge_color }}">
-                        HINDSIGHT: {{ t.hindsight_outcome_label }}
-                    </span>
+                style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; padding: 1rem;">
+                {% for t in tickets %}
+                <div class="hud-scanline"
+                    style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden;">
+                    <div
+                        style="background: rgba(255,255,255,0.03); padding: 0.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <div style="font-family: monospace; font-size: 0.7rem; font-weight: 700;">{{ t.ticket_id }}
+                        </div>
+                        {% set h_color = 'var(--text-muted)' %}
+                        {% if t.hindsight_outcome_label == 'WIN' %}{% set h_color = 'var(--accent-green)' %}
+                        {% elif t.hindsight_outcome_label == 'LOSS' %}{% set h_color = 'var(--accent-pink)' %}
+                        {% elif t.hindsight_outcome_label == 'BE' %}{% set h_color = 'var(--accent-yellow)' %}
+                        {% endif %}
+                        <span class="badge"
+                            style="border: 1px solid {{ h_color }}; color: {{ h_color }}; background: transparent; font-size: 0.55rem;">HINDSIGHT:
+                            {{ t.hindsight_outcome_label }}</span>
+                    </div>
+                    <div style="padding: 0.75rem;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                            <span style="font-size: 0.65rem; color: var(--text-muted);">ORIGINAL STATUS</span>
+                            <span style="font-size: 0.65rem; font-weight: 700;">{{ t.status }}</span>
+                        </div>
+                        {% if t.skip_reason %}
+                        <div
+                            style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; align-items: center;">
+                            <span style="font-size: 0.65rem; color: var(--text-muted);">SKIP BIAS</span>
+                            <span
+                                style="font-size: 0.6rem; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); padding: 1px 4px; border-radius: 2px;">{{
+                                t.skip_reason }}</span>
+                        </div>
+                        {% endif %}
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dotted rgba(255,255,255,0.1); pt-0.5rem;">
+                            <span style="font-size: 0.7rem; font-weight: 700;">IMAGINARY NET</span>
+                            <span
+                                style="font-size: 0.9rem; font-weight: 800; color: {{ h_color }}; font-family: monospace;">{{
+                                "{:+.2f}".format(t.hindsight_realized_r) }} R</span>
+                        </div>
+                    </div>
                 </div>
-
-                <div class="p-4 space-y-3">
-                    <div class="flex justify-between">
-                        <span class="text-sm text-muted-foreground">Original Status</span>
-                        <span class="text-sm font-medium">{{ t.status }}</span>
-                    </div>
-                    {% if t.skip_reason %}
-                    <div class="flex justify-between">
-                        <span class="text-sm text-muted-foreground">Skip Bias</span>
-                        <span class="text-sm font-medium border px-1.5 py-0.5 rounded text-xs bg-secondary">{{
-                            t.skip_reason }}</span>
-                    </div>
-                    {% endif %}
-                    <div class="flex justify-between items-center pt-2 border-t">
-                        <span class="text-sm text-muted-foreground">Imaginary Net</span>
-                        <span
-                            class="font-bold {% if t.hindsight_realized_r > 0 %}text-green-600{% elif t.hindsight_realized_r < 0 %}text-red-600{% endif %}">
-                            {{ "{:+.2f}".format(t.hindsight_realized_r) }} R
-                        </span>
-                    </div>
-                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
         </div>
     </div>
 
     {% endif %}
+</div>
+
+{% endif %}
 </div>
 
 <script>

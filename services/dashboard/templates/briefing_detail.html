@@ -1,83 +1,162 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="header-section">
-    <div class="header-title">
-        <h1>Briefing: {{ record.session_label }} — {{ record.date }}</h1>
-        <p class="util-79c561">
-            {{ record.briefing_id }}
-            {% if record.is_delta %}
-            &nbsp;<span class="badge util-1c08ee">DELTA</span>
-            {% else %}
-            &nbsp;<span class="badge badge-info">PRE-SESSION</span>
-            {% endif %}
-            &nbsp;| Generated: {{ record.created_at.strftime('%Y-%m-%d %H:%M:%S') }} EAT
-        </p>
+<div class="hud-grid">
+    <!-- Header Monitor -->
+    <div class="hud-panel glass-panel col-span-12" data-hud-corner="top-left">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">TACTICAL BRIEFING // {{ record.session_label }} // {{ record.date }}</div>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                {% if record.is_delta %}
+                <span class="badge"
+                    style="background: rgba(235, 47, 150, 0.1); color: var(--accent-pink); border: 1px solid var(--accent-pink);">DELTA
+                    UPDATE</span>
+                {% else %}
+                <span class="badge"
+                    style="border: 1px solid var(--accent-cyan); color: var(--accent-cyan); background: transparent;">PRE-SESSION
+                    PACK</span>
+                {% endif %}
+            </div>
+        </header>
+        <div style="padding: 1rem; display: flex; justify-content: space-between; align-items: center;">
+            <div style="font-family: monospace; font-size: 0.75rem; color: var(--text-muted);">
+                ID: {{ record.briefing_id }} // GENERATED: {{ record.created_at.strftime('%Y-%m-%d %H:%M:%S') }} EAT
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+                <a href="/dashboard/briefings" class="btn btn-secondary btn-small">&larr; BACK TO FEED</a>
+                <a href="/dashboard/briefings/{{ record.briefing_id }}/print" target="_blank"
+                    class="btn btn-primary btn-small">PRINT / PDF HUB</a>
+            </div>
+        </div>
     </div>
-    <div class="util-3f184f">
-        <a href="/dashboard/briefings" class="btn btn-secondary">← All Briefings</a>
-        <a href="/dashboard/briefings/{{ record.briefing_id }}/print" target="_blank" class="btn btn-primary">🖨 Print /
-            PDF</a>
-    </div>
-</div>
 
-{% if html_content %}
-<div class="card util-a1c1c4">
-    {# Embed the pre-rendered briefing HTML inside an iframe for clean print isolation #}
-    <iframe id="briefing-frame" src="/dashboard/briefings/{{ record.briefing_id }}/print" title="Briefing Pack"
-        class="util-bc4f53"></iframe>
-</div>
-{% else %}
-{# Fallback: render key metadata from DB JSON #}
-{% set d = record.data %}
-<div class="card animate-fade">
-    <h2 class="sub-header">System Status</h2>
-    {% set sys = d.get("system_status", {}) %}
-    <p><strong>Kill Switches:</strong>
-        {% if sys.get("active_kill_switches") %}
-        {{ sys["active_kill_switches"] | join(", ") }}
-        {% else %}
-        <span class="util-20f3a9">None</span>
-        {% endif %}
-    </p>
-    {% if sys.get("last_incident_summary") %}
-    <p><strong>Last Incident:</strong>
-        <span class="util-49d8b4">[{{ sys.last_incident_severity }}]</span>
-        {{ sys.last_incident_summary }}
-    </p>
+    {% if html_content %}
+    <!-- Primary Briefing Display (Iframe) -->
+    <div class="hud-panel glass-panel col-span-12" style="background: rgba(0,0,0,0.5);">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">PRE-RENDERED INTEL STREAM</div>
+        </header>
+        <div style="padding: 0; position: relative;">
+            <iframe id="briefing-frame" src="/dashboard/briefings/{{ record.briefing_id }}/print" title="Briefing Pack"
+                style="width: 100%; border: none; min-height: 800px; display: block; border-radius: 0 0 4px 4px;"></iframe>
+        </div>
+    </div>
+    {% else %}
+    <!-- Fallback Metadata HUD -->
+    {% set d = record.data %}
+
+    <!-- [4] System Status & Operator Actions -->
+    <div class="hud-panel glass-panel col-span-4" data-hud-corner="bottom-left">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">SYSTEM STATUS // INTERVENTIONS</div>
+        </header>
+        <div class="hud-scroll-body" style="padding: 1rem;">
+            {% set sys = d.get("system_status", {}) %}
+            <div style="margin-bottom: 1.5rem;">
+                <div
+                    style="font-size: 0.6rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">
+                    Active Kill Switches</div>
+                {% if sys.get("active_kill_switches") %}
+                <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                    {% for sw in sys["active_kill_switches"] %}
+                    <span class="badge"
+                        style="background: rgba(235, 47, 150, 0.1); color: var(--accent-pink); border: 1px solid var(--accent-pink);">{{
+                        sw }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div style="color: var(--accent-green); font-size: 0.75rem; font-family: monospace;">[ARMED] NO ACTIVE
+                    KILL SWITCHES</div>
+                {% endif %}
+            </div>
+
+            {% if sys.get("last_incident_summary") %}
+            <div
+                style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 4px; padding: 0.75rem;">
+                <div style="font-size: 0.6rem; color: var(--accent-pink); font-weight: 800; margin-bottom: 0.4rem;">LAST
+                    CRITICAL INCIDENT</div>
+                <div style="font-size: 0.75rem; color: var(--text-main); margin-bottom: 0.25rem;">{{
+                    sys.last_incident_summary }}</div>
+                <div style="font-size: 0.6rem; color: var(--text-muted); font-family: monospace;">SEVERITY: {{
+                    sys.last_incident_severity }}</div>
+            </div>
+            {% endif %}
+
+            <div style="margin-top: 2rem;">
+                <div
+                    style="font-size: 0.6rem; color: var(--text-muted); margin-bottom: 1rem; text-transform: uppercase;">
+                    Operator Directives</div>
+                {% for action in d.get("operator_actions", []) %}
+                <div
+                    style="margin-bottom: 1rem; border-left: 2px solid {{ 'var(--accent-pink)' if action.priority == 'HIGH' else ('var(--accent-yellow)' if action.priority == 'MEDIUM' else 'var(--accent-cyan)') }}; padding-left: 0.75rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.2rem;">
+                        <span
+                            style="font-size: 0.55rem; font-weight: 900; color: {{ 'var(--accent-pink)' if action.priority == 'HIGH' else ('var(--accent-yellow)' if action.priority == 'MEDIUM' else 'var(--accent-cyan)') }}; text-transform: uppercase;">{{
+                            action.priority }}</span>
+                        <span style="font-size: 0.75rem; font-weight: 800; color: var(--text-main);">{{ action.category
+                            }}</span>
+                    </div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted); line-height: 1.4;">{{ action.description }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- [8] Pair Overviews -->
+    <div class="hud-panel glass-panel col-span-8" data-hud-corner="bottom-right">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">PAIR OVERVIEWS // QUANTITATIVE ANALYSIS</div>
+        </header>
+        <div class="hud-scroll-body" style="padding: 1rem;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem;">
+                {% for po in d.get("pair_overviews", []) %}
+                <div class="hud-scanline"
+                    style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 4px; padding: 1rem;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.75rem;">
+                        <span style="font-size: 1rem; font-weight: 800; color: var(--accent-cyan);">{{ po.pair }}</span>
+                        <span class="badge"
+                            style="background: rgba(86, 204, 242, 0.1); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); font-size: 0.6rem;">{{
+                            po.bias }}</span>
+                    </div>
+
+                    {% if po.latest_ticket %}
+                    <div style="background: rgba(0,0,0,0.2); padding: 0.75rem; border-radius: 4px;">
+                        <div
+                            style="font-size: 0.55rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.4rem;">
+                            Latest Transmission</div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                            <span style="font-size: 0.75rem; font-weight: 700;">{{ po.latest_ticket.direction }}</span>
+                            <span style="font-family: monospace; font-size: 0.8rem; color: var(--accent-yellow);">{{
+                                "%.5f" | format(po.latest_ticket.entry_price) }}</span>
+                        </div>
+                        <div
+                            style="display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--text-muted);">
+                            <span>STATUS: {{ po.latest_ticket.status }}</span>
+                            <span>RR: {{ "%.1f" | format(po.latest_ticket.rr_tp1) }}R</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
     {% endif %}
 </div>
 
-<div class="card animate-fade">
-    <h2 class="sub-header">Pair Overviews</h2>
-    {% for po in d.get("pair_overviews", []) %}
-    <div class="util-dabd12">
-        <h3>{{ po.pair }}
-            <span class="util-1e8514">{{ po.bias }}</span>
-        </h3>
-        {% if po.latest_ticket %}
-        <p><strong>Latest Ticket:</strong>
-            {{ po.latest_ticket.status }} | {{ po.latest_ticket.direction }}
-            @ {{ "%.5f" | format(po.latest_ticket.entry_price) }}
-            | {{ "%.1f" | format(po.latest_ticket.rr_tp1) }}R
-        </p>
-        {% endif %}
-    </div>
-    {% endfor %}
-</div>
-
-<div class="card animate-fade">
-    <h2 class="sub-header">Operator Actions</h2>
-    {% for action in d.get("operator_actions", []) %}
-    <div class="util-146b08">
-        <span
-            class="badge badge-{{ 'danger' if action.priority == 'HIGH' else ('warning' if action.priority == 'MEDIUM' else 'info') }}">{{
-            action.priority }}</span>
-        <strong>{{ action.category }}</strong> — {{ action.description }}
-    </div>
-    {% endfor %}
-</div>
-{% endif %}
+<script>
+    const iframe = document.getElementById("briefing-frame");
+    if (iframe) {
+        iframe.onload = function () {
+            try {
+                iframe.style.minHeight = iframe.contentWindow.document.body.scrollHeight + "px";
+            } catch (e) { }
+        };
+    }
+</script>
 
 <script>
     // Auto-resize iframe to content height

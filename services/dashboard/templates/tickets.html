@@ -15,163 +15,198 @@
     </div>
 </div>
 
-<div class="grid util-eb0595">
+<div class="hud-grid">
+    <!-- Search & Filter Monitor -->
+    <div class="hud-panel glass-panel col-span-12" data-hud-corner="top-left">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">TICKET AUDIT & FILTER SYSTEM</div>
+        </header>
+        <div style="padding: 1rem; display: flex; gap: 2rem; align-items: center;">
+            <form action="/dashboard/tickets" method="get" style="display: flex; gap: 0.5rem; flex-grow: 1;">
+                <input type="text" name="pair" placeholder="FILTER BY ASSET (E.G. XAUUSD)"
+                    value="{{ selected_pair or '' }}"
+                    style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); color: var(--text-main); padding: 0.5rem 1rem; border-radius: 4px; flex-grow: 1; font-family: monospace;">
+                <button type="submit" class="btn btn-primary"
+                    style="background: var(--accent-cyan); border-color: var(--accent-cyan); color: #000; font-weight: 700;">EXECUTE
+                    FILTER</button>
+            </form>
+            <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">
+                TOTAL TICKETS LOADED: <span style="color: var(--accent-yellow); font-weight: 700;">{{ tickets|length if
+                    tickets else 0 }}</span>
+            </div>
+        </div>
+    </div>
+
     {% if not tickets %}
-    <div class="card util-228776">
-        <h2 class="util-7abb3a">No Tickets Found</h2>
-        <p>Generate a ticket via the Orchestrator API to see it here.</p>
+    <div class="hud-panel glass-panel col-span-12" style="padding: 4rem; text-align: center;">
+        <div style="font-size: 1.5rem; color: var(--accent-pink); font-weight: 800; margin-bottom: 1rem;">NO TICKETS IN
+            AUDIT LOG</div>
+        <div style="color: var(--text-muted); opacity: 0.5;">Generate an execution plan via the Orchestrator API to
+            populate this monitor.</div>
     </div>
     {% else %}
     {% for ticket in tickets %}
-    <div class="card animate-fade border-left-{{ 'green' if ticket.status != 'BLOCKED' else 'red' }} mb-2rem">
-        <div class="util-f9eb53">
-            <div>
-                <span class="badge {{ 'badge-success' if ticket.status != 'BLOCKED' else 'badge-danger' }} util-ac79cc">
-                    {{ ticket.status }}
-                </span>
+    <div class="hud-panel glass-panel col-span-12"
+        data-hud-corner="{% if loop.last %}bottom-left{% else %}none{% endif %}"
+        style="border-left: 4px solid {{ 'var(--accent-green)' if ticket.status != 'BLOCKED' else 'var(--accent-pink)' }}; margin-bottom: 1rem;">
+        <header class="hud-panel-header">
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <div class="hud-panel-title">{{ ticket.pair }} // {{ ticket.direction }}</div>
+                <span class="badge {{ 'badge-success' if ticket.status != 'BLOCKED' else 'badge-danger' }}">{{
+                    ticket.status }}</span>
 
                 {% if ticket.hindsight_status == 'DONE' and ticket.hindsight_outcome_label %}
-                {% set hs_class = 'bg-muted' %}
-                {% if ticket.hindsight_outcome_label == 'WIN' %}
-                {% set hs_class = 'bg-success text-success border-success' %}
-                {% elif ticket.hindsight_outcome_label == 'LOSS' %}
-                {% set hs_class = 'bg-danger text-danger border-danger' %}
-                {% elif ticket.hindsight_outcome_label == 'BE' %}
-                {% set hs_class = 'bg-warning text-warning border-warning' %}
+                {% set hs_class = '' %}
+                {% set hs_color = 'var(--text-muted)' %}
+                {% if ticket.hindsight_outcome_label == 'WIN' %}{% set hs_color = 'var(--accent-green)' %}
+                {% elif ticket.hindsight_outcome_label == 'LOSS' %}{% set hs_color = 'var(--accent-pink)' %}
+                {% elif ticket.hindsight_outcome_label == 'BE' %}{% set hs_color = 'var(--accent-yellow)' %}
                 {% endif %}
-                <span class="badge {{ hs_class }} mb-05rem border-current">
+                <span class="badge"
+                    style="border: 1px solid {{ hs_color }}; color: {{ hs_color }}; background: transparent;">
                     HINDSIGHT: {{ ticket.hindsight_outcome_label }}
                     {% if ticket.hindsight_realized_r %}({{ "{:+.2f}".format(ticket.hindsight_realized_r) }}R){% endif
                     %}
                 </span>
                 {% endif %}
-
-                <h2 class="util-e2b74b">{{ ticket.pair }} | {{ ticket.direction }}</h2>
-                <p class="util-acb67b">Ticket ID: {{ ticket.ticket_id }} | Created: {{
-                    ticket.created_at.strftime('%Y-%m-%d %H:%M:%S') }} EAT</p>
             </div>
-            <div class="util-7851db">
-                <div class="metric-value util-fa415b">{{ ticket.lot_size }} Lots</div>
-                <div class="util-acb67b">Risk: ${{ ticket.risk_usd }} ({{
-                    ticket.risk_pct }}%)</div>
+            <div style="font-family: monospace; font-size: 0.7rem; color: var(--text-muted);">
+                ID: {{ ticket.ticket_id }} | {{ ticket.created_at.strftime('%Y-%m-%d %H:%M:%S') }} EAT
             </div>
-        </div>
+        </header>
 
-        {% if ticket.status == 'BLOCKED' %}
-        <div class="util-587325">
-            <strong class="util-b0323b">BLOCK REASON:</strong> {{ ticket.block_reason }}
-        </div>
-        {% endif %}
+        <div class="hud-scroll-body" style="padding: 1rem;">
+            {% if ticket.status == 'BLOCKED' %}
+            <div
+                style="background: rgba(235, 47, 150, 0.1); border: 1px solid var(--accent-pink); padding: 0.75rem; border-radius: 4px; margin-bottom: 1rem; color: var(--accent-pink); font-size: 0.85rem;">
+                <strong>BLOCK REASON:</strong> {{ ticket.block_reason }}
+            </div>
+            {% endif %}
 
-        {% if ticket.broker_trade_id %}
-        <!-- Mission E: Execution Result -->
-        <div class="card animate-fade mb-1rem execution-matched-box">
-            <div class="flex-between">
+            <div style="display: grid; grid-template-columns: 2fr 3fr; gap: 1.5rem;">
+                <!-- Params & Execution Result -->
                 <div>
-                    <h3 class="sub-header util-accent-blue mb-025rem">Live Execution Matched</h3>
-                    <p class="util-acb67b mb-0">MT5 ID: {{ ticket.broker_trade_id }} | Executed: {{
-                        ticket.executed_at.strftime('%Y-%m-%d %H:%M:%S') if ticket.executed_at else 'Time Pending' }}
-                        EAT</p>
-                </div>
-                <div class="text-right">
-                    {% if ticket.realized_r is not none %}
-                    <div class="metric-value {{ 'util-3fb950' if ticket.realized_r >= 0 else 'util-f85149' }} fs-125">
-                        {{ "{:+.2f}".format(ticket.realized_r) }}R
+                    <div
+                        style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+                        <div class="hud-scanline"
+                            style="background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 2px; border: 1px solid rgba(255,255,255,0.05);">
+                            <div style="font-size: 0.6rem; color: var(--text-muted);">ENTRY ({{ ticket.entry_type }})
+                            </div>
+                            <div style="font-family: monospace; font-weight: 700;">{{ "%.5f" |
+                                format(ticket.entry_price) }}</div>
+                        </div>
+                        <div class="hud-scanline"
+                            style="background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 2px; border: 1px solid rgba(255,255,255,0.05);">
+                            <div style="font-size: 0.6rem; color: var(--accent-pink);">STOP LOSS</div>
+                            <div style="font-family: monospace; font-weight: 700; color: var(--accent-pink);">{{ "%.5f"
+                                | format(ticket.stop_loss) }}</div>
+                        </div>
+                        <div class="hud-scanline"
+                            style="background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 2px; border: 1px solid rgba(255,255,255,0.05);">
+                            <div style="font-size: 0.6rem; color: var(--accent-green);">TP ({{ "%.1f" |
+                                format(ticket.rr_tp1) }}R)</div>
+                            <div style="font-family: monospace; font-weight: 700; color: var(--accent-green);">{{ "%.5f"
+                                | format(ticket.take_profit_1) }}</div>
+                        </div>
                     </div>
-                    <div class="util-acb67b fs-075">Realized PnL</div>
+
+                    {% if ticket.broker_trade_id %}
+                    <div
+                        style="background: rgba(86, 204, 242, 0.05); border: 1px solid rgba(86, 204, 242, 0.2); padding: 0.75rem; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-size: 0.8rem; font-weight: 800; color: var(--accent-cyan);">LIVE EXECUTION
+                                MATCHED</div>
+                            <div style="font-size: 0.65rem; color: var(--text-muted); font-family: monospace;">MT5 ID:
+                                {{ ticket.broker_trade_id }} | {{ ticket.executed_at.strftime('%H:%M:%S') if
+                                ticket.executed_at else 'TIME PENDING' }}</div>
+                        </div>
+                        {% if ticket.realized_r is not none %}
+                        <div style="text-align: right;">
+                            <div
+                                style="font-size: 1.25rem; font-weight: 800; color: {{ 'var(--accent-green)' if ticket.realized_r >= 0 else 'var(--accent-pink)' }}; line-height: 1;">
+                                {{ "{:+.2f}".format(ticket.realized_r) }}R</div>
+                            <div style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase;">
+                                REALIZED</div>
+                        </div>
+                        {% endif %}
+                    </div>
                     {% endif %}
+
+                    <div
+                        style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.1); padding: 0.5rem 1rem; border-radius: 4px;">
+                        <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-main);">{{ ticket.lot_size }}
+                            LOTS</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">RISK: <span
+                                style="color: var(--accent-yellow); font-weight: 700;">${{ ticket.risk_usd }}</span> ({{
+                            ticket.risk_pct }}%)</div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        {% endif %}
 
-        <div class="grid util-0f1e43">
-            <div class="util-a93da3">
-                <div class="metric-label">Entry ({{ ticket.entry_type }})</div>
-                <div class="util-9cf61f">{{ "%.5f" | format(ticket.entry_price) }}</div>
-            </div>
-            <div class="util-a93da3">
-                <div class="metric-label">Stop Loss</div>
-                <div class="util-db7b32">{{ "%.5f" |
-                    format(ticket.stop_loss) }}</div>
-            </div>
-            <div class="util-a93da3">
-                <div class="metric-label">Take Profit ({{ "%.1f" | format(ticket.rr_tp1) }}R)</div>
-                <div class="util-9f1b10">{{ "%.5f" |
-                    format(ticket.take_profit_1) }}</div>
-            </div>
-        </div>
+                <!-- Prep & Notes -->
+                <div>
+                    {% if ticket.status == 'APPROVED' %}
+                    <div id="prep-panel-{{ ticket.ticket_id }}"
+                        style="background: rgba(39, 174, 96, 0.03); border: 1px solid rgba(39, 174, 96, 0.2); border-radius: 4px; padding: 0.75rem; margin-bottom: 1rem;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.25rem;">
+                            <div style="font-size: 0.8rem; font-weight: 800; color: var(--accent-green);">EXECUTION PREP
+                                ACTIVE</div>
+                            <span id="timer-{{ ticket.ticket_id }}" class="badge"
+                                style="font-size: 0.6rem; border: 1px solid var(--accent-yellow); color: var(--accent-yellow);">LOADING...</span>
+                        </div>
+                        <div id="prep-content-{{ ticket.ticket_id }}">
+                            <div style="font-size: 0.7rem; color: var(--text-muted); padding: 0.5rem;">SYNCING PREFLIGHT
+                                DATA...</div>
+                        </div>
+                    </div>
+                    <script>
+                        (async function () {
+                            try {
+                                const res = await fetch('/api/execution-prep/{{ ticket.ticket_id }}');
+                                if (res.ok) {
+                                    const p = await res.json();
+                                    const content = document.getElementById('prep-content-{{ ticket.ticket_id }}');
+                                    const timer = document.getElementById('timer-{{ ticket.ticket_id }}');
+                                    timer.setAttribute('data-expiry', p.expires_at);
+                                    const checkHtml = p.preflight_checks.map(c => `<div style="display:flex; justify-content:space-between; margin-bottom: 0.25rem; font-size: 0.65rem;"><span style="color:var(--text-muted);">${c.name}</span><span class="badge ${c.status === 'PASS' ? 'badge-success' : 'badge-warning'}" style="font-size: 0.5rem;">${c.status}</span></div>`).join('');
+                                    content.innerHTML = `<div>${checkHtml}</div><code style="display:block; background:rgba(0,0,0,0.3); padding:0.4rem; font-size:0.65rem; color:var(--accent-cyan); margin-top:0.5rem; font-family:monospace; border-radius:2px; overflow:hidden; text-overflow:ellipsis;">MT5: ${p.platform_formats.mt5_text}</code>`;
+                                } else { document.getElementById('prep-panel-{{ ticket.ticket_id }}').style.display = 'none'; }
+                            } catch (e) { console.error(e); }
+                        })();
+                    </script>
+                    {% endif %}
 
-        {% if ticket.status == 'APPROVED' %}
-        <div id="prep-panel-{{ ticket.ticket_id }}" class="prep-active-panel">
-            <div class="flex-between">
-                <h3 class="sub-header text-green">Execution Prep Active</h3>
-                <span id="timer-{{ ticket.ticket_id }}" class="badge badge-warning">Loading...</span>
-            </div>
-            <div id="prep-content-{{ ticket.ticket_id }}">
-                <p class="util-bdc6c3">Loading preflight checks...</p>
-            </div>
-        </div>
-        <script>
-            (async function () {
-                try {
-                    const res = await fetch('/api/execution-prep/{{ ticket.ticket_id }}');
-                    if (res.ok) {
-                        const p = await res.json();
-                        const content = document.getElementById('prep-content-{{ ticket.ticket_id }}');
-                        const timer = document.getElementById('timer-{{ ticket.ticket_id }}');
-
-                        // Set timer expiry for countdown
-                        timer.setAttribute('data-expiry', p.expires_at);
-
-                        const checkHtml = p.preflight_checks.map(c => `
-                            <div class="preflight-item">
-                                <span>${c.name}: ${c.details}</span>
-                                <span class="badge ${c.status === 'PASS' ? 'badge-success' : (c.status === 'WARN' ? 'badge-warning' : 'badge-danger')}">${c.status}</span>
+                    <!-- Platform Notes Section -->
+                    <div
+                        style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 4px; padding: 0.75rem;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">
+                                PLATFORM NOTES LOG</div>
+                            <div style="display: flex; gap: 0.25rem;">
+                                <button onclick="copyText('mt5-{{ ticket.ticket_id }}', 'MT5 Copied')"
+                                    class="btn btn-secondary btn-small"
+                                    style="font-size: 0.6rem; padding: 2px 6px;">MT5</button>
+                                <button onclick="copyText('ctrader-{{ ticket.ticket_id }}', 'cTrader Copied')"
+                                    class="btn btn-secondary btn-small"
+                                    style="font-size: 0.6rem; padding: 2px 6px;">cTrader</button>
+                                <button onclick="copyText('json-{{ ticket.ticket_id }}', 'JSON Copied')"
+                                    class="btn btn-secondary btn-small"
+                                    style="font-size: 0.6rem; padding: 2px 6px;">JSON</button>
                             </div>
-                        `).join('');
-
-                        content.innerHTML = `
-                            <div class="dashboard-grid-2-col">
-                                <div>
-                                    <h4 class="sub-header-small text-muted mb-05">Preflight Checklist</h4>
-                                    ${checkHtml}
-                                </div>
-                                <div>
-                                    <h4 class="sub-header-small text-muted mb-05">Platform Specific Strings</h4>
-                                    <div class="text-muted-small mb-02">MT5 Format</div>
-                                    <code class="execution-code-block">${p.platform_formats.mt5_text}</code>
-                                    <div class="text-muted-small mb-02">cTrader Format</div>
-                                    <code class="execution-code-block">${p.platform_formats.ctrader_text}</code>
-                                </div>
-                            </div>
-                        `;
-                    } else {
-                        document.getElementById('prep-panel-{{ ticket.ticket_id }}').style.display = 'none';
-                    }
-                } catch (e) { console.error(e); }
-            })();
-        </script>
-        {% endif %}
-
-        <div class="util-f67a91">
-            <h3 class="sub-header">Platform Notes (Copy to Clipboard)</h3>
-            <div class="util-0ba205">
-                <button onclick="copyText('mt5-{{ ticket.ticket_id }}', 'MT5 Plan Copied!')"
-                    class="btn btn-secondary">Copy MT5</button>
-                <button onclick="copyText('ctrader-{{ ticket.ticket_id }}', 'cTrader Plan Copied!')"
-                    class="btn btn-secondary">Copy cTrader</button>
-                <button onclick="copyText('json-{{ ticket.ticket_id }}', 'JSON Copied!')" class="btn btn-secondary">Copy
-                    JSON</button>
-            </div>
-
-            <div class="util-224b51">
-                <textarea id="mt5-{{ ticket.ticket_id }}" title="MT5 Plan Data"
-                    placeholder="MT5 plan data...">{{ ticket.to_mt5_note() }}</textarea>
-                <textarea id="ctrader-{{ ticket.ticket_id }}" title="cTrader Plan Data"
-                    placeholder="cTrader plan data...">{{ ticket.to_ctrader_note() }}</textarea>
-                <textarea id="json-{{ ticket.ticket_id }}" title="Ticket JSON Data"
-                    placeholder="Ticket JSON data...">{{ ticket.model_dump_json(indent=2) }}</textarea>
+                        </div>
+                        <div style="height: 0; overflow: hidden; position: absolute;">
+                            <textarea id="mt5-{{ ticket.ticket_id }}">{{ ticket.to_mt5_note() }}</textarea>
+                            <textarea id="ctrader-{{ ticket.ticket_id }}">{{ ticket.to_ctrader_note() }}</textarea>
+                            <textarea id="json-{{ ticket.ticket_id }}">{{ ticket.model_dump_json(indent=2) }}</textarea>
+                        </div>
+                        <div
+                            style="font-size: 0.65rem; color: var(--text-muted); font-family: monospace; opacity: 0.6; line-height: 1.4;">
+                            * Click buttons above to copy execution strings for MetaTrader 5 or cTrader to your
+                            clipboard. Audit JSON data also available.
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

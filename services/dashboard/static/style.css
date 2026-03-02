@@ -319,7 +319,14 @@ footer {
     /* Fixed height for consistency */
 }
 
-/* Density modifiers */
+.col-span-1 {
+    grid-column: span 1;
+}
+
+.col-span-2 {
+    grid-column: span 2;
+}
+
 .col-span-3 {
     grid-column: span 3;
 }
@@ -328,20 +335,93 @@ footer {
     grid-column: span 4;
 }
 
+.col-span-5 {
+    grid-column: span 5;
+}
+
 .col-span-6 {
     grid-column: span 6;
+}
+
+.col-span-7 {
+    grid-column: span 7;
 }
 
 .col-span-8 {
     grid-column: span 8;
 }
 
+.col-span-9 {
+    grid-column: span 9;
+}
+
+.col-span-10 {
+    grid-column: span 10;
+}
+
+.col-span-11 {
+    grid-column: span 11;
+}
+
 .col-span-12 {
     grid-column: span 12;
 }
 
+.row-span-1 {
+    grid-row: span 1;
+}
+
 .row-span-2 {
     grid-row: span 2;
+}
+
+.row-span-3 {
+    grid-row: span 3;
+}
+
+.row-span-4 {
+    grid-row: span 4;
+}
+
+/* Higher density tables */
+.hud-compact-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 4px;
+    font-size: 0.8rem;
+}
+
+.hud-compact-table th {
+    text-align: left;
+    padding: 0.5rem;
+    color: var(--text-muted);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.65rem;
+}
+
+.hud-compact-table td {
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.hud-compact-table tr:hover td {
+    background: rgba(86, 204, 242, 0.05);
+}
+
+.hud-compact-table td:first-child {
+    border-left: 1px solid rgba(255, 255, 255, 0.05);
+    border-top-left-radius: 2px;
+    border-bottom-left-radius: 2px;
+}
+
+.hud-compact-table td:last-child {
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
 }
 
 .util-d2bc99 {

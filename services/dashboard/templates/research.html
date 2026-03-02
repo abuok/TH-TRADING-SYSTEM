@@ -1,50 +1,69 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="header-section">
-    <div class="header-title">
-        <h1>Research Mode</h1>
-        <p>Historical counterfactual replays and policy simulations.</p>
-    </div>
-</div>
-
-<div class="card">
-    <div class="card-header">
-        <h2>Available Simulation Runs</h2>
-        <span class="badge badge-info">{{ runs | length }} runs generated</span>
+<div class="hud-grid">
+    <!-- Header Monitor -->
+    <div class="hud-panel glass-panel col-span-12" data-hud-corner="top-left">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">RESEARCH MODE // COUNTERFACTUAL SIMULATION ENGINE</div>
+        </header>
+        <div style="padding: 1rem; color: var(--text-muted); font-size: 0.8rem; letter-spacing: 1px;">HISTORICAL REPLAYS
+            AND POLICY STRESS-TESTING LOGS</div>
     </div>
 
-    {% if runs | length == 0 %}
-    <p class="util-7abb3a">No research runs found. Use the CLI to generate a historical simulation:</p>
-    <div class="util-92633f">
-        python infra/cli.py research run XAUUSD 2026-01-01 2026-01-31 ./data.csv --variants eq.yaml
+    <!-- Simulation Runs -->
+    <div class="hud-panel glass-panel col-span-12" data-hud-corner="bottom-left">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">AVAILABLE SIMULATION RUNS</div>
+            <span class="badge"
+                style="background: rgba(86, 204, 242, 0.1); color: var(--accent-cyan); border: 1px solid var(--accent-cyan);">{{
+                runs|length }} RUNS LOGGED</span>
+        </header>
+
+        <div class="hud-scroll-body">
+            {% if runs | length == 0 %}
+            <div style="padding: 4rem; text-align: center;">
+                <div style="font-size: 1.2rem; color: var(--accent-pink); font-weight: 800; margin-bottom: 1rem;">ZERO
+                    SIMULATION DATA</div>
+                <div style="color: var(--text-muted); opacity: 0.5; margin-bottom: 2rem;">Execute historical simulations
+                    via CLI to populate this monitor:</div>
+                <code
+                    style="display: block; background: rgba(0,0,0,0.3); padding: 1rem; color: var(--accent-cyan); font-family: monospace; border-radius: 4px; border: 1px solid rgba(255,255,255,0.05); text-align: left; font-size: 0.75rem;">
+                    python infra/cli.py research run XAUUSD 2026-01-01 2026-01-31 ./data.csv --variants eq.yaml
+                </code>
+            </div>
+            {% else %}
+            <table class="hud-compact-table">
+                <thead>
+                    <tr>
+                        <th>RUN ID</th>
+                        <th>PAIR</th>
+                        <th>DATE RANGE</th>
+                        <th style="text-align: center;">VARIANTS</th>
+                        <th style="text-align: right;">ACTION</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in runs %}
+                    <tr>
+                        <td style="font-family: monospace; font-weight: 700; color: var(--text-main);">{{ r.run_id }}
+                        </td>
+                        <td><span class="badge"
+                                style="background: rgba(242, 201, 76, 0.1); color: var(--accent-yellow); border: 1px solid var(--accent-yellow);">{{
+                                r.pair }}</span></td>
+                        <td style="font-size: 0.75rem; color: var(--text-muted);">{{ r.start_date[:10] }} &rarr; {{
+                            r.end_date[:10] }}</td>
+                        <td style="text-align: center;">{{ r.variants | length }} STRATS</td>
+                        <td style="text-align: right;">
+                            <a href="/dashboard/research/{{ r.run_id }}" class="btn btn-secondary btn-small">AUDIT
+                                REPORT &rarr;</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
     </div>
-    {% else %}
-    <table>
-        <thead>
-            <tr>
-                <th>Run ID</th>
-                <th>Pair</th>
-                <th>Date Range</th>
-                <th>Variants</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for r in runs %}
-            <tr>
-                <td class="util-3bd722">{{ r.run_id }}</td>
-                <td><span class="badge badge-warning">{{ r.pair }}</span></td>
-                <td>{{ r.start_date[:10] }} &rarr; {{ r.end_date[:10] }}</td>
-                <td>{{ r.variants | length }} strategies</td>
-                <td>
-                    <a href="/dashboard/research/{{ r.run_id }}" class="util-48a7b5">View Report
-                        &rarr;</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% endif %}
 </div>
 {% endblock %}
