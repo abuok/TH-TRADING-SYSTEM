@@ -13,14 +13,12 @@
 
     <!-- Filter Console -->
     <div class="hud-panel glass-panel col-span-12">
-        <div style="padding: 0.75rem; display: flex; align-items: center; gap: 1.5rem;">
-            <div style="font-size: 0.6rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">
+        <div class="align-center p-2 flex gap-5">
+            <div class="text-muted text-bold text-xxs text-upper">
                 Filter Stream:</div>
-            <div style="display: flex; gap: 0.75rem;">
-                <a href="?severity=ERROR" class="btn btn-secondary btn-tiny"
-                    style="color: var(--accent-pink); border-color: rgba(235, 47, 150, 0.3);">ERROR ONLY</a>
-                <a href="?severity=WARNING" class="btn btn-secondary btn-tiny"
-                    style="color: var(--accent-yellow); border-color: rgba(242, 201, 76, 0.3);">WARNING ONLY</a>
+            <div class="gap-3 flex">
+                <a href="?severity=ERROR" class="text-pink btn btn-tiny btn-secondary" style="border-color: rgba(235, 47, 150, 0.3);">ERROR ONLY</a>
+                <a href="?severity=WARNING" class="btn btn-tiny btn-secondary text-yellow" style="border-color: rgba(242, 201, 76, 0.3);">WARNING ONLY</a>
                 <a href="?" class="btn btn-secondary btn-tiny opacity-60">RESET ALL</a>
             </div>
         </div>
@@ -59,7 +57,7 @@
                                 {{ incident.severity }}
                             </span>
                         </td>
-                        <td style="color: var(--text-muted); font-size: 0.75rem;">{{ incident.message }}</td>
+                        <td class="text-muted text-xs">{{ incident.message }}</td>
                     </tr>
                     {% endfor %}
                     {% if not incidents %}

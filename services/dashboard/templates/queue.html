@@ -9,32 +9,24 @@
         </header>
 
         <div class="p-3">
-            <div class="hud-scanline"
-                style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); padding: 1.25rem; margin-bottom: 1rem;">
-                <div
-                    style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem;">
+            <div class="mb-3 hud-scanline" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); padding: 1.25rem;">
+                <div class="text-upper text-muted mb-3 text-xxs letter-spacing-1">
                     DECISION_VECTORS // TODAY</div>
-                <div id="stats-approved"
-                    style="font-size: 1.5rem; font-weight: 900; color: var(--accent-green); line-height: 1.2;">APPROVE:
+                <div id="stats-approved" style="line-height: 1.2;" class="text-black text-xl text-green">APPROVE:
                     0</div>
-                <div id="stats-skipped"
-                    style="font-size: 1.5rem; font-weight: 900; color: var(--accent-yellow); line-height: 1.2;">SKIP: 0
+                <div id="stats-skipped" style="line-height: 1.2;" class="text-black text-xl text-yellow">SKIP: 0
                 </div>
-                <div id="stats-expired"
-                    style="font-size: 1.5rem; font-weight: 900; color: var(--accent-pink); line-height: 1.2;">EXPIRED: 0
+                <div id="stats-expired" style="line-height: 1.2;" class="text-black text-pink text-xl">EXPIRED: 0
                 </div>
             </div>
 
             <div class="hud-scanline"
                 style="background: rgba(155, 81, 224, 0.05); border: 1px solid rgba(155, 81, 224, 0.2); padding: 1.25rem;">
-                <div
-                    style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem;">
+                <div class="text-upper text-muted mb-3 text-xxs letter-spacing-1">
                     REALIZED_OUTCOMES // SESSION</div>
-                <div id="stats-closed"
-                    style="font-size: 0.75rem; color: var(--text-main); margin-bottom: 0.5rem; font-weight: 700;">
+                <div id="stats-closed" class="text-bold mb-2 text-main text-xs">
                     CLOSED_TICKETS: 0</div>
-                <div id="stats-avgr"
-                    style="font-size: 2rem; font-weight: 900; color: var(--accent-purple); line-height: 1;">0.0R AVG
+                <div id="stats-avgr" style="font-size: 2rem; line-height: 1;" class="text-black text-purple">0.0R AVG
                 </div>
             </div>
         </div>
@@ -45,13 +37,11 @@
         <header class="hud-panel-header">
             <div class="hud-panel-title">EXECUTION_PREP_LAYER // APPROVED_PLANS</div>
             <div class="flex gap-3 align-center">
-                <span class="badge"
-                    style="background: rgba(39, 174, 96, 0.1); color: var(--accent-green); border: 1px solid var(--accent-green); font-size: 0.55rem;">CORE_READY</span>
+                <span class="text-mini text-green badge" style="background: rgba(39, 174, 96, 0.1); border: 1px solid var(--accent-green);">CORE_READY</span>
             </div>
         </header>
         <div id="prep-container" class="hud-scroll-body" style="height: 250px;">
-            <div
-                style="padding: 4rem; text-align: center; color: var(--text-muted); font-size: 0.7rem; font-weight: 800; letter-spacing: 2px;">
+            <div class="text-center text-bold text-xs text-muted letter-spacing-2 p-6">
                 INITIALIZING_PREP_LAYER...</div>
         </div>
     </div>
@@ -63,8 +53,7 @@
             <div id="queue-status-badge"></div>
         </header>
         <div id="queue-container" class="hud-scroll-body" style="height: 600px;">
-            <div
-                style="padding: 6rem; text-align: center; color: var(--text-muted); font-size: 0.7rem; font-weight: 800; letter-spacing: 2px;">
+            <div style="padding: 6rem;" class="text-center text-bold text-xs text-muted letter-spacing-2">
                 SCANNING_NETWORK_FOR_TICKETS...</div>
         </div>
     </div>
@@ -75,15 +64,12 @@
     <div class="hud-panel glass-panel" style="width: 500px; padding: 0;" data-hud-corner="top-right">
         <header class="hud-panel-header">
             <div class="hud-panel-title">SKIP_SIGNAL_REQ // PROTOCOL</div>
-            <span id="skip-ticket-id" class="badge"
-                style="background: rgba(242, 201, 76, 0.1); color: var(--accent-yellow); border: 1px solid var(--accent-yellow); font-family: monospace;"></span>
+            <span id="skip-ticket-id" class="text-yellow text-mono badge" style="background: rgba(242, 201, 76, 0.1); border: 1px solid var(--accent-yellow);"></span>
         </header>
         <div class="p-5">
             <div class="mb-4">
-                <label
-                    style="display: block; font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 1px;">PRIMARY_REASON</label>
-                <select id="skip-reason" title="Primary skip reason" aria-label="Primary Skip Reason"
-                    style="width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--border-main); color: var(--text-main); padding: 0.75rem; font-size: 0.8rem; border-radius: 4px; font-family: monospace; outline: none;">
+                <label class="text-upper text-muted display-block text-xxs mb-2 letter-spacing-1">PRIMARY_REASON</label>
+                <select id="skip-reason" title="Primary skip reason" aria-label="Primary Skip Reason" style="border: 1px solid var(--border-main); outline: none;" class="w-full text-sm text-main rounded text-mono bg-darker-overlay p-2">
                     <option value="NEWS_WINDOW">News Window</option>
                     <option value="STALE">Stale / Too Late</option>
                     <option value="SPREAD_TOO_HIGH">Spread Too High</option>
@@ -95,17 +81,13 @@
                 </select>
             </div>
             <div class="mb-4">
-                <label
-                    style="display: block; font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 1px;">OBSERVATIONAL_NOTES</label>
+                <label class="text-upper text-muted display-block text-xxs mb-2 letter-spacing-1">OBSERVATIONAL_NOTES</label>
                 <textarea id="skip-notes" rows="3"
-                    style="width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--border-main); color: var(--text-main); padding: 0.75rem; font-size: 0.8rem; border-radius: 4px; resize: none; outline: none;"
-                    placeholder="Log additional context..."></textarea>
+                    placeholder="Log additional context..." style="border: 1px solid var(--border-main); resize: none; outline: none;" class="w-full text-sm text-main rounded bg-darker-overlay p-2"></textarea>
             </div>
-            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
-                <button onclick="closeModal('skipModal')" class="btn btn-secondary"
-                    style="font-size: 0.7rem;">ABORT_CANCEL</button>
-                <button onclick="submitSkip()" class="btn btn-primary"
-                    style="background: var(--accent-yellow); border-color: var(--accent-yellow); color: #000; font-weight: 900; font-size: 0.7rem;">CONFIRM_SKIP</button>
+            <div style="justify-content: flex-end;" class="gap-4 flex">
+                <button onclick="closeModal('skipModal')" class="btn btn-secondary text-xs">ABORT_CANCEL</button>
+                <button onclick="submitSkip()" class="btn text-xs text-black-color text-black btn-primary" style="background: var(--accent-yellow); border-color: var(--accent-yellow);">CONFIRM_SKIP</button>
             </div>
         </div>
     </div>
@@ -136,60 +118,60 @@
             const statusBadge = document.getElementById('queue-status-badge');
 
             if (tickets.length === 0) {
-                container.innerHTML = `<div style="padding: 6rem; text-align: center; color: var(--text-muted); font-size: 0.7rem; font-weight: 800; letter-spacing: 2px;">QUEUE_NOMINAL // ZERO_PENDING</div>`;
-                statusBadge.innerHTML = `<span class="badge" style="background: rgba(39, 174, 96, 0.1); color: var(--accent-green); border: 1px solid var(--accent-green); font-size: 0.55rem;">NOMINAL</span>`;
+                container.innerHTML = `<div style="padding: 6rem;" class="text-center text-bold text-xs text-muted letter-spacing-2">QUEUE_NOMINAL // ZERO_PENDING</div>`;
+                statusBadge.innerHTML = `<span class="text-mini text-green badge" style="background: rgba(39, 174, 96, 0.1); border: 1px solid var(--accent-green);">NOMINAL</span>`;
                 return;
             }
 
-            statusBadge.innerHTML = `<span class="badge" style="background: rgba(242, 201, 76, 0.1); color: var(--accent-yellow); border: 1px solid var(--accent-yellow); font-size: 0.55rem;">ACTIVE: ${tickets.length}</span>`;
+            statusBadge.innerHTML = `<span class="text-mini text-yellow badge" style="background: rgba(242, 201, 76, 0.1); border: 1px solid var(--accent-yellow);">ACTIVE: ${tickets.length}</span>`;
 
             let html = '';
             tickets.forEach(t => {
                 const isBlocked = t.guardrails_hard_block || (t.block_reason && t.block_reason.includes('BLOCK'));
-                const blockWarning = isBlocked ? `<div class="badge" style="background: rgba(235, 47, 150, 0.1); color: var(--accent-pink); border: 1px solid var(--accent-pink); margin-bottom: 1.5rem; width: 100%; text-align: center; font-size: 0.65rem; font-weight: 900; letter-spacing: 1px;">HARD_BLOCK: ${t.block_reason}</div>` : '';
+                const blockWarning = isBlocked ? `<div class="text-center w-full mb-3 text-xxs badge text-black text-pink letter-spacing-1" style="background: rgba(235, 47, 150, 0.1); border: 1px solid var(--accent-pink);">HARD_BLOCK: ${t.block_reason}</div>` : '';
 
                 const scoreAccent = t.guardrails_score >= 80 ? 'var(--accent-green)' : (t.guardrails_score >= 50 ? 'var(--accent-yellow)' : 'var(--accent-pink)');
                 const borderAccent = t.direction === 'BUY' ? 'var(--accent-green)' : 'var(--accent-pink)';
 
                 html += `
-                <div id="card-${t.ticket_id}" class="hud-panel glass-panel" style="margin-bottom: 1.5rem; border-left: 4px solid ${borderAccent}; padding: 0;">
+                <div id="card-${t.ticket_id}" class="glass-panel hud-panel mb-3" style="border-left: 4px solid ${borderAccent}; padding: 0;">
                     <header class="hud-panel-header bg-dark-overlay">
                         <div class="flex gap-4 align-center">
-                            <div style="font-weight: 900; font-size: 1.25rem; color: var(--text-main);">${t.pair}</div>
-                            <span class="badge" style="background: ${t.direction === 'BUY' ? 'rgba(39, 174, 96, 0.1)' : 'rgba(235, 47, 150, 0.1)'}; color: ${t.direction === 'BUY' ? 'var(--accent-green)' : 'var(--accent-pink)'}; border: 1px solid ${t.direction === 'BUY' ? 'var(--accent-green)' : 'var(--accent-pink)'}; font-size: 0.6rem; font-weight: 900;">${t.direction}</span>
-                            <span style="font-family: monospace; font-size: 0.65rem; color: var(--text-muted); letter-spacing: 0.5px;">IDENT: ${t.ticket_id}</span>
+                            <div style="font-size: 1.25rem;" class="text-black text-main">${t.pair}</div>
+                            <span class="text-black text-xxs badge" style="background: ${t.direction === 'BUY' ? 'rgba(39, 174, 96, 0.1)' : 'rgba(235, 47, 150, 0.1)'}; color: ${t.direction === 'BUY' ? 'var(--accent-green)' : 'var(--accent-pink)'}; border: 1px solid ${t.direction === 'BUY' ? 'var(--accent-green)' : 'var(--accent-pink)'};">${t.direction}</span>
+                            <span class="text-muted text-xxs text-mono">IDENT: ${t.ticket_id}</span>
                         </div>
                         <div class="flex align-center gap-5">
-                            <div style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase;">SCORE: <span class="badge" style="background: rgba(255,255,255,0.05); color: ${scoreAccent}; border: 1px solid ${scoreAccent}; font-size: 0.6rem; font-weight: 900;">${t.guardrails_score || '---'}</span></div>
-                            <span data-expiry="${t.expires_at}" id="timer-${t.ticket_id}" class="badge" style="background: rgba(242, 201, 76, 0.05); border: 1px solid var(--accent-yellow); color: var(--accent-yellow); font-size: 0.6rem; font-weight: 900;">TTL_SYNC...</span>
+                            <div class="text-muted text-xxs text-upper">SCORE: <span class="text-black text-xxs badge" style="background: rgba(255,255,255,0.05); color: ${scoreAccent}; border: 1px solid ${scoreAccent};">${t.guardrails_score || '---'}</span></div>
+                            <span data-expiry="${t.expires_at}" id="timer-${t.ticket_id}" class="text-black text-xxs text-yellow badge" style="background: rgba(242, 201, 76, 0.05); border: 1px solid var(--accent-yellow);">TTL_SYNC...</span>
                         </div>
                     </header>
                     
                     <div class="p-4">
                         ${blockWarning}
                         
-                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
-                            <div class="hud-scanline" style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.05); padding: 0.75rem;">
-                                <div style="font-size: 0.55rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.25rem;">ENTRY_PRICE</div>
-                                <div style="font-family: monospace; font-weight: 900; font-size: 1.1rem; color: var(--text-main);">${t.entry_price}</div>
+                        <div style="grid-template-columns: repeat(4, 1fr);" class="mb-4 grid gap-5">
+                            <div class="border-theme p-2 hud-scanline" style="background: rgba(0,0,0,0.25);">
+                                <div class="text-upper text-muted text-mini mb-1 letter-spacing-1">ENTRY_PRICE</div>
+                                <div class="text-black text-lg text-main text-mono">${t.entry_price}</div>
                             </div>
-                            <div class="hud-scanline" style="background: rgba(235, 47, 150, 0.03); border: 1px solid rgba(235, 47, 150, 0.2); padding: 0.75rem;">
-                                <div style="font-size: 0.55rem; color: var(--accent-pink); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.25rem;">STOP_LOSS</div>
-                                <div style="font-family: monospace; font-weight: 900; font-size: 1.1rem; color: var(--accent-pink);">${t.stop_loss}</div>
+                            <div class="p-2 hud-scanline" style="background: rgba(235, 47, 150, 0.03); border: 1px solid rgba(235, 47, 150, 0.2);">
+                                <div class="text-upper text-mini text-pink mb-1 letter-spacing-1">STOP_LOSS</div>
+                                <div class="text-black text-pink text-lg text-mono">${t.stop_loss}</div>
                             </div>
-                            <div class="hud-scanline" style="background: rgba(39, 174, 96, 0.03); border: 1px solid rgba(39, 174, 96, 0.2); padding: 0.75rem;">
-                                <div style="font-size: 0.55rem; color: var(--accent-green); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.25rem;">TARGET_1 (${t.rr_tp1.toFixed(2)}R)</div>
-                                <div style="font-family: monospace; font-weight: 900; font-size: 1.1rem; color: var(--accent-green);">${t.take_profit_1}</div>
+                            <div class="p-2 hud-scanline" style="background: rgba(39, 174, 96, 0.03); border: 1px solid rgba(39, 174, 96, 0.2);">
+                                <div class="text-upper text-mini text-green mb-1 letter-spacing-1">TARGET_1 (${t.rr_tp1.toFixed(2)}R)</div>
+                                <div class="text-black text-green text-lg text-mono">${t.take_profit_1}</div>
                             </div>
-                            <div class="hud-scanline" style="background: rgba(242, 201, 76, 0.03); border: 1px solid rgba(242, 201, 76, 0.2); padding: 0.75rem;">
-                                <div style="font-size: 0.55rem; color: var(--accent-yellow); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.25rem;">ALLOC (${t.lot_size} LOTS)</div>
-                                <div style="font-weight: 900; font-size: 1.1rem; color: var(--accent-yellow);">$${t.risk_usd.toFixed(2)}</div>
+                            <div class="p-2 hud-scanline" style="background: rgba(242, 201, 76, 0.03); border: 1px solid rgba(242, 201, 76, 0.2);">
+                                <div class="text-upper text-mini text-yellow mb-1 letter-spacing-1">ALLOC (${t.lot_size} LOTS)</div>
+                                <div class="text-black text-lg text-yellow">$${t.risk_usd.toFixed(2)}</div>
                             </div>
                         </div>
 
-                        <div style="display: flex; gap: 1rem; justify-content: flex-end; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1.25rem;">
+                        <div style="justify-content: flex-end; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1.25rem;" class="gap-4 flex">
                             <button onclick="openSkipModal('${t.ticket_id}')" class="btn btn-secondary btn-tiny">ABORT_SIGNAL</button>
-                            <button onclick="approveTicket('${t.ticket_id}')" class="btn btn-primary btn-tiny" style="background: var(--accent-green); border-color: var(--accent-green); color: #000; font-weight: 900;">AUTHORIZE_EXECUTION_PLAN</button>
+                            <button onclick="approveTicket('${t.ticket_id}')" class="bg-green btn text-black-color text-black btn-tiny border-green btn-primary">AUTHORIZE_EXECUTION_PLAN</button>
                         </div>
                     </div>
                 </div>
@@ -280,30 +262,30 @@
             const container = document.getElementById('prep-container');
 
             if (preps.length === 0) {
-                container.innerHTML = `<div style="padding: 4rem; text-align: center; color: var(--text-muted); font-size: 0.7rem; font-weight: 800; letter-spacing: 2px; opacity: 0.4;">ZERO_ACTIVE_PREPS</div>`;
+                container.innerHTML = `<div style="opacity: 0.4;" class="text-center text-bold text-xs text-muted letter-spacing-2 p-6">ZERO_ACTIVE_PREPS</div>`;
                 return;
             }
 
             let html = '';
             preps.forEach(p => {
                 const checkHtml = p.preflight_checks.map(c => `
-                    <div style="display:flex; justify-content:space-between; margin-bottom: 0.5rem; font-size: 0.7rem; font-family: monospace;">
-                        <span style="color: var(--text-muted); text-transform: uppercase;">${c.name}</span>
-                        <span class="badge" style="background: ${c.status === 'PASS' ? 'rgba(39, 174, 96, 0.1)' : (c.status === 'WARN' ? 'rgba(242, 201, 76, 0.1)' : 'rgba(235, 47, 150, 0.1)')}; color: ${c.status === 'PASS' ? 'var(--accent-green)' : (c.status === 'WARN' ? 'var(--accent-yellow)' : 'var(--accent-pink)')}; border: 1px solid ${c.status === 'PASS' ? 'var(--accent-green)' : (c.status === 'WARN' ? 'var(--accent-yellow)' : 'var(--accent-pink)')}; font-size: 0.5rem; padding: 1px 6px; font-weight: 900;">${c.status}</span>
+                    <div class="justify-between text-xs flex text-mono mb-2">
+                        <span class="text-muted text-upper">${c.name}</span>
+                        <span class="text-black text-micro badge" style="background: ${c.status === 'PASS' ? 'rgba(39, 174, 96, 0.1)' : (c.status === 'WARN' ? 'rgba(242, 201, 76, 0.1)' : 'rgba(235, 47, 150, 0.1)')}; color: ${c.status === 'PASS' ? 'var(--accent-green)' : (c.status === 'WARN' ? 'var(--accent-yellow)' : 'var(--accent-pink)')}; border: 1px solid ${c.status === 'PASS' ? 'var(--accent-green)' : (c.status === 'WARN' ? 'var(--accent-yellow)' : 'var(--accent-pink)')}; padding: 1px 6px;">${c.status}</span>
                     </div>
                 `).join('');
 
                 const overrideBtn = p.override_required ?
-                    `<button onclick="openOverrideModal('${p.ticket_id}')" class="btn btn-primary" style="background: var(--accent-pink); border-color: var(--accent-pink); width: 100%; margin-top: 0.75rem; font-size: 0.6rem; font-weight: 900; color: #000;">BYPASS_REQ // OVERRIDE</button>` : '';
+                    `<button onclick="openOverrideModal('${p.ticket_id}')" class="btn w-full text-xxs text-black-color text-black btn-primary" style="background: var(--accent-pink); border-color: var(--accent-pink); margin-top: 0.75rem;">BYPASS_REQ // OVERRIDE</button>` : '';
 
                 html += `
-                <div id="prep-${p.ticket_id}" class="hud-panel glass-panel" style="background: rgba(39, 174, 96, 0.02); border: 1px solid rgba(39, 174, 96, 0.2); border-left: 3px solid var(--accent-green); margin-bottom: 1rem; padding: 1rem;">
-                    <div style="display: flex; gap: 2rem;">
+                <div id="prep-${p.ticket_id}" class="glass-panel mb-3 hud-panel p-3" style="background: rgba(39, 174, 96, 0.02); border: 1px solid rgba(39, 174, 96, 0.2); border-left: 3px solid var(--accent-green);">
+                    <div style="gap: 2rem;" class="flex">
                         <!-- Checks -->
-                        <div style="flex: 1; border-right: 1px solid rgba(255,255,255,0.05); padding-right: 1.5rem;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                                <div style="font-weight: 900; font-size: 0.75rem; color: var(--accent-green); font-family: monospace;">EXE_PREP: ${p.ticket_id}</div>
-                                <span data-expiry="${p.expires_at}" class="badge" style="font-size: 0.55rem; border: 1px solid var(--accent-yellow); color: var(--accent-yellow); font-weight: 900;">EXP_SYNC...</span>
+                        <div style="padding-right: 1.5rem;" class="flex-1 border-right">
+                            <div class="justify-between align-center flex mb-3">
+                                <div class="text-black text-mono text-green text-xs">EXE_PREP: ${p.ticket_id}</div>
+                                <span data-expiry="${p.expires_at}" class="text-mini text-black text-yellow badge" style="border: 1px solid var(--accent-yellow);">EXP_SYNC...</span>
                             </div>
                             ${checkHtml}
                             ${overrideBtn}
@@ -311,16 +293,16 @@
                         <!-- Formats -->
                         <div style="flex: 2;">
                             <div class="mb-3">
-                                <div style="font-size: 0.55rem; color:var(--text-muted); text-transform: uppercase; margin-bottom: 0.4rem; letter-spacing: 1px;">MT5_EXECUTION_VECTOR</div>
-                                <div style="display:flex; gap: 0.5rem; align-items: center;">
-                                    <code style="background: rgba(0,0,0,0.4); padding: 0.6rem; border-radius: 2px; font-size: 0.7rem; flex-grow:1; border: 1px solid rgba(86, 204, 242, 0.1); color: var(--accent-cyan); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: monospace;">${p.platform_formats.mt5_text}</code>
+                                <div class="text-upper text-muted text-mini mb-1 letter-spacing-1">MT5_EXECUTION_VECTOR</div>
+                                <div class="align-center flex gap-2">
+                                    <code style="padding: 0.6rem; border-radius: 2px; flex-grow:1; border: 1px solid rgba(86, 204, 242, 0.1); text-overflow: ellipsis; white-space: nowrap;" class="text-xs overflow-hidden text-cyan text-mono bg-darker-overlay">${p.platform_formats.mt5_text}</code>
                                     <button onclick="copyToClipboard('${p.platform_formats.mt5_text}')" class="btn btn-secondary btn-tiny">COPY</button>
                                 </div>
                             </div>
                             <div>
-                                <div style="font-size: 0.55rem; color:var(--text-muted); text-transform: uppercase; margin-bottom: 0.4rem; letter-spacing: 1px;">CTRADER_EXECUTION_VECTOR</div>
-                                <div style="display:flex; gap: 0.5rem; align-items: center;">
-                                    <code style="background: rgba(0,0,0,0.4); padding: 0.6rem; border-radius: 2px; font-size: 0.7rem; flex-grow:1; border: 1px solid rgba(86, 204, 242, 0.1); color: var(--accent-cyan); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: monospace;">${p.platform_formats.ctrader_text}</code>
+                                <div class="text-upper text-muted text-mini mb-1 letter-spacing-1">CTRADER_EXECUTION_VECTOR</div>
+                                <div class="align-center flex gap-2">
+                                    <code style="padding: 0.6rem; border-radius: 2px; flex-grow:1; border: 1px solid rgba(86, 204, 242, 0.1); text-overflow: ellipsis; white-space: nowrap;" class="text-xs overflow-hidden text-cyan text-mono bg-darker-overlay">${p.platform_formats.ctrader_text}</code>
                                     <button onclick="copyToClipboard('${p.platform_formats.ctrader_text}')" class="btn btn-secondary btn-tiny">COPY</button>
                                 </div>
                             </div>

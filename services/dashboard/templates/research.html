@@ -7,8 +7,7 @@
         <header class="hud-panel-header">
             <div class="hud-panel-title">RESEARCH_MODE // COUNTERFACTUAL_SIMULATION_ENGINE</div>
         </header>
-        <div
-            style="padding: 1rem; color: var(--text-muted); font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.05);">
+        <div class="text-upper p-3 border-divider text-muted text-xxs letter-spacing-1">
             HISTORICAL_REPLAYS_AND_POLICY_STRESS_TESTS // LOG_STREAM
         </div>
     </div>
@@ -17,8 +16,7 @@
     <div class="hud-panel glass-panel col-span-12" data-hud-corner="bottom-left">
         <header class="hud-panel-header">
             <div class="hud-panel-title">AVAILABLE_SIMULATION_RECORDS</div>
-            <span class="badge"
-                style="background: rgba(86, 204, 242, 0.1); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); font-size: 0.55rem; font-weight: 900;">{{
+            <span class="text-mini text-black text-cyan badge" style="background: rgba(86, 204, 242, 0.1); border: 1px solid var(--accent-cyan);">{{
                 runs|length }} RUNS_DETECTED</span>
         </header>
 
@@ -28,11 +26,10 @@
                 <div
                     class="text-sm text-pink text-black mb-3 letter-spacing-2">
                     ZERO_SIMULATION_DATA_DETECTED</div>
-                <div style="color: var(--text-muted); font-size: 0.75rem; letter-spacing: 1px; margin-bottom: 2rem;">
+                <div class="mb-4 text-muted text-xs letter-spacing-1">
                     RUN_HISTORICAL_SIMS_VIA_CLI_TO_POPULATE</div>
-                <div style="max-width: 600px; margin: 0 auto; text-align: left;">
-                    <code
-                        style="display: block; background: rgba(0,0,0,0.4); padding: 1.25rem; color: var(--accent-cyan); font-family: monospace; border-radius: 4px; border: 1px solid rgba(86, 204, 242, 0.2); font-size: 0.75rem; border-left: 3px solid var(--accent-cyan);">
+                <div style="max-width: 600px; margin: 0 auto;" class="text-left">
+                    <code style="padding: 1.25rem; border: 1px solid rgba(86, 204, 242, 0.2); border-left: 3px solid var(--accent-cyan);" class="text-xs display-block rounded text-cyan text-mono bg-darker-overlay">
                         # EXECUTE SIMULATION VECTOR<br>
                         python infra/cli.py research run XAUUSD 2026-01-01 2026-01-31 ./data.csv --variants eq.yaml
                     </code>
@@ -45,31 +42,27 @@
                         <th class="text-xxs">SIM_IDENT_ID</th>
                         <th class="text-xxs">ASSET_VECTOR</th>
                         <th class="text-xxs">TEMPORAL_WINDOW</th>
-                        <th style="text-align: center; font-size: 0.6rem;">VARIANTS_TESTED</th>
+                        <th class="text-center text-xxs">VARIANTS_TESTED</th>
                         <th class="text-right text-xxs">ACTION_BRIDGE</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for r in runs %}
                     <tr>
-                        <td
-                            style="font-family: monospace; font-weight: 900; color: var(--text-main); font-size: 0.8rem;">
+                        <td class="text-black text-sm text-main text-mono">
                             {{ r.run_id }}</td>
                         <td>
-                            <span class="badge"
-                                style="background: rgba(242, 201, 76, 0.1); color: var(--accent-yellow); border: 1px solid var(--accent-yellow); font-size: 0.55rem; font-weight: 900; letter-spacing: 0.5px;">{{
+                            <span class="text-mini text-black text-yellow badge" style="background: rgba(242, 201, 76, 0.1); border: 1px solid var(--accent-yellow);">{{
                                 r.pair }}</span>
                         </td>
-                        <td style="font-size: 0.7rem; color: var(--text-muted); font-family: monospace;">
+                        <td class="text-mono text-muted text-xs">
                             {{ r.start_date[:10] }} <span class="text-muted opacity-50">&rarr;</span>
                             {{ r.end_date[:10] }}
                         </td>
-                        <td
-                            style="text-align: center; font-weight: 900; font-family: monospace; font-size: 0.75rem; color: var(--accent-cyan);">
+                        <td class="text-center text-xs text-cyan text-mono text-black">
                             {{ r.variants | length }} STRATS</td>
                         <td class="text-right">
-                            <a href="/dashboard/research/{{ r.run_id }}" class="btn btn-secondary"
-                                style="font-size: 0.6rem; font-weight: 900; padding: 0.4rem 0.75rem;">AUDIT_REPORT
+                            <a href="/dashboard/research/{{ r.run_id }}" class="text-black btn btn-secondary text-xxs" style="padding: 0.4rem 0.75rem;">AUDIT_REPORT
                                 &rarr;</a>
                         </td>
                     </tr>

@@ -34,9 +34,9 @@
                 <tbody>
                     {% for report in reports %}
                     <tr>
-                        <td style="font-family: monospace; font-weight: 700; color: var(--accent-cyan);">{{
+                        <td class="text-bold text-mono text-cyan">{{
                             report.report_id }}</td>
-                        <td style="font-size: 0.75rem; color: var(--text-muted);">{{ report.created_at[:16] |
+                        <td class="text-muted text-xs">{{ report.created_at[:16] |
                             replace('T', ' ') }}</td>
                         <td class="text-bold text-main">{{ report.pair }}</td>
                         <td class="text-center">
@@ -44,8 +44,7 @@
                             <span class="badge badge-green">{{
                                 report.recommendations|length }} DETECTED</span>
                             {% else %}
-                            <span class="badge"
-                                style="background: rgba(255,255,255,0.05); color: var(--text-muted); border: 1px solid var(--border-color);">0
+                            <span class="border-theme text-muted badge" style="background: rgba(255,255,255,0.05);">0
                                 FOUND</span>
                             {% endif %}
                         </td>
@@ -59,12 +58,11 @@
             </table>
             {% else %}
             <div class="hud-empty-state">
-                <div style="font-size: 1.2rem; color: var(--text-muted); font-weight: 800; margin-bottom: 1rem;">ZERO
+                <div style="font-size: 1.2rem;" class="text-muted text-bold mb-3">ZERO
                     CALIBRATION DATA</div>
-                <div style="color: var(--text-muted); opacity: 0.5; margin-bottom: 2rem;">Initiate research calibration
+                <div style="opacity: 0.5;" class="mb-4 text-muted">Initiate research calibration
                     via CLI:</div>
-                <code
-                    style="display: block; background: rgba(0,0,0,0.3); padding: 1rem; color: var(--accent-cyan); font-family: monospace; border-radius: 4px; border: 1px solid rgba(255,255,255,0.05); text-align: left; font-size: 0.75rem; max-width: 600px; margin: 0 auto;">
+                <code style="max-width: 600px; margin: 0 auto;" class="p-3 text-xs border-theme display-block text-left text-cyan text-mono rounded bg-darker-overlay">
                     python infra/cli.py research calibrate --run &lt;run_id&gt;
                 </code>
             </div>

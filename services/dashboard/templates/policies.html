@@ -20,35 +20,31 @@
                 policy.policy_name }}</span>
         </header>
         <div class="p-3">
-            <div style="font-family: monospace; font-size: 0.6rem; color: var(--text-muted); margin-bottom: 1rem;">#{{
+            <div class="text-muted text-xxs text-mono mb-3">#{{
                 policy.policy_hash[:16] }}</div>
 
-            <div
-                style="font-size: 0.6rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 1px;">
+            <div class="text-upper text-bold text-muted text-xxs mb-2 letter-spacing-1">
                 REGIME SIGNALS</div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem;">
+            <div style="grid-template-columns: 1fr 1fr;" class="mb-3 grid gap-2">
                 {% for key, val in policy.regime_signals.items() %}
                 <div style="background: rgba(255,255,255,0.03); padding: 0.4rem; border-radius: 2px;">
-                    <div style="font-size: 0.5rem; color: var(--text-muted); text-transform: uppercase;">{{ key |
+                    <div class="text-muted text-micro text-upper">{{ key |
                         replace('_', ' ') }}</div>
-                    <div
-                        style="font-size: 0.7rem; font-weight: 700; color: var(--accent-cyan); font-family: monospace;">
+                    <div class="text-mono text-bold text-xs text-cyan">
                         {{ val }}</div>
                 </div>
                 {% endfor %}
             </div>
 
-            <div
-                style="font-size: 0.6rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 1px;">
+            <div class="text-upper text-bold text-muted text-xxs mb-2 letter-spacing-1">
                 SELECTION RATIONALE</div>
             <div class="text-xxs text-muted line-height-relaxed">
                 {% for reason in policy.reasons %}
-                <div style="margin-bottom: 0.2rem;">&bull; {{ reason }}</div>
+                <div class="mb-1">&bull; {{ reason }}</div>
                 {% endfor %}
             </div>
 
-            <div
-                style="margin-top: 1rem; font-family: monospace; font-size: 0.55rem; color: var(--accent-cyan); text-align: right; opacity: 0.5;">
+            <div style="opacity: 0.5;" class="mt-3 text-mini text-right text-cyan text-mono">
                 DETERMINED: {{ policy.created_at.strftime('%H:%M:%S') }} EAT
             </div>
         </div>
@@ -79,11 +75,10 @@
                             entry.created_at.strftime('%H:%M:%S') }}</td>
                         <td class="text-bold text-main">{{ entry.pair }}</td>
                         <td>
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                <span class="badge"
-                                    style="background: rgba(86, 204, 242, 0.05); color: var(--accent-cyan); border: 1px solid rgba(86, 204, 242, 0.2);">{{
+                            <div class="align-center flex gap-2">
+                                <span class="bg-cyan-dim text-cyan badge" style="border: 1px solid rgba(86, 204, 242, 0.2);">{{
                                     entry.policy_name }}</span>
-                                <span style="font-family: monospace; font-size: 0.6rem; color: var(--text-muted);">#{{
+                                <span class="text-muted text-xxs text-mono">#{{
                                     entry.policy_hash[:8] }}</span>
                             </div>
                         </td>

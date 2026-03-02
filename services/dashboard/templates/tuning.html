@@ -13,8 +13,7 @@
 
     {% if reports %}
     {% for report in reports %}
-    <div class="hud-panel glass-panel col-span-12"
-        style="background: rgba(155, 81, 224, 0.03); border-left: 4px solid var(--accent-purple); margin-bottom: 2rem;">
+    <div class="mb-4 hud-panel bg-purple-dim border-left-purple col-span-12 glass-panel">
         <header class="hud-panel-header">
             <div class="flex gap-4 align-center">
                 <div class="hud-panel-title">REPORT: {{ report.report_id }}</div>
@@ -28,17 +27,13 @@
 
         <div class="p-3">
             <!-- Metrics Grid -->
-            <div
-                style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; background: rgba(0,0,0,0.2); padding: 0.75rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.05);">
+            <div class="border-theme flex-wrap mb-3 flex rounded bg-dark-overlay p-2 gap-2">
                 {% for m_key, m_val in report.data.get("supporting_metrics", {}).items() %}
                 {% if m_key not in ["start_date", "end_date"] %}
-                <div
-                    style="flex: 1; min-width: 120px; border-right: 1px solid rgba(255,255,255,0.05); padding: 0 0.5rem;">
-                    <div
-                        style="font-size: 0.55rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.2rem;">
+                <div class="flex-1 px-2 border-right w-120">
+                    <div class="text-mini mb-1 text-muted text-upper">
                         {{ m_key.replace('_', ' ') }}</div>
-                    <div
-                        style="font-size: 1.1rem; font-weight: 800; color: var(--accent-purple); font-family: monospace;">
+                    <div class="text-mono text-lg text-bold text-purple">
                         {{ m_val | round(2) if m_val is number else m_val }}</div>
                 </div>
                 {% endif %}
@@ -46,87 +41,75 @@
             </div>
 
             <!-- Proposals Stream -->
-            <div style="display: grid; gap: 1rem;">
+            <div class="gap-4 grid">
                 {% for prop in report.data.get("proposals", []) %}
                 <div class="hud-scanline bg-dark-overlay border-divider p-3">
-                    <div
-                        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem;">
+                    <div class="justify-between pb-2 border-divider mb-3 flex align-start">
                         <div>
-                            <div style="display: flex; gap: 0.75rem; align-items: center;">
-                                <h3 style="font-size: 0.9rem; font-weight: 800; margin: 0; color: var(--text-main);">{{
+                            <div class="gap-3 align-center flex">
+                                <h3 class="text-bold text-main text-sm m-0">{{
                                     prop.title }}</h3>
                                 <span
                                     class="badge {% if prop.status == 'ACCEPT' %}badge-success{% elif 'REJECT' %}badge-danger{% else %}badge-warning{% endif %} text-mini">{{ prop.status | default('PENDING') }}</span>
                             </div>
-                            <div
-                                style="font-size: 0.65rem; color: var(--text-muted); font-family: monospace; margin-top: 0.2rem;">
+                            <div class="text-muted text-xxs text-mono mt-1">
                                 ID: {{ prop.id }} | TARGET: {{ prop.target | upper }} | CONFIDENCE: <span
                                     style="font-weight: 800; color: {% if prop.confidence == 'HIGH' %}var(--accent-green){% elif prop.confidence == 'MEDIUM' %}var(--accent-yellow){% else %}var(--accent-pink){% endif %};">{{
                                     prop.confidence }}</span></div>
                         </div>
 
                         {% if not prop.status %}
-                        <div style="display: flex; gap: 0.4rem; align-items: center;">
-                            <input type="text" id="notes_{{ prop.id }}" placeholder="ADD ANALYST NOTES..."
-                                style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); color: var(--text-main); font-size: 0.7rem; padding: 0.3rem 0.6rem; border-radius: 3px; min-width: 180px;">
+                        <div class="align-center flex gap-2">
+                            <input type="text" id="notes_{{ prop.id }}" placeholder="ADD ANALYST NOTES..." class="py-1 text-xs border-theme px-2 w-180 text-main rounded bg-darker-overlay">
                             <button onclick="reviewProposal('{{ report.report_id }}', '{{ prop.id }}', 'ACCEPT')"
-                                class="btn btn-primary"
-                                style="font-size: 0.65rem; padding: 0.3rem 0.8rem; background: var(--accent-green); border-color: var(--accent-green); color: #000;">ACCEPT</button>
+                                class="py-1 text-black-color bg-green btn px-2 text-xxs text-black border-green btn-primary">ACCEPT</button>
                             <button onclick="reviewProposal('{{ report.report_id }}', '{{ prop.id }}', 'REJECT')"
-                                class="btn btn-secondary"
-                                style="font-size: 0.65rem; padding: 0.3rem 0.8rem;">REJECT</button>
+                                class="btn px-2 py-1 text-xxs btn-secondary">REJECT</button>
                         </div>
                         {% else %}
-                        <div style="font-size: 0.65rem; color: var(--text-muted); text-align: right;">
+                        <div class="text-right text-muted text-xxs">
                             <div class="text-bold text-main">REVIEW NOTES</div>
-                            <div style="font-style: italic;">{{ prop.reviewer_notes | default('NO NOTES LOGGED') }}
+                            <div class="font-italic">{{ prop.reviewer_notes | default('NO NOTES LOGGED') }}
                             </div>
                         </div>
                         {% endif %}
                     </div>
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div style="grid-template-columns: 1fr 1fr;" class="grid gap-5">
                         <div>
-                            <div
-                                style="font-size: 0.6rem; color: var(--text-muted); font-weight: 800; margin-bottom: 0.4rem;">
+                            <div class="mb-1 text-muted text-bold text-xxs">
                                 PROPOSED CHANGE</div>
-                            <p style="font-size: 0.8rem; margin: 0; line-height: 1.4;">{{ prop.proposed_change }}</p>
+                            <p class="m-0 text-sm line-height-relaxed">{{ prop.proposed_change }}</p>
 
-                            <div
-                                style="font-size: 0.6rem; color: var(--accent-cyan); font-weight: 800; margin-top: 0.8rem; margin-bottom: 0.4rem;">
+                            <div class="text-bold mt-2 text-xxs text-cyan mb-1">
                                 EXPECTED IMPACT</div>
-                            <p style="font-size: 0.8rem; margin: 0; color: var(--accent-cyan); line-height: 1.4;">{{
+                            <p class="m-0 text-sm line-height-relaxed text-cyan">{{
                                 prop.expected_impact }}</p>
                         </div>
                         <div>
-                            <div
-                                style="font-size: 0.6rem; color: var(--text-muted); font-weight: 800; margin-bottom: 0.4rem;">
+                            <div class="mb-1 text-muted text-bold text-xxs">
                                 SUPPORTING EVIDENCE</div>
-                            <ul style="margin: 0; padding-left: 1rem; font-size: 0.75rem; color: var(--text-muted);">
-                                {%- for ref in prop.evidence_refs -%}<li style="margin-bottom: 0.2rem;">{{ ref }}</li>
+                            <ul class="m-0 text-muted text-xs pl-3">
+                                {%- for ref in prop.evidence_refs -%}<li class="mb-1">{{ ref }}</li>
                                 {%- endfor -%}
                             </ul>
 
-                            <div
-                                style="font-size: 0.6rem; color: var(--accent-pink); font-weight: 800; margin-top: 0.8rem; margin-bottom: 0.4rem;">
+                            <div class="text-bold mt-2 text-xxs text-pink mb-1">
                                 RISKS & ROLLBACK</div>
-                            <div style="font-size: 0.75rem; line-height: 1.3;">
-                                <span style="font-weight: 700; color: var(--accent-pink);">RISK:</span> {{ prop.risks
+                            <div class="text-xs line-height-relaxed">
+                                <span class="text-pink text-bold">RISK:</span> {{ prop.risks
                                 }}<br>
-                                <span style="font-weight: 700; color: var(--text-main);">ROLLBACK:</span> {{
+                                <span class="text-main text-bold">ROLLBACK:</span> {{
                                 prop.rollback_plan }}
                             </div>
                         </div>
                     </div>
 
                     {% if prop.status == 'ACCEPT' %}
-                    <div
-                        style="margin-top: 1rem; background: rgba(0,0,0,0.4); border: 1px solid rgba(86, 204, 242, 0.2); border-radius: 4px; overflow: hidden;">
-                        <div
-                            style="background: rgba(86, 204, 242, 0.05); padding: 0.3rem 0.6rem; font-size: 0.55rem; color: var(--accent-cyan); font-weight: 800; border-bottom: 1px solid rgba(86, 204, 242, 0.2);">
+                    <div style="border: 1px solid rgba(86, 204, 242, 0.2);" class="overflow-hidden bg-darker-overlay mt-3 rounded">
+                        <div style="border-bottom: 1px solid rgba(86, 204, 242, 0.2);" class="py-1 bg-cyan-dim text-bold text-mini px-2 text-cyan">
                             CONFIG YAML SNIPPET // MANUAL SYNC REQUIRED</div>
-                        <pre
-                            style="margin: 0; padding: 0.75rem; font-family: monospace; font-size: 0.7rem; color: var(--accent-cyan); line-height: 1.4; overflow-x: auto;">
+                        <pre class="overflow-x-auto text-xs line-height-relaxed m-0 text-cyan text-mono p-2">
 # File: config/{{ prop.target }}.yaml
 {{ prop.target }}:
   _tuning_applied: "PROP_ID_{{ prop.id }}"
@@ -142,7 +125,7 @@
     {% else %}
     <div class="hud-panel glass-panel col-span-12 p-5 text-center"
         data-hud-corner="bottom-left">
-        <div style="font-size: 1.5rem; color: var(--text-muted); font-weight: 800; margin-bottom: 1rem;">NO TUNING
+        <div class="text-xl text-bold text-muted mb-3">NO TUNING
             REPORTS AVAILABLE</div>
         <div class="text-muted opacity-50">Tuning reports are generated periodically based on
             hindsight data.</div>

@@ -7,23 +7,20 @@
         <header class="hud-panel-header">
             <div class="hud-panel-title">RESEARCH_AUDIT // RUN_ID: {{ run.run_id }}</div>
         </header>
-        <div style="padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div class="p-3 border-divider">
+            <div class="justify-between align-center flex">
                 <div>
-                    <div style="font-size: 1.25rem; font-weight: 900; color: var(--text-main);">{{ run.pair }} //
+                    <div style="font-size: 1.25rem;" class="text-black text-main">{{ run.pair }} //
                         HISTORICAL_REPLAY</div>
-                    <div
-                        style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; margin-top: 0.25rem; letter-spacing: 1px;">
+                    <div style="margin-top: 0.25rem;" class="text-muted text-xxs text-upper letter-spacing-1">
                         WINDOW: {{ run.start_date.strftime('%Y-%m-%d') }} <span style="opacity: 0.5;">&rarr;</span> {{
                         run.end_date.strftime('%Y-%m-%d') }} // TIMEFRAMES: {{ run.timeframes | join(', ') }}
                     </div>
                 </div>
                 <div class="text-right">
-                    <div
-                        style="font-size: 1.5rem; font-weight: 900; color: var(--accent-cyan); font-family: monospace;">
+                    <div class="text-black text-xl text-cyan text-mono">
                         {{ variants | length }}</div>
-                    <div
-                        style="font-size: 0.55rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">
+                    <div class="text-mini text-muted text-upper letter-spacing-1">
                         VARIANTS_TESTED</div>
                 </div>
             </div>
@@ -40,10 +37,10 @@
                 <thead>
                     <tr>
                         <th class="text-xxs">VARIANT_CONFIG</th>
-                        <th style="font-size: 0.6rem; text-align: center;">WIN_RATE</th>
+                        <th class="text-center text-xxs">WIN_RATE</th>
                         <th class="text-xxs text-right">EXPECTANCY_(R)</th>
                         <th class="text-xxs text-right">MAX_DD_(R)</th>
-                        <th style="font-size: 0.6rem; text-align: center;">PROFIT_FACTOR</th>
+                        <th class="text-center text-xxs">PROFIT_FACTOR</th>
                         <th class="text-xxs text-right">TOTAL_PnL_(R)</th>
                         <th class="text-xxs text-right">TRADES_(V/T)</th>
                     </tr>
@@ -52,11 +49,9 @@
                     {% for name, variant in run.variants.items() %}
                     <tr>
                         <td style="padding: 1rem 0.5rem;">
-                            <div
-                                style="font-weight: 900; color: var(--accent-cyan); text-transform: uppercase; font-size: 0.8rem; margin-bottom: 0.4rem;">
+                            <div class="text-upper text-cyan text-sm text-black mb-1">
                                 {{ name }}</div>
-                            <div
-                                style="font-size: 0.55rem; color: var(--text-muted); font-family: monospace; line-height: 1.4; letter-spacing: 0.5px;">
+                            <div class="text-mini text-muted text-mono line-height-relaxed">
                                 MIN_SCORE: {{ variant.config.min_setup_score or 'N/A' }}<br>
                                 HARD_BLOCK: {{ variant.config.hard_block_displacement or 'N/A' }}<br>
                                 DUP_SUP_MIN: {{ variant.config.duplicate_suppression_minutes or '60' }}m
@@ -94,9 +89,8 @@
 
     <!-- Individual Variant Trade Logs -->
     <div class="col-span-12">
-        <header style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1rem;">
-            <div
-                style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; font-weight: 900;">
+        <header class="gap-4 align-center mb-3 flex">
+            <div class="text-upper text-xs text-muted letter-spacing-2 text-black">
                 VARIANT_EXECUTION_SAMPLES</div>
             <div style="flex-grow: 1; height: 1px; background: rgba(255,255,255,0.05);"></div>
         </header>
@@ -105,24 +99,23 @@
         <div class="hud-panel glass-panel mb-4">
             <header class="hud-panel-header bg-dark-overlay">
                 <div class="hud-panel-title">TRACT_LOG: {{ name | upper }}</div>
-                <div style="font-size: 0.6rem; color: var(--text-muted); font-family: monospace; opacity: 0.7;">
+                <div style="opacity: 0.7;" class="text-muted text-xxs text-mono">
                     TOTAL_TRADES_IN_VARIANT: {{ variant.trades | length }}</div>
             </header>
 
             <div class="hud-scroll-body">
                 {% if variant.trades | length == 0 %}
-                <div
-                    style="padding: 3rem; text-align: center; color: var(--accent-pink); font-weight: 900; font-size: 0.75rem; letter-spacing: 1px;">
+                <div style="padding: 3rem;" class="text-center text-xs text-black text-pink letter-spacing-1">
                     ZERO_SIGNALS_TRIGGERED // NO_DATA_AVAILABLE</div>
                 {% else %}
                 <table class="hud-compact-table">
                     <thead>
                         <tr>
                             <th class="text-mini">TICKET_IDENT</th>
-                            <th style="font-size: 0.55rem; text-align: center;">DIR</th>
-                            <th style="font-size: 0.55rem; text-align: center;">SIM_OUTCOME</th>
+                            <th class="text-mini text-center">DIR</th>
+                            <th class="text-mini text-center">SIM_OUTCOME</th>
                             <th class="text-mini">EXIT_TIMESTAMP</th>
-                            <th style="font-size: 0.55rem; text-align: right;">REALIZED_R</th>
+                            <th class="text-mini text-right">REALIZED_R</th>
                             <th class="text-mini">GUARDRAIL_STATUS</th>
                         </tr>
                     </thead>
@@ -157,13 +150,12 @@
                                 </span>
                             </td>
                             <td>
-                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div class="align-center flex gap-2">
                                     <span class="badge"
                                         style="background: {{ 'rgba(39, 174, 96, 0.1)' if t.guardrails_status == 'PASS' else 'rgba(235, 47, 150, 0.1)' }}; color: {{ 'var(--accent-green)' if t.guardrails_status == 'PASS' else 'var(--accent-pink)' }}; border: 1px solid {{ 'var(--accent-green)' if t.guardrails_status == 'PASS' else 'var(--accent-pink)' }}; font-size: 0.5rem; font-weight: 900;">{{
                                         t.guardrails_status }}</span>
                                     {% if t.block_reason %}
-                                    <div
-                                        style="font-size: 0.55rem; color: var(--accent-pink); font-family: monospace; font-weight: 700;">
+                                    <div class="text-mini text-pink text-bold text-mono">
                                         // {{ t.block_reason | truncate(30) }}</div>
                                     {% endif %}
                                 </div>
@@ -173,8 +165,7 @@
                     </tbody>
                 </table>
                 {% if variant.trades|length > 20 %}
-                <div
-                    style="padding: 0.5rem 1rem; font-size: 0.55rem; color: var(--text-muted); background: rgba(0,0,0,0.1); border-top: 1px solid rgba(255,255,255,0.05); text-transform: uppercase; letter-spacing: 1px;">
+                <div style="padding: 0.5rem 1rem; background: rgba(0,0,0,0.1); border-top: 1px solid rgba(255,255,255,0.05);" class="text-mini text-muted text-upper letter-spacing-1">
                     SHOWING_LAST_20_OF_{{ variant.trades|length }}_SAMPLES // FULL_LOG_AVAILABLE_IN_JSON_EXPORT
                 </div>
                 {% endif %}

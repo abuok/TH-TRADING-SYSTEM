@@ -16,8 +16,7 @@
             MONITORING ROLLING 10-SESSION PERFORMANCE VECTORS FOR SYSTEM PROMOTION</div>
 
         <div class="hud-scroll-body h-350">
-            <header class="hud-panel-header"
-                style="background: rgba(0,0,0,0.2); border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <header class="bg-dark-overlay hud-panel-header border-divider">
                 <div class="hud-panel-title text-xxs">ACTIVE SCORECARDS // STRATEGIC SUMMARY</div>
             </header>
             {% if scorecards %}
@@ -26,16 +25,16 @@
                     <tr>
                         <th class="w-150">IDENTIFIER</th>
                         <th>TEMPORAL RANGE</th>
-                        <th style="width: 150px; text-align: center;">VALUATION</th>
-                        <th style="width: 150px; text-align: right;">INTERVENTION</th>
+                        <th class="w-150 text-center">VALUATION</th>
+                        <th class="text-right w-150">INTERVENTION</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for sc in scorecards %}
                     <tr>
-                        <td style="font-family: monospace; font-size: 0.7rem; color: var(--accent-cyan);">{{
+                        <td class="text-xs text-cyan text-mono">{{
                             sc.scorecard_id }}</td>
-                        <td style="font-size: 0.75rem; color: var(--text-main);">{{ sc.date_range }}</td>
+                        <td class="text-main text-xs">{{ sc.date_range }}</td>
                         <td class="text-center">
                             <span class="badge"
                                 style="background: {{ 'rgba(39, 174, 96, 0.1)' if sc.pass_fail == 'PASS' else 'rgba(235, 47, 150, 0.1)' }}; color: {{ 'var(--accent-green)' if sc.pass_fail == 'PASS' else 'var(--accent-pink)' }}; border: 1px solid {{ 'var(--accent-green)' if sc.pass_fail == 'PASS' else 'var(--accent-pink)' }}; font-size: 0.55rem; font-weight: 900;">
@@ -57,9 +56,8 @@
             {% endif %}
         </div>
 
-        <div class="hud-scroll-body" style="height: 450px;">
-            <header class="hud-panel-header"
-                style="background: rgba(0,0,0,0.2); border-bottom: 1px solid rgba(255,255,255,0.05); border-top: 2px solid var(--border-main);">
+        <div class="hud-scroll-body h-450">
+            <header class="bg-dark-overlay hud-panel-header border-divider" style="border-top: 2px solid var(--border-main);">
                 <div class="hud-panel-title text-xxs">HISTORICAL SESSION OUTCOMES // AUDIT TRAIL</div>
             </header>
             {% if recent_sessions %}
@@ -79,7 +77,7 @@
                     <tr>
                         <td class="text-mono text-xxs text-muted">{{ s.date }}
                         </td>
-                        <td style="font-family: monospace; font-size: 0.65rem; color: var(--accent-cyan);">{{
+                        <td class="text-xxs text-mono text-cyan">{{
                             s.session_id }}</td>
                         <td class="text-center">
                             <span class="badge"
@@ -91,10 +89,10 @@
                             style="text-align: right; font-weight: 800; color: {{ 'var(--accent-green)' if s.data.performance_metrics.approved_expectancy_r > 0 else 'var(--accent-pink)' }};">
                             {{ "%.2f"|format(s.data.performance_metrics.approved_expectancy_r) }}R
                         </td>
-                        <td style="text-align: right; font-family: monospace; font-size: 0.7rem;">
+                        <td class="text-right text-xs text-mono">
                             {{ "%.1f"|format(s.data.reliability_metrics.max_quote_stale_seconds) }}s
                         </td>
-                        <td style="text-align: right; color: var(--accent-pink); font-weight: 800;">
+                        <td class="text-pink text-right text-bold">
                             {{ "%.2f"|format(s.data.performance_metrics.max_drawdown_r) }}R
                         </td>
                     </tr>
@@ -118,19 +116,16 @@
         <div class="p-5">
             {% if scorecards %}
             {% set latest = scorecards[0].data %}
-            <div
-                style="font-size: 0.6rem; color: var(--text-muted); margin-bottom: 2rem; border-left: 2px solid var(--accent-yellow); padding-left: 0.75rem;">
-                <div style="font-weight: 900; color: var(--accent-yellow);">SOURCE_LATEST: {{ scorecards[0].scorecard_id
+            <div style="border-left: 2px solid var(--accent-yellow); padding-left: 0.75rem;" class="mb-4 text-muted text-xxs">
+                <div class="text-black text-yellow">SOURCE_LATEST: {{ scorecards[0].scorecard_id
                     }}</div>
                 <div>ANALYSIS PERIOD: {{ scorecards[0].date_range }}</div>
             </div>
 
-            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-                <div class="hud-scanline"
-                    style="background: rgba(86, 204, 242, 0.05); border: 1px solid rgba(86, 204, 242, 0.2); padding: 1.25rem;">
-                    <div style="font-size: 2.5rem; font-weight: 900; color: var(--accent-cyan); line-height: 1;">{{
-                        latest.aggregates.passing_days }}<span
-                            style="font-size: 1rem; color: var(--text-muted); margin: 0 0.5rem;">/</span>{{
+            <div style="flex-direction: column;" class="flex gap-5">
+                <div class="bg-cyan-dim hud-scanline" style="border: 1px solid rgba(86, 204, 242, 0.2); padding: 1.25rem;">
+                    <div style="font-size: 2.5rem; line-height: 1;" class="text-black text-cyan">{{
+                        latest.aggregates.passing_days }}<span style="margin: 0 0.5rem;" class="text-muted text-md">/</span>{{
                         latest.aggregates.total_days }}</div>
                     <div
                         class="text-xxs text-muted text-upper letter-spacing-1 mt-2">
@@ -139,7 +134,7 @@
 
                 <div class="hud-scanline"
                     style="background: rgba(39, 174, 96, 0.05); border: 1px solid rgba(39, 174, 96, 0.2); padding: 1.25rem;">
-                    <div style="font-size: 2.5rem; font-weight: 900; color: var(--accent-green); line-height: 1;">{{
+                    <div style="font-size: 2.5rem; line-height: 1;" class="text-black text-green">{{
                         (latest.aggregates.passing_days / latest.aggregates.total_days * 100) | round(1) }}%</div>
                     <div
                         class="text-xxs text-muted text-upper letter-spacing-1 mt-2">
@@ -148,7 +143,7 @@
 
                 <div class="hud-scanline"
                     style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); padding: 1.25rem;">
-                    <div style="font-size: 2.5rem; font-weight: 900; color: var(--text-main); line-height: 1;">{{
+                    <div style="font-size: 2.5rem; line-height: 1;" class="text-black text-main">{{
                         latest.aggregates.net_realized_r | round(2) }}R</div>
                     <div
                         class="text-xxs text-muted text-upper letter-spacing-1 mt-2">
@@ -156,8 +151,7 @@
                 </div>
             </div>
             {% else %}
-            <div
-                style="padding: 4rem; text-align: center; color: var(--text-muted); font-size: 0.7rem; font-weight: 800; letter-spacing: 2px;">
+            <div class="text-center text-bold text-xs text-muted letter-spacing-2 p-6">
                 CALCULATING_VECTORS...</div>
             {% endif %}
         </div>
@@ -169,20 +163,18 @@
             <div class="hud-panel-title">STRATEGIC PROJECTION // NEXT_WEEK</div>
         </header>
 
-        <div class="hud-scroll-body" style="height: 300px; padding: 1rem;">
+        <div class="hud-scroll-body p-3" style="height: 300px;">
             {% if scorecards %}
-            <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div style="flex-direction: column;" class="gap-4 flex">
                 {%- for item in scorecards[0].data.next_week_plan -%}
-                <div
-                    style="background: rgba(255,255,255,0.02); border-left: 2px solid var(--accent-cyan); padding: 1rem;">
-                    <div style="font-size: 0.75rem; color: var(--text-main); line-height: 1.4; font-weight: 700;">{{
+                <div style="background: rgba(255,255,255,0.02); border-left: 2px solid var(--accent-cyan);" class="p-3">
+                    <div class="text-bold text-main text-xs line-height-relaxed">{{
                         item }}</div>
                 </div>
                 {%- endfor -%}
             </div>
             {% else %}
-            <div
-                style="padding: 4rem; text-align: center; color: var(--text-muted); font-size: 0.7rem; font-weight: 800; letter-spacing: 2px; opacity: 0.3;">
+            <div style="opacity: 0.3;" class="text-center text-bold text-xs text-muted letter-spacing-2 p-6">
                 NO_ACTIVE_PROJECTIONS</div>
             {% endif %}
         </div>

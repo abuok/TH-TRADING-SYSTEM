@@ -185,15 +185,12 @@
                 <span class="badge badge-cyan">GENERATED:
                     {{ report.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
             </header>
-            <div style="padding: 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                <div
-                    style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem;">
+            <div style="padding: 1.25rem;" class="border-divider">
+                <div style="align-items: flex-end;" class="justify-between flex gap-4 flex-wrap">
                     <div>
-                        <div
-                            style="font-size: 1.5rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.4rem;">
+                        <div class="text-black mb-1 text-xl text-main">
                             {{ report.pair }} // CALIBRATION_FINDINGS</div>
-                        <div
-                            style="display: flex; gap: 2rem; font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">
+                        <div style="gap: 2rem;" class="text-upper text-muted flex text-xxs letter-spacing-1">
                             <span>DATE_WINDOW: <span class="text-main text-bold">{{
                                     report.date_range }}</span></span>
                             <span>TIMEFRAME: <span class="text-main text-bold">{{
@@ -201,11 +198,9 @@
                         </div>
                     </div>
                     <div>
-                        <div
-                            style="font-size: 0.55rem; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 0.3rem;">
+                        <div style="margin-bottom: 0.3rem;" class="text-mini text-muted text-upper letter-spacing-1">
                             BASELINE_POLICY_HASH</div>
-                        <code
-                            style="font-family: monospace; font-size: 0.75rem; color: var(--accent-cyan); background: rgba(86, 204, 242, 0.05); padding: 0.3rem 0.6rem; border: 1px solid rgba(86, 204, 242, 0.15); border-radius: 2px;">{{ report.baseline_policy_hash }}</code>
+                        <code style="border: 1px solid rgba(86, 204, 242, 0.15); border-radius: 2px;" class="py-1 bg-cyan-dim text-xs px-2 text-cyan text-mono">{{ report.baseline_policy_hash }}</code>
                     </div>
                 </div>
             </div>
@@ -231,14 +226,12 @@
                 'MEDIUM' else 'var(--accent-pink)') %}
 
                 <div class="rec-card {{ card_class }}">
-                    <div
-                        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                    <div class="justify-between mb-3 align-start flex">
                         <div>
-                            <div
-                                style="font-size: 0.55rem; color: var(--text-muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 0.3rem;">
+                            <div style="letter-spacing: 1.5px; margin-bottom: 0.3rem;" class="text-mini text-muted text-upper">
                                 [{{ rec.change_type | upper }}]
                             </div>
-                            <div style="font-size: 0.9rem; font-weight: 900; color: var(--text-main);">{{ rec.title }}
+                            <div class="text-black text-main text-sm">{{ rec.title }}
                             </div>
                         </div>
                         <span class="badge"
@@ -247,7 +240,7 @@
                         </span>
                     </div>
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div style="grid-template-columns: 1fr 1fr 1fr;" class="gap-4 mb-3 grid">
                         <div>
                             <div
                                 class="text-mini text-muted text-upper letter-spacing-1 mb-2">
@@ -259,7 +252,7 @@
                             <div
                                 class="text-mini text-muted text-upper letter-spacing-1 mb-2">
                                 EXPECTED_IMPACT</div>
-                            <div style="font-size: 0.7rem; color: var(--accent-cyan); line-height: 1.5;">{{
+                            <div class="text-cyan text-xs line-height-relaxed">{{
                                 rec.expected_impact }}</div>
                         </div>
                         <div>
@@ -272,13 +265,12 @@
                     </div>
 
                     {% if rec.caveats %}
-                    <div
-                        style="font-size: 0.6rem; color: var(--accent-yellow); background: rgba(242, 201, 76, 0.05); border: 1px solid rgba(242, 201, 76, 0.1); padding: 0.5rem 0.75rem; margin-bottom: 1rem; border-radius: 2px;">
+                    <div style="background: rgba(242, 201, 76, 0.05); border: 1px solid rgba(242, 201, 76, 0.1); padding: 0.5rem 0.75rem; border-radius: 2px;" class="mb-3 text-xxs text-yellow">
                         ⚠ CAVEAT: {{ rec.caveats }}
                     </div>
                     {% endif %}
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div style="grid-template-columns: 1fr 1fr;" class="gap-4 grid">
                         <div>
                             <label
                                 class="text-mini text-muted letter-spacing-1 text-upper display-block mb-1"
@@ -303,11 +295,9 @@
                 {% endfor %}
                 {% else %}
                 <div class="hud-empty-state">
-                    <div
-                        style="font-size: 0.85rem; color: var(--accent-green); font-weight: 900; letter-spacing: 2px; margin-bottom: 0.5rem;">
+                    <div class="letter-spacing-2 text-green text-sm text-black mb-2">
                         ZERO_IMPROVEMENTS_DETECTED</div>
-                    <div
-                        style="font-size: 0.6rem; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase;">
+                    <div class="text-muted text-xxs text-upper letter-spacing-1">
                         NO_MEANINGFUL_GAINS_OVER_BASELINE_IN_TESTED_VARIANTS</div>
                 </div>
                 {% endif %}
@@ -319,7 +309,7 @@
             <header class="hud-panel-header">
                 <div class="hud-panel-title">EVIDENCE_MATRIX // VARIANT_METRICS_COMPARISON</div>
             </header>
-            <div style="overflow-x: auto;">
+            <div class="overflow-x-auto">
                 <table class="hud-compact-table">
                     <thead>
                         <tr>
@@ -338,8 +328,7 @@
                                 <span
                                     style="font-weight: 900; color: {{ 'var(--accent-cyan)' if name == 'baseline' else 'var(--text-main)' }}; font-family: monospace; font-size: 0.8rem; text-transform: uppercase;">{{
                                     name }}</span>
-                                {% if name == 'baseline' %}<span class="badge"
-                                    style="background: rgba(86, 204, 242, 0.1); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); font-size: 0.45rem; margin-left: 0.5rem;">BASELINE</span>{%
+                                {% if name == 'baseline' %}<span class="text-cyan badge" style="background: rgba(86, 204, 242, 0.1); border: 1px solid var(--accent-cyan); font-size: 0.45rem; margin-left: 0.5rem;">BASELINE</span>{%
                                 endif %}
                             </td>
                             <td class="text-center">

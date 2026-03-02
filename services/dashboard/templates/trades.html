@@ -33,8 +33,7 @@
                 <tbody>
                     {% for p in positions %}
                     <tr>
-                        <td
-                            style="font-family: monospace; font-size: 0.7rem; color: var(--accent-cyan); font-weight: 800;">
+                        <td class="text-xs text-bold text-cyan text-mono">
                             {{ p.position_id }}</td>
                         <td class="text-black text-main">{{ p.symbol }}</td>
                         <td class="text-center">
@@ -43,7 +42,7 @@
                                 {{ p.side }}
                             </span>
                         </td>
-                        <td style="text-align: right; font-family: monospace; font-weight: 800;">{{ p.lots }}</td>
+                        <td class="text-right text-bold text-mono">{{ p.lots }}</td>
                         <td class="text-mono text-xs text-right">{{ p.avg_price }}
                         </td>
                         <td
@@ -70,19 +69,18 @@
     <div class="hud-panel glass-panel col-span-12" data-hud-corner="bottom-left">
         <header class="hud-panel-header">
             <div class="hud-panel-title">MT5 FILL LOG // AUDIT TRAIL</div>
-            <span class="badge"
-                style="background: rgba(155, 81, 224, 0.1); color: var(--accent-purple); border: 1px solid var(--accent-purple); font-size: 0.55rem;">TOTAL_FILLS:
+            <span class="text-mini text-purple badge" style="background: rgba(155, 81, 224, 0.1); border: 1px solid var(--accent-purple);">TOTAL_FILLS:
                 {{ fills|length }}</span>
         </header>
 
-        <div class="hud-scroll-body" style="height: 450px;">
+        <div class="hud-scroll-body h-450">
             {% if fills %}
             <table class="hud-compact-table">
                 <thead>
                     <tr>
                         <th class="w-120">TIME (EAT)</th>
                         <th class="w-120">SYMBOL</th>
-                        <th style="text-align: center; width: 120px;">EVENT_TYPE</th>
+                        <th class="w-120 text-center">EVENT_TYPE</th>
                         <th class="text-center w-100">SIDE</th>
                         <th class="text-right w-100">LOTS</th>
                         <th class="text-right w-120">EXEC_PRICE</th>
@@ -97,8 +95,7 @@
                             f.time_eat.strftime('%H:%M:%S') }}</td>
                         <td class="text-black text-main">{{ f.symbol }}</td>
                         <td class="text-center">
-                            <span class="badge"
-                                style="background: rgba(86, 204, 242, 0.05); color: var(--accent-cyan); border: 1px solid rgba(86, 204, 242, 0.3); font-size: 0.5rem;">{{
+                            <span class="text-micro text-cyan badge bg-cyan-dim" style="border: 1px solid rgba(86, 204, 242, 0.3);">{{
                                 f.event_type }}</span>
                         </td>
                         <td class="text-center">
@@ -107,16 +104,14 @@
                                 {{ f.side }}
                             </span>
                         </td>
-                        <td style="text-align: right; font-family: monospace; font-weight: 800;">{{ f.lots }}</td>
+                        <td class="text-right text-bold text-mono">{{ f.lots }}</td>
                         <td class="text-mono text-xs text-right">{{ f.price }}</td>
                         <td class="text-center">
                             {% if f.ticket_id %}
-                            <a href="/dashboard/tickets?pair={{ f.symbol }}#{{ f.ticket_id }}"
-                                style="color: var(--accent-cyan); text-decoration: none; font-family: monospace; font-weight: 900; font-size: 0.75rem; letter-spacing: 0.5px;">[{{
+                            <a href="/dashboard/tickets?pair={{ f.symbol }}#{{ f.ticket_id }}" class="text-xs text-black text-cyan text-mono no-underline">[{{
                                 f.ticket_id }}]</a>
                             {% else %}
-                            <span
-                                style="color: var(--accent-pink); font-size: 0.6rem; font-weight: 900; letter-spacing: 1px; opacity: 0.6;">UNMATCHED_FILL</span>
+                            <span class="text-black text-xxs text-pink opacity-60 letter-spacing-1">UNMATCHED_FILL</span>
                             {% endif %}
                         </td>
                         <td
