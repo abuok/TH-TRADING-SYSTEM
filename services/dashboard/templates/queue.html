@@ -9,24 +9,23 @@
         </header>
 
         <div class="p-3">
-            <div class="mb-3 hud-scanline" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); padding: 1.25rem;">
+            <div class="mb-3 p-4 bg-glass-light hud-scanline border-glass">
                 <div class="text-upper text-muted mb-3 text-xxs letter-spacing-1">
                     DECISION_VECTORS // TODAY</div>
-                <div id="stats-approved" style="line-height: 1.2;" class="text-black text-xl text-green">APPROVE:
+                <div id="stats-approved" class="text-xl line-height-1-2 text-black text-green">APPROVE:
                     0</div>
-                <div id="stats-skipped" style="line-height: 1.2;" class="text-black text-xl text-yellow">SKIP: 0
+                <div id="stats-skipped" class="text-xl line-height-1-2 text-black text-yellow">SKIP: 0
                 </div>
-                <div id="stats-expired" style="line-height: 1.2;" class="text-black text-pink text-xl">EXPIRED: 0
+                <div id="stats-expired" class="text-xl line-height-1-2 text-black text-pink">EXPIRED: 0
                 </div>
             </div>
 
-            <div class="hud-scanline"
-                style="background: rgba(155, 81, 224, 0.05); border: 1px solid rgba(155, 81, 224, 0.2); padding: 1.25rem;">
+            <div class="hud-scanline p-4" style="background: rgba(155, 81, 224, 0.05); border: 1px solid rgba(155, 81, 224, 0.2);">
                 <div class="text-upper text-muted mb-3 text-xxs letter-spacing-1">
                     REALIZED_OUTCOMES // SESSION</div>
                 <div id="stats-closed" class="text-bold mb-2 text-main text-xs">
                     CLOSED_TICKETS: 0</div>
-                <div id="stats-avgr" style="font-size: 2rem; line-height: 1;" class="text-black text-purple">0.0R AVG
+                <div id="stats-avgr" class="text-purple line-height-1 text-black text-2xl">0.0R AVG
                 </div>
             </div>
         </div>
@@ -64,7 +63,7 @@
     <div class="hud-panel glass-panel" style="width: 500px; padding: 0;" data-hud-corner="top-right">
         <header class="hud-panel-header">
             <div class="hud-panel-title">SKIP_SIGNAL_REQ // PROTOCOL</div>
-            <span id="skip-ticket-id" class="text-yellow text-mono badge" style="background: rgba(242, 201, 76, 0.1); border: 1px solid var(--accent-yellow);"></span>
+            <span id="skip-ticket-id" class="text-mono border-yellow badge bg-yellow-dim text-yellow"></span>
         </header>
         <div class="p-5">
             <div class="mb-4">
@@ -123,12 +122,12 @@
                 return;
             }
 
-            statusBadge.innerHTML = `<span class="text-mini text-yellow badge" style="background: rgba(242, 201, 76, 0.1); border: 1px solid var(--accent-yellow);">ACTIVE: ${tickets.length}</span>`;
+            statusBadge.innerHTML = `<span class="border-yellow badge text-mini bg-yellow-dim text-yellow">ACTIVE: ${tickets.length}</span>`;
 
             let html = '';
             tickets.forEach(t => {
                 const isBlocked = t.guardrails_hard_block || (t.block_reason && t.block_reason.includes('BLOCK'));
-                const blockWarning = isBlocked ? `<div class="text-center w-full mb-3 text-xxs badge text-black text-pink letter-spacing-1" style="background: rgba(235, 47, 150, 0.1); border: 1px solid var(--accent-pink);">HARD_BLOCK: ${t.block_reason}</div>` : '';
+                const blockWarning = isBlocked ? `<div class="bg-pink-dim badge mb-3 border-pink w-full letter-spacing-1 text-xxs text-center text-black text-pink">HARD_BLOCK: ${t.block_reason}</div>` : '';
 
                 const scoreAccent = t.guardrails_score >= 80 ? 'var(--accent-green)' : (t.guardrails_score >= 50 ? 'var(--accent-yellow)' : 'var(--accent-pink)');
                 const borderAccent = t.direction === 'BUY' ? 'var(--accent-green)' : 'var(--accent-pink)';
@@ -137,13 +136,13 @@
                 <div id="card-${t.ticket_id}" class="glass-panel hud-panel mb-3" style="border-left: 4px solid ${borderAccent}; padding: 0;">
                     <header class="hud-panel-header bg-dark-overlay">
                         <div class="flex gap-4 align-center">
-                            <div style="font-size: 1.25rem;" class="text-black text-main">${t.pair}</div>
+                            <div class="text-lg text-black text-main">${t.pair}</div>
                             <span class="text-black text-xxs badge" style="background: ${t.direction === 'BUY' ? 'rgba(39, 174, 96, 0.1)' : 'rgba(235, 47, 150, 0.1)'}; color: ${t.direction === 'BUY' ? 'var(--accent-green)' : 'var(--accent-pink)'}; border: 1px solid ${t.direction === 'BUY' ? 'var(--accent-green)' : 'var(--accent-pink)'};">${t.direction}</span>
                             <span class="text-muted text-xxs text-mono">IDENT: ${t.ticket_id}</span>
                         </div>
                         <div class="flex align-center gap-5">
                             <div class="text-muted text-xxs text-upper">SCORE: <span class="text-black text-xxs badge" style="background: rgba(255,255,255,0.05); color: ${scoreAccent}; border: 1px solid ${scoreAccent};">${t.guardrails_score || '---'}</span></div>
-                            <span data-expiry="${t.expires_at}" id="timer-${t.ticket_id}" class="text-black text-xxs text-yellow badge" style="background: rgba(242, 201, 76, 0.05); border: 1px solid var(--accent-yellow);">TTL_SYNC...</span>
+                            <span data-expiry="${t.expires_at}" id="timer-${t.ticket_id}" class="text-xxs border-yellow badge text-black text-yellow" style="background: rgba(242, 201, 76, 0.05);">TTL_SYNC...</span>
                         </div>
                     </header>
                     
@@ -262,7 +261,7 @@
             const container = document.getElementById('prep-container');
 
             if (preps.length === 0) {
-                container.innerHTML = `<div style="opacity: 0.4;" class="text-center text-bold text-xs text-muted letter-spacing-2 p-6">ZERO_ACTIVE_PREPS</div>`;
+                container.innerHTML = `<div class="text-center opacity-40 text-xs text-muted text-bold p-6 letter-spacing-2">ZERO_ACTIVE_PREPS</div>`;
                 return;
             }
 
@@ -280,12 +279,12 @@
 
                 html += `
                 <div id="prep-${p.ticket_id}" class="glass-panel mb-3 hud-panel p-3" style="background: rgba(39, 174, 96, 0.02); border: 1px solid rgba(39, 174, 96, 0.2); border-left: 3px solid var(--accent-green);">
-                    <div style="gap: 2rem;" class="flex">
+                    <div class="flex gap-6">
                         <!-- Checks -->
                         <div style="padding-right: 1.5rem;" class="flex-1 border-right">
                             <div class="justify-between align-center flex mb-3">
                                 <div class="text-black text-mono text-green text-xs">EXE_PREP: ${p.ticket_id}</div>
-                                <span data-expiry="${p.expires_at}" class="text-mini text-black text-yellow badge" style="border: 1px solid var(--accent-yellow);">EXP_SYNC...</span>
+                                <span data-expiry="${p.expires_at}" class="border-yellow badge text-mini text-black text-yellow">EXP_SYNC...</span>
                             </div>
                             ${checkHtml}
                             ${overrideBtn}

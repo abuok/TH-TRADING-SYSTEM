@@ -39,7 +39,7 @@
                 <div class="hud-panel-title">TOTAL_EVALUATED</div>
             </header>
             <div style="padding: 1.5rem;" class="text-center">
-                <div style="font-size: 3.5rem; line-height: 1;" class="text-black text-cyan text-mono">
+                <div class="text-mono line-height-1 text-black text-cyan" style="font-size: 3.5rem;">
                     {{ summary.total }}</div>
                 <div style="margin-top: 0.75rem;" class="text-mini letter-spacing-2 text-muted text-upper">
                     VECTORS_IN_BATCH</div>
@@ -50,10 +50,10 @@
         <div class="hud-panel glass-panel"
             style="background: rgba(242, 153, 74, 0.05); border-left: 4px solid var(--accent-orange);">
             <header class="hud-panel-header">
-                <div class="hud-panel-title" style="color: var(--accent-orange);">COSTLIEST_MISSED_OPPORTUNITY</div>
+                <div class="text-orange hud-panel-title">COSTLIEST_MISSED_OPPORTUNITY</div>
             </header>
-            <div style="padding: 1.25rem; gap: 2.5rem;" class="align-center flex">
-                <div style="font-size: 3rem; color: var(--accent-orange);" class="text-black text-mono">+{{
+            <div class="align-center flex p-4" style="gap: 2.5rem;">
+                <div class="text-mono text-orange text-black" style="font-size: 3rem;">+{{
                     "{:.2f}".format(summary.costliest_miss.missed_r) }}R</div>
                 <div style="flex-grow: 1;">
                     <div class="text-main text-sm text-mono text-black letter-spacing-1">
@@ -137,7 +137,7 @@
                             <span class="'BLOCKED' else 'badge-danger' }} if 'badge-success' != badge text-black {{ text-micro t.status">{{ t.status }}</span>
                         </div>
                         {% if t.skip_reason %}
-                        <div style="margin-bottom: 0.75rem;" class="justify-between align-center flex">
+                        <div class="justify-between align-center flex mb-3">
                             <span class="text-mini text-muted text-upper">BIAS_VECTOR</span>
                             <span style="background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); padding: 1px 6px; border-radius: 2px;" class="text-mini text-black text-mono text-yellow">{{
                                 t.skip_reason }}</span>

@@ -58,11 +58,11 @@
             </table>
             {% else %}
             <div class="hud-empty-state">
-                <div style="font-size: 1.2rem;" class="text-muted text-bold mb-3">ZERO
+                <div class="text-bold mb-3 text-lg text-muted">ZERO
                     CALIBRATION DATA</div>
-                <div style="opacity: 0.5;" class="mb-4 text-muted">Initiate research calibration
+                <div class="opacity-50 mb-4 text-muted">Initiate research calibration
                     via CLI:</div>
-                <code style="max-width: 600px; margin: 0 auto;" class="p-3 text-xs border-theme display-block text-left text-cyan text-mono rounded bg-darker-overlay">
+                <code class="text-left max-w-600 text-xs border-theme mx-auto p-3 bg-darker-overlay display-block text-mono rounded text-cyan">
                     python infra/cli.py research calibrate --run &lt;run_id&gt;
                 </code>
             </div>

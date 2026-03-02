@@ -106,7 +106,7 @@
             <div style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));" class="gap-4 grid">
                 {% for po in d.get("pair_overviews", []) %}
                 <div class="hud-scanline bg-dark-overlay border-divider p-3">
-                    <div style="align-items: start; margin-bottom: 0.75rem;" class="justify-between flex">
+                    <div class="justify-between flex mb-3" style="align-items: start;">
                         <span class="text-bold text-md text-cyan">{{ po.pair }}</span>
                         <span class="badge badge-cyan text-xxs">{{
                             po.bias }}</span>

@@ -20,8 +20,8 @@
             EVALUATED WINDOW: <strong class="text-main">{{ scorecard.date_range }}</strong></div>
 
         <div style="grid-template-columns: repeat(4, 1fr); padding: 1.5rem;" class="gap-4 grid">
-            <div class="bg-cyan-dim hud-scanline" style="border: 1px solid rgba(86, 204, 242, 0.2); padding: 1.25rem;">
-                <div style="font-size: 2rem; line-height: 1;" class="text-black text-cyan">{{
+            <div class="p-4 bg-cyan-dim hud-scanline" style="border: 1px solid rgba(86, 204, 242, 0.2);">
+                <div class="line-height-1 text-black text-cyan text-2xl">{{
                     scorecard.aggregates.passing_days }}<span style="margin: 0 0.3rem;" class="text-muted text-sm">/</span>{{
                     scorecard.aggregates.total_days }}</div>
                 <div
@@ -29,27 +29,24 @@
                     PASSING_SESSION_COUNT</div>
             </div>
 
-            <div class="hud-scanline"
-                style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); padding: 1.25rem;">
-                <div style="font-size: 2rem; line-height: 1;" class="text-black text-main">{{
+            <div class="bg-glass-light hud-scanline border-glass p-4">
+                <div class="line-height-1 text-black text-main text-2xl">{{
                     scorecard.aggregates.total_tickets_approved }}</div>
                 <div
                     class="text-mini text-muted text-upper letter-spacing-1 mt-2">
                     APPROVED_SIGNAL_LOAD</div>
             </div>
 
-            <div class="hud-scanline"
-                style="background: rgba(39, 174, 96, 0.05); border: 1px solid rgba(39, 174, 96, 0.2); padding: 1.25rem;">
-                <div style="font-size: 2rem; line-height: 1;" class="text-black text-green">{{
+            <div class="hud-scanline p-4" style="background: rgba(39, 174, 96, 0.05); border: 1px solid rgba(39, 174, 96, 0.2);">
+                <div class="line-height-1 text-black text-green text-2xl">{{
                     "%.2f"|format(scorecard.aggregates.net_realized_r) }}R</div>
                 <div
                     class="text-mini text-muted text-upper letter-spacing-1 mt-2">
                     NET_REALIZED_GAIN</div>
             </div>
 
-            <div class="hud-scanline"
-                style="background: rgba(242, 201, 76, 0.05); border: 1px solid rgba(242, 201, 76, 0.2); padding: 1.25rem;">
-                <div style="font-size: 2rem; line-height: 1;" class="text-black text-yellow">
+            <div class="hud-scanline p-4" style="background: rgba(242, 201, 76, 0.05); border: 1px solid rgba(242, 201, 76, 0.2);">
+                <div class="line-height-1 text-black text-yellow text-2xl">
                     {{ "%.2f"|format(scorecard.aggregates.net_realized_r / scorecard.aggregates.total_tickets_approved)
                     if scorecard.aggregates.total_tickets_approved > 0 else "0.00" }}R
                 </div>
@@ -108,10 +105,9 @@
         </header>
 
         <div class="hud-scroll-body p-3" style="height: 500px;">
-            <div style="flex-direction: column;" class="gap-4 flex">
+            <div class="gap-4 flex flex-col">
                 {%- for plan in scorecard.next_week_plan -%}
-                <div
-                    style="background: rgba(242, 201, 76, 0.02); border-left: 2px solid var(--accent-yellow); padding: 1.25rem;">
+                <div style="background: rgba(242, 201, 76, 0.02); border-left: 2px solid var(--accent-yellow);" class="p-4">
                     <div class="text-bold text-main text-xs line-height-relaxed">{{
                         plan }}</div>
                 </div>

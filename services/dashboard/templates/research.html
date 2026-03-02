@@ -28,8 +28,8 @@
                     ZERO_SIMULATION_DATA_DETECTED</div>
                 <div class="mb-4 text-muted text-xs letter-spacing-1">
                     RUN_HISTORICAL_SIMS_VIA_CLI_TO_POPULATE</div>
-                <div style="max-width: 600px; margin: 0 auto;" class="text-left">
-                    <code style="padding: 1.25rem; border: 1px solid rgba(86, 204, 242, 0.2); border-left: 3px solid var(--accent-cyan);" class="text-xs display-block rounded text-cyan text-mono bg-darker-overlay">
+                <div class="text-left mx-auto max-w-600">
+                    <code class="text-mono text-xs p-4 rounded bg-darker-overlay display-block text-cyan" style="border: 1px solid rgba(86, 204, 242, 0.2); border-left: 3px solid var(--accent-cyan);">
                         # EXECUTE SIMULATION VECTOR<br>
                         python infra/cli.py research run XAUUSD 2026-01-01 2026-01-31 ./data.csv --variants eq.yaml
                     </code>
@@ -52,7 +52,7 @@
                         <td class="text-black text-sm text-main text-mono">
                             {{ r.run_id }}</td>
                         <td>
-                            <span class="text-mini text-black text-yellow badge" style="background: rgba(242, 201, 76, 0.1); border: 1px solid var(--accent-yellow);">{{
+                            <span class="border-yellow badge text-mini bg-yellow-dim text-black text-yellow">{{
                                 r.pair }}</span>
                         </td>
                         <td class="text-mono text-muted text-xs">

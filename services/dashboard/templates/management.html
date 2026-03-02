@@ -7,7 +7,7 @@
         <header class="hud-panel-header">
             <div class="hud-panel-title">MANAGEMENT_ASSISTANT // ACTIVE_RECOMMENDATIONS</div>
             <div class="flex gap-3 align-center">
-                <span class="text-xxs text-purple badge" style="background: rgba(155, 81, 224, 0.1); border: 1px solid var(--accent-purple);">TH_ENGINE_LEVEL:
+                <span class="text-xxs text-purple badge bg-purple-dim-2 border-purple">TH_ENGINE_LEVEL:
                     DELTA_4</span>
                 <span class="badge badge-cyan text-xxs">{{
                     suggestions|length }} ALERTS</span>
@@ -18,7 +18,7 @@
             class="hud-panel-desc text-xs border-divider">
             RULE-BASED SUGGESTIONS FOR ACTIVE POSITIONS // MANUAL_EXECUTION_REQUIRED</div>
 
-        <div class="hud-scroll-body" style="height: 400px;">
+        <div class="h-400 hud-scroll-body">
             {% if suggestions %}
             <table class="hud-compact-table">
                 <thead>
@@ -36,10 +36,10 @@
                     <tr>
                         <td>
                             {% if sug.severity == 'CRITICAL' %}
-                            <span class="text-pink text-black badge text-mini" style="background: rgba(235, 47, 150, 0.1); border: 1px solid var(--accent-pink);">{{
+                            <span class="bg-pink-dim badge text-mini text-black text-pink border-pink">{{
                                 sug.suggestion_type }}</span>
                             {% elif sug.severity == 'WARN' %}
-                            <span class="text-mini text-bold text-yellow badge" style="background: rgba(242, 201, 76, 0.1); border: 1px solid var(--accent-yellow);">{{
+                            <span class="border-yellow badge text-mini text-bold bg-yellow-dim text-yellow">{{
                                 sug.suggestion_type }}</span>
                             {% else %}
                             <span class="text-mini text-cyan badge" style="background: rgba(86, 204, 242, 0.1); border: 1px solid var(--accent-cyan);">{{

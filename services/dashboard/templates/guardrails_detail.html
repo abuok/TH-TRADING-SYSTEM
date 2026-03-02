@@ -35,10 +35,10 @@
             <header class="hud-panel-header">
                 <div class="hud-panel-title">DISCIPLINE SCORE</div>
             </header>
-            <div style="padding: 1.5rem; flex-direction: column;" class="gap-4 align-center flex">
+            <div class="gap-4 flex flex-col align-center" style="padding: 1.5rem;">
                 <div
                     style="font-size: 4rem; font-weight: 900; color: {{ score_color }}; text-shadow: 0 0 20px {{ score_color }}44; line-height: 1;">
-                    {{ score }}<span style="opacity: 0.5;" class="text-xl">%</span>
+                    {{ score }}<span class="opacity-50 text-xl">%</span>
                 </div>
 
                 <div style="justify-content: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem;" class="gap-4 w-full flex">
@@ -61,7 +61,7 @@
 
                 <div class="mt-2">
                     {% if hard %}
-                    <span class="text-pink text-black badge letter-spacing-1" style="background: rgba(235, 47, 150, 0.1); border: 2px solid var(--accent-pink); padding: 0.4rem 1rem;">⛔
+                    <span class="bg-pink-dim badge text-pink text-black letter-spacing-1" style="border: 2px solid var(--accent-pink); padding: 0.4rem 1rem;">⛔
                         HARD BLOCK ACTIVE</span>
                     {% else %}
                     <span class="text-black text-green badge letter-spacing-1" style="background: rgba(39, 174, 96, 0.1); border: 2px solid var(--accent-green); padding: 0.4rem 1rem;">✅
@@ -78,7 +78,7 @@
             </header>
             <div class="p-5">
                 {% if hard and result.primary_block_reason %}
-                <div style="background: rgba(235, 47, 150, 0.05); border: 1px solid var(--accent-pink);" class="p-3 mb-3 rounded">
+                <div class="p-3 border-pink rounded mb-3" style="background: rgba(235, 47, 150, 0.05);">
                     <div class="text-upper text-black text-xxs text-pink mb-2 letter-spacing-1">
                         CRITICAL BLOCK INITIATED</div>
                     <div class="text-bold text-main text-md line-height-relaxed">{{
@@ -94,7 +94,7 @@
                 </div>
                 {% endif %}
 
-                <div style="gap: 2rem;" class="flex mt-4">
+                <div class="mt-4 flex gap-6">
                     <div>
                         <div class="text-mini mb-1 text-muted">EVALUATION
                             TIME</div>

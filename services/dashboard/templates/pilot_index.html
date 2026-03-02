@@ -122,9 +122,9 @@
                 <div>ANALYSIS PERIOD: {{ scorecards[0].date_range }}</div>
             </div>
 
-            <div style="flex-direction: column;" class="flex gap-5">
-                <div class="bg-cyan-dim hud-scanline" style="border: 1px solid rgba(86, 204, 242, 0.2); padding: 1.25rem;">
-                    <div style="font-size: 2.5rem; line-height: 1;" class="text-black text-cyan">{{
+            <div class="gap-5 flex-col flex">
+                <div class="p-4 bg-cyan-dim hud-scanline" style="border: 1px solid rgba(86, 204, 242, 0.2);">
+                    <div class="line-height-1 text-black text-cyan text-3xl">{{
                         latest.aggregates.passing_days }}<span style="margin: 0 0.5rem;" class="text-muted text-md">/</span>{{
                         latest.aggregates.total_days }}</div>
                     <div
@@ -132,18 +132,16 @@
                         PASSING_DAYS // QUANT_VALIDATION</div>
                 </div>
 
-                <div class="hud-scanline"
-                    style="background: rgba(39, 174, 96, 0.05); border: 1px solid rgba(39, 174, 96, 0.2); padding: 1.25rem;">
-                    <div style="font-size: 2.5rem; line-height: 1;" class="text-black text-green">{{
+                <div class="hud-scanline p-4" style="background: rgba(39, 174, 96, 0.05); border: 1px solid rgba(39, 174, 96, 0.2);">
+                    <div class="line-height-1 text-black text-green text-3xl">{{
                         (latest.aggregates.passing_days / latest.aggregates.total_days * 100) | round(1) }}%</div>
                     <div
                         class="text-xxs text-muted text-upper letter-spacing-1 mt-2">
                         SYSTEM_RELIABILITY_COEFFICIENT</div>
                 </div>
 
-                <div class="hud-scanline"
-                    style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); padding: 1.25rem;">
-                    <div style="font-size: 2.5rem; line-height: 1;" class="text-black text-main">{{
+                <div class="bg-glass-light hud-scanline border-glass p-4">
+                    <div class="line-height-1 text-black text-main text-3xl">{{
                         latest.aggregates.net_realized_r | round(2) }}R</div>
                     <div
                         class="text-xxs text-muted text-upper letter-spacing-1 mt-2">
@@ -165,7 +163,7 @@
 
         <div class="hud-scroll-body p-3" style="height: 300px;">
             {% if scorecards %}
-            <div style="flex-direction: column;" class="gap-4 flex">
+            <div class="gap-4 flex flex-col">
                 {%- for item in scorecards[0].data.next_week_plan -%}
                 <div style="background: rgba(255,255,255,0.02); border-left: 2px solid var(--accent-cyan);" class="p-3">
                     <div class="text-bold text-main text-xs line-height-relaxed">{{

@@ -185,12 +185,12 @@
                 <span class="badge badge-cyan">GENERATED:
                     {{ report.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
             </header>
-            <div style="padding: 1.25rem;" class="border-divider">
+            <div class="border-divider p-4">
                 <div style="align-items: flex-end;" class="justify-between flex gap-4 flex-wrap">
                     <div>
                         <div class="text-black mb-1 text-xl text-main">
                             {{ report.pair }} // CALIBRATION_FINDINGS</div>
-                        <div style="gap: 2rem;" class="text-upper text-muted flex text-xxs letter-spacing-1">
+                        <div class="text-xxs text-upper gap-6 text-muted flex letter-spacing-1">
                             <span>DATE_WINDOW: <span class="text-main text-bold">{{
                                     report.date_range }}</span></span>
                             <span>TIMEFRAME: <span class="text-main text-bold">{{
@@ -270,7 +270,7 @@
                     </div>
                     {% endif %}
 
-                    <div style="grid-template-columns: 1fr 1fr;" class="gap-4 grid">
+                    <div class="grid-cols-2 gap-4 grid">
                         <div>
                             <label
                                 class="text-mini text-muted letter-spacing-1 text-upper display-block mb-1"

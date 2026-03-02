@@ -26,7 +26,7 @@
                         PROXY</div>
                 </header>
                 <div class="p-3">
-                    <div style="line-height: 1;" class="text-black text-xl text-main">{{
+                    <div class="text-xl line-height-1 text-black text-main">{{
                         proxy.current_value }}</div>
                     {% set delta = proxy.delta_pct %}
                     <div class="mt-2 text-bold text-sm text-mono">
@@ -38,7 +38,7 @@
                             <span class="text-muted">0.00%</span>
                             {% endif %}
                             {% else %}
-                            <span style="opacity: 0.4;" class="text-muted">NO_PREV</span>
+                            <span class="opacity-40 text-muted">NO_PREV</span>
                             {% endif %}
                     </div>
                 </div>
@@ -69,12 +69,12 @@
         </header>
 
         {% if latest %}
-        <div class="hud-scroll-body p-3" style="height: 400px;">
+        <div class="p-3 h-400 hud-scroll-body">
             <!-- Bias Score Gauge -->
             <div class="mb-4">
                 <div class="text-upper text-muted text-xxs mb-2 letter-spacing-1">
                     BIAS CONFLUENCE SCORE</div>
-                <div style="align-items: baseline;" class="gap-4 flex">
+                <div class="align-baseline gap-4 flex">
                     <div
                         style="font-size: 3rem; font-weight: 900; color: {{ 'var(--accent-green)' if latest.data.bias_score > 0 else ('var(--accent-pink)' if latest.data.bias_score < 0 else 'var(--text-main)') }}; line-height: 1;">
                         {{ latest.data.bias_score | round(2) }}
@@ -95,9 +95,9 @@
 
             <!-- Drivers Stream -->
             <div class="mb-4">
-                <div style="margin-bottom: 0.75rem;" class="text-muted text-xxs text-upper letter-spacing-1">
+                <div class="text-xxs text-upper mb-3 text-muted letter-spacing-1">
                     FUNDAMENTAL VECTORS</div>
-                <div style="flex-direction: column;" class="flex gap-2">
+                <div class="gap-2 flex-col flex">
                     {%- for drv in latest.data.get('drivers', []) -%}
                     <div
                         style="background: rgba(255,255,255,0.02); padding: 0.6rem; border-left: 2px solid {{ 'var(--accent-green)' if drv.impact > 0 else ('var(--accent-pink)' if drv.impact < 0 else 'var(--text-muted)') }};">
@@ -107,7 +107,7 @@
                             IMPACT_COEFFICIENT: {{ drv.impact }}</div>
                     </div>
                     {%- else -%}
-                    <div style="opacity: 0.4;" class="text-muted font-italic text-xs">
+                    <div class="opacity-40 text-xs font-italic text-muted">
                         NO_VECTORS_DETECTED</div>
                     {%- endfor -%}
                 </div>
@@ -127,7 +127,7 @@
             TELEMETRY_SYNCED: {{ latest.created_at.strftime('%H:%M:%S') }} EAT
         </footer>
         {% else %}
-        <div style="height: 400px; justify-content: center; opacity: 0.3;" class="text-xs text-muted letter-spacing-2 align-center flex">
+        <div class="align-center text-xs text-muted h-400 flex letter-spacing-2" style="justify-content: center; opacity: 0.3;">
             SIGNAL_INTERRUPTED_NO_DATA
         </div>
         {% endif %}

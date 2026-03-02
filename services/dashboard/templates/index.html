@@ -9,7 +9,7 @@
             <h2 class="hud-panel-title">SYSTEM PULSE // HEALTH</h2>
             <span class="status-dot status-healthy Intense-glow-cyan"></span>
         </header>
-        <div style="grid-template-columns: 1fr 1fr;" class="p-2 grid gap-2">
+        <div class="gap-2 grid grid-cols-2 p-2">
             {% for service, status in health.items() %}
             <div
                 style="background: rgba(0,0,0,0.2); padding: 0.4rem; border-radius: 2px; border-left: 2px solid {{ 'var(--accent-green)' if status == 'OK' else 'var(--accent-pink)' }};">
@@ -29,12 +29,12 @@
             <h2 class="hud-panel-title">CAPITAL ALLOCATION</h2>
             <span class="badge badge-purple">LIVE</span>
         </header>
-        <div style="flex-direction: column;" class="gap-2 p-2 flex">
-            <div style="align-items: baseline;" class="justify-between flex">
+        <div class="gap-2 flex-col flex p-2">
+            <div class="justify-between align-baseline flex">
                 <span class="text-xxs text-muted">FUNDED BALANCE</span>
                 <span class="text-lg text-bold text-mono">$100,000.00</span>
             </div>
-            <div style="align-items: baseline;" class="justify-between flex">
+            <div class="justify-between align-baseline flex">
                 <span class="text-xxs text-muted">UNREALIZED PNL</span>
                 <span class="text-green text-lg text-bold text-mono">+$1,240.50</span>
             </div>
@@ -60,7 +60,7 @@
         <div class="gap-4 p-2 flex">
             <div class="border-theme flex-1 rounded bg-dark-overlay p-2">
                 <div class="mb-1 text-muted text-xxs">SYNK CLOCK</div>
-                <div style="font-size: 1.2rem;" class="letter-spacing-2 text-bold text-mono">{{
+                <div class="text-mono text-bold text-lg letter-spacing-2">{{
                     now_eat_str }}</div>
                 <div class="text-mini text-cyan">SYNCED TO EAT (AFRICA/NAIROBI)</div>
             </div>
@@ -71,7 +71,7 @@
                     {% if no_trade_windows %}
                     {% for window in no_trade_windows[:2] %}
                     <div style="background: rgba(242, 153, 74, 0.05); border: 1px solid rgba(242, 153, 74, 0.2);" class="w-120 px-2 py-1 rounded">
-                        <div style="color: var(--accent-orange);" class="text-micro text-bold">RESTRICTION</div>
+                        <div class="text-orange text-bold text-micro">RESTRICTION</div>
                         <div class="text-xxs text-mono">{{ window.start }}</div>
                     </div>
                     {% endfor %}
@@ -92,7 +92,7 @@
             <h2 class="hud-panel-title">PRIMARY SENSORS // ACTIVE SIGNAL STREAMS</h2>
             <div class="text-xxs text-muted">SCAN RATE: 1.0Hz</div>
         </header>
-        <div class="hud-scroll-body" style="height: 400px;">
+        <div class="h-400 hud-scroll-body">
             <table class="hud-compact-table">
                 <thead>
                     <tr>
@@ -107,7 +107,7 @@
                 <tbody>
                     {% for setup in latest_setups %}
                     <tr>
-                        <td style="opacity: 0.5;" class="text-muted text-xxs">{{ loop.index }}</td>
+                        <td class="text-xxs opacity-50 text-muted">{{ loop.index }}</td>
                         <td class="text-bold text-cyan">{{ setup.asset_pair }}</td>
                         <td><span class="badge badge-cyan-dim badge-sm">{{
                                 setup.stage }}</span></td>
@@ -139,9 +139,9 @@
             <h2 class="hud-panel-title">RISK DECISIONS // GOVERNANCE</h2>
             <span class="badge badge-danger">SECURE</span>
         </header>
-        <div class="hud-scroll-body p-2" style="height: 400px;">
+        <div class="h-400 hud-scroll-body p-2">
             {% if kill_switches %}
-            <div style="background: rgba(235, 47, 150, 0.1); border: 1px solid var(--accent-pink);" class="p-2 mb-3 rounded">
+            <div class="bg-pink-dim mb-3 border-pink rounded p-2">
                 <div style="margin-bottom: 0.3rem;" class="text-pink text-bold text-xxs">
                     ACTIVE INTERVENTION</div>
                 {% for ks in kill_switches %}
@@ -151,7 +151,7 @@
             </div>
             {% endif %}
 
-            <div style="flex-direction: column;" class="gap-3 flex">
+            <div class="flex-col flex gap-3">
                 {% for decision in latest_decisions %}
                 <div class="rounded border-theme bg-darker-overlay p-2 hud-scanline">
                     <div style="align-items: start; margin-bottom: 0.3rem;" class="justify-between flex">
@@ -187,7 +187,7 @@
                 </div>
             </div>
         </header>
-        <div style="grid-template-columns: 3fr 1fr; gap: 2rem;" class="grid">
+        <div class="grid gap-6" style="grid-template-columns: 3fr 1fr;">
             <div class="hud-scroll-body" style="height: 220px;">
                 <table class="hud-compact-table">
                     <thead>
@@ -217,7 +217,7 @@
                 </table>
             </div>
             <div style="border-left: 1px solid rgba(255,255,255,0.05); padding-left: 1.5rem;">
-                <div style="margin-bottom: 0.75rem;" class="text-upper text-bold text-muted text-xxs letter-spacing-1">
+                <div class="text-xxs text-upper mb-3 text-muted text-bold letter-spacing-1">
                     SYMBOL SPECIFICATIONS</div>
                 <div class="hud-scroll-body" style="height: 180px;">
                     {% for s in symbol_specs %}

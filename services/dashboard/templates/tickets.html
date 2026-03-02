@@ -7,7 +7,7 @@
         <header class="hud-panel-header">
             <div class="hud-panel-title">TICKET_AUDIT_SYSTEM // FILTER_RECORDS</div>
         </header>
-        <div style="gap: 2rem;" class="align-center p-3 flex border-divider">
+        <div class="border-divider align-center gap-6 p-3 flex">
             <form action="/dashboard/tickets" method="get" style="flex-grow: 1;" class="flex gap-2">
                 <input type="text" name="pair" placeholder="FILTER_BY_ASSET_VECTOR (E.G. XAUUSD)"
                     value="{{ selected_pair or '' }}" style="border: 1px solid var(--border-main); padding: 0.6rem 1rem; flex-grow: 1; outline: none; border-left: 2px solid var(--accent-cyan);" class="text-sm rounded text-main text-mono bg-darker-overlay">
@@ -35,7 +35,7 @@
         style="border-left: 4px solid {{ 'var(--accent-green)' if ticket.status != 'BLOCKED' else 'var(--accent-pink)' }}; margin-bottom: 1.5rem; padding: 0;">
         <header class="hud-panel-header bg-dark-overlay">
             <div class="flex gap-4 align-center">
-                <div style="font-size: 1.25rem;" class="text-black text-main">{{ ticket.pair }} // {{
+                <div class="text-lg text-black text-main">{{ ticket.pair }} // {{
                     ticket.direction }}</div>
                 <span class="badge"
                     style="background: {{ 'rgba(39, 174, 96, 0.1)' if ticket.status != 'BLOCKED' else 'rgba(235, 47, 150, 0.1)' }}; color: {{ 'var(--accent-green)' if ticket.status != 'BLOCKED' else 'var(--accent-pink)' }}; border: 1px solid {{ 'var(--accent-green)' if ticket.status != 'BLOCKED' else 'var(--accent-pink)' }}; font-size: 0.55rem; font-weight: 900;">STATUS:
@@ -55,19 +55,19 @@
                 </span>
                 {% endif %}
             </div>
-            <div style="opacity: 0.7;" class="text-muted text-xxs text-mono">
+            <div class="text-xxs opacity-70 text-mono text-muted">
                 IDENT: {{ ticket.ticket_id }} // {{ ticket.created_at.strftime('%Y-%m-%d %H:%M:%S') }} EAT
             </div>
         </header>
 
         <div class="p-4">
             {% if ticket.status == 'BLOCKED' %}
-            <div style="background: rgba(235, 47, 150, 0.05); border: 1px solid var(--accent-pink); margin-bottom: 1.25rem;" class="text-xs text-black rounded text-mono text-pink p-2">
+            <div class="text-mono text-xs text-pink border-pink rounded text-black p-2" style="background: rgba(235, 47, 150, 0.05); margin-bottom: 1.25rem;">
                 DIAGNOSTIC_BLOCK: {{ ticket.block_reason }}
             </div>
             {% endif %}
 
-            <div style="grid-template-columns: 2fr 3fr; gap: 2rem;" class="grid">
+            <div class="grid gap-6" style="grid-template-columns: 2fr 3fr;">
                 <!-- Params & Execution Result -->
                 <div>
                     <div style="grid-template-columns: repeat(3, 1fr);" class="gap-4 mb-3 grid">
@@ -107,7 +107,7 @@
                             <div
                                 style="font-size: 1.5rem; font-weight: 900; color: {{ 'var(--accent-green)' if ticket.realized_r >= 0 else 'var(--accent-pink)' }}; line-height: 1;">
                                 {{ "{:+.2f}".format(ticket.realized_r) }}R</div>
-                            <div style="opacity: 0.7;" class="text-mini text-muted text-bold text-upper">
+                            <div class="opacity-70 text-upper text-muted text-mini text-bold">
                                 REALIZED_VAL</div>
                         </div>
                         {% endif %}
@@ -130,7 +130,7 @@
                         <div style="padding-bottom: 0.4rem;" class="justify-between border-divider align-center flex mb-2">
                             <div class="text-black text-green text-xs">
                                 EXECUTION_PREP_ACTIVE</div>
-                            <span id="timer-{{ ticket.ticket_id }}" class="text-mini text-black text-yellow badge" style="background: rgba(242, 201, 76, 0.1); border: 1px solid var(--accent-yellow);">SYNC...</span>
+                            <span id="timer-{{ ticket.ticket_id }}" class="border-yellow badge text-mini bg-yellow-dim text-black text-yellow">SYNC...</span>
                         </div>
                         <div id="prep-content-{{ ticket.ticket_id }}">
                             <div class="p-2 text-muted text-xxs text-mono">
@@ -156,7 +156,7 @@
 
                     <!-- Platform Notes Section -->
                     <div style="background: rgba(255,255,255,0.02);" class="p-3 border-theme rounded">
-                        <div style="margin-bottom: 0.75rem;" class="justify-between align-center flex">
+                        <div class="justify-between align-center flex mb-3">
                             <div class="text-muted text-xxs text-upper letter-spacing-1">
                                 PLATFORM_NOTES_BRIDGE</div>
                             <div class="flex gap-3">
@@ -179,7 +179,7 @@
                                 title="JSON export for ticket {{ ticket.ticket_id }}"
                                 aria-label="JSON Export">{{ ticket.model_dump_json(indent=2) }}</textarea>
                         </div>
-                        <div style="opacity: 0.5;" class="text-muted text-xxs text-mono line-height-relaxed">
+                        <div class="text-xxs text-mono line-height-relaxed opacity-50 text-muted">
                             * SYSTEM_INSTRUCTION: COPY VECTORS TO MT5 OR CTRADER FOR EXECUTION AUDIT. JSON DATA
                             AVAILABLE FOR FORENSIC REVIEW.
                         </div>

@@ -10,10 +10,10 @@
         <div class="p-3 border-divider">
             <div class="justify-between align-center flex">
                 <div>
-                    <div style="font-size: 1.25rem;" class="text-black text-main">{{ run.pair }} //
+                    <div class="text-lg text-black text-main">{{ run.pair }} //
                         HISTORICAL_REPLAY</div>
                     <div style="margin-top: 0.25rem;" class="text-muted text-xxs text-upper letter-spacing-1">
-                        WINDOW: {{ run.start_date.strftime('%Y-%m-%d') }} <span style="opacity: 0.5;">&rarr;</span> {{
+                        WINDOW: {{ run.start_date.strftime('%Y-%m-%d') }} <span class="opacity-50">&rarr;</span> {{
                         run.end_date.strftime('%Y-%m-%d') }} // TIMEFRAMES: {{ run.timeframes | join(', ') }}
                     </div>
                 </div>
@@ -99,7 +99,7 @@
         <div class="hud-panel glass-panel mb-4">
             <header class="hud-panel-header bg-dark-overlay">
                 <div class="hud-panel-title">TRACT_LOG: {{ name | upper }}</div>
-                <div style="opacity: 0.7;" class="text-muted text-xxs text-mono">
+                <div class="text-xxs opacity-70 text-mono text-muted">
                     TOTAL_TRADES_IN_VARIANT: {{ variant.trades | length }}</div>
             </header>
 
