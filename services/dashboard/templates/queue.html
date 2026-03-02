@@ -20,7 +20,8 @@
                 </div>
             </div>
 
-            <div class="hud-scanline p-4" style="background: rgba(155, 81, 224, 0.05); border: 1px solid rgba(155, 81, 224, 0.2);">
+            <div class="hud-scanline p-4"
+                style="background: rgba(155, 81, 224, 0.05); border: 1px solid rgba(155, 81, 224, 0.2);">
                 <div class="text-upper text-muted mb-3 text-xxs letter-spacing-1">
                     REALIZED_OUTCOMES // SESSION</div>
                 <div id="stats-closed" class="text-bold mb-2 text-main text-xs">
@@ -36,7 +37,8 @@
         <header class="hud-panel-header">
             <div class="hud-panel-title">EXECUTION_PREP_LAYER // APPROVED_PLANS</div>
             <div class="flex gap-3 align-center">
-                <span class="text-mini text-green badge" style="background: rgba(39, 174, 96, 0.1); border: 1px solid var(--accent-green);">CORE_READY</span>
+                <span class="text-mini text-green badge"
+                    style="background: rgba(39, 174, 96, 0.1); border: 1px solid var(--accent-green);">CORE_READY</span>
             </div>
         </header>
         <div id="prep-container" class="hud-scroll-body" style="height: 250px;">
@@ -68,7 +70,9 @@
         <div class="p-5">
             <div class="mb-4">
                 <label class="text-upper text-muted display-block text-xxs mb-2 letter-spacing-1">PRIMARY_REASON</label>
-                <select id="skip-reason" title="Primary skip reason" aria-label="Primary Skip Reason" style="border: 1px solid var(--border-main); outline: none;" class="w-full text-sm text-main rounded text-mono bg-darker-overlay p-2">
+                <select id="skip-reason" title="Primary skip reason" aria-label="Primary Skip Reason"
+                    style="border: 1px solid var(--border-main); outline: none;"
+                    class="w-full text-sm text-main rounded text-mono bg-darker-overlay p-2">
                     <option value="NEWS_WINDOW">News Window</option>
                     <option value="STALE">Stale / Too Late</option>
                     <option value="SPREAD_TOO_HIGH">Spread Too High</option>
@@ -80,13 +84,16 @@
                 </select>
             </div>
             <div class="mb-4">
-                <label class="text-upper text-muted display-block text-xxs mb-2 letter-spacing-1">OBSERVATIONAL_NOTES</label>
-                <textarea id="skip-notes" rows="3"
-                    placeholder="Log additional context..." style="border: 1px solid var(--border-main); resize: none; outline: none;" class="w-full text-sm text-main rounded bg-darker-overlay p-2"></textarea>
+                <label
+                    class="text-upper text-muted display-block text-xxs mb-2 letter-spacing-1">OBSERVATIONAL_NOTES</label>
+                <textarea id="skip-notes" rows="3" placeholder="Log additional context..."
+                    style="border: 1px solid var(--border-main); resize: none; outline: none;"
+                    class="w-full text-sm text-main rounded bg-darker-overlay p-2"></textarea>
             </div>
             <div style="justify-content: flex-end;" class="gap-4 flex">
                 <button onclick="closeModal('skipModal')" class="btn btn-secondary text-xs">ABORT_CANCEL</button>
-                <button onclick="submitSkip()" class="btn text-xs text-black-color text-black btn-primary" style="background: var(--accent-yellow); border-color: var(--accent-yellow);">CONFIRM_SKIP</button>
+                <button onclick="submitSkip()" class="btn text-xs text-black-color text-black btn-primary"
+                    style="background: var(--accent-yellow); border-color: var(--accent-yellow);">CONFIRM_SKIP</button>
             </div>
         </div>
     </div>
@@ -352,5 +359,38 @@
     fetchStats();
     fetchQueue();
     fetchActivePreps();
+
+    // Global Keyboard Hotkeys for Operator Fluidity
+    document.addEventListener('keydown', (e) => {
+        // Ignore if focus is in an input or textarea
+        if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
+
+        // Escape closes modals
+        if (e.key === 'Escape') {
+            closeModal('skipModal');
+            if (document.getElementById('overrideModal')) closeModal('overrideModal');
+            return;
+        }
+
+        // Only process hotkeys if no modal is currently open
+        const skipVisible = document.getElementById('skipModal').style.display === 'flex';
+        const overrideVisible = document.getElementById('overrideModal') && document.getElementById('overrideModal').style.display === 'flex';
+        if (skipVisible || overrideVisible) return;
+
+        // Find the first ticket card in the queue
+        const firstTicket = document.querySelector('#queue-container .glass-panel');
+        if (!firstTicket || firstTicket.id.indexOf('card-') !== 0) return;
+
+        // Extract ticket ID
+        const ticketId = firstTicket.id.replace('card-', '');
+
+        if (e.key.toLowerCase() === 'a') {
+            e.preventDefault();
+            approveTicket(ticketId);
+        } else if (e.key.toLowerCase() === 's') {
+            e.preventDefault();
+            openSkipModal(ticketId);
+        }
+    });
 </script>
 {% endblock %}

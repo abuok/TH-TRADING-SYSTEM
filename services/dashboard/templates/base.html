@@ -10,6 +10,35 @@
         rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', path='theme.css') }}">
+    <style>
+        @keyframes riskFlash {
+            0% {
+                background-color: rgba(235, 47, 150, 0.9);
+            }
+
+            50% {
+                background-color: rgba(200, 20, 100, 0.9);
+            }
+
+            100% {
+                background-color: rgba(235, 47, 150, 0.9);
+            }
+        }
+
+        .risk-off-banner {
+            animation: riskFlash 2s infinite;
+            color: white;
+            text-align: center;
+            padding: 0.5rem;
+            font-weight: 800;
+            letter-spacing: 4px;
+            font-size: 0.85rem;
+            border-bottom: 2px solid #fff;
+            box-shadow: 0 0 15px rgba(235, 47, 150, 0.5);
+            z-index: 1000;
+            display: none;
+        }
+    </style>
     {% block extra_head %}{% endblock %}
 </head>
 
@@ -106,6 +135,10 @@
             </div>
         </header>
 
+        <div id="global-risk-banner" class="risk-off-banner">
+            WARNING: RISK-OFF MODE ACTIVE — HIGH VOLATILITY / SYSTEM DEGRADATION DETECTED
+        </div>
+
         <main class="hud-main">
             {% block content %}{% endblock %}
         </main>
@@ -121,6 +154,13 @@
         }
         setInterval(updateClock, 1000);
         updateClock();
+
+        window.toggleRiskOff = function (isActive) {
+            const banner = document.getElementById('global-risk-banner');
+            if (banner) {
+                banner.style.display = isActive ? 'block' : 'none';
+            }
+        };
     </script>
 </body>
 
