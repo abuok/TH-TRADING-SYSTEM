@@ -9,14 +9,13 @@ All times validated in Africa/Nairobi (UTC+3).
 import os
 import logging
 from datetime import datetime, timezone, timedelta, time as time_
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import pytz
 import yaml
 from sqlalchemy.orm import Session
 
-from shared.database.models import Packet, KillSwitch, IncidentLog, GuardrailsLog, OrderTicket
-from shared.logic.phx_detector import PHXStage
+from shared.database.models import GuardrailsLog, OrderTicket
 from shared.logic.sessions import get_nairobi_time, get_session_label
 from shared.types.guardrails import (
     EvidenceRef, GuardrailsResult, RuleCheck, GUARDRAILS_VERSION

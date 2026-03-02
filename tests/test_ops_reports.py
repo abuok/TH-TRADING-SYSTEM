@@ -2,7 +2,7 @@ import pytest
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from shared.database.session import get_db
-from shared.database.models import OrderTicket, ActionItem, OpsReportLog, Packet, Run
+from shared.database.models import OrderTicket, ActionItem, Packet, Run
 from services.orchestration.logic.ops_engine import OpsEngine
 from services.orchestration.logic.review_engine import ReviewEngine
 import os

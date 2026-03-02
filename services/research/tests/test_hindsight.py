@@ -3,10 +3,9 @@ from datetime import datetime, timezone
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from shared.database.models import Base, OrderTicket, HindsightOutcomeLog
+from shared.database.models import Base, OrderTicket
 from shared.types.packets import Candle
-from shared.types.trading import SkipReasonEnum
-from services.research.hindsight import process_ticket_hindsight, walk_forward
+from services.research.hindsight import process_ticket_hindsight
 
 engine = create_engine('sqlite:///:memory:')
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

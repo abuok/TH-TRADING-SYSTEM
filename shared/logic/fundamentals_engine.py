@@ -4,7 +4,7 @@ Deterministic scoring engine for generating bias logic based on proxy snapshots 
 No external calls, explainable mapping to specific rules for XAUUSD and GBPJPY.
 """
 
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Dict, List, Tuple
 from shared.types.fundamentals import MarketMoversPacket, PairFundamentalsPacket, BulletItem, ProxySnapshot
 import logging
@@ -111,7 +111,7 @@ def evaluate_gbpjpy(proxies: Dict[str, ProxySnapshot], events: List[Dict], creat
             score -= 2.0  # Risk Off -> JPY strength -> GBPJPY drops
             drivers.append(BulletItem(category="RISK_SENTIMENT", text=f"Risk-Off: SPX Drop ({spx.delta_pct:.2f}%)", impact=-1))
         else:
-            drivers.append(BulletItem(category="RISK_SENTIMENT", text=f"Neutral Risk Sentiment", impact=0))
+            drivers.append(BulletItem(category="RISK_SENTIMENT", text="Neutral Risk Sentiment", impact=0))
             
     # 2. Central Bank divergence via events
     boj_keywords = ["boj", "bank of japan", "ueda", "ycc", "nirp"]

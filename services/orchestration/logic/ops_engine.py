@@ -1,5 +1,4 @@
 import os
-import uuid
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from sqlalchemy import func
@@ -9,7 +8,7 @@ try:
 except ModuleNotFoundError:
     jinja2 = None
 
-from shared.database.models import IncidentLog, OrderTicket, PolicySelectionLog, HindsightOutcomeLog, GuardrailsLog, Packet
+from shared.database.models import IncidentLog, OrderTicket, PolicySelectionLog, HindsightOutcomeLog, Packet
 from shared.types.ops import DailyOpsReport, HindsightSummary
 from shared.logic.sessions import get_nairobi_time
 

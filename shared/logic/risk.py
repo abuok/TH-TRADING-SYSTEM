@@ -1,4 +1,4 @@
-from typing import List, Dict, Optional
+from typing import Dict
 from shared.types.packets import TechnicalSetupPacket, MarketContextPacket, RiskApprovalPacket
 from datetime import datetime
 import pytz
@@ -44,7 +44,7 @@ class RiskEngine:
 
                 if start <= setup_time <= end:
                     return True
-            except (KeyError, ValueError, TypeError) as exc:
+            except (KeyError, ValueError, TypeError):
                 continue
         return False
 

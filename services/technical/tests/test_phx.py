@@ -1,4 +1,3 @@
-import pytest
 from datetime import datetime, timedelta
 from shared.types.packets import Candle
 from shared.logic.phx_detector import PHXDetector, PHXStage

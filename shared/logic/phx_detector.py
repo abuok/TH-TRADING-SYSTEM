@@ -1,5 +1,5 @@
 from enum import Enum, auto
-from typing import List, Dict, Optional
+from typing import List, Dict
 from shared.types.packets import Candle
 from datetime import datetime
 
@@ -47,7 +47,8 @@ class PHXDetector:
         getattr(self, f"_process_{self.stage.name.lower()}")(candle)
 
     def _process_idle(self, candle: Candle):
-        if len(self.history) < 3: return
+        if len(self.history) < 3:
+            return
         # Establish Bias: Look for 3 consecutive higher highs or lower lows
         recent = self.history[-3:]
         if all(recent[i].high > recent[i-1].high for i in range(1, 3)):
@@ -62,7 +63,8 @@ class PHXDetector:
             self.reason_codes.append("Bearish bias established")
 
     def _process_bias(self, candle: Candle):
-        if len(self.history) < 10: return
+        if len(self.history) < 10:
+            return
         # Look for Sweep: Price takes out a recent (5-10 candle) High/Low and reverses
         lookback = self.history[-10:-1]
         if self.bias_direction == 1:
@@ -83,7 +85,8 @@ class PHXDetector:
                 self.reason_codes.append(f"Bearish sweep of {max_high:.2f}")
 
     def _process_sweep(self, candle: Candle):
-        if len(self.history) < 3: return
+        if len(self.history) < 3:
+            return
         # Look for Displacement: 2 out of 3 candles moving strongly in the trade direction
         recent = self.history[-3:]
         if self.bias_direction == 1:

@@ -1,7 +1,7 @@
 import os
 import json
 import redis
-from datetime import datetime, timezone
+from datetime import datetime
 
 class EventBus:
     def __init__(self):

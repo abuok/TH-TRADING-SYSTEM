@@ -6,8 +6,8 @@ All times use Africa/Nairobi (UTC+3).
 import os
 import uuid
 import logging
-from datetime import datetime, timezone, timedelta
-from typing import List, Optional, Dict, Any
+from datetime import datetime, timezone
+from typing import List, Optional, Dict
 
 import pytz
 from sqlalchemy.orm import Session
@@ -15,7 +15,7 @@ from sqlalchemy.orm import Session
 from shared.database.models import (
     Packet, KillSwitch, IncidentLog, OrderTicket, SessionBriefing
 )
-from shared.logic.sessions import get_session_label, TradingSessions
+from shared.logic.sessions import get_session_label
 from shared.types.briefing import (
     BriefingPack, SystemStatus, MarketContextSummary, PairOverview,
     RiskBudget, OperatorAction, DeltaSection, SetupSummary, TicketSummary,

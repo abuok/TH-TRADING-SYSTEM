@@ -1,7 +1,7 @@
 from datetime import datetime
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 from pydantic import BaseModel, Field
-from shared.types.research import ResearchMetrics, SystemMetadata
+from shared.types.research import SystemMetadata
 
 class Recommendation(BaseModel):
     id: str

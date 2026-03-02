@@ -1,19 +1,28 @@
-from fastapi import FastAPI, Depends, Request, Response, status
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI, Depends, status
 from fastapi.responses import HTMLResponse, JSONResponse
 from sqlalchemy.orm import Session
-from sqlalchemy import func, text
+from sqlalchemy import text
 import shared.database.session as db_session
 from .models import JournalSetup, JournalRiskDecision, JournalTradeOutcome, JournalTicket, JournalTicketTransition
 from shared.types.packets import TechnicalSetupPacket, RiskApprovalPacket
 from shared.types.trading import OrderTicketSchema
-from typing import List, Optional
+from typing import Optional
 from datetime import datetime, timedelta, timezone
 
 import asyncio
 from shared.logic.notifications import NotificationService, ConsoleNotificationAdapter
 
-app = FastAPI(title="Journal Service")
 notifier = NotificationService([ConsoleNotificationAdapter()])
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    db_session.init_db()
+    asyncio.create_task(mark_missed_setups())
+    yield
+
+app = FastAPI(title="Journal Service", lifespan=lifespan)
 
 @app.get("/health")
 def health_check(db: Session = Depends(db_session.get_db)):
@@ -26,11 +35,6 @@ def health_check(db: Session = Depends(db_session.get_db)):
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             content={"status": "unhealthy", "database": str(e)}
         )
-
-@app.on_event("startup")
-async def startup_event():
-    db_session.init_db()
-    asyncio.create_task(mark_missed_setups())
 
 async def mark_missed_setups():
     """Background task to mark un-taken setups as MISSED after 15 minutes."""
@@ -52,8 +56,10 @@ async def mark_missed_setups():
         await asyncio.sleep(60)
 
 def get_score_label(score: float) -> str:
-    if score >= 90: return "A+"
-    if score >= 70: return "B"
+    if score >= 90:
+        return "A+"
+    if score >= 70:
+        return "B"
     return "C"
 
 @app.post("/log/setup")
@@ -152,7 +158,6 @@ def daily_report(db: Session = Depends(db_session.get_db)):
     notifier.notify("Daily Trading Journal Report is ready for review.", level="SUCCESS")
     today = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
     setups = db.query(JournalSetup).filter(JournalSetup.timestamp >= today).all()
-    decisions = db.query(JournalRiskDecision).filter(JournalRiskDecision.timestamp >= today).all()
     outcomes = db.query(JournalTradeOutcome).filter(JournalTradeOutcome.timestamp >= today).all()
     
     # Calculate stats
@@ -165,7 +170,6 @@ def daily_report(db: Session = Depends(db_session.get_db)):
     potential_profit_missed = sum(s.setup_score / 20.0 for s in setups if s.score_label == "A+" and s.status == "MISSED")
     violation_cost = potential_profit_missed # For demo
     
-    win_count = sum(1 for o in outcomes if o.is_win)
     total_pnl = sum(o.pnl for o in outcomes)
     
     html_content = f"""

@@ -1,8 +1,5 @@
 from fastapi.testclient import TestClient
-from shared.database.session import Base
-import shared.database.session as db_session
 from services.journal.main import app
-import pytest
 
 # The conftest.py already handles engine/SessionLocal/Base.metadata.create_all
 

@@ -3,9 +3,8 @@ import uuid
 import hashlib
 from typing import Optional
 from sqlalchemy.orm import Session
-from sqlalchemy import and_
 
-from shared.database.models import OrderTicket, Packet
+from shared.database.models import OrderTicket
 from shared.types.packets import TechnicalSetupPacket, RiskApprovalPacket
 from shared.types.guardrails import GuardrailsResult
 

@@ -1,10 +1,10 @@
 import pytest
 import asyncio
 from datetime import datetime, timezone, timedelta
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from services.orchestration.runner import Orchestrator
-from shared.types.packets import Candle, MarketContextPacket, TechnicalSetupPacket
+from shared.types.packets import Candle, MarketContextPacket
 import shared.database.session as db_session
 from shared.database.models import Packet as DBPacket, Run as DBRun
 
@@ -19,8 +19,7 @@ def risk_config():
         "account_balance": 1000.0
     }
 
-@pytest.mark.asyncio
-async def test_full_pipeline_acceptance(risk_config):
+def test_full_pipeline_acceptance(risk_config):
     # 1. Initialize Orchestrator in Dry-Run mode
     orchestrator = Orchestrator(risk_config, dry_run=True)
     
@@ -35,7 +34,7 @@ async def test_full_pipeline_acceptance(risk_config):
                    open=60000.0, high=61000.0, low=59000.0, close=60500.0, volume=1.0)
         )
     
-    levels = await orchestrator.pre_session_briefing(asset_pair, historical_candles)
+    levels = asyncio.run(orchestrator.pre_session_briefing(asset_pair, historical_candles))
     # Check that SOME levels were computed (could be Asia or London depending on time)
     assert len(levels) > 0 or levels == {} # In memory sometimes returns {} if range missed, but 24h should hit
     assert isinstance(levels, dict)
@@ -48,7 +47,7 @@ async def test_full_pipeline_acceptance(risk_config):
             price=65000.0, volume_24h=100.0, timestamp=datetime.now(timezone.utc)
         )
         
-        await orchestrator.live_loop(asset_pair)
+        asyncio.run(orchestrator.live_loop(asset_pair))
 
     # 4. Verify Database Persistence
     db = db_session.SessionLocal()

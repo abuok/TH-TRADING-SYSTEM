@@ -1,11 +1,9 @@
 import pytest
 from datetime import date, timedelta, datetime, timezone
-from sqlalchemy.orm import Session
 from shared.database.models import (
-    OrderTicket, ExecutionPrepLog, PilotSessionLog, PilotScorecardLog, TuningProposalLog, QuoteStaleLog
+    OrderTicket, ExecutionPrepLog, PilotScorecardLog, QuoteStaleLog
 )
 from services.research.pilot import build_pilot_scorecard, fetch_session_metrics
-from shared.logic.sessions import get_nairobi_time
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker

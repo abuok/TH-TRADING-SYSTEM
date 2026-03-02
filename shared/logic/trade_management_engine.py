@@ -1,9 +1,10 @@
+# ruff: noqa: E402  # delayed imports/path setup required in this module
 import logging
 from datetime import datetime, timezone, timedelta
-from typing import List, Optional, Dict
+from typing import List
 from sqlalchemy.orm import Session
 
-from shared.database.models import OrderTicket, PositionSnapshot, TicketTradeLink, ManagementSuggestionLog, LiveQuote, KillSwitch, PolicySelectionLog
+from shared.database.models import OrderTicket, PositionSnapshot, TicketTradeLink, ManagementSuggestionLog, KillSwitch, PolicySelectionLog
 from shared.types.trade_management import PositionManagementSuggestion, SuggestionType
 from shared.providers.price_quote import PriceQuoteProvider, get_price_quote_provider
 from shared.logic.sessions import get_nairobi_time
@@ -54,7 +55,7 @@ def generate_suggestions_for_position(
     
     # Rule: Kill Switch Active
     active_ks = db.query(KillSwitch).filter(
-        KillSwitch.is_active == True,
+        KillSwitch.is_active,
         KillSwitch.switch_type.in_(["GLOBAL", "TRADING"])
     ).first()
     

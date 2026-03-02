@@ -2,7 +2,7 @@
 BriefingPack schema — Session Briefing Pack types.
 All timestamps use Africa/Nairobi (UTC+3).
 """
-from datetime import datetime, date, timezone
+from datetime import datetime, date
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field
 import pytz

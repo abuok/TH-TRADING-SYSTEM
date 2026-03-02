@@ -1,6 +1,5 @@
-from typing import List, Dict, Optional, Any
+from typing import List, Dict, Any
 from pydantic import BaseModel, Field
-from datetime import date
 from shared.types.research import SystemMetadata
 
 class PairStats(BaseModel):

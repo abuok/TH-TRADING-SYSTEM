@@ -4,7 +4,6 @@ Official Dashboard Theme for TradeHall Trading System.
 Based on the Network Timeline accent palette.
 """
 
-from typing import Dict
 
 ACCENTS = {
     "orange": "#F2994A",

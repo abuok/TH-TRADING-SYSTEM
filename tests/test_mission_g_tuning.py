@@ -1,10 +1,9 @@
 import pytest
-import json
-from datetime import datetime, timezone, timedelta
+from datetime import timedelta
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from shared.database.models import Base, OrderTicket, GuardrailsLog, ExecutionPrepLog, ManagementSuggestionLog, PolicySelectionLog, TuningProposalLog
+from shared.database.models import Base, OrderTicket, GuardrailsLog, ExecutionPrepLog, TuningProposalLog
 from services.research.tuning import fetch_tuning_metrics, generate_proposals, generate_tuning_report
 from shared.logic.sessions import get_nairobi_time
 

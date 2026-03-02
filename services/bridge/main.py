@@ -10,9 +10,8 @@ from fastapi import FastAPI, Header, HTTPException, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from shared.database.models import LiveQuote, SymbolSpec, IncidentLog, PositionSnapshot as PositionSnapshotModel, QuoteStaleLog
+from shared.database.models import LiveQuote, SymbolSpec, PositionSnapshot as PositionSnapshotModel, QuoteStaleLog
 import shared.database.session as db_session
-from shared.logic.sessions import get_nairobi_time
 from shared.types.trade_capture import TradeFillBatch, PositionSnapshotBatch
 from shared.logic.trade_lifecycle import process_trade_fill
 
@@ -176,10 +175,6 @@ async def post_trades_positions(batch: PositionSnapshotBatch, db: Session = Depe
 @app.get("/health")
 async def health():
     return {"status": "healthy", "service": "bridge"}
-
-@app.on_event("startup")
-async def startup_event():
-    logger.info("Bridge Service starting up...")
 
 if __name__ == "__main__":
     import uvicorn

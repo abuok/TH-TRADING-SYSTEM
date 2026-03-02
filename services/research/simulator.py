@@ -12,13 +12,12 @@ Pipeline parity checklist:
 """
 import csv
 import os
-import hashlib
 import logging
 import uuid
 from datetime import datetime, timezone
 from typing import List, Dict, Optional
 
-from shared.types.packets import Candle, TechnicalSetupPacket, RiskApprovalPacket
+from shared.types.packets import Candle, TechnicalSetupPacket
 from shared.types.trading import OrderTicketSchema
 from shared.types.research import SimulatedTrade, CounterfactualConfig, ResearchRunResult, ResearchVariant
 from shared.logic.fundamentals_engine import evaluate_fundamentals
