@@ -7,90 +7,111 @@
     <!-- Header & Controls Monitor -->
     <div class="hud-panel glass-panel col-span-12" data-hud-corner="top-left">
         <header class="hud-panel-header">
-            <div class="hud-panel-title">HINDSIGHT AUDIT // DEED-BASED SIMULATION</div>
+            <div class="hud-panel-title">HINDSIGHT_AUDIT // DEED-BASED_SIMULATION</div>
         </header>
-        <div style="padding: 1rem; display: flex; justify-content: space-between; align-items: center;">
-            <div style="color: var(--text-muted); font-size: 0.8rem; letter-spacing: 1px;">REVIEW DETERMINISTIC OUTCOMES
-                OF SKIPPED/EXPIRED TICKET PATHS</div>
+        <div
+            style="padding: 1rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <div style="color: var(--text-muted); font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase;">
+                REVIEW_DETERMINISTIC_OUTCOMES // SKIPPED_EXP_VECTORS
+            </div>
             <form id="dateForm" style="display: flex; gap: 0.5rem; align-items: center;">
                 <input type="date" id="datePicker" name="date_str" value="{{ date_str }}"
-                    style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); color: var(--text-main); padding: 0.4rem 1rem; border-radius: 4px; font-family: monospace; font-size: 0.8rem;">
-                <button type="submit" class="btn btn-primary btn-small">LOAD ARCHIVE</button>
-                <button type="button" onclick="runHindsight()" class="btn btn-secondary btn-small"
-                    style="background: var(--accent-yellow); color: #000; border-color: var(--accent-yellow);">RUN
-                    BATCH</button>
+                    style="background: rgba(0,0,0,0.4); border: 1px solid var(--border-main); color: var(--text-main); padding: 0.5rem 0.75rem; border-radius: 4px; font-family: monospace; font-size: 0.75rem; border-left: 2px solid var(--accent-cyan);">
+                <button type="submit" class="btn btn-primary"
+                    style="font-size: 0.65rem; background: var(--accent-cyan); color: #000; font-weight: 900;">LOAD_ARCHIVE</button>
+                <button type="button" onclick="runHindsight()" class="btn btn-secondary"
+                    style="font-size: 0.65rem; background: var(--accent-yellow); color: #000; border-color: var(--accent-yellow); font-weight: 900;">RUN_BATCH</button>
             </form>
         </div>
     </div>
 
     {% if summary.total == 0 %}
-    <div class="hud-panel glass-panel col-span-12" style="padding: 4rem; text-align: center;">
-        <div style="font-size: 1.5rem; color: var(--accent-pink); font-weight: 800; margin-bottom: 1rem;">ZERO
-            EVALUATIONS IN CACHE</div>
-        <div style="color: var(--text-muted); opacity: 0.5;">No hindsight data for {{ date_str }}. Initiate "RUN BATCH"
-            to analyze skipped/expired tickets.</div>
+    <div class="hud-panel glass-panel col-span-12" style="padding: 6rem; text-align: center;">
+        <div
+            style="font-size: 1rem; color: var(--accent-pink); font-weight: 900; margin-bottom: 1rem; letter-spacing: 2px;">
+            ZERO_EVALUATIONS_IN_CACHE</div>
+        <div style="color: var(--text-muted); font-size: 0.75rem; letter-spacing: 1px;">NO HINDSIGHT DATA FOR {{
+            date_str }} // INITIATE "RUN_BATCH" TO ANALYZE VECTORS</div>
     </div>
     {% else %}
 
-    <!-- Top Level Stats -->
-    <div class="hud-panel glass-panel col-span-4">
-        <header class="hud-panel-header">
-            <div class="hud-panel-title">TOTAL EVALUATED</div>
-        </header>
-        <div style="padding: 1.5rem; text-align: center;">
-            <div style="font-size: 3rem; font-weight: 800; color: var(--accent-cyan); line-height: 1;">{{ summary.total
-                }}</div>
-            <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.5rem;">TICKETS IN BATCH</div>
-        </div>
-    </div>
-
-    {% if summary.costliest_miss %}
-    <div class="hud-panel glass-panel col-span-8"
-        style="background: rgba(242, 153, 74, 0.05); border-left: 4px solid var(--accent-orange);">
-        <header class="hud-panel-header">
-            <div class="hud-panel-title" style="color: var(--accent-orange);">COSTLIEST MISSED OPPORTUNITY</div>
-        </header>
-        <div style="padding: 1rem; display: flex; align-items: center; gap: 2rem;">
-            <div style="font-size: 2.5rem; font-weight: 800; color: var(--accent-orange);">+{{
-                summary.costliest_miss.missed_r }}R</div>
-            <div>
-                <div style="font-size: 0.9rem; font-weight: 700;">TICKET: {{ summary.costliest_miss.ticket_id }}</div>
-                <div style="font-size: 0.75rem; color: var(--text-muted);">SKIPPED DUE TO: <span class="badge"
-                        style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-color);">{{
-                        summary.costliest_miss.reason }}</span></div>
+    <!-- Top Level Stats & Costliest Miss -->
+    <div class="col-span-12" style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem;">
+        <div class="hud-panel glass-panel">
+            <header class="hud-panel-header">
+                <div class="hud-panel-title">TOTAL_EVALUATED</div>
+            </header>
+            <div style="padding: 1.5rem; text-align: center;">
+                <div
+                    style="font-size: 3.5rem; font-weight: 900; color: var(--accent-cyan); line-height: 1; font-family: monospace;">
+                    {{ summary.total }}</div>
+                <div
+                    style="font-size: 0.55rem; color: var(--text-muted); margin-top: 0.75rem; letter-spacing: 2px; text-transform: uppercase;">
+                    VECTORS_IN_BATCH</div>
             </div>
         </div>
+
+        {% if summary.costliest_miss %}
+        <div class="hud-panel glass-panel"
+            style="background: rgba(242, 153, 74, 0.05); border-left: 4px solid var(--accent-orange);">
+            <header class="hud-panel-header">
+                <div class="hud-panel-title" style="color: var(--accent-orange);">COSTLIEST_MISSED_OPPORTUNITY</div>
+            </header>
+            <div style="padding: 1.25rem; display: flex; align-items: center; gap: 2.5rem;">
+                <div style="font-size: 3rem; font-weight: 900; color: var(--accent-orange); font-family: monospace;">+{{
+                    "{:.2f}".format(summary.costliest_miss.missed_r) }}R</div>
+                <div style="flex-grow: 1;">
+                    <div
+                        style="font-size: 0.8rem; font-weight: 900; color: var(--text-main); font-family: monospace; letter-spacing: 1px;">
+                        TICKET_ID: {{ summary.costliest_miss.ticket_id }}</div>
+                    <div
+                        style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; margin-top: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        SKIP_REASON_VECTOR:
+                        <span class="badge"
+                            style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-main); color: var(--accent-yellow); font-size: 0.55rem; font-weight: 900;">{{
+                            summary.costliest_miss.reason }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="hud-panel glass-panel"
+            style="padding: 2rem; display: flex; align-items: center; justify-content: center;">
+            <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700; letter-spacing: 1px;">
+                NO_COSTLY_MISSES_DETECTED // EFFICIENCY_STABLE</div>
+        </div>
+        {% endif %}
     </div>
-    {% endif %}
 
     <!-- Breakdown Table -->
     <div class="hud-panel glass-panel col-span-12">
         <header class="hud-panel-header">
-            <div class="hud-panel-title">SKIP BIAS BREAKDOWN // AGGREGATE OUTCOMES</div>
+            <div class="hud-panel-title">SKIP_BIAS_BREAKDOWN // AGGREGATE_OUTCOMES</div>
         </header>
         <div class="hud-scroll-body">
             <table class="hud-compact-table">
                 <thead>
                     <tr>
-                        <th>SKIP REASON</th>
-                        <th style="text-align: center;">VOLUME</th>
-                        <th style="text-align: right;">WIN RATE (%)</th>
-                        <th style="text-align: right;">AVG IMAGINARY OUTPUT (R)</th>
+                        <th style="font-size: 0.6rem;">BIAS_CATEGORY</th>
+                        <th style="text-align: center; font-size: 0.6rem;">VOLUME_COUNT</th>
+                        <th style="text-align: right; font-size: 0.6rem;">WIN_PROBABILITY_(%)</th>
+                        <th style="text-align: right; font-size: 0.6rem;">AVG_IMAGINARY_YIELD_(R)</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for item in summary.reasons %}
                     <tr>
-                        <td style="font-weight: 700; text-transform: uppercase;">{{ item.reason.replace("_", " ") }}
-                        </td>
-                        <td style="text-align: center;">{{ item.count }}</td>
                         <td
-                            style="text-align: right; font-weight: 700; color: {% if item.win_rate > 50 %}var(--accent-green){% elif item.win_rate < 30 %}var(--accent-pink){% else %}var(--text-main){% endif %};">
+                            style="font-weight: 900; font-family: monospace; font-size: 0.75rem; letter-spacing: 0.5px;">
+                            {{ item.reason.replace("_", " ") }}</td>
+                        <td style="text-align: center; font-family: monospace;">{{ item.count }}</td>
+                        <td
+                            style="text-align: right; font-weight: 900; font-family: monospace; color: {% if item.win_rate > 50 %}var(--accent-green){% elif item.win_rate < 30 %}var(--accent-pink){% else %}var(--text-main){% endif %};">
                             {{ item.win_rate }}%
                         </td>
                         <td
-                            style="text-align: right; font-family: monospace; font-weight: 800; color: {% if item.avg_r > 0 %}var(--accent-green){% elif item.avg_r < 0 %}var(--accent-pink){% else %}var(--text-muted){% endif %};">
-                            {{ "{:+.2f}".format(item.avg_r) }} R
+                            style="text-align: right; font-family: monospace; font-weight: 900; font-size: 0.85rem; color: {% if item.avg_r > 0 %}var(--accent-green){% elif item.avg_r < 0 %}var(--accent-pink){% else %}var(--text-muted){% endif %};">
+                            {{ "{:+.2f}".format(item.avg_r) }}R
                         </td>
                     </tr>
                     {% endfor %}
@@ -102,47 +123,52 @@
     <!-- Tickets List -->
     <div class="hud-panel glass-panel col-span-12" data-hud-corner="bottom-left">
         <header class="hud-panel-header">
-            <div class="hud-panel-title">EVALUATED TICKET STREAM</div>
+            <div class="hud-panel-title">EVALUATED_TICKET_STREAM</div>
         </header>
-        <div class="hud-scroll-body">
-            <div
-                style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; padding: 1rem;">
+        <div class="hud-scroll-body" style="padding: 1.25rem;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
                 {% for t in tickets %}
-                <div class="hud-scanline"
-                    style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden;">
-                    <div
-                        style="background: rgba(255,255,255,0.03); padding: 0.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                        <div style="font-family: monospace; font-size: 0.7rem; font-weight: 700;">{{ t.ticket_id }}
-                        </div>
+                <div class="hud-panel glass-panel"
+                    style="background: rgba(0,0,0,0.3); padding: 0; border: 1px solid rgba(255,255,255,0.05);">
+                    <header
+                        style="background: rgba(255,255,255,0.03); padding: 0.6rem 0.8rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <div
+                            style="font-family: monospace; font-size: 0.65rem; font-weight: 900; color: var(--text-main);">
+                            ID: {{ t.ticket_id[:12] }}...</div>
                         {% set h_color = 'var(--text-muted)' %}
                         {% if t.hindsight_outcome_label == 'WIN' %}{% set h_color = 'var(--accent-green)' %}
                         {% elif t.hindsight_outcome_label == 'LOSS' %}{% set h_color = 'var(--accent-pink)' %}
                         {% elif t.hindsight_outcome_label == 'BE' %}{% set h_color = 'var(--accent-yellow)' %}
                         {% endif %}
                         <span class="badge"
-                            style="border: 1px solid {{ h_color }}; color: {{ h_color }}; background: transparent; font-size: 0.55rem;">HINDSIGHT:
-                            {{ t.hindsight_outcome_label }}</span>
-                    </div>
-                    <div style="padding: 0.75rem;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
-                            <span style="font-size: 0.65rem; color: var(--text-muted);">ORIGINAL STATUS</span>
-                            <span style="font-size: 0.65rem; font-weight: 700;">{{ t.status }}</span>
+                            style="background: transparent; border: 1px solid {{ h_color }}; color: {{ h_color }}; font-size: 0.5rem; font-weight: 900;">RESULT_{{
+                            t.hindsight_outcome_label }}</span>
+                    </header>
+                    <div style="padding: 1rem;">
+                        <div
+                            style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; align-items: center;">
+                            <span
+                                style="font-size: 0.55rem; color: var(--text-muted); text-transform: uppercase;">STATUS_ORIG</span>
+                            <span class="badge {{ 'badge-success' if t.status != 'BLOCKED' else 'badge-danger' }}"
+                                style="font-size: 0.5rem; font-weight: 900;">{{ t.status }}</span>
                         </div>
                         {% if t.skip_reason %}
                         <div
-                            style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; align-items: center;">
-                            <span style="font-size: 0.65rem; color: var(--text-muted);">SKIP BIAS</span>
+                            style="display: flex; justify-content: space-between; margin-bottom: 0.75rem; align-items: center;">
                             <span
-                                style="font-size: 0.6rem; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); padding: 1px 4px; border-radius: 2px;">{{
+                                style="font-size: 0.55rem; color: var(--text-muted); text-transform: uppercase;">BIAS_VECTOR</span>
+                            <span
+                                style="font-size: 0.55rem; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); padding: 1px 6px; border-radius: 2px; color: var(--accent-yellow); font-family: monospace; font-weight: 900;">{{
                                 t.skip_reason }}</span>
                         </div>
                         {% endif %}
-                        <div
-                            style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dotted rgba(255,255,255,0.1); pt-0.5rem;">
-                            <span style="font-size: 0.7rem; font-weight: 700;">IMAGINARY NET</span>
+                        <div class="hud-scanline"
+                            style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.6rem; background: rgba(0,0,0,0.15); margin: 0 -0.25rem; padding-left: 0.5rem; padding-right: 0.5rem; border-radius: 2px;">
                             <span
-                                style="font-size: 0.9rem; font-weight: 800; color: {{ h_color }}; font-family: monospace;">{{
-                                "{:+.2f}".format(t.hindsight_realized_r) }} R</span>
+                                style="font-size: 0.65rem; font-weight: 900; color: var(--text-main);">IMAGINARY_YIELD</span>
+                            <span
+                                style="font-size: 1rem; font-weight: 900; color: {{ h_color }}; font-family: monospace;">{{
+                                "{:+.2f}".format(t.hindsight_realized_r) }}R</span>
                         </div>
                     </div>
                 </div>
@@ -150,11 +176,7 @@
             </div>
         </div>
     </div>
-
     {% endif %}
-</div>
-
-{% endif %}
 </div>
 
 <script>

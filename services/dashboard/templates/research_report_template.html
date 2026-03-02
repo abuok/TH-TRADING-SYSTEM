@@ -1,169 +1,188 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="header-section">
-    <div class="header-title">
-        <h1>Research Run: {{ run.run_id }}</h1>
-        <p>Historical simulation for {{ run.pair }} from {{ run.start_date.strftime('%Y-%m-%d') }} to {{
-            run.end_date.strftime('%Y-%m-%d') }}</p>
-    </div>
-</div>
-
-<div class="card util-257995">
-    <div class="card-header">
-        <h2>Run Configuration</h2>
-        <span class="badge badge-info">{{ run.timeframes | join(', ') }}</span>
-    </div>
-    <div class="sub-grid util-c7c9ce">
-        <div>
-            <div class="sub-header">Pair</div>
-            <div class="metric-value util-14fa87">{{ run.pair }}</div>
-        </div>
-        <div>
-            <div class="sub-header">Start Date</div>
-            <div class="metric-value util-14fa87">{{ run.start_date.strftime('%Y-%m-%d') }}</div>
-        </div>
-        <div>
-            <div class="sub-header">End Date</div>
-            <div class="metric-value util-14fa87">{{ run.end_date.strftime('%Y-%m-%d') }}</div>
-        </div>
-        <div>
-            <div class="sub-header">Variant Count</div>
-            <div class="metric-value util-14fa87">{{ variants | length }}</div>
+<div class="hud-grid">
+    <!-- Run Header Monitor -->
+    <div class="hud-panel glass-panel col-span-12" data-hud-corner="top-left">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">RESEARCH_AUDIT // RUN_ID: {{ run.run_id }}</div>
+        </header>
+        <div style="padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <div style="font-size: 1.25rem; font-weight: 900; color: var(--text-main);">{{ run.pair }} //
+                        HISTORICAL_REPLAY</div>
+                    <div
+                        style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; margin-top: 0.25rem; letter-spacing: 1px;">
+                        WINDOW: {{ run.start_date.strftime('%Y-%m-%d') }} <span style="opacity: 0.5;">&rarr;</span> {{
+                        run.end_date.strftime('%Y-%m-%d') }} // TIMEFRAMES: {{ run.timeframes | join(', ') }}
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <div
+                        style="font-size: 1.5rem; font-weight: 900; color: var(--accent-cyan); font-family: monospace;">
+                        {{ variants | length }}</div>
+                    <div
+                        style="font-size: 0.55rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">
+                        VARIANTS_TESTED</div>
+                </div>
+            </div>
         </div>
     </div>
+
+    <!-- Comparative Metrics Matrix -->
+    <div class="hud-panel glass-panel col-span-12">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">METRICS_COMPARISON_MATRIX // COUNTERFACTUAL_ANALYSIS</div>
+        </header>
+        <div class="hud-scroll-body">
+            <table class="hud-compact-table">
+                <thead>
+                    <tr>
+                        <th style="font-size: 0.6rem;">VARIANT_CONFIG</th>
+                        <th style="font-size: 0.6rem; text-align: center;">WIN_RATE</th>
+                        <th style="font-size: 0.6rem; text-align: right;">EXPECTANCY_(R)</th>
+                        <th style="font-size: 0.6rem; text-align: right;">MAX_DD_(R)</th>
+                        <th style="font-size: 0.6rem; text-align: center;">PROFIT_FACTOR</th>
+                        <th style="font-size: 0.6rem; text-align: right;">TOTAL_PnL_(R)</th>
+                        <th style="font-size: 0.6rem; text-align: right;">TRADES_(V/T)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for name, variant in run.variants.items() %}
+                    <tr>
+                        <td style="padding: 1rem 0.5rem;">
+                            <div
+                                style="font-weight: 900; color: var(--accent-cyan); text-transform: uppercase; font-size: 0.8rem; margin-bottom: 0.4rem;">
+                                {{ name }}</div>
+                            <div
+                                style="font-size: 0.55rem; color: var(--text-muted); font-family: monospace; line-height: 1.4; letter-spacing: 0.5px;">
+                                MIN_SCORE: {{ variant.config.min_setup_score or 'N/A' }}<br>
+                                HARD_BLOCK: {{ variant.config.hard_block_displacement or 'N/A' }}<br>
+                                DUP_SUP_MIN: {{ variant.config.duplicate_suppression_minutes or '60' }}m
+                            </div>
+                        </td>
+                        <td style="text-align: center;">
+                            <span class="badge"
+                                style="background: {{ 'rgba(39, 174, 96, 0.1)' if variant.metrics.win_rate_pct >= 50 else 'rgba(235, 47, 150, 0.1)' }}; color: {{ 'var(--accent-green)' if variant.metrics.win_rate_pct >= 50 else 'var(--accent-pink)' }}; border: 1px solid {{ 'var(--accent-green)' if variant.metrics.win_rate_pct >= 50 else 'var(--accent-pink)' }}; font-size: 0.65rem; font-weight: 900;">
+                                {{ variant.metrics.win_rate_pct }}%
+                            </span>
+                        </td>
+                        <td style="text-align: right; font-family: monospace; font-weight: 900; font-size: 0.85rem;">{{
+                            variant.metrics.expectancy_r }}R</td>
+                        <td
+                            style="text-align: right; font-family: monospace; font-weight: 900; font-size: 0.85rem; color: var(--accent-pink);">
+                            {{ variant.metrics.max_drawdown_r }}R</td>
+                        <td style="text-align: center; font-family: monospace; font-weight: 900;">{{
+                            variant.metrics.profit_factor }}</td>
+                        <td style="text-align: right;">
+                            <span
+                                style="font-family: monospace; font-weight: 900; font-size: 1rem; color: {{ 'var(--accent-green)' if variant.metrics.total_r > 0 else ('var(--accent-pink)' if variant.metrics.total_r < 0 else 'var(--text-muted)') }}">
+                                {% if variant.metrics.total_r > 0 %}+{% endif %}{{ variant.metrics.total_r }}R
+                            </span>
+                        </td>
+                        <td style="text-align: right; font-family: monospace; font-size: 0.75rem;">
+                            <span style="color: var(--text-main);">{{ variant.metrics.executed_trades }}</span> / <span
+                                style="color: var(--text-muted);">{{ variant.metrics.total_trades }}</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Individual Variant Trade Logs -->
+    <div class="col-span-12">
+        <header style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1rem;">
+            <div
+                style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; font-weight: 900;">
+                VARIANT_EXECUTION_SAMPLES</div>
+            <div style="flex-grow: 1; height: 1px; background: rgba(255,255,255,0.05);"></div>
+        </header>
+
+        {% for name, variant in run.variants.items() %}
+        <div class="hud-panel glass-panel" style="margin-bottom: 2rem;">
+            <header class="hud-panel-header" style="background: rgba(0,0,0,0.2);">
+                <div class="hud-panel-title">TRACT_LOG: {{ name | upper }}</div>
+                <div style="font-size: 0.6rem; color: var(--text-muted); font-family: monospace; opacity: 0.7;">
+                    TOTAL_TRADES_IN_VARIANT: {{ variant.trades | length }}</div>
+            </header>
+
+            <div class="hud-scroll-body">
+                {% if variant.trades | length == 0 %}
+                <div
+                    style="padding: 3rem; text-align: center; color: var(--accent-pink); font-weight: 900; font-size: 0.75rem; letter-spacing: 1px;">
+                    ZERO_SIGNALS_TRIGGERED // NO_DATA_AVAILABLE</div>
+                {% else %}
+                <table class="hud-compact-table">
+                    <thead>
+                        <tr>
+                            <th style="font-size: 0.55rem;">TICKET_IDENT</th>
+                            <th style="font-size: 0.55rem; text-align: center;">DIR</th>
+                            <th style="font-size: 0.55rem; text-align: center;">SIM_OUTCOME</th>
+                            <th style="font-size: 0.55rem;">EXIT_TIMESTAMP</th>
+                            <th style="font-size: 0.55rem; text-align: right;">REALIZED_R</th>
+                            <th style="font-size: 0.55rem;">GUARDRAIL_STATUS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for t in variant.trades[-20:] %}
+                        <tr>
+                            <td style="font-family: monospace; font-size: 0.7rem; color: var(--text-muted);">{{
+                                t.ticket_id }}</td>
+                            <td style="text-align: center;">
+                                <span class="badge"
+                                    style="background: {{ 'rgba(39, 174, 96, 0.1)' if t.direction == 'LONG' else 'rgba(235, 47, 150, 0.1)' }}; color: {{ 'var(--accent-green)' if t.direction == 'LONG' else 'var(--accent-pink)' }}; border: 1px solid {{ 'var(--accent-green)' if t.direction == 'LONG' else 'var(--accent-pink)' }}; font-size: 0.5rem; font-weight: 900;">{{
+                                    t.direction }}</span>
+                            </td>
+                            <td style="text-align: center;">
+                                {% set res_color = 'var(--text-muted)' %}
+                                {% if t.status.startswith('WIN') %}{% set res_color = 'var(--accent-green)' %}
+                                {% elif t.status == 'LOSS' %}{% set res_color = 'var(--accent-pink)' %}
+                                {% elif t.status == 'BE' %}{% set res_color = 'var(--accent-yellow)' %}
+                                {% elif t.status == 'BLOCKED' %}{% set res_color = 'var(--text-muted)' %}
+                                {% endif %}
+                                <span class="badge"
+                                    style="border: 1px solid {{ res_color }}; color: {{ res_color }}; background: transparent; font-size: 0.5rem; font-weight: 900;">{{
+                                    t.status }}</span>
+                            </td>
+                            <td style="font-family: monospace; font-size: 0.7rem; color: var(--text-muted);">
+                                {{ t.exit_time.strftime('%Y-%m-%d %H:%M') if t.exit_time else 'OPEN/BLOCKED' }}
+                            </td>
+                            <td style="text-align: right;">
+                                <span
+                                    style="font-family: monospace; font-weight: 900; font-size: 0.8rem; color: {{ 'var(--accent-green)' if t.realized_r > 0 else ('var(--accent-pink)' if t.realized_r < 0 else 'var(--text-muted)') }}">
+                                    {% if t.realized_r > 0 %}+{% endif %}{{ t.realized_r | round(2) }}R
+                                </span>
+                            </td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <span class="badge"
+                                        style="background: {{ 'rgba(39, 174, 96, 0.1)' if t.guardrails_status == 'PASS' else 'rgba(235, 47, 150, 0.1)' }}; color: {{ 'var(--accent-green)' if t.guardrails_status == 'PASS' else 'var(--accent-pink)' }}; border: 1px solid {{ 'var(--accent-green)' if t.guardrails_status == 'PASS' else 'var(--accent-pink)' }}; font-size: 0.5rem; font-weight: 900;">{{
+                                        t.guardrails_status }}</span>
+                                    {% if t.block_reason %}
+                                    <div
+                                        style="font-size: 0.55rem; color: var(--accent-pink); font-family: monospace; font-weight: 700;">
+                                        // {{ t.block_reason | truncate(30) }}</div>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% if variant.trades|length > 20 %}
+                <div
+                    style="padding: 0.5rem 1rem; font-size: 0.55rem; color: var(--text-muted); background: rgba(0,0,0,0.1); border-top: 1px solid rgba(255,255,255,0.05); text-transform: uppercase; letter-spacing: 1px;">
+                    SHOWING_LAST_20_OF_{{ variant.trades|length }}_SAMPLES // FULL_LOG_AVAILABLE_IN_JSON_EXPORT
+                </div>
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
 </div>
-
-
-<div class="card util-257995">
-    <div class="card-header">
-        <h2>Metrics Comparison (Counterfactuals)</h2>
-    </div>
-    <div class="util-b56181">
-        <table class="util-62edd4">
-            <thead>
-                <tr>
-                    <th>Variant Name</th>
-                    <th>Win Rate</th>
-                    <th>Expectancy (R)</th>
-                    <th>Max Drawdown (R)</th>
-                    <th>Profit Factor</th>
-                    <th>Total PnL (R)</th>
-                    <th>Trades (Valid/Total)</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for name, variant in run.variants.items() %}
-                <tr>
-                    <td>
-                        <strong>{{ name | capitalize }}</strong>
-                        <div class="util-0fdd45">
-                            Min Score: {{ variant.config.min_setup_score or 'N/A' }}<br>
-                            Hard Block Disp: {{ variant.config.hard_block_displacement or 'N/A' }}<br>
-                            Dup Window: {{ variant.config.duplicate_suppression_minutes or '60' }}m
-                        </div>
-                    </td>
-                    <td>
-                        <span
-                            class="{% if variant.metrics.win_rate_pct >= 50 %}text-success{% else %}text-danger{% endif %} util-be8e63">
-                            {{ variant.metrics.win_rate_pct }}%
-                        </span>
-                    </td>
-                    <td>{{ variant.metrics.expectancy_r }} R</td>
-                    <td class="util-b0323b">{{ variant.metrics.max_drawdown_r }} R</td>
-                    <td>{{ variant.metrics.profit_factor }}</td>
-                    <td>
-                        <span
-                            class="bold-800 text-{{ 'green' if variant.metrics.total_r > 0 else ('red' if variant.metrics.total_r < 0 else 'muted') }}">
-                            {% if variant.metrics.total_r > 0 %}+{% endif %}{{ variant.metrics.total_r }} R
-                        </span>
-                    </td>
-                    <td>{{ variant.metrics.executed_trades }} / {{ variant.metrics.total_trades }} <span
-                            class="util-bc3433">({{ variant.metrics.blocked_trades }}
-                            blocked)</span></td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
-
-
-<h2>Variant Trade Logs (Sample)</h2>
-{% for name, variant in run.variants.items() %}
-<div class="card util-403ca8">
-    <div class="card-header util-092eea">
-        <h3 class="util-7dc956">{{ name | capitalize }} Trades</h3>
-    </div>
-
-    {% if variant.trades | length == 0 %}
-    <p class="util-7abb3a">No setups triggered.</p>
-    {% else %}
-    <div class="util-f4d939">
-        <table>
-            <thead>
-                <tr>
-                    <th>Ticket ID</th>
-                    <th>Dir</th>
-                    <th>Status</th>
-                    <th>Exit Time</th>
-                    <th>Realized R</th>
-                    <th>Guardrails</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for t in variant.trades[-20:] %}
-                <tr>
-                    <td class="util-9a7094">{{ t.ticket_id }}</td>
-                    <td>
-                        <span
-                            class="badge {% if t.direction == 'LONG' %}badge-success{% else %}badge-danger{% endif %}">{{
-                            t.direction }}</span>
-                    </td>
-                    <td>
-                        {% if t.status.startswith('WIN') %}
-                        <span class="badge badge-success">{{ t.status }}</span>
-                        {% elif t.status == 'LOSS' %}
-                        <span class="badge badge-danger">{{ t.status }}</span>
-                        {% elif t.status == 'BE' %}
-                        <span class="badge badge-warning">{{ t.status }}</span>
-                        {% elif t.status == 'BLOCKED' %}
-                        <span class="badge util-1ee668">{{
-                            t.status }}</span>
-                        {% else %}
-                        <span class="badge badge-info">{{ t.status }}</span>
-                        {% endif %}
-                    </td>
-                    <td class="util-acb67b">{{ t.exit_time.strftime('%m-%d %H:%M') if
-                        t.exit_time else '-' }}</td>
-                    <td>
-                        <strong
-                            class="text-{{ 'green' if t.realized_r > 0 else ('red' if t.realized_r < 0 else 'muted') }}">
-                            {% if t.realized_r > 0 %}+{% endif %}{{ t.realized_r | round(2) }}R
-                        </strong>
-                    </td>
-                    <td>
-                        <span
-                            class="badge {% if t.guardrails_status == 'PASS' %}badge-success{% else %}badge-danger{% endif %}">
-                            {{ t.guardrails_status }}
-                        </span>
-                        {% if t.block_reason %}
-                        <div class="util-31ccc7">{{ t.block_reason
-                            | truncate(30) }}</div>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% if variant.trades|length > 20 %}
-        <p class="util-0cc7c6">
-            Showing last 20 of {{ variant.trades|length }} trades... See raw JSON for full log.
-        </p>
-        {% endif %}
-    </div>
-    {% endif %}
-</div>
-{% endfor %}
 
 {% endblock %}
