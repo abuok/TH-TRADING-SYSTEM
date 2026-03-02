@@ -1,102 +1,110 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="header-section">
-    <div class="header-title">
-        <h1>Pilot Run Protocol</h1>
-        <p>Graduation tracking for the 10-session rolling pilot phase.</p>
-    </div>
-    <div class="header-actions">
-        <a href="/dashboard/pilot/gate" class="btn btn-secondary">Review Graduation Gate</a>
-    </div>
-</div>
-
 <div class="hud-grid">
     <!-- Main Logistics Monitor -->
     <div class="hud-panel glass-panel col-span-8 row-span-2" data-hud-corner="top-left">
         <header class="hud-panel-header">
-            <div class="hud-panel-title">ACTIVE SCORECARDS: GRADUATION TRACKING</div>
+            <div class="hud-panel-title">PILOT RUN PROTOCOL // GRADUATION TRACKING</div>
+            <div style="display: flex; gap: 0.5rem;">
+                <a href="/dashboard/pilot/gate" class="btn btn-secondary btn-tiny">GRADUATION GATE_REQ</a>
+            </div>
         </header>
 
-        <div class="hud-scroll-body">
+        <div
+            style="padding: 1rem; color: var(--text-muted); font-size: 0.75rem; letter-spacing: 1px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+            MONITORING ROLLING 10-SESSION PERFORMANCE VECTORS FOR SYSTEM PROMOTION</div>
+
+        <div class="hud-scroll-body" style="height: 350px;">
+            <header class="hud-panel-header"
+                style="background: rgba(0,0,0,0.2); border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <div class="hud-panel-title" style="font-size: 0.6rem;">ACTIVE SCORECARDS // STRATEGIC SUMMARY</div>
+            </header>
             {% if scorecards %}
             <table class="hud-compact-table">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>DATE RANGE</th>
-                        <th style="text-align: center;">GRADUATION STATUS</th>
-                        <th style="text-align: right;">ACTIONS</th>
+                        <th style="width: 150px;">IDENTIFIER</th>
+                        <th>TEMPORAL RANGE</th>
+                        <th style="width: 150px; text-align: center;">VALUATION</th>
+                        <th style="width: 150px; text-align: right;">INTERVENTION</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for sc in scorecards %}
                     <tr>
-                        <td>{{ sc.scorecard_id }}</td>
-                        <td>{{ sc.date_range }}</td>
+                        <td style="font-family: monospace; font-size: 0.7rem; color: var(--accent-cyan);">{{
+                            sc.scorecard_id }}</td>
+                        <td style="font-size: 0.75rem; color: var(--text-main);">{{ sc.date_range }}</td>
                         <td style="text-align: center;">
-                            <span
-                                class="badge {% if sc.pass_fail == 'PASS' %}badge-success{% else %}badge-danger{% endif %}">
+                            <span class="badge"
+                                style="background: {{ 'rgba(39, 174, 96, 0.1)' if sc.pass_fail == 'PASS' else 'rgba(235, 47, 150, 0.1)' }}; color: {{ 'var(--accent-green)' if sc.pass_fail == 'PASS' else 'var(--accent-pink)' }}; border: 1px solid {{ 'var(--accent-green)' if sc.pass_fail == 'PASS' else 'var(--accent-pink)' }}; font-size: 0.55rem; font-weight: 900;">
                                 {{ sc.pass_fail }}
                             </span>
                         </td>
                         <td style="text-align: right;">
-                            <a href="/dashboard/pilot/{{ sc.scorecard_id }}" class="btn btn-small">VIEW FULL REPORT</a>
+                            <a href="/dashboard/pilot/{{ sc.scorecard_id }}"
+                                class="btn btn-primary btn-tiny">ANALYZE_FULL_DATA</a>
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
             {% else %}
-            <div style="padding: 2rem; text-align: center; color: var(--text-muted); opacity: 0.5;">NO SCORECARDS
-                GENERATED</div>
+            <div
+                style="padding: 4rem; text-align: center; color: var(--text-muted); font-weight: 800; letter-spacing: 2px;">
+                ZERO_SCORECARDS_GENERATED</div>
             {% endif %}
         </div>
 
-        <header class="hud-panel-header" style="margin-top: 2rem;">
-            <div class="hud-panel-title">RECENT SESSION OUTCOMES</div>
-        </header>
-        <div class="hud-scroll-body">
+        <div class="hud-scroll-body" style="height: 450px;">
+            <header class="hud-panel-header"
+                style="background: rgba(0,0,0,0.2); border-bottom: 1px solid rgba(255,255,255,0.05); border-top: 2px solid var(--border-main);">
+                <div class="hud-panel-title" style="font-size: 0.6rem;">HISTORICAL SESSION OUTCOMES // AUDIT TRAIL</div>
+            </header>
             {% if recent_sessions %}
             <table class="hud-compact-table">
                 <thead>
                     <tr>
-                        <th>DATE</th>
-                        <th>SESSION ID</th>
-                        <th style="text-align: center;">STATUS</th>
-                        <th style="text-align: right;">EXPECTANCY R</th>
-                        <th style="text-align: right;">MAX STALE</th>
-                        <th style="text-align: right;">DD SESSION</th>
+                        <th style="width: 120px;">DATE</th>
+                        <th style="width: 150px;">SESSION_ID</th>
+                        <th style="text-align: center; width: 100px;">STATUS</th>
+                        <th style="text-align: right; width: 120px;">EXPECTANCY_R</th>
+                        <th style="text-align: right; width: 100px;">MAX_STALE</th>
+                        <th style="text-align: right; width: 100px;">DD_MAX</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for s in recent_sessions %}
                     <tr>
-                        <td>{{ s.date }}</td>
-                        <td>{{ s.session_id }}</td>
+                        <td style="font-family: monospace; font-size: 0.65rem; color: var(--text-muted);">{{ s.date }}
+                        </td>
+                        <td style="font-family: monospace; font-size: 0.65rem; color: var(--accent-cyan);">{{
+                            s.session_id }}</td>
                         <td style="text-align: center;">
-                            <span
-                                class="badge {% if s.pass_fail == 'PASS' %}badge-success{% else %}badge-danger{% endif %}">
+                            <span class="badge"
+                                style="background: {{ 'rgba(39, 174, 96, 0.1)' if s.pass_fail == 'PASS' else 'rgba(235, 47, 150, 0.1)' }}; color: {{ 'var(--accent-green)' if s.pass_fail == 'PASS' else 'var(--accent-pink)' }}; border: 1px solid {{ 'var(--accent-green)' if s.pass_fail == 'PASS' else 'var(--accent-pink)' }}; font-size: 0.55rem; font-weight: 900;">
                                 {{ s.pass_fail }}
                             </span>
                         </td>
                         <td
-                            style="text-align: right; color: {{ 'var(--accent-green)' if s.data.performance_metrics.approved_expectancy_r > 0 else 'var(--accent-pink)' }};">
-                            {{ s.data.performance_metrics.approved_expectancy_r | round(2) }}R
+                            style="text-align: right; font-weight: 800; color: {{ 'var(--accent-green)' if s.data.performance_metrics.approved_expectancy_r > 0 else 'var(--accent-pink)' }};">
+                            {{ "%.2f"|format(s.data.performance_metrics.approved_expectancy_r) }}R
                         </td>
-                        <td style="text-align: right;">
-                            {{ s.data.reliability_metrics.max_quote_stale_seconds | round(1) }}s
+                        <td style="text-align: right; font-family: monospace; font-size: 0.7rem;">
+                            {{ "%.1f"|format(s.data.reliability_metrics.max_quote_stale_seconds) }}s
                         </td>
-                        <td style="text-align: right; color: var(--accent-pink);">
-                            {{ s.data.performance_metrics.max_drawdown_r | round(2) }}R
+                        <td style="text-align: right; color: var(--accent-pink); font-weight: 800;">
+                            {{ "%.2f"|format(s.data.performance_metrics.max_drawdown_r) }}R
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
             {% else %}
-            <div style="padding: 2rem; text-align: center; color: var(--text-muted); opacity: 0.5;">NO SESSIONS LOGGED
-            </div>
+            <div
+                style="padding: 4rem; text-align: center; color: var(--text-muted); font-weight: 800; letter-spacing: 2px;">
+                ZERO_SESSIONS_RECORDED</div>
             {% endif %}
         </div>
     </div>
@@ -104,62 +112,78 @@
     <!-- Stats & Intelligence Monitor -->
     <div class="hud-panel glass-panel col-span-4" data-hud-corner="top-right">
         <header class="hud-panel-header">
-            <div class="hud-panel-title">PILOT STATS (ROLLING)</div>
+            <div class="hud-panel-title">AGGREGATE PILOT METRICS // ROLLING</div>
         </header>
 
-        {% if scorecards %}
-        {% set latest = scorecards[0].data %}
-        <div style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 1rem; text-transform: uppercase;">
-            BASED ON LATEST SCORECARD: {{ scorecards[0].scorecard_id }}
-        </div>
+        <div style="padding: 1.5rem;">
+            {% if scorecards %}
+            {% set latest = scorecards[0].data %}
+            <div
+                style="font-size: 0.6rem; color: var(--text-muted); margin-bottom: 2rem; border-left: 2px solid var(--accent-yellow); padding-left: 0.75rem;">
+                <div style="font-weight: 900; color: var(--accent-yellow);">SOURCE_LATEST: {{ scorecards[0].scorecard_id
+                    }}</div>
+                <div>ANALYSIS PERIOD: {{ scorecards[0].date_range }}</div>
+            </div>
 
-        <div style="display: grid; grid-template-columns: 1fr; gap: 0.75rem;">
-            <div class="hud-scanline"
-                style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 4px; border: 1px solid rgba(86, 204, 242, 0.1);">
-                <div style="font-size: 1.5rem; font-weight: 700; color: var(--accent-cyan);">{{
-                    latest.aggregates.passing_days }} / {{ latest.aggregates.total_days }}</div>
-                <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">PASSING DAYS</div>
-            </div>
-            <div class="hud-scanline"
-                style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 4px; border: 1px solid rgba(86, 204, 242, 0.1);">
-                <div style="font-size: 1.5rem; font-weight: 700; color: var(--accent-green);">{{
-                    (latest.aggregates.passing_days / latest.aggregates.total_days * 100) | round(1) }}%</div>
-                <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">RELIABILITY RATE
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <div class="hud-scanline"
+                    style="background: rgba(86, 204, 242, 0.05); border: 1px solid rgba(86, 204, 242, 0.2); padding: 1.25rem;">
+                    <div style="font-size: 2.5rem; font-weight: 900; color: var(--accent-cyan); line-height: 1;">{{
+                        latest.aggregates.passing_days }}<span
+                            style="font-size: 1rem; color: var(--text-muted); margin: 0 0.5rem;">/</span>{{
+                        latest.aggregates.total_days }}</div>
+                    <div
+                        style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 0.5rem;">
+                        PASSING_DAYS // QUANT_VALIDATION</div>
+                </div>
+
+                <div class="hud-scanline"
+                    style="background: rgba(39, 174, 96, 0.05); border: 1px solid rgba(39, 174, 96, 0.2); padding: 1.25rem;">
+                    <div style="font-size: 2.5rem; font-weight: 900; color: var(--accent-green); line-height: 1;">{{
+                        (latest.aggregates.passing_days / latest.aggregates.total_days * 100) | round(1) }}%</div>
+                    <div
+                        style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 0.5rem;">
+                        SYSTEM_RELIABILITY_COEFFICIENT</div>
+                </div>
+
+                <div class="hud-scanline"
+                    style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); padding: 1.25rem;">
+                    <div style="font-size: 2.5rem; font-weight: 900; color: var(--text-main); line-height: 1;">{{
+                        latest.aggregates.net_realized_r | round(2) }}R</div>
+                    <div
+                        style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 0.5rem;">
+                        NET_REALIZED_EXPECTANCY // CUMULATIVE</div>
                 </div>
             </div>
-            <div class="hud-scanline"
-                style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 4px; border: 1px solid rgba(86, 204, 242, 0.1);">
-                <div style="font-size: 1.5rem; font-weight: 700; color: var(--text-main);">{{
-                    latest.aggregates.net_realized_r | round(2) }}R</div>
-                <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">CUMULATIVE RETURN
-                </div>
-            </div>
+            {% else %}
+            <div
+                style="padding: 4rem; text-align: center; color: var(--text-muted); font-size: 0.7rem; font-weight: 800; letter-spacing: 2px;">
+                CALCULATING_VECTORS...</div>
+            {% endif %}
         </div>
-        {% else %}
-        <div style="padding: 2rem; text-align: center; color: var(--text-muted); opacity: 0.5;">STATS WILL APPEAR HERE
-        </div>
-        {% endif %}
     </div>
 
     <!-- Planning Monitor -->
     <div class="hud-panel glass-panel col-span-4" data-hud-corner="bottom-right">
         <header class="hud-panel-header">
-            <div class="hud-panel-title">NEXT WEEK PLAN PREVIEW</div>
+            <div class="hud-panel-title">STRATEGIC PROJECTION // NEXT_WEEK</div>
         </header>
 
-        <div class="hud-scroll-body">
+        <div class="hud-scroll-body" style="height: 300px; padding: 1rem;">
             {% if scorecards %}
-            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
                 {%- for item in scorecards[0].data.next_week_plan -%}
                 <div
-                    style="background: rgba(86, 204, 242, 0.03); padding: 0.75rem; border-left: 2px solid var(--accent-cyan); font-size: 0.8rem; color: var(--text-main);">
-                    {{ item }}
+                    style="background: rgba(255,255,255,0.02); border-left: 2px solid var(--accent-cyan); padding: 1rem;">
+                    <div style="font-size: 0.75rem; color: var(--text-main); line-height: 1.4; font-weight: 700;">{{
+                        item }}</div>
                 </div>
                 {%- endfor -%}
             </div>
             {% else %}
-            <div style="padding: 2rem; text-align: center; color: var(--text-muted); opacity: 0.5;">NO PLAN DERIVED YET
-            </div>
+            <div
+                style="padding: 4rem; text-align: center; color: var(--text-muted); font-size: 0.7rem; font-weight: 800; letter-spacing: 2px; opacity: 0.3;">
+                NO_ACTIVE_PROJECTIONS</div>
             {% endif %}
         </div>
     </div>
