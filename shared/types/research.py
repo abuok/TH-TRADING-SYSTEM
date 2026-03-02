@@ -5,12 +5,18 @@ import hashlib
 import json
 import os
 
+
 class SystemMetadata(BaseModel):
     version: str = Field(..., description="System version (e.g., 1.0.0)")
     git_commit: str = Field(..., description="Short git commit hash")
-    guardrails_version: str = Field(..., description="Version of the guardrails policy used")
+    guardrails_version: str = Field(
+        ..., description="Version of the guardrails policy used"
+    )
     policy_hash: str = Field(..., description="Hash of the active policy configuration")
-    dataset_hash: Optional[str] = Field(None, description="Hash of the input dataset if applicable")
+    dataset_hash: Optional[str] = Field(
+        None, description="Hash of the input dataset if applicable"
+    )
+
 
 class SimulatedTrade(BaseModel):
     ticket_id: str
@@ -20,13 +26,13 @@ class SimulatedTrade(BaseModel):
     stop_loss: float
     take_profit_1: float
     take_profit_2: Optional[float] = None
-    
+
     # Outcomes
     status: str = "PENDING"  # PENDING, WIN_TP1, WIN_TP2, LOSS, BE, BLOCKED
     realized_r: float = 0.0
     exit_price: Optional[float] = None
     exit_time: Optional[datetime] = None
-    
+
     # Meta
     setup_score: float = 0.0
     bias_score: float = 0.0
@@ -34,11 +40,13 @@ class SimulatedTrade(BaseModel):
     stage: str = "UNKNOWN"
     block_reason: Optional[str] = None
 
+
 class CounterfactualConfig(BaseModel):
     min_setup_score: Optional[float] = None
     hard_block_displacement: Optional[bool] = None
     duplicate_suppression_minutes: Optional[int] = None
     use_router: bool = False
+
 
 class ResearchMetrics(BaseModel):
     total_trades: int = 0
@@ -51,11 +59,13 @@ class ResearchMetrics(BaseModel):
     profit_factor: float = 0.0
     total_r: float = 0.0
 
+
 class ResearchVariant(BaseModel):
     name: str
     config: CounterfactualConfig
     metrics: ResearchMetrics = Field(default_factory=ResearchMetrics)
     trades: List[SimulatedTrade] = Field(default_factory=list)
+
 
 class ResearchRunResult(BaseModel):
     run_id: str

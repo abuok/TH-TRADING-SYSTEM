@@ -4,8 +4,11 @@ from sqlalchemy.orm import sessionmaker
 from .models import Base
 from sqlalchemy.pool import StaticPool
 
+
 def get_engine(url=None):
-    url = url or os.getenv("DATABASE_URL", "postgresql://admin:admin@localhost:5432/trading_db")
+    url = url or os.getenv(
+        "DATABASE_URL", "postgresql://admin:admin@localhost:5432/trading_db"
+    )
     if url == "sqlite:///:memory:":
         return create_engine(
             url,
@@ -14,9 +17,11 @@ def get_engine(url=None):
         )
     return create_engine(url)
 
+
 # Default instances
 engine = get_engine()
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
 
 def get_db():
     db = SessionLocal()
@@ -24,6 +29,7 @@ def get_db():
         yield db
     finally:
         db.close()
+
 
 def init_db():
     # Only useful for simple dev without Alembic

@@ -23,6 +23,25 @@ You can monitor the system in real-time via the Operator Dashboard:
    - Use the "Copy MT5" or "Copy cTrader" buttons to get platform-specific notes.
    - Plans blocked by risk are highlighted in red with explicit reasons.
 
+## Pre-commit / Code Quality
+
+[ruff](https://docs.astral.sh/ruff/) is used for both linting and formatting via pre-commit hooks.
+
+**One-time setup** (after cloning):
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+**Run on all files manually**:
+```bash
+pre-commit run --all-files
+# or via Make:
+make precommit-run
+```
+
+The hooks run automatically on every `git commit` and will auto-fix safe issues; re-stage any changes and commit again.
+
 ## Project Structure
 - `services/`: Specialized microservices (Ingestion, Technical, Risk, Journal, Orchestration).
 - `shared/`: Logic, data types, and database utilities shared across services.

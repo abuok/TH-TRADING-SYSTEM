@@ -3,6 +3,7 @@ from typing import Optional
 from enum import Enum
 from pydantic import BaseModel, Field
 
+
 class SkipReasonEnum(str, Enum):
     NEWS_WINDOW = "NEWS_WINDOW"
     STALE = "STALE"
@@ -13,10 +14,12 @@ class SkipReasonEnum(str, Enum):
     MAX_RISK_REACHED = "MAX_RISK_REACHED"
     PERSONAL_RULE = "PERSONAL_RULE"
 
+
 class TicketOutcomeEnum(str, Enum):
     WIN = "WIN"
     LOSS = "LOSS"
     BE = "BE"
+
 
 class OrderTicketSchema(BaseModel):
     ticket_id: str
@@ -49,7 +52,7 @@ class OrderTicketSchema(BaseModel):
     manual_outcome_r: Optional[float] = None
     manual_outcome_label: Optional[TicketOutcomeEnum] = None
     manual_screenshot_ref: Optional[str] = None
-    
+
     # Mission E: Bridge Data
     executed_at: Optional[datetime] = None
     broker_trade_id: Optional[str] = None
@@ -65,7 +68,9 @@ class OrderTicketSchema(BaseModel):
             f"Take Profit 1: {self.take_profit_1} (RR: {self.rr_tp1:.2f}R)",
         ]
         if self.take_profit_2:
-            lines.append(f"Take Profit 2: {self.take_profit_2} (RR: {self.rr_tp2:.2f}R)")
+            lines.append(
+                f"Take Profit 2: {self.take_profit_2} (RR: {self.rr_tp2:.2f}R)"
+            )
         lines.append(f"Size: {self.lot_size:.2f} Lots")
         lines.append(f"Risk: ${self.risk_usd:.2f} ({self.risk_pct:.2f}%)")
         if self.status == "BLOCKED":

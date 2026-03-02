@@ -3,6 +3,7 @@ import json
 import redis
 from datetime import datetime
 
+
 class EventBus:
     def __init__(self):
         self.redis_url = os.getenv("REDIS_URL", "redis://localhost:6379/0")
@@ -13,7 +14,7 @@ class EventBus:
         # Ensure data is serializable
         if "timestamp" in data and isinstance(data["timestamp"], datetime):
             data["timestamp"] = data["timestamp"].isoformat()
-            
+
         return self.client.xadd(stream_name, {"payload": json.dumps(data)})
 
     def subscribe(self, stream_name: str, group_name: str, consumer_name: str):
@@ -24,6 +25,10 @@ class EventBus:
             if "already exists" not in str(e):
                 raise e
 
-    def consume(self, stream_name: str, group_name: str, consumer_name: str, count: int = 1):
+    def consume(
+        self, stream_name: str, group_name: str, consumer_name: str, count: int = 1
+    ):
         """Read pending messages from a stream."""
-        return self.client.xreadgroup(group_name, consumer_name, {stream_name: ">"}, count=count)
+        return self.client.xreadgroup(
+            group_name, consumer_name, {stream_name: ">"}, count=count
+        )

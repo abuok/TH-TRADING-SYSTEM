@@ -1,9 +1,11 @@
 import threading
 
+
 class MetricsRegistry:
     """
     Simple in-memory metrics registry for Prometheus-style reporting.
     """
+
     _instance = None
     _lock = threading.Lock()
 
@@ -14,7 +16,12 @@ class MetricsRegistry:
                 cls._instance._metrics = {
                     "packets_processed_total": 0,
                     "tickets_generated_total": 0,
-                    "incidents_total": {"INFO": 0, "WARNING": 0, "ERROR": 0, "CRITICAL": 0},
+                    "incidents_total": {
+                        "INFO": 0,
+                        "WARNING": 0,
+                        "ERROR": 0,
+                        "CRITICAL": 0,
+                    },
                     "policy_switches_total": 0,
                     "queue_decisions_total": {"APPROVE": 0, "SKIP": 0},
                     "hindsight_computations_total": 0,
@@ -41,5 +48,6 @@ class MetricsRegistry:
                 else:
                     lines.append(f"{name} {value}")
         return "\n".join(lines)
+
 
 metrics_registry = MetricsRegistry()

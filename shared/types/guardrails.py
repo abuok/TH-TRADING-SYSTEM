@@ -2,6 +2,7 @@
 shared/types/guardrails.py
 GuardrailsResult schema for PHX v2 strategy rule enforcement.
 """
+
 from datetime import datetime
 from typing import Any, List, Optional
 from pydantic import BaseModel, Field
@@ -13,31 +14,32 @@ GUARDRAILS_VERSION = "2.0.0"
 
 class EvidenceRef(BaseModel):
     """Machine-readable reference to a candle, level, packet, or metric."""
-    ref_type: str              # "candle_ts" | "level" | "packet_id" | "metric"
-    key: str                   # e.g. "sweep_candle", "choch_level", "setup_packet_id"
-    value: Any                 # actual value (timestamp string, float, int, str)
+
+    ref_type: str  # "candle_ts" | "level" | "packet_id" | "metric"
+    key: str  # e.g. "sweep_candle", "choch_level", "setup_packet_id"
+    value: Any  # actual value (timestamp string, float, int, str)
     description: Optional[str] = None
 
 
 class RuleCheck(BaseModel):
     """Result for a single guardrail rule evaluation."""
-    id: str                    # e.g. "GR-S01"
-    name: str                  # Human-readable rule name
-    status: str                # "PASS" | "FAIL" | "WARN"
-    details: str               # Why this status was assigned
+
+    id: str  # e.g. "GR-S01"
+    name: str  # Human-readable rule name
+    status: str  # "PASS" | "FAIL" | "WARN"
+    details: str  # Why this status was assigned
     evidence_refs: List[EvidenceRef] = Field(default_factory=list)
     is_mandatory: bool = True  # FAIL on mandatory rule → hard_block
-    deduction: int = 0         # Score deducted (0=PASS, 5=WARN, 20=FAIL)
+    deduction: int = 0  # Score deducted (0=PASS, 5=WARN, 20=FAIL)
 
 
 class GuardrailsResult(BaseModel):
     """Aggregate guardrails evaluation result for a setup."""
+
     guardrails_version: str = GUARDRAILS_VERSION
     setup_packet_id: Optional[int] = None
     pair: str
-    created_at: datetime = Field(
-        default_factory=lambda: datetime.now(NAIROBI)
-    )
+    created_at: datetime = Field(default_factory=lambda: datetime.now(NAIROBI))
 
     rule_checks: List[RuleCheck]
     discipline_score: int = Field(ge=0, le=100, description="0–100 composite score")
@@ -65,7 +67,7 @@ class GuardrailsResult(BaseModel):
         """Top 3 FAIL/WARN items sorted by severity."""
         ranked = sorted(
             [r for r in self.rule_checks if r.status in ("FAIL", "WARN")],
-            key=lambda r: (0 if r.status == "FAIL" else 1, r.id)
+            key=lambda r: (0 if r.status == "FAIL" else 1, r.id),
         )
         return ranked[:3]
 

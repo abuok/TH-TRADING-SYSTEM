@@ -5,20 +5,35 @@ Verify:
   2. Missing real provider triggers safe behavior (NotImplementedError / None / failure).
   3. Preflight news-window check fails-closed when no MarketContextPacket is in DB.
 """
+
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from shared.database.models import Base, OrderTicket, Packet
-from shared.providers.proxy import MockProxyProvider, RealProxyProvider, get_proxy_provider
-from shared.providers.calendar import MockCalendarProvider, ForexFactoryCalendarProvider, get_calendar_provider
-from shared.providers.price_quote import MockPriceQuoteProvider, RealPriceQuoteProvider, get_price_quote_provider
+from shared.providers.proxy import (
+    MockProxyProvider,
+    RealProxyProvider,
+    get_proxy_provider,
+)
+from shared.providers.calendar import (
+    MockCalendarProvider,
+    ForexFactoryCalendarProvider,
+    get_calendar_provider,
+)
+from shared.providers.price_quote import (
+    MockPriceQuoteProvider,
+    RealPriceQuoteProvider,
+    get_price_quote_provider,
+)
 from shared.logic.execution_logic import PreflightEngine
 
 # ── In-memory DB ──────────────────────────────────────────────────────────────
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
@@ -39,6 +54,7 @@ def db():
 
 
 # ── Provider factory env-var tests ───────────────────────────────────────────
+
 
 class TestProxyProviderFactory:
     def test_default_is_mock(self, monkeypatch):
@@ -87,6 +103,7 @@ class TestPriceQuoteProviderFactory:
 
 # ── Mock provider behaviour ──────────────────────────────────────────────────
 
+
 class TestMockProviderBehaviour:
     def test_mock_proxy_is_deterministic(self):
         """Two calls must return identical values — no random-walk."""
@@ -126,6 +143,7 @@ class TestMockProviderBehaviour:
 
 # ── Real provider stubs trigger safe errors ──────────────────────────────────
 
+
 class TestRealProviderSafeBehaviour:
     def test_real_proxy_fails_closed_empty_dict(self):
         """Real provider with no key returns empty dict (fail-closed)."""
@@ -140,10 +158,12 @@ class TestRealProviderSafeBehaviour:
 
 # ── Preflight fail-closed when no MarketContextPacket ────────────────────────
 
+
 class TestPreflightFailClosed:
     def _make_ticket(self, db):
         from shared.database.models import Run
         import uuid
+
         run = Run(run_id=f"run_{uuid.uuid4().hex[:8]}", status="completed")
         db.add(run)
         db.flush()
@@ -177,12 +197,16 @@ class TestPreflightFailClosed:
         assert news_check.status == "FAIL", (
             "news_window must FAIL CLOSED when no MarketContextPacket is in DB"
         )
-        assert "FAIL-CLOSED" in news_check.details or "fail-closed" in news_check.details.lower()
+        assert (
+            "FAIL-CLOSED" in news_check.details
+            or "fail-closed" in news_check.details.lower()
+        )
 
     def test_news_window_passes_with_no_active_window(self, db):
         """When context exists with no active window, check should PASS."""
         from shared.database.models import Run
         import uuid
+
         ticket = self._make_ticket(db)
 
         run = Run(run_id=f"run_{uuid.uuid4().hex[:8]}", status="completed")
@@ -193,7 +217,7 @@ class TestPreflightFailClosed:
         past_window = {
             "event": "Old Event",
             "start": "2000-01-01T00:00:00+03:00",
-            "end":   "2000-01-01T01:00:00+03:00",
+            "end": "2000-01-01T01:00:00+03:00",
         }
         p = Packet(
             run_id=run.id,
@@ -216,6 +240,7 @@ class TestPreflightFailClosed:
         engine.run_checks(ticket, current_price=2000.0, current_spread=1.5)
 
         from shared.database.models import IncidentLog
+
         incident = db.query(IncidentLog).first()
         assert incident is not None
         assert incident.severity == "WARNING"

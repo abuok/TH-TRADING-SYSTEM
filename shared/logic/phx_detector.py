@@ -3,6 +3,7 @@ from typing import List, Dict
 from shared.types.packets import Candle
 from datetime import datetime
 
+
 class PHXStage(Enum):
     IDLE = auto()
     BIAS = auto()
@@ -12,6 +13,7 @@ class PHXStage(Enum):
     RETEST = auto()
     TRIGGER = auto()
 
+
 class PHXDetector:
     def __init__(self, asset_pair: str):
         self.asset_pair = asset_pair
@@ -19,9 +21,9 @@ class PHXDetector:
 
     def reset(self):
         self.stage = PHXStage.IDLE
-        self.bias_direction = 0 # 1 for Long, -1 for Short
+        self.bias_direction = 0  # 1 for Long, -1 for Short
         self.sweep_level = None
-        self.sweep_high_low = None # High of bullish sweep or Low of bearish sweep
+        self.sweep_high_low = None  # High of bullish sweep or Low of bearish sweep
         self.choch_level = None
         self.history: List[Candle] = []
         self.stage_timestamps: Dict[PHXStage, datetime] = {}
@@ -36,7 +38,7 @@ class PHXDetector:
             PHXStage.DISPLACE: 50,
             PHXStage.CHOCH_BOS: 70,
             PHXStage.RETEST: 85,
-            PHXStage.TRIGGER: 100
+            PHXStage.TRIGGER: 100,
         }
         return score_map.get(self.stage, 0)
 
@@ -51,12 +53,12 @@ class PHXDetector:
             return
         # Establish Bias: Look for 3 consecutive higher highs or lower lows
         recent = self.history[-3:]
-        if all(recent[i].high > recent[i-1].high for i in range(1, 3)):
+        if all(recent[i].high > recent[i - 1].high for i in range(1, 3)):
             self.stage = PHXStage.BIAS
             self.bias_direction = 1
             self.stage_timestamps[PHXStage.BIAS] = candle.timestamp
             self.reason_codes.append("Bullish bias established")
-        elif all(recent[i].low < recent[i-1].low for i in range(1, 3)):
+        elif all(recent[i].low < recent[i - 1].low for i in range(1, 3)):
             self.stage = PHXStage.BIAS
             self.bias_direction = -1
             self.stage_timestamps[PHXStage.BIAS] = candle.timestamp

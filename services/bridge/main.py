@@ -2,6 +2,7 @@
 services/bridge/main.py
 Live Data Bridge Service — Ingests real-time quotes and symbol specs from MT5.
 """
+
 import os
 import logging
 from datetime import datetime, timezone
@@ -10,7 +11,12 @@ from fastapi import FastAPI, Header, HTTPException, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from shared.database.models import LiveQuote, SymbolSpec, PositionSnapshot as PositionSnapshotModel, QuoteStaleLog
+from shared.database.models import (
+    LiveQuote,
+    SymbolSpec,
+    PositionSnapshot as PositionSnapshotModel,
+    QuoteStaleLog,
+)
 import shared.database.session as db_session
 from shared.types.trade_capture import TradeFillBatch, PositionSnapshotBatch
 from shared.logic.trade_lifecycle import process_trade_fill
@@ -22,11 +28,13 @@ app = FastAPI(title="Live Data Bridge")
 # Security key from env
 BRIDGE_SECRET = os.getenv("BRIDGE_SECRET", "change-me-in-prod")
 
+
 class QuotePayload(BaseModel):
     symbol: str
     bid: float
     ask: float
     ts_utc: Optional[str] = None
+
 
 class SpecPayload(BaseModel):
     symbol: str
@@ -37,31 +45,41 @@ class SpecPayload(BaseModel):
     min_lot: float = 0.01
     lot_step: float = 0.01
 
+
 def verify_secret(x_bridge_secret: str = Header(...)):
     if x_bridge_secret != BRIDGE_SECRET:
         raise HTTPException(status_code=403, detail="Invalid bridge secret")
 
+
 @app.post("/bridge/quote")
-async def post_quote(payload: QuotePayload, db: Session = Depends(db_session.get_db), authenticated: bool = Depends(verify_secret)):
+async def post_quote(
+    payload: QuotePayload,
+    db: Session = Depends(db_session.get_db),
+    authenticated: bool = Depends(verify_secret),
+):
     """
     Ingest a live quote. Idempotent: ignore if price hasn't changed.
     """
     try:
         # Calculate spread
         spread = round(payload.ask - payload.bid, 5)
-        
+
         # Check existing for idempotency
-        existing = db.query(LiveQuote).filter(LiveQuote.symbol == payload.symbol).first()
+        existing = (
+            db.query(LiveQuote).filter(LiveQuote.symbol == payload.symbol).first()
+        )
         if existing:
             if existing.bid == payload.bid and existing.ask == payload.ask:
                 return {"status": "ignored", "reason": "no change"}
-            
+
             # Track staleness
-            stale_secs = (datetime.now(timezone.utc) - (existing.captured_at or datetime.now(timezone.utc))).total_seconds()
-            if stale_secs > 1.0: # Only log if it's more than 1s gap between updates
+            stale_secs = (
+                datetime.now(timezone.utc)
+                - (existing.captured_at or datetime.now(timezone.utc))
+            ).total_seconds()
+            if stale_secs > 1.0:  # Only log if it's more than 1s gap between updates
                 stale_log = QuoteStaleLog(
-                    symbol=payload.symbol,
-                    stale_duration_seconds=stale_secs
+                    symbol=payload.symbol, stale_duration_seconds=stale_secs
                 )
                 db.add(stale_log)
 
@@ -76,10 +94,10 @@ async def post_quote(payload: QuotePayload, db: Session = Depends(db_session.get
                 bid=payload.bid,
                 ask=payload.ask,
                 spread=spread,
-                raw_timestamp=payload.ts_utc
+                raw_timestamp=payload.ts_utc,
             )
             db.add(new_quote)
-        
+
         db.commit()
         return {"status": "success", "symbol": payload.symbol, "spread": spread}
     except Exception as e:
@@ -87,13 +105,20 @@ async def post_quote(payload: QuotePayload, db: Session = Depends(db_session.get
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.post("/bridge/spec")
-async def post_spec(payload: SpecPayload, db: Session = Depends(db_session.get_db), authenticated: bool = Depends(verify_secret)):
+async def post_spec(
+    payload: SpecPayload,
+    db: Session = Depends(db_session.get_db),
+    authenticated: bool = Depends(verify_secret),
+):
     """
     Ingest symbol specifications (contract size, tick info).
     """
     try:
-        existing = db.query(SymbolSpec).filter(SymbolSpec.symbol == payload.symbol).first()
+        existing = (
+            db.query(SymbolSpec).filter(SymbolSpec.symbol == payload.symbol).first()
+        )
         if existing:
             existing.contract_size = payload.contract_size
             existing.tick_size = payload.tick_size
@@ -110,10 +135,10 @@ async def post_spec(payload: SpecPayload, db: Session = Depends(db_session.get_d
                 tick_value=payload.tick_value,
                 pip_size=payload.pip_size,
                 min_lot=payload.min_lot,
-                lot_step=payload.lot_step
+                lot_step=payload.lot_step,
             )
             db.add(new_spec)
-        
+
         db.commit()
         return {"status": "success", "symbol": payload.symbol}
     except Exception as e:
@@ -121,8 +146,13 @@ async def post_spec(payload: SpecPayload, db: Session = Depends(db_session.get_d
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.post("/bridge/trades/fill")
-async def post_trades_fill(batch: TradeFillBatch, db: Session = Depends(db_session.get_db), authenticated: bool = Depends(verify_secret)):
+async def post_trades_fill(
+    batch: TradeFillBatch,
+    db: Session = Depends(db_session.get_db),
+    authenticated: bool = Depends(verify_secret),
+):
     """
     Ingest a batch of trade fill events (OPEN/CLOSE/PARTIAL).
     """
@@ -132,15 +162,24 @@ async def post_trades_fill(batch: TradeFillBatch, db: Session = Depends(db_sessi
         results.append(res)
     return {"status": "success", "processed": len(batch.fills), "results": results}
 
+
 @app.post("/bridge/trades/positions")
-async def post_trades_positions(batch: PositionSnapshotBatch, db: Session = Depends(db_session.get_db), authenticated: bool = Depends(verify_secret)):
+async def post_trades_positions(
+    batch: PositionSnapshotBatch,
+    db: Session = Depends(db_session.get_db),
+    authenticated: bool = Depends(verify_secret),
+):
     """
     Ingest a batch of current position snapshots. Updates position_snapshots table.
     """
     try:
         # Clear old snapshots for the accounts reported (or just upsert)
         for snap in batch.snapshots:
-            existing = db.query(PositionSnapshotModel).filter(PositionSnapshotModel.position_id == snap.position_id).first()
+            existing = (
+                db.query(PositionSnapshotModel)
+                .filter(PositionSnapshotModel.position_id == snap.position_id)
+                .first()
+            )
             if existing:
                 existing.lots = snap.lots
                 existing.avg_price = snap.avg_price
@@ -161,10 +200,10 @@ async def post_trades_positions(batch: PositionSnapshotBatch, db: Session = Depe
                     tp=snap.tp,
                     updated_at_utc=snap.updated_at_utc,
                     updated_at_eat=snap.updated_at_eat,
-                    account_id=snap.account_id
+                    account_id=snap.account_id,
                 )
                 db.add(new_snap)
-        
+
         db.commit()
         return {"status": "success", "updated": len(batch.snapshots)}
     except Exception as e:
@@ -172,11 +211,13 @@ async def post_trades_positions(batch: PositionSnapshotBatch, db: Session = Depe
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.get("/health")
 async def health():
     return {"status": "healthy", "service": "bridge"}
 
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8005)
 
+    uvicorn.run(app, host="0.0.0.0", port=8005)

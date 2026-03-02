@@ -6,6 +6,7 @@ News-window check (check #5):
   FAIL CLOSED if no MarketContextPacket found in DB — treats absent data
   as a potential news window rather than silently passing.
 """
+
 import logging
 import yaml
 from datetime import datetime
@@ -39,7 +40,11 @@ class PreflightEngine:
     def _log_incident(self, severity: str, message: str) -> None:
         logger.error("[INCIDENT][%s] PreflightEngine — %s", severity, message)
         try:
-            self.db.add(IncidentLog(severity=severity, component="PreflightEngine", message=message))
+            self.db.add(
+                IncidentLog(
+                    severity=severity, component="PreflightEngine", message=message
+                )
+            )
             self.db.commit()
         except Exception as exc:
             logger.error("Failed to persist preflight incident: %s", exc)
@@ -60,52 +65,75 @@ class PreflightEngine:
         # Fetch live data if not provided
         if current_price is None or current_spread is None:
             from shared.providers.price_quote import get_price_quote_provider
+
             provider = get_price_quote_provider()
             quote = provider.get_quote(ticket.pair)
             if quote:
-                current_price = current_price if current_price is not None else quote.mid
-                current_spread = current_spread if current_spread is not None else quote.spread_pips
+                current_price = (
+                    current_price if current_price is not None else quote.mid
+                )
+                current_spread = (
+                    current_spread if current_spread is not None else quote.spread_pips
+                )
             else:
-                self._log_incident("ERROR", f"No live quote found for {ticket.pair}. Preflight failing closed.")
+                self._log_incident(
+                    "ERROR",
+                    f"No live quote found for {ticket.pair}. Preflight failing closed.",
+                )
 
         # ── 1. Expiry ────────────────────────────────────────────────────
         expires_at = ticket.expires_at
         if expires_at and expires_at.tzinfo is None:
             import pytz
-            expires_at = pytz.utc.localize(expires_at).astimezone(pytz.timezone("Africa/Nairobi"))
+
+            expires_at = pytz.utc.localize(expires_at).astimezone(
+                pytz.timezone("Africa/Nairobi")
+            )
 
         is_expired = expires_at and now > expires_at
-        checks.append(PreflightCheck(
-            id="expiry",
-            name="Ticket Expiry",
-            status="PASS" if not is_expired else "FAIL",
-            details="Ticket is active" if not is_expired else f"Ticket expired at {expires_at}",
-        ))
+        checks.append(
+            PreflightCheck(
+                id="expiry",
+                name="Ticket Expiry",
+                status="PASS" if not is_expired else "FAIL",
+                details="Ticket is active"
+                if not is_expired
+                else f"Ticket expired at {expires_at}",
+            )
+        )
 
         # ── 2. Kill Switch ───────────────────────────────────────────────
         active_ks = self.db.query(KillSwitch).filter(KillSwitch.is_active == 1).first()
-        checks.append(PreflightCheck(
-            id="kill_switch",
-            name="System Kill Switch",
-            status="PASS" if not active_ks else "FAIL",
-            details="All systems operational" if not active_ks else f"Kill switch active: {active_ks.switch_type}",
-        ))
+        checks.append(
+            PreflightCheck(
+                id="kill_switch",
+                name="System Kill Switch",
+                status="PASS" if not active_ks else "FAIL",
+                details="All systems operational"
+                if not active_ks
+                else f"Kill switch active: {active_ks.switch_type}",
+            )
+        )
 
         # ── 3. Price Tolerance ───────────────────────────────────────────
         if current_price is None:
             status, details = "FAIL", "FAIL-CLOSED: Live price unavailable"
         else:
-            deviation = abs(current_price - ticket.entry_price) / ticket.entry_price * 100
+            deviation = (
+                abs(current_price - ticket.entry_price) / ticket.entry_price * 100
+            )
             tolerance = self.config.get("price_tolerance_pct", 0.1)
             status = "PASS" if deviation <= tolerance else "FAIL"
             details = f"Current deviation {deviation:.3f}% (Max {tolerance}%)"
 
-        checks.append(PreflightCheck(
-            id="price_deviation",
-            name="Price Tolerance",
-            status=status,
-            details=details,
-        ))
+        checks.append(
+            PreflightCheck(
+                id="price_deviation",
+                name="Price Tolerance",
+                status=status,
+                details=details,
+            )
+        )
 
         # ── 4. Spread ────────────────────────────────────────────────────
         if current_spread is None:
@@ -115,12 +143,14 @@ class PreflightEngine:
             status = "PASS" if current_spread <= max_spread else "WARN"
             details = f"Current spread {current_spread:.1f} pips (Max recommended {max_spread})"
 
-        checks.append(PreflightCheck(
-            id="spread",
-            name="Market Spread",
-            status=status,
-            details=details,
-        ))
+        checks.append(
+            PreflightCheck(
+                id="spread",
+                name="Market Spread",
+                status=status,
+                details=details,
+            )
+        )
 
         # ── 5. News Window — FAIL CLOSED ─────────────────────────────────
         context = (
@@ -137,20 +167,24 @@ class PreflightEngine:
                 "No MarketContextPacket found in DB. Unable to verify news-window safety. "
                 "Failing execution preflight news check (fail-closed policy).",
             )
-            checks.append(PreflightCheck(
-                id="news_window",
-                name="News Proximity",
-                status="FAIL",
-                details=(
-                    "FAIL-CLOSED: No MarketContextPacket available. "
-                    "Cannot verify news windows — treating as unsafe."
-                ),
-            ))
+            checks.append(
+                PreflightCheck(
+                    id="news_window",
+                    name="News Proximity",
+                    status="FAIL",
+                    details=(
+                        "FAIL-CLOSED: No MarketContextPacket available. "
+                        "Cannot verify news windows — treating as unsafe."
+                    ),
+                )
+            )
             return checks
 
         # Context exists — check freshness (warn if context is stale > 2h)
         try:
-            ctx_age_hours = (now - context.created_at.replace(tzinfo=now.tzinfo)).total_seconds() / 3600
+            ctx_age_hours = (
+                now - context.created_at.replace(tzinfo=now.tzinfo)
+            ).total_seconds() / 3600
             if ctx_age_hours > 2:
                 logger.warning(
                     "MarketContextPacket is %.1f hours old — news-window check may be stale.",
@@ -160,7 +194,11 @@ class PreflightEngine:
             pass
 
         # Check first-class no_trade_windows field, fall back to data dict
-        windows = context.data.get("no_trade_windows", []) if isinstance(context.data, dict) else []
+        windows = (
+            context.data.get("no_trade_windows", [])
+            if isinstance(context.data, dict)
+            else []
+        )
 
         in_window = False
         window_details = "No high-impact red events in immediate window"
@@ -183,11 +221,13 @@ class PreflightEngine:
                 logger.warning("Skipping malformed no-trade window %s: %s", window, exc)
                 continue
 
-        checks.append(PreflightCheck(
-            id="news_window",
-            name="News Proximity",
-            status="PASS" if not in_window else "FAIL",
-            details=window_details,
-        ))
+        checks.append(
+            PreflightCheck(
+                id="news_window",
+                name="News Proximity",
+                status="PASS" if not in_window else "FAIL",
+                details=window_details,
+            )
+        )
 
         return checks

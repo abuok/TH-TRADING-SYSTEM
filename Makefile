@@ -1,4 +1,4 @@
-.PHONY: install run-all stop clean lint test help
+.PHONY: install run-all stop clean lint test help precommit-install precommit-run
 
 help:
 	@echo "Available commands:"
@@ -6,7 +6,9 @@ help:
 	@echo "  run-all   : Start all services using Docker Compose"
 	@echo "  stop      : Stop all services"
 	@echo "  clean     : Remove temporary files and containers"
-	@echo "  lint      : Run linters (black, isort, flake8)"
+	@echo "  lint              : Run ruff lint + format check"
+	@echo "  precommit-install : Install pre-commit hooks"
+	@echo "  precommit-run     : Run pre-commit on all files"
 	@echo "  test      : Run tests"
 	@echo "  demo      : Run E2E demo (requires Docker)"
 	@echo "  dashboard : Run dashboard locally (port 8005)"
@@ -38,9 +40,15 @@ clean:
 	find . -type f -name "*.pyc" -delete
 
 lint:
-	black .
-	isort .
-	flake8 .
+	ruff check .
+	ruff format --check .
+
+precommit-install:
+	pip install pre-commit
+	pre-commit install
+
+precommit-run:
+	pre-commit run --all-files
 
 test:
 	pytest

@@ -2,11 +2,20 @@ import pytest
 import uuid
 from datetime import datetime, timezone, timedelta
 import shared.database.session as db_session
-from shared.database.models import OrderTicket, TradeFillLog, TicketTradeLink, PositionSnapshot, Run, Packet, ExecutionPrepLog
+from shared.database.models import (
+    OrderTicket,
+    TradeFillLog,
+    TicketTradeLink,
+    PositionSnapshot,
+    Run,
+    Packet,
+    ExecutionPrepLog,
+)
 from shared.types.trade_capture import TradeFillEvent
 from shared.logic.trade_lifecycle import process_trade_fill
 
 # NOTE: conftest.py handles SQLite engine setup via setup_db autouse fixture
+
 
 @pytest.fixture
 def db():
@@ -18,8 +27,18 @@ def db():
         session.add(run)
         session.commit()
 
-    p1 = Packet(run_id=db_run.id, packet_type="TechnicalSetupPacket", schema_version="1.0", data={})
-    p2 = Packet(run_id=db_run.id, packet_type="RiskApprovalPacket", schema_version="1.0", data={})
+    p1 = Packet(
+        run_id=db_run.id,
+        packet_type="TechnicalSetupPacket",
+        schema_version="1.0",
+        data={},
+    )
+    p2 = Packet(
+        run_id=db_run.id,
+        packet_type="RiskApprovalPacket",
+        schema_version="1.0",
+        data={},
+    )
     session.add_all([p1, p2])
     session.commit()
 
@@ -33,11 +52,14 @@ def db():
     session.commit()
     session.close()
 
+
 def test_matching_logic_by_comment(db):
     # 1. Create a dummy ticket
-    setup_p = db.query(Packet).filter(Packet.packet_type == "TechnicalSetupPacket").first()
+    setup_p = (
+        db.query(Packet).filter(Packet.packet_type == "TechnicalSetupPacket").first()
+    )
     risk_p = db.query(Packet).filter(Packet.packet_type == "RiskApprovalPacket").first()
-    
+
     ticket_id = f"T-{uuid.uuid4().hex[:8]}"
     ticket = OrderTicket(
         ticket_id=ticket_id,
@@ -53,7 +75,7 @@ def test_matching_logic_by_comment(db):
         risk_pct=1.0,
         rr_tp1=2.0,
         status="APPROVED",
-        idempotency_key=str(uuid.uuid4())
+        idempotency_key=str(uuid.uuid4()),
     )
     db.add(ticket)
     db.commit()
@@ -69,7 +91,7 @@ def test_matching_logic_by_comment(db):
         time_eat=datetime.now(timezone.utc) + timedelta(hours=3),
         event_type="OPEN",
         comment=f"TICKET:{ticket_id}",
-        account_id="ACC-001"
+        account_id="ACC-001",
     )
 
     # 3. Process fill
@@ -79,17 +101,22 @@ def test_matching_logic_by_comment(db):
     assert result["ticket_id"] == ticket_id
 
     # 4. Verify DB state
-    updated_ticket = db.query(OrderTicket).filter(OrderTicket.ticket_id == ticket_id).first()
+    updated_ticket = (
+        db.query(OrderTicket).filter(OrderTicket.ticket_id == ticket_id).first()
+    )
     assert updated_ticket.status == "EXECUTED"
     assert updated_ticket.executed_at is not None
+
 
 def test_matching_logic_heuristic(db):
     # 1. Create a dummy ticket
     ticket_id = f"T-{uuid.uuid4().hex[:8]}"
     now = datetime.now(timezone.utc)
-    setup_p = db.query(Packet).filter(Packet.packet_type == "TechnicalSetupPacket").first()
+    setup_p = (
+        db.query(Packet).filter(Packet.packet_type == "TechnicalSetupPacket").first()
+    )
     risk_p = db.query(Packet).filter(Packet.packet_type == "RiskApprovalPacket").first()
-    
+
     ticket = OrderTicket(
         ticket_id=ticket_id,
         setup_packet_id=setup_p.id,
@@ -105,7 +132,7 @@ def test_matching_logic_heuristic(db):
         rr_tp1=2.0,
         status="APPROVED",
         idempotency_key=str(uuid.uuid4()),
-        created_at=now - timedelta(seconds=60)
+        created_at=now - timedelta(seconds=60),
     )
     db.add(ticket)
     db.commit()
@@ -117,7 +144,7 @@ def test_matching_logic_heuristic(db):
         status="ACTIVE",
         data={},
         created_at=now - timedelta(seconds=60),
-        expires_at=now + timedelta(hours=1)
+        expires_at=now + timedelta(hours=1),
     )
     db.add(prep)
     db.commit()
@@ -133,7 +160,7 @@ def test_matching_logic_heuristic(db):
         time_eat=now + timedelta(hours=3),
         event_type="OPEN",
         comment="Random MT5 Comment",
-        account_id="ACC-001"
+        account_id="ACC-001",
     )
 
     # 3. Process fill
@@ -142,10 +169,13 @@ def test_matching_logic_heuristic(db):
     assert result["matched"] is True
     assert result["ticket_id"] == ticket_id
 
+
 def test_pnl_calculation_on_close(db):
     # 1. Setup executed ticket
     ticket_id = "T-PNL-TEST"
-    setup_p = db.query(Packet).filter(Packet.packet_type == "TechnicalSetupPacket").first()
+    setup_p = (
+        db.query(Packet).filter(Packet.packet_type == "TechnicalSetupPacket").first()
+    )
     risk_p = db.query(Packet).filter(Packet.packet_type == "RiskApprovalPacket").first()
 
     ticket = OrderTicket(
@@ -162,13 +192,18 @@ def test_pnl_calculation_on_close(db):
         risk_pct=2.0,
         rr_tp1=2.0,
         status="EXECUTED",
-        idempotency_key=str(uuid.uuid4())
+        idempotency_key=str(uuid.uuid4()),
     )
     db.add(ticket)
     db.commit()
 
     # 2. Link a trade
-    link = TicketTradeLink(ticket_id=ticket_id, broker_trade_id="BT-PNL", match_method="DIRECT", confidence=1.0)
+    link = TicketTradeLink(
+        ticket_id=ticket_id,
+        broker_trade_id="BT-PNL",
+        match_method="DIRECT",
+        confidence=1.0,
+    )
     db.add(link)
     db.commit()
 
@@ -176,22 +211,24 @@ def test_pnl_calculation_on_close(db):
     close_fill = TradeFillEvent(
         broker_trade_id="BT-PNL-OUT",
         symbol="XAUUSD",
-        side="SELL", # closing a buy
+        side="SELL",  # closing a buy
         lots=1.0,
-        price=2030.0, # +30 points, should be 1.5R
+        price=2030.0,  # +30 points, should be 1.5R
         time_utc=datetime.now(timezone.utc),
         time_eat=datetime.now(timezone.utc) + timedelta(hours=3),
         event_type="CLOSE",
         comment="TICKET:T-PNL-TEST",
-        account_id="ACC-001"
+        account_id="ACC-001",
     )
 
     result = process_trade_fill(db, close_fill)
     assert result["status"] == "success"
     assert result["matched"] is True
-    
-    updated_ticket = db.query(OrderTicket).filter(OrderTicket.ticket_id == ticket_id).first()
+
+    updated_ticket = (
+        db.query(OrderTicket).filter(OrderTicket.ticket_id == ticket_id).first()
+    )
     assert updated_ticket.status == "CLOSED"
     assert updated_ticket.hindsight_realized_r is not None
     # Tolerance for small float diffs
-    assert abs(updated_ticket.hindsight_realized_r - 1.5) < 0.01 
+    assert abs(updated_ticket.hindsight_realized_r - 1.5) < 0.01
