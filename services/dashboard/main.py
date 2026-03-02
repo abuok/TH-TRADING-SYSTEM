@@ -1,3 +1,4 @@
+# ruff: noqa: E402  # delayed imports/path setup required in this module
 import os
 import json
 import sys
@@ -97,7 +98,8 @@ def verify_auth(request: Request):
     import base64
     try:
         scheme, credentials = auth_header.split()
-        if scheme.lower() != 'basic': raise ValueError()
+        if scheme.lower() != 'basic':
+            raise ValueError()
         decoded = base64.b64decode(credentials).decode("ascii")
         username, _, password = decoded.partition(":")
     except Exception:

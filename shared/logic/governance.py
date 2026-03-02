@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime, timezone, timedelta
-from typing import Optional, List, Dict
+from typing import Optional, Dict
 from sqlalchemy.orm import Session
 from shared.database.models import KillSwitch, IncidentLog
 

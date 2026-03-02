@@ -1,7 +1,6 @@
 import pandas as pd
 from typing import List, Optional
 from shared.types.packets import Candle
-from datetime import datetime
 import os
 
 class CSVPriceFeedAdapter:

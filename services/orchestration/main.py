@@ -2,7 +2,9 @@
 services/orchestration/main.py
 Orchestration Service API — tickets + briefings.
 """
+# ruff: noqa: E402  # delayed imports/path setup required in this module
 import asyncio
+import os
 import logging
 from fastapi import FastAPI, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
@@ -130,7 +132,7 @@ async def briefing_scheduler(interval_minutes: int = 30):
             try:
                 db = db_session.SessionLocal()
                 pack = assemble_briefing(db, now_nairobi=now, is_delta=is_delta)
-                record = persist_briefing(pack, db)
+                persist_briefing(pack, db)
                 generated_sessions.add(session_key)
                 db.close()
 

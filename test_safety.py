@@ -1,6 +1,5 @@
 import unittest
 from datetime import time
-from session_manager import SessionManager
 from risk_engine import RiskEngine
 from core_models import SignalPacket, ScorePacket, Direction
 

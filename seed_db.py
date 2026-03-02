@@ -7,9 +7,9 @@ os.environ["DATABASE_URL"] = "sqlite:///trading_db.sqlite"
 # Ensure shared is importable
 sys.path.append(os.getcwd())
 
-from shared.database.session import engine, SessionLocal, init_db
+from shared.database.session import SessionLocal, init_db
 from shared.database.models import (
-    LiveQuote, SymbolSpec, Packet, Run, KillSwitch, IncidentLog, 
+    LiveQuote, SymbolSpec, Packet, Run, IncidentLog, 
     OrderTicket, HindsightOutcomeLog, PolicySelectionLog
 )
 

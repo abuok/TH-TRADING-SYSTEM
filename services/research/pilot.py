@@ -43,7 +43,8 @@ def fetch_session_metrics(db: Session, target_date: date) -> PilotSessionRecord:
     for t in tickets:
         if t.reviewed_at and t.created_at:
             dt = (t.reviewed_at - t.created_at).total_seconds()
-            if dt > 0: review_times.append(dt)
+            if dt > 0:
+                review_times.append(dt)
     
     review_times.sort()
     median_review = review_times[len(review_times)//2] if review_times else 0.0
@@ -102,8 +103,8 @@ def fetch_session_metrics(db: Session, target_date: date) -> PilotSessionRecord:
         QuoteStaleLog.created_at >= start_dt,
         QuoteStaleLog.created_at < end_dt
     ).all()
-    max_stale = max([l.stale_duration_seconds for l in stale_logs] + [0.0])
-    violations = [l for l in stale_logs if l.stale_duration_seconds > 30.0] # Threshold crossref
+    max_stale = max([log.stale_duration_seconds for log in stale_logs] + [0.0])
+    violations = [log for log in stale_logs if log.stale_duration_seconds > 30.0] # Threshold crossref
 
     reliability_metrics = {
         "quote_freshness_pct": 100.0 - (len(violations) * 0.1), # Heuristic
@@ -247,7 +248,8 @@ def build_pilot_scorecard(db: Session, start_date: date, end_date: date) -> Pilo
         
         # Aggr ops
         total_days += 1
-        if pf == "PASS": passes += 1
+        if pf == "PASS":
+            passes += 1
         total_approved += session_rec.process_metrics.get("approved", 0)
         total_r += session_rec.performance_metrics.get("realized_r", 0)
         

@@ -9,7 +9,7 @@ from replay_engine import ReplayEngine
 
 def run_trading_desk(iterations: int = 5, delay: int = 2):
     print("=== Trading Desk System V1 (Safety + Scope Rules) ===")
-    print(f"Timezone: Africa/Nairobi (EAT)")
+    print("Timezone: Africa/Nairobi (EAT)")
     print(f"Current Time: {SessionManager.get_current_time_eat()}")
     print("-" * 50)
 

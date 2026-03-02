@@ -13,10 +13,14 @@ class ConsoleNotificationAdapter(NotificationAdapter):
     def send(self, message: str, level: str = "INFO"):
         color = ""
         reset = "\033[0m"
-        if level == "SUCCESS": color = "\033[92m" # Green
-        elif level == "WARNING": color = "\033[93m" # Yellow
-        elif level == "ERROR": color = "\033[91m" # Red
-        elif level == "INFO": color = "\033[94m" # Blue
+        if level == "SUCCESS":
+            color = "\033[92m"  # Green
+        elif level == "WARNING":
+            color = "\033[93m"  # Yellow
+        elif level == "ERROR":
+            color = "\033[91m"  # Red
+        elif level == "INFO":
+            color = "\033[94m"  # Blue
         
         print(f"{color}[{level}] {message}{reset}")
 

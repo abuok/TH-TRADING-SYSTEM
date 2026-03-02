@@ -1,6 +1,5 @@
 from session_manager import SessionManager
-from datetime import datetime, time
-import pytz
+from datetime import datetime
 
 def test_session_logic():
     print(f"Current Time (EAT): {SessionManager.get_current_time_eat()}")

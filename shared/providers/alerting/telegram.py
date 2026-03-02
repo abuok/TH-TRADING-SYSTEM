@@ -1,7 +1,6 @@
 import os
 import httpx
 import logging
-from typing import Dict, Any
 
 logger = logging.getLogger("TelegramProvider")
 

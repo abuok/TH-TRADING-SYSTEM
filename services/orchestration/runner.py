@@ -65,7 +65,8 @@ class Orchestrator:
 
     async def pre_session_briefing(self, asset_pair: str, historical_candles: list):
         """Analyze market bias and session levels before trading starts."""
-        if not self.run_id: self.start_run()
+        if not self.run_id:
+            self.start_run()
         logger.info(f"Starting pre-session briefing for {asset_pair}...")
         
         # Use the correct method name from TradingSessions
@@ -75,7 +76,8 @@ class Orchestrator:
 
     async def live_loop(self, asset_pair: str, interval_seconds: int = 60):
         """Main loop during active trading sessions."""
-        if not self.run_id: self.start_run()
+        if not self.run_id:
+            self.start_run()
         self.is_active = True
         logger.info(f"Starting live loop for {asset_pair} (Dry Run: {self.dry_run})")
         
@@ -83,14 +85,16 @@ class Orchestrator:
             # 1. Check Global/Service Kill Switch
             if self.governance.is_halted("HALT_ALL") or self.governance.is_halted("HALT_SERVICE", "Orchestrator"):
                 logger.warning("Orchestrator HALTED by kill switch.")
-                if self.dry_run: break
+                if self.dry_run:
+                    break
                 await asyncio.sleep(interval_seconds)
                 continue
 
             # 2. Check Pair Kill Switch
             if self.governance.is_halted("HALT_PAIR", asset_pair):
                 logger.warning(f"Pair {asset_pair} HALTED by kill switch.")
-                if self.dry_run: break
+                if self.dry_run:
+                    break
                 await asyncio.sleep(interval_seconds)
                 continue
 
@@ -99,7 +103,8 @@ class Orchestrator:
             # 3. Staleness Guard
             if not self.governance.validate_packet_freshness("MarketContextPacket", context.timestamp, self.ttl_map):
                 logger.error(f"Abandoning loop iteration for {asset_pair} due to stale context.")
-                if self.dry_run: break
+                if self.dry_run:
+                    break
                 await asyncio.sleep(interval_seconds)
                 continue
 
@@ -117,7 +122,8 @@ class Orchestrator:
             if setup:
                 # 5. Technical Setup Staleness Guard
                 if not self.governance.validate_packet_freshness("TechnicalSetupPacket", setup.timestamp, self.ttl_map):
-                    if self.dry_run: break
+                    if self.dry_run:
+                        break
                     await asyncio.sleep(interval_seconds)
                     continue
 

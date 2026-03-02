@@ -32,9 +32,9 @@ def _ts(offset_hours: float = 0.0) -> datetime:
     return datetime(2025, 1, 1, tzinfo=timezone.utc) + timedelta(hours=offset_hours)
 
 
-def _candle(open_, close, h=None, l=None, t=None, vol=1000.0) -> Candle:
+def _candle(open_, close, h=None, low_val=None, t=None, vol=1000.0) -> Candle:
     high = h if h is not None else max(open_, close) + 1.0
-    low = l if l is not None else min(open_, close) - 1.0
+    low = low_val if low_val is not None else min(open_, close) - 1.0
     return Candle(
         timestamp=t or _ts(),
         open=open_, high=high, low=low, close=close, volume=vol

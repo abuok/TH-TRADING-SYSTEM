@@ -1,3 +1,4 @@
+# ruff: noqa: E402  # delayed imports/path setup required in this module
 import typer
 import os
 import sys
@@ -179,7 +180,7 @@ def research_run(
             
     json_path = save_json(result)
     html_path = generate_html_report(result)
-    
+
     console.print(f"\n[green]Success![/] Saved {result.run_id} to {json_path}")
     console.print(f"HTML Report: {html_path}")
 
@@ -283,7 +284,6 @@ def validate_proposals(
     db = db_session.SessionLocal()
     try:
         from shared.database.models import TuningProposalLog
-        import json
         
         # 1. Fetch the Proposal
         log = db.query(TuningProposalLog).filter(TuningProposalLog.data['proposals'].contains([{'id': proposal_id}])).first()
@@ -320,8 +320,8 @@ def validate_proposals(
             console.print(f"[red]Replay failed: {e}[/red]")
             raise typer.Exit(1)
             
-    json_path = save_json(result)
-    
+    _ = save_json(result)
+
     console.print(f"\n[bold cyan]Validation Complete for {proposal_id}[/bold cyan]")
     
     base_m = result.variants["baseline"].metrics

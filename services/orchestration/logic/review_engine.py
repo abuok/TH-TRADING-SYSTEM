@@ -38,7 +38,6 @@ class ReviewEngine:
         ]
 
         auto_captured = [t for t in closed_tickets if t.hindsight_realized_r is not None]
-        manual_only = [t for t in closed_tickets if t.hindsight_realized_r is None and t.manual_outcome_r is not None]
         auto_capture_pct = (len(auto_captured) / len(closed_tickets) * 100) if closed_tickets else 0.0
 
         def get_r(ticket):
@@ -61,13 +60,13 @@ class ReviewEngine:
         # 2. Discipline
         violations = self.db.query(GuardrailsLog).filter(
             GuardrailsLog.created_at >= start_date,
-            GuardrailsLog.hard_block == True
+            GuardrailsLog.hard_block
         ).count()
         
         avg_score = 0.0
         gr_logs = self.db.query(GuardrailsLog).filter(GuardrailsLog.created_at >= start_date).all()
         if gr_logs:
-            avg_score = sum(l.discipline_score for l in gr_logs) / len(gr_logs)
+            avg_score = sum(log.discipline_score for log in gr_logs) / len(gr_logs)
         
         # 3. Decision Quality
         skipped_winners = len([h for h in hindsight_logs if h.outcome_label == "WIN"])

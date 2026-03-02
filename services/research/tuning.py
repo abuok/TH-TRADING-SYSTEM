@@ -26,7 +26,7 @@ def fetch_tuning_metrics(db: Session, start_date: datetime, end_date: datetime) 
         # Guardrails Data
         "guardrails_blocks": db.query(GuardrailsLog).filter(
             GuardrailsLog.created_at.between(start_date, end_date),
-            GuardrailsLog.hard_block == True
+            GuardrailsLog.hard_block
         ).count(),
         "avg_discipline_score": db.query(func.avg(GuardrailsLog.discipline_score)).filter(
             GuardrailsLog.created_at.between(start_date, end_date)

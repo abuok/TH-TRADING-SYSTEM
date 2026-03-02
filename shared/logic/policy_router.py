@@ -7,7 +7,7 @@ import yaml
 import hashlib
 import logging
 from datetime import datetime
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Dict, List, Any
 from pydantic import BaseModel
 
 from shared.logic.sessions import get_session_label

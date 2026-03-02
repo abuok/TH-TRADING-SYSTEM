@@ -3,7 +3,6 @@ shared/types/incident.py
 Pydantic schema for the /incidents/log endpoint request body.
 Mirrors the IncidentLog database model fields.
 """
-from datetime import datetime
 from typing import Optional, Dict, Any
 from pydantic import BaseModel
 

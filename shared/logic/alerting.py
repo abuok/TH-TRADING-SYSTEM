@@ -3,7 +3,6 @@ shared/logic/alerting.py
 Logic for sending notifications on critical service events.
 """
 import logging
-import os
 from datetime import datetime
 from typing import Dict, Any
 
