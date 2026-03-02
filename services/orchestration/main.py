@@ -2,13 +2,16 @@
 services/orchestration/main.py
 Orchestration Service API — tickets + briefings.
 """
+
+# ruff: noqa: E402  # delayed imports/path setup required in this module
 import asyncio
+import os
 import logging
-from fastapi import FastAPI, Depends, HTTPException, Query, BackgroundTasks
+from fastapi import FastAPI, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
 from typing import List, Optional, Dict, Any
-from datetime import datetime, date, timezone
+from datetime import datetime
 
 import shared.database.session as db_session
 from shared.database.models import OrderTicket, Packet, SessionBriefing
@@ -20,17 +23,13 @@ from shared.logic.sessions import get_nairobi_time, get_session_label, TradingSe
 from shared.logic.notifications import NotificationService, ConsoleNotificationAdapter
 from shared.types.packets import TechnicalSetupPacket, RiskApprovalPacket
 from shared.types.trading import OrderTicketSchema
-from shared.types.guardrails import GuardrailsResult
 from shared.logic.policy_router import PolicyRouter
 from services.orchestration.logic.ops_engine import OpsEngine
 from services.orchestration.logic.review_engine import ReviewEngine
-from services.orchestration.logic.execution_prep_generator import ExecutionPrepGenerator
-from shared.database.models import ActionItem, OpsReportLog, ExecutionPrepLog
-from shared.types.execution_prep import ExecutionPrepSchema
+from shared.database.models import OpsReportLog
 from shared.logic.logging import setup_production_logging
 from shared.logic.metrics import metrics_registry
 from shared.logic.trade_management_engine import run_management_cycle
-from fastapi.responses import Response
 import httpx
 
 logging.basicConfig(level=logging.INFO)
@@ -46,6 +45,7 @@ _policy_router = PolicyRouter()
 # DB dependency
 # ──────────────────────────────────────────────
 
+
 def get_db():
     db = db_session.SessionLocal()
     try:
@@ -58,6 +58,7 @@ def get_db():
 # Startup — initialise DB and start scheduler
 # ──────────────────────────────────────────────
 
+
 @app.on_event("startup")
 async def startup_event():
     if os.getenv("ENV") == "prod":
@@ -68,6 +69,7 @@ async def startup_event():
     asyncio.create_task(briefing_scheduler())
     asyncio.create_task(ops_scheduler())
     asyncio.create_task(management_loop())
+
 
 async def fundamentals_scheduler(interval_minutes: int = 30):
     """
@@ -83,34 +85,42 @@ async def fundamentals_scheduler(interval_minutes: int = 30):
             logger.error(f"Fundamentals generator error: {e}")
         await asyncio.sleep(interval_minutes * 60)
 
+
 def _run_fundamentals_generation(db: Session, now: Optional[datetime] = None):
     now = now or get_nairobi_time()
-    
+
     # 1. Fetch latest market context to get proxies and events
-    ctx_db = db.query(Packet).filter(
-        Packet.packet_type == "MarketContextPacket"
-    ).order_by(Packet.created_at.desc()).first()
-    
+    ctx_db = (
+        db.query(Packet)
+        .filter(Packet.packet_type == "MarketContextPacket")
+        .order_by(Packet.created_at.desc())
+        .first()
+    )
+
     if not ctx_db:
         logger.warning("No MarketContextPacket available for fundamentals evaluation")
         return
-        
+
     movers, pair_packets = evaluate_fundamentals(ctx_db.data, now)
-    
+
     # Save movers
-    db.add(Packet(
-        packet_type="MarketMoversPacket",
-        created_at=movers.created_at,
-        data=movers.model_dump(mode="json")
-    ))
-    
+    db.add(
+        Packet(
+            packet_type="MarketMoversPacket",
+            created_at=movers.created_at,
+            data=movers.model_dump(mode="json"),
+        )
+    )
+
     # Save pair packets as PairBiasPacket replacement
     for p in pair_packets:
-        db.add(Packet(
-            packet_type="PairFundamentalsPacket",
-            created_at=p.created_at,
-            data=p.model_dump(mode="json")
-        ))
+        db.add(
+            Packet(
+                packet_type="PairFundamentalsPacket",
+                created_at=p.created_at,
+                data=p.model_dump(mode="json"),
+            )
+        )
     db.commit()
 
 
@@ -124,25 +134,27 @@ async def briefing_scheduler(interval_minutes: int = 30):
         now = get_nairobi_time()
         label = get_session_label(now)
         t = now.time()
-        is_active = (
-            TradingSessions.is_in_range(t, *TradingSessions.LONDON_RANGE) or
-            TradingSessions.is_in_range(t, *TradingSessions.NY_RANGE)
-        )
+        is_active = TradingSessions.is_in_range(
+            t, *TradingSessions.LONDON_RANGE
+        ) or TradingSessions.is_in_range(t, *TradingSessions.NY_RANGE)
         if is_active:
             session_key = f"{now.date()}-{label}"
             is_delta = session_key in generated_sessions
             try:
                 db = db_session.SessionLocal()
                 pack = assemble_briefing(db, now_nairobi=now, is_delta=is_delta)
-                record = persist_briefing(pack, db)
+                persist_briefing(pack, db)
                 generated_sessions.add(session_key)
                 db.close()
 
                 # Console notification summary
-                top_windows = "; ".join(
-                    str(w.get("label", w))
-                    for w in pack.market_context.no_trade_windows[:2]
-                ) or "None"
+                top_windows = (
+                    "; ".join(
+                        str(w.get("label", w))
+                        for w in pack.market_context.no_trade_windows[:2]
+                    )
+                    or "None"
+                )
                 pair_summaries = []
                 for po in pack.pair_overviews:
                     t_info = ""
@@ -153,8 +165,7 @@ async def briefing_scheduler(interval_minutes: int = 30):
                 msg = (
                     f"{'🔄 DELTA' if pack.is_delta else '🌅 PRE-SESSION'} BRIEFING | "
                     f"{pack.session_label} {pack.date} | "
-                    f"No-trade: {top_windows} | "
-                    + " | ".join(pair_summaries)
+                    f"No-trade: {top_windows} | " + " | ".join(pair_summaries)
                 )
                 notifier.notify(msg, level="INFO")
                 logger.info(f"Briefing generated: {pack.briefing_id}")
@@ -167,6 +178,7 @@ async def briefing_scheduler(interval_minutes: int = 30):
 # Health
 # ──────────────────────────────────────────────
 
+
 @app.get("/health")
 def health():
     return {"status": "healthy", "service": "orchestration"}
@@ -176,12 +188,13 @@ def health():
 # Briefing endpoints
 # ──────────────────────────────────────────────
 
+
 @app.post("/briefings/generate")
 async def generate_briefing_now(
     is_delta: bool = False, db: Session = Depends(get_db)
 ) -> Dict[str, Any]:
     """Manually trigger a briefing generation."""
-    _run_fundamentals_generation(db) # Ensure valid fundamentals before briefing
+    _run_fundamentals_generation(db)  # Ensure valid fundamentals before briefing
     now = get_nairobi_time()
     pack = assemble_briefing(db, now_nairobi=now, is_delta=is_delta)
     record = persist_briefing(pack, db)
@@ -192,18 +205,19 @@ from shared.logic.alerting import check_incident_alerts
 from shared.database.models import IncidentLog
 from shared.types.incident import IncidentSchema
 
+
 @app.post("/incidents/log")
 async def log_incident(incident_data: IncidentSchema, db: Session = Depends(get_db)):
     """Logs a new incident and triggers alerts."""
     incident = IncidentLog(**incident_data.model_dump())
     db.add(incident)
     db.commit()
-    db.refresh(incident) # Refresh to get the generated ID and created_at
-    
+    db.refresh(incident)  # Refresh to get the generated ID and created_at
+
     # Metrics & Alerting
     metrics_registry.increment("incidents_total", incident.severity)
     check_incident_alerts(incident_data)
-    
+
     return {"status": "success", "id": incident.id}
 
 
@@ -216,9 +230,9 @@ async def generate_fundamentals_now(db: Session = Depends(get_db)):
 
 @app.get("/briefings/latest")
 async def get_latest_briefing(db: Session = Depends(get_db)) -> Dict[str, Any]:
-    record = db.query(SessionBriefing).order_by(
-        SessionBriefing.created_at.desc()
-    ).first()
+    record = (
+        db.query(SessionBriefing).order_by(SessionBriefing.created_at.desc()).first()
+    )
     if not record:
         raise HTTPException(status_code=404, detail="No briefings found")
     return {
@@ -235,9 +249,12 @@ async def get_latest_briefing(db: Session = Depends(get_db)) -> Dict[str, Any]:
 async def list_briefings(
     limit: int = 20, db: Session = Depends(get_db)
 ) -> List[Dict[str, Any]]:
-    records = db.query(SessionBriefing).order_by(
-        SessionBriefing.created_at.desc()
-    ).limit(limit).all()
+    records = (
+        db.query(SessionBriefing)
+        .order_by(SessionBriefing.created_at.desc())
+        .limit(limit)
+        .all()
+    )
     return [
         {
             "briefing_id": r.briefing_id,
@@ -252,10 +269,14 @@ async def list_briefings(
 
 
 @app.get("/briefings/{briefing_id}")
-async def get_briefing(briefing_id: str, db: Session = Depends(get_db)) -> Dict[str, Any]:
-    record = db.query(SessionBriefing).filter(
-        SessionBriefing.briefing_id == briefing_id
-    ).first()
+async def get_briefing(
+    briefing_id: str, db: Session = Depends(get_db)
+) -> Dict[str, Any]:
+    record = (
+        db.query(SessionBriefing)
+        .filter(SessionBriefing.briefing_id == briefing_id)
+        .first()
+    )
     if not record:
         raise HTTPException(status_code=404, detail="Briefing not found")
     return {
@@ -275,7 +296,7 @@ async def ops_scheduler():
         try:
             now = get_nairobi_time()
             db = next(db_session.get_db())
-            
+
             # Daily at 06:30
             if now.hour == 6 and now.minute == 30:
                 engine = OpsEngine(db)
@@ -284,12 +305,12 @@ async def ops_scheduler():
                     report_type="daily",
                     report_data=report.model_dump(),
                     html_path=path,
-                    created_at=now
+                    created_at=now,
                 )
                 db.add(log)
                 db.commit()
                 logger.info(f"Daily Ops Report generated: {report.report_id}")
-                
+
             # Weekly on Sunday at 18:00
             if now.weekday() == 6 and now.hour == 18 and now.minute == 0:
                 engine = ReviewEngine(db)
@@ -298,16 +319,17 @@ async def ops_scheduler():
                     report_type="weekly",
                     report_data=report.model_dump(),
                     html_path=path,
-                    created_at=now
+                    created_at=now,
                 )
                 db.add(log)
                 db.commit()
                 logger.info(f"Weekly Review Report generated: {report.report_id}")
-                
+
         except Exception as e:
             logger.error(f"Error in ops_scheduler: {e}")
-        
-        await asyncio.sleep(60) # check every minute
+
+        await asyncio.sleep(60)  # check every minute
+
 
 async def management_loop():
     """Background task to run trade management rules every 2 minutes during active sessions."""
@@ -317,11 +339,10 @@ async def management_loop():
             now = get_nairobi_time()
             t = now.time()
             # Run only if we are in London or NY session
-            is_active = (
-                TradingSessions.is_in_range(t, *TradingSessions.LONDON_RANGE) or
-                TradingSessions.is_in_range(t, *TradingSessions.NY_RANGE)
-            )
-            
+            is_active = TradingSessions.is_in_range(
+                t, *TradingSessions.LONDON_RANGE
+            ) or TradingSessions.is_in_range(t, *TradingSessions.NY_RANGE)
+
             if is_active:
                 db = db_session.SessionLocal()
                 try:
@@ -330,72 +351,103 @@ async def management_loop():
                     db.close()
         except Exception as e:
             logger.error(f"Error in management_loop: {e}")
-        
-        await asyncio.sleep(120) # 2 minutes
+
+        await asyncio.sleep(120)  # 2 minutes
 
 
 # ──────────────────────────────────────────────
 # Ticket endpoints
 # ──────────────────────────────────────────────
 
+
 @app.post("/tickets/generate", response_model=OrderTicketSchema)
 async def generate_ticket(pair: str, db: Session = Depends(get_db)):
     """Finds the latest setup + risk packet for a pair and creates an OrderTicket."""
-    setup_db = db.query(Packet).filter(
-        and_(
-            Packet.packet_type == "TechnicalSetupPacket",
-            Packet.data["asset_pair"].as_string() == pair,
+    setup_db = (
+        db.query(Packet)
+        .filter(
+            and_(
+                Packet.packet_type == "TechnicalSetupPacket",
+                Packet.data["asset_pair"].as_string() == pair,
+            )
         )
-    ).order_by(Packet.created_at.desc()).first()
+        .order_by(Packet.created_at.desc())
+        .first()
+    )
 
     if not setup_db:
-        raise HTTPException(status_code=404, detail=f"No technical setup found for {pair}")
-
-    risk_db = db.query(Packet).filter(
-        and_(
-            Packet.packet_type == "RiskApprovalPacket",
-            Packet.data["asset_pair"].as_string() == pair,
+        raise HTTPException(
+            status_code=404, detail=f"No technical setup found for {pair}"
         )
-    ).order_by(Packet.created_at.desc()).first()
+
+    risk_db = (
+        db.query(Packet)
+        .filter(
+            and_(
+                Packet.packet_type == "RiskApprovalPacket",
+                Packet.data["asset_pair"].as_string() == pair,
+            )
+        )
+        .order_by(Packet.created_at.desc())
+        .first()
+    )
 
     if not risk_db:
-        raise HTTPException(status_code=404, detail="No risk decision found for this setup.")
+        raise HTTPException(
+            status_code=404, detail="No risk decision found for this setup."
+        )
 
     # Fetch latest market context for news-window check
-    ctx_db = db.query(Packet).filter(
-        Packet.packet_type == "MarketContextPacket"
-    ).order_by(Packet.created_at.desc()).first()
+    ctx_db = (
+        db.query(Packet)
+        .filter(Packet.packet_type == "MarketContextPacket")
+        .order_by(Packet.created_at.desc())
+        .first()
+    )
     context_data = ctx_db.data if ctx_db else {}
 
     # Policy Selection
     # Need movers and pair fundamentals for policy routing
-    movers_db = db.query(Packet).filter(Packet.packet_type == "MarketMoversPacket").order_by(Packet.created_at.desc()).first()
-    pair_fund_db = db.query(Packet).filter(
-        and_(
-            Packet.packet_type == "PairFundamentalsPacket",
-            Packet.data["asset_pair"].as_string() == pair,
+    movers_db = (
+        db.query(Packet)
+        .filter(Packet.packet_type == "MarketMoversPacket")
+        .order_by(Packet.created_at.desc())
+        .first()
+    )
+    pair_fund_db = (
+        db.query(Packet)
+        .filter(
+            and_(
+                Packet.packet_type == "PairFundamentalsPacket",
+                Packet.data["asset_pair"].as_string() == pair,
+            )
         )
-    ).order_by(Packet.created_at.desc()).first()
+        .order_by(Packet.created_at.desc())
+        .first()
+    )
 
     movers_data = movers_db.data if movers_db else {}
     pair_fund_data = pair_fund_db.data if pair_fund_db else {}
-    
+
     policy_decision = _policy_router.select_policy(
         movers_data=movers_data,
         context_data=context_data,
         pair_fundamentals=pair_fund_data,
-        now_nairobi=get_nairobi_time()
+        now_nairobi=get_nairobi_time(),
     )
     metrics_registry.increment("policy_switches_total")
 
     from shared.database.models import PolicySelectionLog
-    db.add(PolicySelectionLog(
-        pair=pair,
-        policy_name=policy_decision.policy_name,
-        policy_hash=policy_decision.policy_hash,
-        reasons=policy_decision.reasons,
-        regime_signals=policy_decision.regime_signals
-    ))
+
+    db.add(
+        PolicySelectionLog(
+            pair=pair,
+            policy_name=policy_decision.policy_name,
+            policy_hash=policy_decision.policy_hash,
+            reasons=policy_decision.reasons,
+            regime_signals=policy_decision.regime_signals,
+        )
+    )
 
     # Run guardrails before ticket generation
     guardrails_result = _guardrails_engine.evaluate(
@@ -405,14 +457,16 @@ async def generate_ticket(pair: str, db: Session = Depends(get_db)):
         now_nairobi=get_nairobi_time(),
         setup_packet_id=setup_db.id,
         config_override=policy_decision.policy_config,
-        policy_hash=policy_decision.policy_hash
+        policy_hash=policy_decision.policy_hash,
     )
     _guardrails_engine.persist(guardrails_result, db)
 
     setup_packet = TechnicalSetupPacket(**setup_db.data)
     risk_packet = RiskApprovalPacket(**risk_db.data)
 
-    ticket = generate_order_ticket(setup_packet, risk_packet, db, guardrails=guardrails_result)
+    ticket = generate_order_ticket(
+        setup_packet, risk_packet, db, guardrails=guardrails_result
+    )
     metrics_registry.increment("tickets_generated_total")
     ticket.setup_packet_id = setup_db.id
     ticket.risk_packet_id = risk_db.id
@@ -422,7 +476,9 @@ async def generate_ticket(pair: str, db: Session = Depends(get_db)):
         async with httpx.AsyncClient() as client:
             await client.post(
                 "http://localhost:8004/log/ticket",
-                json=OrderTicketSchema.model_validate(ticket, from_attributes=True).model_dump(mode="json"),
+                json=OrderTicketSchema.model_validate(
+                    ticket, from_attributes=True
+                ).model_dump(mode="json"),
                 params={"setup_id": setup_db.id, "risk_decision_id": risk_db.id},
             )
     except Exception as e:
@@ -432,14 +488,22 @@ async def generate_ticket(pair: str, db: Session = Depends(get_db)):
 
 
 @app.get("/guardrails/{setup_packet_id}")
-async def get_guardrails(setup_packet_id: int, db: Session = Depends(get_db)) -> Dict[str, Any]:
+async def get_guardrails(
+    setup_packet_id: int, db: Session = Depends(get_db)
+) -> Dict[str, Any]:
     """Look up the most recent guardrails result for a setup packet."""
     from shared.database.models import GuardrailsLog
-    record = db.query(GuardrailsLog).filter(
-        GuardrailsLog.setup_packet_id == setup_packet_id
-    ).order_by(GuardrailsLog.created_at.desc()).first()
+
+    record = (
+        db.query(GuardrailsLog)
+        .filter(GuardrailsLog.setup_packet_id == setup_packet_id)
+        .order_by(GuardrailsLog.created_at.desc())
+        .first()
+    )
     if not record:
-        raise HTTPException(status_code=404, detail="No guardrails log found for this setup")
+        raise HTTPException(
+            status_code=404, detail="No guardrails log found for this setup"
+        )
     return record.result_json
 
 
@@ -448,28 +512,46 @@ async def evaluate_guardrails(
     pair: str, db: Session = Depends(get_db)
 ) -> Dict[str, Any]:
     """Evaluate guardrails for the latest setup of a pair without generating a ticket."""
-    setup_db = db.query(Packet).filter(
-        and_(
-            Packet.packet_type == "TechnicalSetupPacket",
-            Packet.data["asset_pair"].as_string() == pair,
+    setup_db = (
+        db.query(Packet)
+        .filter(
+            and_(
+                Packet.packet_type == "TechnicalSetupPacket",
+                Packet.data["asset_pair"].as_string() == pair,
+            )
         )
-    ).order_by(Packet.created_at.desc()).first()
+        .order_by(Packet.created_at.desc())
+        .first()
+    )
     if not setup_db:
         raise HTTPException(status_code=404, detail=f"No setup found for {pair}")
 
-    ctx_db = db.query(Packet).filter(
-        Packet.packet_type == "MarketContextPacket"
-    ).order_by(Packet.created_at.desc()).first()
+    ctx_db = (
+        db.query(Packet)
+        .filter(Packet.packet_type == "MarketContextPacket")
+        .order_by(Packet.created_at.desc())
+        .first()
+    )
     context_data = ctx_db.data if ctx_db else {}
 
     # Policy Selection
-    movers_db = db.query(Packet).filter(Packet.packet_type == "MarketMoversPacket").order_by(Packet.created_at.desc()).first()
-    pair_fund_db = db.query(Packet).filter(
-        and_(
-            Packet.packet_type == "PairFundamentalsPacket",
-            Packet.data["asset_pair"].as_string() == pair,
+    movers_db = (
+        db.query(Packet)
+        .filter(Packet.packet_type == "MarketMoversPacket")
+        .order_by(Packet.created_at.desc())
+        .first()
+    )
+    pair_fund_db = (
+        db.query(Packet)
+        .filter(
+            and_(
+                Packet.packet_type == "PairFundamentalsPacket",
+                Packet.data["asset_pair"].as_string() == pair,
+            )
         )
-    ).order_by(Packet.created_at.desc()).first()
+        .order_by(Packet.created_at.desc())
+        .first()
+    )
 
     movers_data = movers_db.data if movers_db else {}
     pair_fund_data = pair_fund_db.data if pair_fund_db else {}
@@ -478,7 +560,7 @@ async def evaluate_guardrails(
         movers_data=movers_data,
         context_data=context_data,
         pair_fundamentals=pair_fund_data,
-        now_nairobi=get_nairobi_time()
+        now_nairobi=get_nairobi_time(),
     )
 
     result = _guardrails_engine.evaluate(
@@ -488,7 +570,7 @@ async def evaluate_guardrails(
         now_nairobi=get_nairobi_time(),
         setup_packet_id=setup_db.id,
         config_override=policy_decision.policy_config,
-        policy_hash=policy_decision.policy_hash
+        policy_hash=policy_decision.policy_hash,
     )
     _guardrails_engine.persist(result, db)
     return result.model_dump(mode="json")
@@ -496,9 +578,12 @@ async def evaluate_guardrails(
 
 @app.get("/tickets/latest", response_model=OrderTicketSchema)
 async def get_latest_ticket(pair: str, db: Session = Depends(get_db)):
-    ticket = db.query(OrderTicket).filter(
-        OrderTicket.pair == pair
-    ).order_by(OrderTicket.created_at.desc()).first()
+    ticket = (
+        db.query(OrderTicket)
+        .filter(OrderTicket.pair == pair)
+        .order_by(OrderTicket.created_at.desc())
+        .first()
+    )
     if not ticket:
         raise HTTPException(status_code=404, detail=f"No tickets found for {pair}")
     return ticket
@@ -513,22 +598,20 @@ async def list_tickets(
     if date_str:
         try:
             d = datetime.strptime(date_str, "%Y-%m-%d").date()
-            query = query.filter(
-                db.func.date(OrderTicket.created_at) == d
-            )
+            query = query.filter(db.func.date(OrderTicket.created_at) == d)
         except ValueError:
             raise HTTPException(status_code=400, detail="Use YYYY-MM-DD")
     return query.order_by(OrderTicket.created_at.desc()).all()
 
 
 @app.patch("/tickets/{ticket_id}/status", response_model=OrderTicketSchema)
-async def update_ticket_status(ticket_id: str, status: str, db: Session = Depends(get_db)):
+async def update_ticket_status(
+    ticket_id: str, status: str, db: Session = Depends(get_db)
+):
     """Manual status update: TAKEN / NOT_TAKEN / PENDING."""
     if status not in ("TAKEN", "NOT_TAKEN", "PENDING"):
         raise HTTPException(status_code=400, detail="Use TAKEN, NOT_TAKEN, or PENDING")
-    ticket = db.query(OrderTicket).filter(
-        OrderTicket.ticket_id == ticket_id
-    ).first()
+    ticket = db.query(OrderTicket).filter(OrderTicket.ticket_id == ticket_id).first()
     if not ticket:
         raise HTTPException(status_code=404, detail="Ticket not found")
     ticket.status = status
@@ -539,7 +622,9 @@ async def update_ticket_status(ticket_id: str, status: str, db: Session = Depend
         async with httpx.AsyncClient() as client:
             await client.post(
                 "http://localhost:8004/log/ticket",
-                json=OrderTicketSchema.model_validate(ticket, from_attributes=True).model_dump(mode="json"),
+                json=OrderTicketSchema.model_validate(
+                    ticket, from_attributes=True
+                ).model_dump(mode="json"),
             )
     except Exception as e:
         logger.warning(f"Failed to update ticket in Journal: {e}")

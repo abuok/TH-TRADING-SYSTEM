@@ -5,6 +5,7 @@ ProxyProvider interface — market proxy data (DXY, US10Y, SPX, etc.)
 Safe degradation: if PROXY_PROVIDER=real but no real implementation is wired,
 raise a ConfigurationError so the caller can fail-closed.
 """
+
 import os
 import logging
 from abc import ABC, abstractmethod
@@ -33,9 +34,24 @@ class MockProxyProvider(ProxyProvider):
     """
 
     SNAPSHOTS: Dict[str, Dict[str, Any]] = {
-        "DXY":   {"symbol": "DXY",   "current_value": 103.50, "previous_value": 103.50, "delta_pct": 0.00},
-        "US10Y": {"symbol": "US10Y", "current_value":   4.10, "previous_value":   4.10, "delta_pct": 0.00},
-        "SPX":   {"symbol": "SPX",   "current_value": 5100.0, "previous_value": 5100.0, "delta_pct": 0.00},
+        "DXY": {
+            "symbol": "DXY",
+            "current_value": 103.50,
+            "previous_value": 103.50,
+            "delta_pct": 0.00,
+        },
+        "US10Y": {
+            "symbol": "US10Y",
+            "current_value": 4.10,
+            "previous_value": 4.10,
+            "delta_pct": 0.00,
+        },
+        "SPX": {
+            "symbol": "SPX",
+            "current_value": 5100.0,
+            "previous_value": 5100.0,
+            "delta_pct": 0.00,
+        },
     }
 
     def get_snapshots(self) -> Dict[str, Any]:
@@ -79,5 +95,7 @@ def get_proxy_provider() -> ProxyProvider:
         return MockProxyProvider()
     if choice == "real":
         return RealProxyProvider()
-    
-    raise ValueError(f"Unknown PROXY_PROVIDER value: {choice!r}. Expected 'mock' or 'real'.")
+
+    raise ValueError(
+        f"Unknown PROXY_PROVIDER value: {choice!r}. Expected 'mock' or 'real'."
+    )

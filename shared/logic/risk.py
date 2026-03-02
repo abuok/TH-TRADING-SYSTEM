@@ -1,7 +1,12 @@
-from typing import List, Dict, Optional
-from shared.types.packets import TechnicalSetupPacket, MarketContextPacket, RiskApprovalPacket
+from typing import Dict
+from shared.types.packets import (
+    TechnicalSetupPacket,
+    MarketContextPacket,
+    RiskApprovalPacket,
+)
 from datetime import datetime
 import pytz
+
 
 class RiskEngine:
     def __init__(self, config: Dict):
@@ -25,7 +30,9 @@ class RiskEngine:
             return 0.0
         return round(reward / risk, 2)
 
-    def is_in_event_window(self, setup_time: datetime, context: MarketContextPacket) -> bool:
+    def is_in_event_window(
+        self, setup_time: datetime, context: MarketContextPacket
+    ) -> bool:
         # Ensure setup_time is timezone aware
         if setup_time.tzinfo is None:
             setup_time = setup_time.replace(tzinfo=pytz.UTC)
@@ -35,7 +42,7 @@ class RiskEngine:
             try:
                 start = datetime.fromisoformat(window["start"])
                 end = datetime.fromisoformat(window["end"])
-                
+
                 # Align timezones for comparison
                 if start.tzinfo is None:
                     start = start.replace(tzinfo=pytz.UTC)
@@ -44,14 +51,16 @@ class RiskEngine:
 
                 if start <= setup_time <= end:
                     return True
-            except (KeyError, ValueError, TypeError) as exc:
+            except (KeyError, ValueError, TypeError):
                 continue
         return False
 
-    def evaluate(self, 
-                 setup: TechnicalSetupPacket, 
-                 context: MarketContextPacket, 
-                 account_state: Dict) -> RiskApprovalPacket:
+    def evaluate(
+        self,
+        setup: TechnicalSetupPacket,
+        context: MarketContextPacket,
+        account_state: Dict,
+    ) -> RiskApprovalPacket:
         """
         account_state example:
         {
@@ -67,17 +76,21 @@ class RiskEngine:
         # 0. Context Staleness Check (Fail Closed)
         now_utc = datetime.now(pytz.UTC)
         context_age = (now_utc - context.timestamp).total_seconds()
-        if context_age > 7200: # 2 hours
+        if context_age > 7200:  # 2 hours
             status = "BLOCK"
             is_approved = False
-            reasons.append(f"Market context is stale ({context_age/60:.1f} mins old). Fail-safe block triggered.")
-        
+            reasons.append(
+                f"Market context is stale ({context_age / 60:.1f} mins old). Fail-safe block triggered."
+            )
+
         # 1. RR Check
         rr = self.calculate_rr(setup)
         if rr < self.config["min_rr_threshold"]:
             status = "BLOCK"
             is_approved = False
-            reasons.append(f"RR Ratio {rr} below threshold {self.config['min_rr_threshold']}")
+            reasons.append(
+                f"RR Ratio {rr} below threshold {self.config['min_rr_threshold']}"
+            )
 
         # 2. Daily Loss Check
         if account_state["daily_loss"] >= self.config["max_daily_loss"]:
@@ -89,7 +102,9 @@ class RiskEngine:
         if account_state["consecutive_losses"] >= self.config["max_consecutive_losses"]:
             status = "BLOCK"
             is_approved = False
-            reasons.append(f"Max consecutive losses reached: {account_state['consecutive_losses']}")
+            reasons.append(
+                f"Max consecutive losses reached: {account_state['consecutive_losses']}"
+            )
 
         # 4. Event Window Check
         if self.is_in_event_window(setup.timestamp, context):
@@ -110,5 +125,5 @@ class RiskEngine:
             max_position_size=max_pos,
             rr_ratio=rr,
             approver="DeterministicRiskEngineV1",
-            reasons=reasons
+            reasons=reasons,
         )

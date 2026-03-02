@@ -6,20 +6,23 @@ Evaluates 7 rules against a TechnicalSetupPacket and surrounding context,
 producing a GuardrailsResult with discipline_score (0–100) and hard_block flag.
 All times validated in Africa/Nairobi (UTC+3).
 """
+
 import os
 import logging
 from datetime import datetime, timezone, timedelta, time as time_
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import pytz
 import yaml
 from sqlalchemy.orm import Session
 
-from shared.database.models import Packet, KillSwitch, IncidentLog, GuardrailsLog, OrderTicket
-from shared.logic.phx_detector import PHXStage
+from shared.database.models import GuardrailsLog, OrderTicket
 from shared.logic.sessions import get_nairobi_time, get_session_label
 from shared.types.guardrails import (
-    EvidenceRef, GuardrailsResult, RuleCheck, GUARDRAILS_VERSION
+    EvidenceRef,
+    GuardrailsResult,
+    RuleCheck,
+    GUARDRAILS_VERSION,
 )
 
 logger = logging.getLogger("GuardrailsEngine")
@@ -30,6 +33,7 @@ NAIROBI = pytz.timezone("Africa/Nairobi")
 # ──────────────────────────────────────────────────────────────────────────
 
 _DEFAULT_CONFIG_PATH = os.path.join("config", "guardrails_config.yaml")
+
 
 def load_config(path: str = _DEFAULT_CONFIG_PATH) -> Dict[str, Any]:
     """
@@ -43,9 +47,15 @@ def load_config(path: str = _DEFAULT_CONFIG_PATH) -> Dict[str, Any]:
 
     # Apply env overrides for scalar values
     scalar_keys = [
-        "news_buffer_minutes", "phx_min_stages_required", "displacement_min_candle_ratio",
-        "min_setup_score", "max_consecutive_losses", "max_daily_loss_pct",
-        "duplicate_suppression_window_minutes", "score_deduction_fail", "score_deduction_warn",
+        "news_buffer_minutes",
+        "phx_min_stages_required",
+        "displacement_min_candle_ratio",
+        "min_setup_score",
+        "max_consecutive_losses",
+        "max_daily_loss_pct",
+        "duplicate_suppression_window_minutes",
+        "score_deduction_fail",
+        "score_deduction_warn",
     ]
     for key in scalar_keys:
         env_key = f"GUARDRAILS_{key.upper()}"
@@ -72,10 +82,13 @@ def load_config(path: str = _DEFAULT_CONFIG_PATH) -> Dict[str, Any]:
     cfg.setdefault("setup_score_hard_block", False)
     cfg.setdefault("risk_state_hard_block", True)
     cfg.setdefault("duplicate_suppression_hard_block", False)
-    cfg.setdefault("session_windows", {
-        "LONDON": {"start": "11:00", "end": "20:00"},
-        "NEW YORK": {"start": "16:00", "end": "01:00"},
-    })
+    cfg.setdefault(
+        "session_windows",
+        {
+            "LONDON": {"start": "11:00", "end": "20:00"},
+            "NEW YORK": {"start": "16:00", "end": "01:00"},
+        },
+    )
     cfg.setdefault("allowed_sessions", ["LONDON", "NEW YORK"])
     return cfg
 
@@ -83,6 +96,7 @@ def load_config(path: str = _DEFAULT_CONFIG_PATH) -> Dict[str, Any]:
 # ──────────────────────────────────────────────────────────────────────────
 # Helpers
 # ──────────────────────────────────────────────────────────────────────────
+
 
 def _parse_time(t: str) -> time_:
     h, m = t.split(":")
@@ -94,9 +108,9 @@ def _time_in_window(t: time_, start_str: str, end_str: str) -> bool:
     start = _parse_time(start_str)
     end = _parse_time(end_str)
     t_plain = time_(t.hour, t.minute)
-    if end > start:   # same-day window
+    if end > start:  # same-day window
         return start <= t_plain <= end
-    else:             # midnight-crossing
+    else:  # midnight-crossing
         return t_plain >= start or t_plain <= end
 
 
@@ -110,12 +124,21 @@ def _stage_index(stage_name: str) -> int:
 
 
 # PHX stage ordinals for scoring
-_PHX_STAGE_ORDER = ["IDLE", "BIAS", "SWEEP", "DISPLACE", "CHOCH_BOS", "RETEST", "TRIGGER"]
+_PHX_STAGE_ORDER = [
+    "IDLE",
+    "BIAS",
+    "SWEEP",
+    "DISPLACE",
+    "CHOCH_BOS",
+    "RETEST",
+    "TRIGGER",
+]
 
 
 # ──────────────────────────────────────────────────────────────────────────
 # Individual rule evaluators
 # ──────────────────────────────────────────────────────────────────────────
+
 
 def _rule_session_window(
     now_nairobi: datetime, cfg: Dict, setup_data: Dict
@@ -135,24 +158,36 @@ def _rule_session_window(
 
     if in_window:
         return RuleCheck(
-            id="GR-S01", name="Session Window",
+            id="GR-S01",
+            name="Session Window",
             status="PASS",
             details=f"Current session is '{session}' — inside allowed window.",
-            is_mandatory=True, deduction=0,
-            evidence_refs=[EvidenceRef(
-                ref_type="metric", key="current_session_label",
-                value=session, description="Africa/Nairobi session label")],
+            is_mandatory=True,
+            deduction=0,
+            evidence_refs=[
+                EvidenceRef(
+                    ref_type="metric",
+                    key="current_session_label",
+                    value=session,
+                    description="Africa/Nairobi session label",
+                )
+            ],
         )
     return RuleCheck(
-        id="GR-S01", name="Session Window",
+        id="GR-S01",
+        name="Session Window",
         status="FAIL",
         details=f"Current session is '{session}' at {now_nairobi.strftime('%H:%M')} EAT — outside allowed windows {allowed}.",
-        is_mandatory=True, deduction=cfg["score_deduction_fail"],
-        evidence_refs=[EvidenceRef(
-            ref_type="metric", key="current_session_label",
-            value=session), EvidenceRef(
-            ref_type="metric", key="nairobi_time",
-            value=now_nairobi.strftime("%H:%M"))],
+        is_mandatory=True,
+        deduction=cfg["score_deduction_fail"],
+        evidence_refs=[
+            EvidenceRef(ref_type="metric", key="current_session_label", value=session),
+            EvidenceRef(
+                ref_type="metric",
+                key="nairobi_time",
+                value=now_nairobi.strftime("%H:%M"),
+            ),
+        ],
     )
 
 
@@ -182,53 +217,76 @@ def _rule_news_window(
     hard = cfg.get("news_window_hard_block", True)
     if impacted_events:
         return RuleCheck(
-            id="GR-N01", name="News Window",
+            id="GR-N01",
+            name="News Window",
             status="FAIL",
             details=f"Within {buffer_mins}min of red-folder event(s): {'; '.join(impacted_events)}",
-            is_mandatory=hard, deduction=cfg["score_deduction_fail"],
-            evidence_refs=[EvidenceRef(
-                ref_type="metric", key="impacted_events",
-                value=impacted_events, description=f"{buffer_mins}min buffer")],
+            is_mandatory=hard,
+            deduction=cfg["score_deduction_fail"],
+            evidence_refs=[
+                EvidenceRef(
+                    ref_type="metric",
+                    key="impacted_events",
+                    value=impacted_events,
+                    description=f"{buffer_mins}min buffer",
+                )
+            ],
         )
     return RuleCheck(
-        id="GR-N01", name="News Window",
+        id="GR-N01",
+        name="News Window",
         status="PASS",
         details=f"No red-folder events within {buffer_mins}min window.",
-        is_mandatory=hard, deduction=0,
+        is_mandatory=hard,
+        deduction=0,
     )
 
 
-def _rule_phx_sequence(
-    setup_data: Dict, cfg: Dict
-) -> RuleCheck:
+def _rule_phx_sequence(setup_data: Dict, cfg: Dict) -> RuleCheck:
     """GR-P01: Does the setup reach the minimum required PHX stage?"""
-    stage_name = setup_data.get("stage", setup_data.get("strategy_name", "IDLE")).upper()
+    stage_name = setup_data.get(
+        "stage", setup_data.get("strategy_name", "IDLE")
+    ).upper()
     stage_idx = _stage_index(stage_name)
     min_required = int(cfg["phx_min_stages_required"])
     hard = cfg.get("phx_sequence_hard_block", False)
 
     # Build evidence of which stages are present
     stage_ts = setup_data.get("stage_timestamps", {})
-    evidence = [EvidenceRef(
-        ref_type="metric", key="current_stage",
-        value=stage_name, description=f"Ordinal {stage_idx}/{len(_PHX_STAGE_ORDER)-1}")]
+    evidence = [
+        EvidenceRef(
+            ref_type="metric",
+            key="current_stage",
+            value=stage_name,
+            description=f"Ordinal {stage_idx}/{len(_PHX_STAGE_ORDER) - 1}",
+        )
+    ]
     if stage_ts:
-        evidence.append(EvidenceRef(
-            ref_type="metric", key="stage_timestamps",
-            value=stage_ts, description="PHX stage timestamps"))
+        evidence.append(
+            EvidenceRef(
+                ref_type="metric",
+                key="stage_timestamps",
+                value=stage_ts,
+                description="PHX stage timestamps",
+            )
+        )
 
     if stage_idx >= min_required:
         min_name = _PHX_STAGE_ORDER[min_required]
         return RuleCheck(
-            id="GR-P01", name="PHX Sequence Completeness",
+            id="GR-P01",
+            name="PHX Sequence Completeness",
             status="PASS",
             details=f"Setup reached stage '{stage_name}' (≥ required '{min_name}').",
-            is_mandatory=hard, deduction=0, evidence_refs=evidence,
+            is_mandatory=hard,
+            deduction=0,
+            evidence_refs=evidence,
         )
 
     min_name = _PHX_STAGE_ORDER[min_required]
     return RuleCheck(
-        id="GR-P01", name="PHX Sequence Completeness",
+        id="GR-P01",
+        name="PHX Sequence Completeness",
         status="FAIL" if hard else "WARN",
         details=f"Setup at '{stage_name}' (idx {stage_idx}) — must reach '{min_name}' (idx {min_required}).",
         is_mandatory=hard,
@@ -237,9 +295,7 @@ def _rule_phx_sequence(
     )
 
 
-def _rule_displacement_quality(
-    setup_data: Dict, cfg: Dict
-) -> RuleCheck:
+def _rule_displacement_quality(setup_data: Dict, cfg: Dict) -> RuleCheck:
     """GR-D01: Are ≥ displacement_min_candle_ratio of displacement candles directional?"""
     hard = cfg.get("displacement_quality_hard_block", False)
     min_ratio = float(cfg["displacement_min_candle_ratio"])
@@ -259,23 +315,32 @@ def _rule_displacement_quality(
             directional = 0  # hasn't reached displacement yet
 
     ratio = directional / total if total > 0 else 0.0
-    ratio_r = round(ratio, 2)   # avoid float precision issues at boundary (e.g. 0.6666... vs 0.67)
+    ratio_r = round(
+        ratio, 2
+    )  # avoid float precision issues at boundary (e.g. 0.6666... vs 0.67)
     evidence = [
-        EvidenceRef(ref_type="metric", key="displacement_directional_candles",
-                    value=directional, description=f"Out of {total}"),
-        EvidenceRef(ref_type="metric", key="displacement_ratio",
-                    value=ratio_r),
+        EvidenceRef(
+            ref_type="metric",
+            key="displacement_directional_candles",
+            value=directional,
+            description=f"Out of {total}",
+        ),
+        EvidenceRef(ref_type="metric", key="displacement_ratio", value=ratio_r),
     ]
 
     if ratio_r >= min_ratio:
         return RuleCheck(
-            id="GR-D01", name="Displacement Quality",
+            id="GR-D01",
+            name="Displacement Quality",
             status="PASS",
             details=f"{directional}/{total} displacement candles are directional ({ratio_r:.0%} ≥ {min_ratio:.0%}).",
-            is_mandatory=hard, deduction=0, evidence_refs=evidence,
+            is_mandatory=hard,
+            deduction=0,
+            evidence_refs=evidence,
         )
     return RuleCheck(
-        id="GR-D01", name="Displacement Quality",
+        id="GR-D01",
+        name="Displacement Quality",
         status="FAIL" if hard else "WARN",
         details=f"Only {directional}/{total} displacement candles are directional ({ratio_r:.0%} < {min_ratio:.0%}).",
         is_mandatory=hard,
@@ -284,9 +349,7 @@ def _rule_displacement_quality(
     )
 
 
-def _rule_setup_score(
-    setup_data: Dict, cfg: Dict
-) -> RuleCheck:
+def _rule_setup_score(setup_data: Dict, cfg: Dict) -> RuleCheck:
     """GR-SC01: Is the setup score ≥ min_setup_score?"""
     hard = cfg.get("setup_score_hard_block", False)
     minimum = int(cfg["min_setup_score"])
@@ -294,23 +357,40 @@ def _rule_setup_score(
     if score is None:
         # Fallback: map PHX stage to score
         stage_name = setup_data.get("stage", "IDLE").upper()
-        stage_map = {"IDLE": 0, "BIAS": 10, "SWEEP": 30, "DISPLACE": 50,
-                     "CHOCH_BOS": 70, "RETEST": 85, "TRIGGER": 100}
+        stage_map = {
+            "IDLE": 0,
+            "BIAS": 10,
+            "SWEEP": 30,
+            "DISPLACE": 50,
+            "CHOCH_BOS": 70,
+            "RETEST": 85,
+            "TRIGGER": 100,
+        }
         score = stage_map.get(stage_name, 0)
 
     score = int(score)
-    evidence = [EvidenceRef(ref_type="metric", key="setup_score",
-                            value=score, description=f"Min required: {minimum}")]
+    evidence = [
+        EvidenceRef(
+            ref_type="metric",
+            key="setup_score",
+            value=score,
+            description=f"Min required: {minimum}",
+        )
+    ]
 
     if score >= minimum:
         return RuleCheck(
-            id="GR-SC01", name="Minimum Setup Score",
+            id="GR-SC01",
+            name="Minimum Setup Score",
             status="PASS",
             details=f"Setup score {score} ≥ minimum {minimum}.",
-            is_mandatory=hard, deduction=0, evidence_refs=evidence,
+            is_mandatory=hard,
+            deduction=0,
+            evidence_refs=evidence,
         )
     return RuleCheck(
-        id="GR-SC01", name="Minimum Setup Score",
+        id="GR-SC01",
+        name="Minimum Setup Score",
         status="FAIL" if hard else "WARN",
         details=f"Setup score {score} < minimum {minimum}.",
         is_mandatory=hard,
@@ -319,9 +399,7 @@ def _rule_setup_score(
     )
 
 
-def _rule_risk_state(
-    account_state: Dict, cfg: Dict, setup_data: Dict
-) -> RuleCheck:
+def _rule_risk_state(account_state: Dict, cfg: Dict, setup_data: Dict) -> RuleCheck:
     """GR-R01: Check consecutive losses and daily loss percentage against limits."""
     hard = cfg.get("risk_state_hard_block", True)
     max_losses = int(cfg["max_consecutive_losses"])
@@ -335,7 +413,9 @@ def _rule_risk_state(
     fails = []
     evidence = [
         EvidenceRef(ref_type="metric", key="consecutive_losses", value=consec),
-        EvidenceRef(ref_type="metric", key="daily_loss_pct", value=round(daily_loss_pct, 2)),
+        EvidenceRef(
+            ref_type="metric", key="daily_loss_pct", value=round(daily_loss_pct, 2)
+        ),
     ]
 
     if consec >= max_losses:
@@ -345,17 +425,22 @@ def _rule_risk_state(
 
     if fails:
         return RuleCheck(
-            id="GR-R01", name="Risk State",
+            id="GR-R01",
+            name="Risk State",
             status="FAIL",
             details="; ".join(fails),
-            is_mandatory=hard, deduction=cfg["score_deduction_fail"],
+            is_mandatory=hard,
+            deduction=cfg["score_deduction_fail"],
             evidence_refs=evidence,
         )
     return RuleCheck(
-        id="GR-R01", name="Risk State",
+        id="GR-R01",
+        name="Risk State",
         status="PASS",
         details=f"Losses OK (consec={consec}, daily={daily_loss_pct:.1f}%).",
-        is_mandatory=hard, deduction=0, evidence_refs=evidence,
+        is_mandatory=hard,
+        deduction=0,
+        evidence_refs=evidence,
     )
 
 
@@ -366,43 +451,66 @@ def _rule_duplicate_signal(
     hard = cfg.get("duplicate_suppression_hard_block", False)
     window_mins = int(cfg["duplicate_suppression_window_minutes"])
     pair = setup_data.get("asset_pair", "")
-    direction = "BUY" if float(setup_data.get("take_profit", 0)) > float(setup_data.get("entry_price", 1)) else "SELL"
+    direction = (
+        "BUY"
+        if float(setup_data.get("take_profit", 0))
+        > float(setup_data.get("entry_price", 1))
+        else "SELL"
+    )
     stage = setup_data.get("stage", setup_data.get("strategy_name", "UNKNOWN")).upper()
 
     cutoff = datetime.now(timezone.utc) - timedelta(minutes=window_mins)
-    recent_tickets = db.query(OrderTicket).filter(
-        OrderTicket.pair == pair,
-        OrderTicket.direction == direction,
-        OrderTicket.created_at >= cutoff,
-    ).count()
+    recent_tickets = (
+        db.query(OrderTicket)
+        .filter(
+            OrderTicket.pair == pair,
+            OrderTicket.direction == direction,
+            OrderTicket.created_at >= cutoff,
+        )
+        .count()
+    )
 
     evidence = [
-        EvidenceRef(ref_type="metric", key="recent_same_direction_tickets",
-                    value=recent_tickets, description=f"Last {window_mins}min"),
-        EvidenceRef(ref_type="metric", key="pair_direction_stage",
-                    value=f"{pair}/{direction}/{stage}"),
+        EvidenceRef(
+            ref_type="metric",
+            key="recent_same_direction_tickets",
+            value=recent_tickets,
+            description=f"Last {window_mins}min",
+        ),
+        EvidenceRef(
+            ref_type="metric",
+            key="pair_direction_stage",
+            value=f"{pair}/{direction}/{stage}",
+        ),
     ]
 
     if recent_tickets > 0:
         return RuleCheck(
-            id="GR-U01", name="Duplicate Signal Suppression",
+            id="GR-U01",
+            name="Duplicate Signal Suppression",
             status="FAIL" if hard else "WARN",
             details=f"Found {recent_tickets} ticket(s) for {pair} {direction} in the last {window_mins}min without meaningful state change.",
             is_mandatory=hard,
-            deduction=cfg["score_deduction_fail"] if hard else cfg["score_deduction_warn"],
+            deduction=cfg["score_deduction_fail"]
+            if hard
+            else cfg["score_deduction_warn"],
             evidence_refs=evidence,
         )
     return RuleCheck(
-        id="GR-U01", name="Duplicate Signal Suppression",
+        id="GR-U01",
+        name="Duplicate Signal Suppression",
         status="PASS",
         details=f"No recent duplicate signal for {pair} {direction}/{stage}.",
-        is_mandatory=hard, deduction=0, evidence_refs=evidence,
+        is_mandatory=hard,
+        deduction=0,
+        evidence_refs=evidence,
     )
 
 
 # ──────────────────────────────────────────────────────────────────────────
 # Main Engine
 # ──────────────────────────────────────────────────────────────────────────
+
 
 class GuardrailsEngine:
     def __init__(self, config_path: str = _DEFAULT_CONFIG_PATH):
@@ -434,7 +542,11 @@ class GuardrailsEngine:
         if now_nairobi is None:
             now_nairobi = get_nairobi_time()
         context_data = context_data or {}
-        account_state = account_state or {"consecutive_losses": 0, "daily_loss": 0.0, "account_balance": 10000.0}
+        account_state = account_state or {
+            "consecutive_losses": 0,
+            "daily_loss": 0.0,
+            "account_balance": 10000.0,
+        }
 
         # Use effective config: override > self.cfg
         effective_cfg = self.cfg.copy()
@@ -463,14 +575,20 @@ class GuardrailsEngine:
 
         # GR-U01 Duplicate signal (requires DB)
         if db is not None:
-            checks.append(_rule_duplicate_signal(setup_data, effective_cfg, db, now_nairobi))
+            checks.append(
+                _rule_duplicate_signal(setup_data, effective_cfg, db, now_nairobi)
+            )
         else:
-            checks.append(RuleCheck(
-                id="GR-U01", name="Duplicate Signal Suppression",
-                status="WARN",
-                details="DB not available for duplicate check — skipping.",
-                is_mandatory=False, deduction=effective_cfg["score_deduction_warn"],
-            ))
+            checks.append(
+                RuleCheck(
+                    id="GR-U01",
+                    name="Duplicate Signal Suppression",
+                    status="WARN",
+                    details="DB not available for duplicate check — skipping.",
+                    is_mandatory=False,
+                    deduction=effective_cfg["score_deduction_warn"],
+                )
+            )
 
         # ── Score computation ──────────────────────────────────────────
         deductions = sum(c.deduction for c in checks)
@@ -480,8 +598,12 @@ class GuardrailsEngine:
         hard_block = any(c.status == "FAIL" and c.is_mandatory for c in checks)
         primary_reason: Optional[str] = None
         if hard_block:
-            first_fail = next(c for c in checks if c.status == "FAIL" and c.is_mandatory)
-            primary_reason = f"[{first_fail.id}] {first_fail.name}: {first_fail.details}"
+            first_fail = next(
+                c for c in checks if c.status == "FAIL" and c.is_mandatory
+            )
+            primary_reason = (
+                f"[{first_fail.id}] {first_fail.name}: {first_fail.details}"
+            )
 
         pair = setup_data.get("asset_pair", "UNKNOWN")
         result = GuardrailsResult(

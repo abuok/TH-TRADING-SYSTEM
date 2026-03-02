@@ -3,6 +3,7 @@ from enum import Enum
 from typing import List, Optional
 from pydantic import BaseModel
 
+
 class SuggestionType(str, Enum):
     MOVE_SL_TO_BE = "MOVE_SL_TO_BE"
     TAKE_PARTIAL_TP1 = "TAKE_PARTIAL_TP1"
@@ -12,6 +13,7 @@ class SuggestionType(str, Enum):
     CLOSE_END_OF_SESSION = "CLOSE_END_OF_SESSION"
     REDUCE_RISK = "REDUCE_RISK"
     NO_ACTION = "NO_ACTION"
+
 
 class PositionManagementSuggestion(BaseModel):
     suggestion_id: Optional[str] = None
