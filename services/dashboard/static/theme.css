@@ -126,8 +126,8 @@ body {
 /* Glassmorphism */
 .glass-panel {
     background: rgba(18, 18, 26, 0.6);
-    backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
     border: 1px solid rgba(42, 42, 53, 0.5);
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
 }

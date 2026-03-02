@@ -9,200 +9,206 @@
             <span class="badge badge-info" style="font-size: 0.6rem;">CORE</span>
         </header>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
-            {% for service, status in health.items() if loop.index <= 4 %} <div
+            {% for service, status in (health.items() | list)[:4] %} <div
                 style="background: rgba(255,255,255,0.03); padding: 0.5rem; border-radius: 2px; border-left: 2px solid {{ 'var(--accent-green)' if status == 'OK' else 'var(--accent-pink)' }};">
                 <div style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase;">{{ service }}</div>
                 <div
                     style="font-size: 0.75rem; font-weight: 700; color: {{ 'var(--accent-green)' if status == 'OK' else 'var(--accent-pink)' }};">
                     {{ status }}</div>
-        </div>
-        {% endfor %}
-</div>
-</section>
-
-<section class="hud-panel col-span-3" data-hud-corner="top-right">
-    <header class="hud-panel-header">
-        <h2 class="hud-panel-title">GOVERNANCE</h2>
-        <span class="badge badge-danger" style="font-size: 0.6rem;">RESTRICTIONS</span>
-    </header>
-    <div class="hud-scroll-body" style="max-height: 80px;">
-        {% if kill_switches %}
-        {% for ks in kill_switches %}
-        <div style="font-size: 0.75rem; margin-bottom: 0.25rem;">
-            <span style="color: var(--accent-pink);">[!] {{ ks.switch_type }}</span>
-            <span style="color: var(--text-muted); font-size: 0.65rem;"> -> {{ ks.target or 'GLOBAL' }}</span>
-        </div>
-        {% endfor %}
-        {% else %}
-        <div style="color: var(--accent-green); font-size: 0.75rem; font-family: monospace;">[ARMED] NO ACTIVE KILL
-            SWITCHES</div>
-        {% endif %}
-    </div>
-</section>
-
-<section class="hud-panel col-span-6" data-hud-corner="top-right">
-    <header class="hud-panel-header">
-        <h2 class="hud-panel-title">SAFETY WINDOWS (CALENDAR)</h2>
-    </header>
-    <div style="display: flex; gap: 1rem; overflow-x: auto; padding-bottom: 0.5rem;">
-        {% if no_trade_windows %}
-        {% for window in no_trade_windows %}
-        <div
-            style="min-width: 150px; background: rgba(242, 153, 74, 0.1); border: 1px solid var(--accent-orange); padding: 0.5rem; border-radius: 4px;">
-            <div style="font-size: 0.6rem; color: var(--accent-orange); font-weight: 700;">NO TRADE WINDOW</div>
-            <div style="font-size: 0.8rem; font-family: monospace;">{{ window.start }} - {{ window.end }}</div>
-        </div>
-        {% endfor %}
-        {% else %}
-        <div style="color: var(--accent-green); font-size: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
-                stroke-linecap="round" stroke-linejoin="round">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                <polyline points="22 4 12 14.01 9 11.01"></polyline>
-            </svg>
-            CLEAR SKIES: NO UPCOMING RESTRICTIONS
-        </div>
-        {% endif %}
-    </div>
-</section>
-
-<!-- ROW 2: Primary Monitors -->
-<section class="hud-panel col-span-8 row-span-2 glass-panel" data-hud-corner="bottom-left">
-    <header class="hud-panel-header">
-        <h2 class="hud-panel-title">PRIMARY SENSORS: LATEST SETUPS</h2>
-        <div style="font-size: 0.65rem; color: var(--text-muted);">ACTIVE MONITORING (REAL-TIME)</div>
-    </header>
-    <div class="hud-scroll-body" style="max-height: 480px;">
-        <table style="width: 100%; border-collapse: separate; border-spacing: 0 4px;">
-            <thead>
-                <tr style="text-align: left; font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">
-                    <th style="padding: 0.5rem;">Pair</th>
-                    <th>Stage</th>
-                    <th>Score</th>
-                    <th>Status</th>
-                    <th>Age</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for setup in latest_setups %}
-                <tr style="background: rgba(255,255,255,0.02); transition: background 0.2s;">
-                    <td
-                        style="padding: 0.75rem 0.5rem; font-weight: 700; color: var(--accent-cyan); border-left: 2px solid var(--accent-cyan);">
-                        {{ setup.asset_pair }}</td>
-                    <td><span class="badge badge-info" style="font-size: 0.6rem;">{{ setup.stage }}</span></td>
-                    <td
-                        style="font-family: monospace; font-size: 1rem; color: {{ 'var(--accent-green)' if setup.score|float >= 7 else ('var(--accent-yellow)' if setup.score|float >= 5 else 'var(--text-muted)') }};">
-                        {{ "%.1f" | format(setup.score|float) }}
-                    </td>
-                    <td>
-                        <span
-                            style="color: {{ 'var(--accent-green)' if setup.is_fresh else 'var(--accent-pink)' }}; font-size: 0.7rem; font-weight: 700;">
-                            {{ '● FRESH' if setup.is_fresh else '○ STALE' }}
-                        </span>
-                    </td>
-                    <td style="font-size: 0.65rem; color: var(--text-muted);">{{ setup.age_str or 'NEW' }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</section>
-
-<section class="hud-panel col-span-4 row-span-2 glass-panel" data-hud-corner="bottom-right">
-    <header class="hud-panel-header">
-        <h2 class="hud-panel-title">RISK DECISIONS</h2>
-        <span class="status-dot status-healthy Intense-glow-cyan" style="width: 8px; height: 8px;"></span>
-    </header>
-    <div class="hud-scroll-body" style="max-height: 480px;">
-        {% for decision in latest_decisions %}
-        <div
-            style="margin-bottom: 0.75rem; padding: 0.75rem; border: 1px solid rgba(255,255,255,0.05); border-radius: 4px; background: rgba(0,0,0,0.2);">
-            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.25rem;">
-                <strong style="color: var(--text-main); font-size: 0.85rem;">{{ decision.asset_pair }}</strong>
-                <span class="badge badge-{{ 'success' if decision.action == 'ALLOW' else 'danger' }}"
-                    style="font-size: 0.6rem;">{{ decision.action }}</span>
             </div>
-            <div style="font-size: 0.7rem; color: var(--text-muted); line-height: 1.2;">{{ decision.reason }}</div>
-            <div style="font-size: 0.6rem; color: var(--accent-cyan); margin-top: 0.4rem; font-family: monospace;">{{
-                decision.timestamp }}</div>
+            {% endfor %}
         </div>
-        {% endfor %}
-    </div>
-</section>
+    </section>
 
-<!-- ROW 3: Infrastructure (Live Data) -->
-<section class="hud-panel col-span-12 glass-panel hud-scanline">
-    <header class="hud-panel-header">
-        <h2 class="hud-panel-title">METATRADER 5 BRIDGE: LIVE INGESTION FEED</h2>
-        <div style="display: flex; gap: 1rem;">
-            <span style="font-size: 0.65rem; color: var(--accent-green);">CONNECTION: ESTABLISHED</span>
-            <span style="font-size: 0.65rem; color: var(--accent-cyan);">FEED: ACTIVE</span>
+    <section class="hud-panel col-span-3" data-hud-corner="top-right">
+        <header class="hud-panel-header">
+            <h2 class="hud-panel-title">GOVERNANCE</h2>
+            <span class="badge badge-danger" style="font-size: 0.6rem;">RESTRICTIONS</span>
+        </header>
+        <div class="hud-scroll-body" style="max-height: 80px;">
+            {% if kill_switches %}
+            {% for ks in kill_switches %}
+            <div style="font-size: 0.75rem; margin-bottom: 0.25rem;">
+                <span style="color: var(--accent-pink);">[!] {{ ks.switch_type }}</span>
+                <span style="color: var(--text-muted); font-size: 0.65rem;"> -> {{ ks.target or 'GLOBAL' }}</span>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div style="color: var(--accent-green); font-size: 0.75rem; font-family: monospace;">[ARMED] NO ACTIVE KILL
+                SWITCHES</div>
+            {% endif %}
         </div>
-    </header>
-    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
-        <div class="hud-scroll-body" style="max-height: 250px;">
-            <table style="width: 100%; border-collapse: collapse; font-family: monospace; font-size: 0.8rem;">
+    </section>
+
+    <section class="hud-panel col-span-6" data-hud-corner="top-right">
+        <header class="hud-panel-header">
+            <h2 class="hud-panel-title">SAFETY WINDOWS (CALENDAR)</h2>
+        </header>
+        <div style="display: flex; gap: 1rem; overflow-x: auto; padding-bottom: 0.5rem;">
+            {% if no_trade_windows %}
+            {% for window in no_trade_windows %}
+            <div
+                style="min-width: 150px; background: rgba(242, 153, 74, 0.1); border: 1px solid var(--accent-orange); padding: 0.5rem; border-radius: 4px;">
+                <div style="font-size: 0.6rem; color: var(--accent-orange); font-weight: 700;">NO TRADE WINDOW</div>
+                <div style="font-size: 0.8rem; font-family: monospace;">{{ window.start }} - {{ window.end }}</div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div
+                style="color: var(--accent-green); font-size: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                CLEAR SKIES: NO UPCOMING RESTRICTIONS
+            </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- ROW 2: Primary Monitors -->
+    <section class="hud-panel col-span-8 row-span-2 glass-panel" data-hud-corner="bottom-left">
+        <header class="hud-panel-header">
+            <h2 class="hud-panel-title">PRIMARY SENSORS: LATEST SETUPS</h2>
+            <div style="font-size: 0.65rem; color: var(--text-muted);">ACTIVE MONITORING (REAL-TIME)</div>
+        </header>
+        <div class="hud-scroll-body" style="max-height: 480px;">
+            <table style="width: 100%; border-collapse: separate; border-spacing: 0 4px;">
                 <thead>
                     <tr
-                        style="color: var(--text-muted); text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <th style="padding: 0.5rem;">SYMBOL</th>
-                        <th>BID</th>
-                        <th>ASK</th>
-                        <th>SPREAD</th>
-                        <th>LATEST SYNC</th>
+                        style="text-align: left; font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">
+                        <th style="padding: 0.5rem;">Pair</th>
+                        <th>Stage</th>
+                        <th>Score</th>
+                        <th>Status</th>
+                        <th>Age</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for q in live_quotes %}
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
-                        <td style="padding: 0.5rem; color: var(--accent-yellow); font-weight: 700;">{{ q.symbol }}</td>
-                        <td style="color: var(--text-main);">{{ q.bid }}</td>
-                        <td style="color: var(--text-main);">{{ q.ask }}</td>
-                        <td><span
-                                style="background: rgba(86, 204, 242, 0.1); color: var(--accent-cyan); padding: 1px 4px; border-radius: 2px;">{{
-                                q.spread }}</span></td>
-                        <td style="color: var(--text-muted); font-size: 0.7rem;">{{ q.captured_at.strftime('%H:%M:%S')
-                            if q.captured_at else '---' }}</td>
+                    {% for setup in latest_setups %}
+                    <tr style="background: rgba(255,255,255,0.02); transition: background 0.2s;">
+                        <td
+                            style="padding: 0.75rem 0.5rem; font-weight: 700; color: var(--accent-cyan); border-left: 2px solid var(--accent-cyan);">
+                            {{ setup.asset_pair }}</td>
+                        <td><span class="badge badge-info" style="font-size: 0.6rem;">{{ setup.stage }}</span></td>
+                        <td
+                            style="font-family: monospace; font-size: 1rem; color: {{ 'var(--accent-green)' if setup.score|float >= 7 else ('var(--accent-yellow)' if setup.score|float >= 5 else 'var(--text-muted)') }};">
+                            {{ "%.1f" | format(setup.score|float) }}
+                        </td>
+                        <td>
+                            <span
+                                style="color: {{ 'var(--accent-green)' if setup.is_fresh else 'var(--accent-pink)' }}; font-size: 0.7rem; font-weight: 700;">
+                                {{ '● FRESH' if setup.is_fresh else '○ STALE' }}
+                            </span>
+                        </td>
+                        <td style="font-size: 0.65rem; color: var(--text-muted);">{{ setup.age_str or 'NEW' }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-        <div class="hud-scroll-body"
-            style="max-height: 250px; border-left: 1px solid rgba(255,255,255,0.05); padding-left: 1rem;">
-            <h3 style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">
-                Symbol Specifications</h3>
-            {% for s in symbol_specs %}
-            <div style="margin-bottom: 0.5rem; font-size: 0.7rem;">
-                <div style="display: flex; justify-content: space-between;">
-                    <span style="color: var(--text-main); font-weight: 700;">{{ s.symbol }}</span>
-                    <span style="color: var(--accent-cyan);">Contract: {{ s.contract_size }}</span>
+    </section>
+
+    <section class="hud-panel col-span-4 row-span-2 glass-panel" data-hud-corner="bottom-right">
+        <header class="hud-panel-header">
+            <h2 class="hud-panel-title">RISK DECISIONS</h2>
+            <span class="status-dot status-healthy Intense-glow-cyan" style="width: 8px; height: 8px;"></span>
+        </header>
+        <div class="hud-scroll-body" style="max-height: 480px;">
+            {% for decision in latest_decisions %}
+            <div
+                style="margin-bottom: 0.75rem; padding: 0.75rem; border: 1px solid rgba(255,255,255,0.05); border-radius: 4px; background: rgba(0,0,0,0.2);">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.25rem;">
+                    <strong style="color: var(--text-main); font-size: 0.85rem;">{{ decision.asset_pair }}</strong>
+                    <span class="badge badge-{{ 'success' if decision.action == 'ALLOW' else 'danger' }}"
+                        style="font-size: 0.6rem;">{{ decision.action }}</span>
                 </div>
-                <div style="color: var(--text-muted); font-size: 0.6rem;">Tick: {{ s.tick_size }} | Min Lot: {{
-                    s.min_lot }}</div>
+                <div style="font-size: 0.7rem; color: var(--text-muted); line-height: 1.2;">{{ decision.reason }}</div>
+                <div style="font-size: 0.6rem; color: var(--accent-cyan); margin-top: 0.4rem; font-family: monospace;">
+                    {{
+                    decision.timestamp }}</div>
             </div>
             {% endfor %}
         </div>
-    </div>
-</section>
+    </section>
 
-<!-- INCIDENT TICKER (FOOTER REPLACEMENT) -->
-<section class="hud-panel col-span-12"
-    style="padding: 0.5rem 1rem; background: rgba(0,0,0,0.4); border-color: rgba(235, 47, 150, 0.2);">
-    <div style="display: flex; align-items: center; gap: 1.5rem; overflow: hidden; white-space: nowrap;">
-        <span
-            style="background: var(--accent-pink); color: white; font-size: 0.6rem; font-weight: 900; padding: 2px 6px; border-radius: 2px;">INCIDENT
-            TICKER</span>
-        <div
-            style="font-family: monospace; font-size: 0.75rem; color: var(--text-muted); flex: 1; display: flex; gap: 3rem;">
-            {% for incident in latest_incidents %}
-            <span
-                style="color: {{ 'var(--accent-pink)' if incident.severity == 'ERROR' else 'var(--accent-yellow)' }};">
-                [{{ incident.created_at.strftime('%H:%M:%S') }}] {{ incident.component }}: {{ incident.message }}
-            </span>
-            {% endfor %}
+    <!-- ROW 3: Infrastructure (Live Data) -->
+    <section class="hud-panel col-span-12 glass-panel hud-scanline">
+        <header class="hud-panel-header">
+            <h2 class="hud-panel-title">METATRADER 5 BRIDGE: LIVE INGESTION FEED</h2>
+            <div style="display: flex; gap: 1rem;">
+                <span style="font-size: 0.65rem; color: var(--accent-green);">CONNECTION: ESTABLISHED</span>
+                <span style="font-size: 0.65rem; color: var(--accent-cyan);">FEED: ACTIVE</span>
+            </div>
+        </header>
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+            <div class="hud-scroll-body" style="max-height: 250px;">
+                <table style="width: 100%; border-collapse: collapse; font-family: monospace; font-size: 0.8rem;">
+                    <thead>
+                        <tr
+                            style="color: var(--text-muted); text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                            <th style="padding: 0.5rem;">SYMBOL</th>
+                            <th>BID</th>
+                            <th>ASK</th>
+                            <th>SPREAD</th>
+                            <th>LATEST SYNC</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for q in live_quotes %}
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                            <td style="padding: 0.5rem; color: var(--accent-yellow); font-weight: 700;">{{ q.symbol }}
+                            </td>
+                            <td style="color: var(--text-main);">{{ q.bid }}</td>
+                            <td style="color: var(--text-main);">{{ q.ask }}</td>
+                            <td><span
+                                    style="background: rgba(86, 204, 242, 0.1); color: var(--accent-cyan); padding: 1px 4px; border-radius: 2px;">{{
+                                    q.spread }}</span></td>
+                            <td style="color: var(--text-muted); font-size: 0.7rem;">{{
+                                q.captured_at.strftime('%H:%M:%S')
+                                if q.captured_at else '---' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="hud-scroll-body"
+                style="max-height: 250px; border-left: 1px solid rgba(255,255,255,0.05); padding-left: 1rem;">
+                <h3
+                    style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">
+                    Symbol Specifications</h3>
+                {% for s in symbol_specs %}
+                <div style="margin-bottom: 0.5rem; font-size: 0.7rem;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--text-main); font-weight: 700;">{{ s.symbol }}</span>
+                        <span style="color: var(--accent-cyan);">Contract: {{ s.contract_size }}</span>
+                    </div>
+                    <div style="color: var(--text-muted); font-size: 0.6rem;">Tick: {{ s.tick_size }} | Min Lot: {{
+                        s.min_lot }}</div>
+                </div>
+                {% endfor %}
+            </div>
         </div>
-    </div>
-</section>
+    </section>
+
+    <!-- INCIDENT TICKER (FOOTER REPLACEMENT) -->
+    <section class="hud-panel col-span-12"
+        style="padding: 0.5rem 1rem; background: rgba(0,0,0,0.4); border-color: rgba(235, 47, 150, 0.2);">
+        <div style="display: flex; align-items: center; gap: 1.5rem; overflow: hidden; white-space: nowrap;">
+            <span
+                style="background: var(--accent-pink); color: white; font-size: 0.6rem; font-weight: 900; padding: 2px 6px; border-radius: 2px;">INCIDENT
+                TICKER</span>
+            <div
+                style="font-family: monospace; font-size: 0.75rem; color: var(--text-muted); flex: 1; display: flex; gap: 3rem;">
+                {% for incident in latest_incidents %}
+                <span
+                    style="color: {{ 'var(--accent-pink)' if incident.severity == 'ERROR' else 'var(--accent-yellow)' }};">
+                    [{{ incident.created_at.strftime('%H:%M:%S') }}] {{ incident.component }}: {{ incident.message }}
+                </span>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
 </div>
 {% endblock %}
