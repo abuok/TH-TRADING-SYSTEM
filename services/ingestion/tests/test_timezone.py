@@ -1,4 +1,3 @@
-import pytest
 import pytz
 from datetime import datetime, timedelta
 from services.ingestion.calendar import EconomicCalendar

@@ -10,7 +10,6 @@ from shared.providers.symbol_spec import DBSymbolSpecProvider
 import shared.database.session as db_session
 from shared.database.models import LiveQuote, SymbolSpec, OrderTicket
 from shared.logic.trading_logic import generate_order_ticket
-from services.orchestration.logic.execution_prep_generator import ExecutionPrepGenerator
 from shared.logic.execution_logic import PreflightEngine
 
 client = TestClient(bridge_app)

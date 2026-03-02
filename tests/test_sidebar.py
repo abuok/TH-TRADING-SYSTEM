@@ -1,4 +1,3 @@
-import pytest
 from fastapi.testclient import TestClient
 from services.dashboard.main import app
 

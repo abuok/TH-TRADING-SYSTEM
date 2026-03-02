@@ -2,10 +2,9 @@ import os
 import asyncio
 import httpx
 import time
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
-from sqlalchemy import text, desc
 
 import shared.database.session as db_session
 from shared.database.models import Packet, KillSwitch, IncidentLog, OrderTicket, SessionBriefing, LiveQuote, SymbolSpec, TicketTradeLink, TradeFillLog, JournalLog

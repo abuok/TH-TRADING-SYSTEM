@@ -8,7 +8,6 @@ Tests:
   2. Outcome simulator edge cases (BE short, TP2 long/short, pending)
   3. Calibration sanity — recommendations respond correctly to metric changes
 """
-import io
 import os
 import csv
 import tempfile
@@ -20,13 +19,11 @@ from shared.types.research import (
     SimulatedTrade, CounterfactualConfig, ResearchRunResult, ResearchMetrics
 )
 from shared.logic.phx_detector import PHXDetector, PHXStage
-from shared.providers.proxy import MockProxyProvider
 from services.research.simulator import (
     _calc_lot_size, _emit_setup_from_detector, _get_research_context, run_replay
 )
 from services.research.outcome import simulate_outcome
 from services.research.calibration import analyze_variant, generate_calibration_report
-from services.research.analytics import calculate_metrics
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -350,7 +347,6 @@ class TestCalibrationSanity:
     def test_calibration_report_sorts_high_before_medium(self):
         """HIGH confidence recommendations must appear before MEDIUM ones."""
         # Build two run results
-        from services.research.calibration import generate_calibration_report
         from shared.types.research import ResearchVariant
 
         baseline_cfg = CounterfactualConfig()

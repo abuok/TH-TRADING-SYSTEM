@@ -1,7 +1,7 @@
 import uuid
 from typing import Optional
-from datetime import datetime, timedelta
-from shared.database.models import OrderTicket, ExecutionPrepLog
+from datetime import timedelta
+from shared.database.models import OrderTicket
 from shared.types.execution_prep import ExecutionPrepSchema, PlatformFormats
 from shared.logic.execution_logic import PreflightEngine, load_exec_config
 from shared.logic.sessions import get_nairobi_time

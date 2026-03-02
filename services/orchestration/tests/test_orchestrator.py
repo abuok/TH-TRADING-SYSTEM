@@ -21,14 +21,12 @@ def orchestrator(risk_config):
     orch.run_id = 999 # Mock run_id to avoid DB calls
     return orch
 
-@pytest.mark.asyncio
-async def test_pre_session_briefing(orchestrator):
+def test_pre_session_briefing(orchestrator):
     with patch.object(orchestrator.sessions, 'compute_all_levels', return_value={"asia": 100}):
-        levels = await orchestrator.pre_session_briefing("BTCUSD", [])
+        levels = asyncio.run(orchestrator.pre_session_briefing("BTCUSD", []))
         assert levels["asia"] == 100
 
-@pytest.mark.asyncio
-async def test_live_loop_dry_run(orchestrator):
+def test_live_loop_dry_run(orchestrator):
     # Mock methods to avoid external dependencies
     orchestrator.get_latest_market_context = MagicMock(return_value=MarketContextPacket(
         schema_version="1.0.0", source="test", asset_pair="BTCUSD", price=50000.0, volume_24h=1.0
@@ -40,7 +38,7 @@ async def test_live_loop_dry_run(orchestrator):
     orchestrator.persist_packet = MagicMock()
     orchestrator.output_decision = MagicMock()
     
-    await orchestrator.live_loop("BTCUSD")
+    asyncio.run(orchestrator.live_loop("BTCUSD"))
     
     # In dry-run, it should run once and stop
     assert orchestrator.scan_for_setup.called

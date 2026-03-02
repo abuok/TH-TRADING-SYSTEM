@@ -1,6 +1,7 @@
 import pytest
-from unittest.mock import MagicMock, patch
-from shared.logic.notifications import NotificationService, ConsoleNotificationAdapter
+import asyncio
+from unittest.mock import MagicMock
+from shared.logic.notifications import NotificationService
 from services.orchestration.runner import Orchestrator
 from shared.types.packets import TechnicalSetupPacket, RiskApprovalPacket, MarketContextPacket
 
@@ -20,8 +21,7 @@ def risk_config():
         "account_balance": 1000.0
     }
 
-@pytest.mark.asyncio
-async def test_orchestrator_notifications(risk_config, mock_notifier):
+def test_orchestrator_notifications(risk_config, mock_notifier):
     orchestrator = Orchestrator(risk_config, dry_run=True, notifier=mock_notifier)
     orchestrator.run_id = 999 # Mock run_id
     
@@ -52,7 +52,7 @@ async def test_orchestrator_notifications(risk_config, mock_notifier):
     orchestrator.persist_packet = MagicMock()
     orchestrator.output_decision = MagicMock()
 
-    await orchestrator.live_loop("EURUSD")
+    asyncio.run(orchestrator.live_loop("EURUSD"))
     
     # Verify notifications were sent
     # 1. Forming

@@ -1,4 +1,3 @@
-import pytest
 from datetime import datetime
 from shared.types.research import ResearchMetrics, CounterfactualConfig, ResearchVariant, ResearchRunResult
 from services.research.calibration import analyze_variant, generate_calibration_report

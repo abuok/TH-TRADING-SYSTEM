@@ -1,4 +1,3 @@
-import json
 import uuid
 import logging
 from datetime import datetime, timezone, timedelta
@@ -8,7 +7,7 @@ from sqlalchemy import func
 
 from shared.database.models import (
     OrderTicket, GuardrailsLog, ExecutionPrepLog, ManagementSuggestionLog,
-    HindsightOutcomeLog, PolicySelectionLog, TuningProposalLog
+    PolicySelectionLog, TuningProposalLog
 )
 from shared.types.tuning import Proposal, TuningProposalReport
 from shared.logic.sessions import get_nairobi_time

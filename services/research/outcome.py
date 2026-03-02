@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List
 from shared.types.packets import Candle
 from shared.types.research import SimulatedTrade
 

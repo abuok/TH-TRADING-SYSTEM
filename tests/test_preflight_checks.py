@@ -1,11 +1,10 @@
 import pytest
-from datetime import datetime, timedelta, timezone
-from shared.database.models import OrderTicket, KillSwitch, Packet, Run
+from datetime import timedelta
+from shared.database.models import OrderTicket, KillSwitch
 from shared.logic.execution_logic import PreflightEngine
 from shared.logic.sessions import get_nairobi_time
 from sqlalchemy.orm import Session
 from shared.database.session import get_db
-import uuid
 
 @pytest.fixture
 def db_session():
