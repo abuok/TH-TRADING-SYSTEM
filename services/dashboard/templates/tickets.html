@@ -192,9 +192,15 @@
                             </div>
                         </div>
                         <div style="height: 0; overflow: hidden; position: absolute;">
-                            <textarea id="mt5-{{ ticket.ticket_id }}">{{ ticket.to_mt5_note() }}</textarea>
-                            <textarea id="ctrader-{{ ticket.ticket_id }}">{{ ticket.to_ctrader_note() }}</textarea>
-                            <textarea id="json-{{ ticket.ticket_id }}">{{ ticket.model_dump_json(indent=2) }}</textarea>
+                            <textarea id="mt5-{{ ticket.ticket_id }}"
+                                title="MT5 platform note for ticket {{ ticket.ticket_id }}"
+                                aria-label="MT5 Note">{{ ticket.to_mt5_note() }}</textarea>
+                            <textarea id="ctrader-{{ ticket.ticket_id }}"
+                                title="cTrader platform note for ticket {{ ticket.ticket_id }}"
+                                aria-label="cTrader Note">{{ ticket.to_ctrader_note() }}</textarea>
+                            <textarea id="json-{{ ticket.ticket_id }}"
+                                title="JSON export for ticket {{ ticket.ticket_id }}"
+                                aria-label="JSON Export">{{ ticket.model_dump_json(indent=2) }}</textarea>
                         </div>
                         <div
                             style="font-size: 0.6rem; color: var(--text-muted); font-family: monospace; opacity: 0.5; line-height: 1.5;">
