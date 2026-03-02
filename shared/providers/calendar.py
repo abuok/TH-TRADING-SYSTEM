@@ -4,6 +4,7 @@ CalendarProvider interface — economic calendar events and no-trade windows.
 
 Safe degradation: FAIL CLOSED on total fetch failure (log incident).
 """
+
 import os
 import logging
 from abc import ABC, abstractmethod
@@ -30,6 +31,7 @@ class CalendarProvider(ABC):
         Returns list of {"event", "start", "end", "impact"} dicts with ISO timestamps.
         """
         import pytz
+
         target_tz = pytz.timezone("Africa/Nairobi")
         now = datetime.now(target_tz)
         windows = []
@@ -39,14 +41,18 @@ class CalendarProvider(ABC):
                 if not ev_time.tzinfo:
                     ev_time = target_tz.localize(ev_time)
                 if now <= ev_time <= now + timedelta(hours=24):
-                    windows.append({
-                        "event": ev["event"],
-                        "start": (ev_time - timedelta(minutes=15)).isoformat(),
-                        "end":   (ev_time + timedelta(minutes=15)).isoformat(),
-                        "impact": ev.get("impact", "High"),
-                    })
+                    windows.append(
+                        {
+                            "event": ev["event"],
+                            "start": (ev_time - timedelta(minutes=15)).isoformat(),
+                            "end": (ev_time + timedelta(minutes=15)).isoformat(),
+                            "impact": ev.get("impact", "High"),
+                        }
+                    )
             except (KeyError, ValueError, TypeError) as exc:
-                logger.warning("CalendarProvider: skipping malformed event %s — %s", ev, exc)
+                logger.warning(
+                    "CalendarProvider: skipping malformed event %s — %s", ev, exc
+                )
         return windows
 
 
@@ -72,6 +78,7 @@ class ForexFactoryCalendarProvider(CalendarProvider):
         try:
             import feedparser
             import pytz
+
             target_tz = pytz.timezone("Africa/Nairobi")
             est_tz = pytz.timezone("US/Eastern")
 
@@ -96,22 +103,26 @@ class ForexFactoryCalendarProvider(CalendarProvider):
                 try:
                     dt = datetime.strptime(event_time_str, "%m-%d-%Y %I:%M%p")
                     dt_eat = est_tz.localize(dt).astimezone(target_tz)
-                    events.append({
-                        "event":    entry.title,
-                        "time":     dt_eat.isoformat(),
-                        "currency": getattr(entry, "country", "USD"),
-                        "impact":   "High",
-                    })
+                    events.append(
+                        {
+                            "event": entry.title,
+                            "time": dt_eat.isoformat(),
+                            "currency": getattr(entry, "country", "USD"),
+                            "impact": "High",
+                        }
+                    )
                 except (ValueError, AttributeError) as exc:
                     logger.warning(
                         "CalendarProvider: could not parse event %r — %s. Skipping.",
-                        getattr(entry, "title", "?"), exc,
+                        getattr(entry, "title", "?"),
+                        exc,
                     )
                     skipped += 1
 
             logger.info(
                 "CalendarProvider: fetched %d high-impact events (%d skipped).",
-                len(events), skipped,
+                len(events),
+                skipped,
             )
             return events
 
@@ -133,7 +144,9 @@ def get_calendar_provider() -> CalendarProvider:
     is_prod = os.getenv("ENV", "dev").lower() == "prod"
 
     if is_prod and choice == "mock":
-        raise RuntimeError("CRITICAL: CALENDAR_PROVIDER cannot be 'mock' in production.")
+        raise RuntimeError(
+            "CRITICAL: CALENDAR_PROVIDER cannot be 'mock' in production."
+        )
 
     if choice == "mock":
         logger.info("CalendarProvider: using MockCalendarProvider (no external calls).")

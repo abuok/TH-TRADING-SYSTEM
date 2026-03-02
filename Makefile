@@ -1,4 +1,4 @@
-.PHONY: install run-all stop clean lint test help
+.PHONY: install run-all stop clean lint test help precommit-install precommit-run
 
 help:
 	@echo "Available commands:"
@@ -71,3 +71,10 @@ dashboard:
 
 orchestrate:
 	python services/orchestration/main.py
+
+
+precommit-install:
+	pre-commit install
+
+precommit-run:
+	pre-commit run --all-files

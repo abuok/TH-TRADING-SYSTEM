@@ -2,7 +2,8 @@
 BriefingPack schema — Session Briefing Pack types.
 All timestamps use Africa/Nairobi (UTC+3).
 """
-from datetime import datetime, date, timezone
+
+from datetime import datetime, date
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field
 import pytz
@@ -17,6 +18,7 @@ def nairobi_now() -> datetime:
 # ──────────────────────────────────────────────
 # Sub-models
 # ──────────────────────────────────────────────
+
 
 class StaleWarning(BaseModel):
     field: str
@@ -47,7 +49,7 @@ class SetupSummary(BaseModel):
 
 class TicketSummary(BaseModel):
     ticket_id: str
-    status: str          # PENDING/ALLOW/BLOCK
+    status: str  # PENDING/ALLOW/BLOCK
     direction: str
     entry_price: float
     lot_size: float
@@ -56,7 +58,7 @@ class TicketSummary(BaseModel):
 
 
 class PairOverview(BaseModel):
-    pair: str            # e.g. "XAUUSD"
+    pair: str  # e.g. "XAUUSD"
     bias: str = "unknown"  # BULLISH / BEARISH / NEUTRAL / unknown
     bias_score: Optional[float] = None
     bias_confidence: str = "UNKNOWN"
@@ -80,17 +82,18 @@ class RiskBudget(BaseModel):
 
 
 class OperatorAction(BaseModel):
-    priority: str           # HIGH / MEDIUM / LOW
-    category: str           # CHECK / AVOID / MONITOR / EXECUTE
+    priority: str  # HIGH / MEDIUM / LOW
+    category: str  # CHECK / AVOID / MONITOR / EXECUTE
     description: str
 
 
 class DeltaSection(BaseModel):
     """What changed since the previous briefing for the same session."""
+
     previous_briefing_id: Optional[str] = None
-    new_tickets: List[str] = Field(default_factory=list)   # ticket_ids
+    new_tickets: List[str] = Field(default_factory=list)  # ticket_ids
     resolved_blocks: List[str] = Field(default_factory=list)
-    new_setups: List[str] = Field(default_factory=list)    # asset_pairs
+    new_setups: List[str] = Field(default_factory=list)  # asset_pairs
     kill_switch_changes: List[str] = Field(default_factory=list)
     incident_count_delta: int = 0
     summary: str = "No previous briefing to compare."
@@ -100,10 +103,11 @@ class DeltaSection(BaseModel):
 # Root briefing model
 # ──────────────────────────────────────────────
 
+
 class BriefingPack(BaseModel):
     briefing_id: str
     created_at: datetime = Field(default_factory=nairobi_now)
-    session_label: str     # ASIA / LONDON / NEW YORK / OUTSIDE
+    session_label: str  # ASIA / LONDON / NEW YORK / OUTSIDE
     date: date
     is_delta: bool = False  # True = intraday update; False = pre-session
 
@@ -114,4 +118,6 @@ class BriefingPack(BaseModel):
     operator_actions: List[OperatorAction]
     delta_from_previous: Optional[DeltaSection] = None
 
-    global_warnings: List[str] = Field(default_factory=list)  # Critical stale / no-data warnings
+    global_warnings: List[str] = Field(
+        default_factory=list
+    )  # Critical stale / no-data warnings

@@ -10,17 +10,22 @@ Pipeline parity checklist:
   [x] Fundamentals  — real evaluate_fundamentals() with MockProxyProvider context
   [x] Reproducibility hash — includes guardrails_version, policy_hash, fundamentals hash
 """
+
 import csv
 import os
-import hashlib
 import logging
 import uuid
 from datetime import datetime, timezone
 from typing import List, Dict, Optional
 
-from shared.types.packets import Candle, TechnicalSetupPacket, RiskApprovalPacket
+from shared.types.packets import Candle, TechnicalSetupPacket
 from shared.types.trading import OrderTicketSchema
-from shared.types.research import SimulatedTrade, CounterfactualConfig, ResearchRunResult, ResearchVariant
+from shared.types.research import (
+    SimulatedTrade,
+    CounterfactualConfig,
+    ResearchRunResult,
+    ResearchVariant,
+)
 from shared.logic.fundamentals_engine import evaluate_fundamentals
 from shared.logic.guardrails import GuardrailsEngine, load_config
 from shared.logic.policy_router import PolicyRouter
@@ -35,6 +40,7 @@ logger = logging.getLogger("ResearchSimulator")
 
 # ── CSV Parser ────────────────────────────────────────────────────────────────
 
+
 def _parse_csv(filepath: str) -> List[Candle]:
     candles = []
     with open(filepath, "r") as f:
@@ -43,20 +49,25 @@ def _parse_csv(filepath: str) -> List[Candle]:
             dt = datetime.fromisoformat(row["timestamp"].replace("Z", "+00:00"))
             if dt.tzinfo is None:
                 dt = dt.replace(tzinfo=timezone.utc)
-            candles.append(Candle(
-                timestamp=dt,
-                open=float(row["open"]),
-                high=float(row["high"]),
-                low=float(row["low"]),
-                close=float(row["close"]),
-                volume=float(row["volume"]),
-            ))
+            candles.append(
+                Candle(
+                    timestamp=dt,
+                    open=float(row["open"]),
+                    high=float(row["high"]),
+                    low=float(row["low"]),
+                    close=float(row["close"]),
+                    volume=float(row["volume"]),
+                )
+            )
     return sorted(candles, key=lambda c: c.timestamp)
 
 
 # ── Ticket sizing (mirrors shared/logic/trading_logic.py logic) ───────────────
 
-def _calc_lot_size(entry: float, sl: float, pair: str, risk_usd: float = 100.0) -> float:
+
+def _calc_lot_size(
+    entry: float, sl: float, pair: str, risk_usd: float = 100.0
+) -> float:
     """
     Mirrors the lot-sizing logic in generate_order_ticket().
     XAUUSD: $1 move = $100/lot → factor 100.
@@ -70,6 +81,7 @@ def _calc_lot_size(entry: float, sl: float, pair: str, risk_usd: float = 100.0) 
 
 
 # ── Real PHX Detector integration ─────────────────────────────────────────────
+
 
 def _emit_setup_from_detector(
     detector: PHXDetector,
@@ -110,6 +122,7 @@ def _emit_setup_from_detector(
 
 # ── Fundamentals Context (stable mock proxies for research) ───────────────────
 
+
 def _get_research_context() -> dict:
     """
     Returns a stable fundamentals context for replay.
@@ -124,6 +137,7 @@ def _get_research_context() -> dict:
 
 
 # ── Main replay function ───────────────────────────────────────────────────────
+
 
 def run_replay(
     csv_path: str,
@@ -168,7 +182,9 @@ def run_replay(
         if config_override.min_setup_score is not None:
             gc["min_setup_score"] = config_override.min_setup_score
         if config_override.hard_block_displacement is not None:
-            gc["displacement_quality_hard_block"] = config_override.hard_block_displacement
+            gc["displacement_quality_hard_block"] = (
+                config_override.hard_block_displacement
+            )
 
         # Policy router (if variant uses it, loads same config/policies dir as live)
         policy_router: Optional[PolicyRouter] = None
@@ -238,7 +254,9 @@ def run_replay(
 
             # Ticket sizing — same formula as generate_order_ticket() in trading_logic
             direction = "LONG" if setup.take_profit > setup.entry_price else "SHORT"
-            lot_size = _calc_lot_size(setup.entry_price, setup.stop_loss, pair, risk_usd)
+            lot_size = _calc_lot_size(
+                setup.entry_price, setup.stop_loss, pair, risk_usd
+            )
             dist = abs(setup.entry_price - setup.stop_loss)
             rr = abs(setup.take_profit - setup.entry_price) / dist if dist > 0 else 0.0
 
@@ -253,7 +271,9 @@ def run_replay(
                 take_profit_1=setup.take_profit,
                 lot_size=lot_size,
                 risk_usd=risk_usd,
-                risk_pct=risk_usd / 10_000.0 * 100,  # Placeholder % (assume $10k account)
+                risk_pct=risk_usd
+                / 10_000.0
+                * 100,  # Placeholder % (assume $10k account)
                 rr_tp1=rr,
                 idempotency_key=f"res_{candle.timestamp.isoformat()}_{variant_name}",
                 created_at=current_time,
@@ -272,15 +292,15 @@ def run_replay(
                 stop_loss=ticket.stop_loss,
                 take_profit_1=ticket.take_profit_1,
                 status=ticket.status,
-                setup_score=float(setup_score),   # real PHX stage score, not hard-coded
+                setup_score=float(setup_score),  # real PHX stage score, not hard-coded
                 bias_score=bias_score,
                 guardrails_status="FAIL" if gr_res.hard_block else "PASS",
-                stage=detector.stage.name,        # real PHX stage name
+                stage=detector.stage.name,  # real PHX stage name
                 block_reason=ticket.block_reason,
             )
 
             # Outcome simulation on remaining candles
-            future_candles = valid_candles[i + 1:]
+            future_candles = valid_candles[i + 1 :]
             sim_trade = simulate_outcome(sim_trade, future_candles)
             variant_trades.append(sim_trade)
 

@@ -5,6 +5,7 @@ PriceQuoteProvider interface — live bid/ask and spread for a given symbol.
 Safe degradation: if no real provider is configured, FAIL CLOSED — return None
 so the caller can reject the preflight check rather than silently pass with stale data.
 """
+
 import os
 import logging
 from abc import ABC, abstractmethod
@@ -61,24 +62,29 @@ class MockPriceQuoteProvider(PriceQuoteProvider):
         if symbol in self._quotes:
             bid, ask = self._quotes[symbol]
             return PriceQuote(symbol=symbol, bid=bid, ask=ask)
-        logger.debug("MockPriceQuoteProvider: no quote configured for %s — returning None.", symbol)
+        logger.debug(
+            "MockPriceQuoteProvider: no quote configured for %s — returning None.",
+            symbol,
+        )
         return None
 
     def set_quote(self, symbol: str, bid: float, ask: float):
         self._quotes[symbol] = (bid, ask)
+
 
 class DBPriceQuoteProvider(PriceQuoteProvider):
     """
     Fetches real-time price quotes from the database.
     Quotes are updated via the /bridge/quote endpoint.
     """
+
     def __init__(self, db: Optional[Session] = None):
         self._db = db
 
     def get_quote(self, symbol: str) -> Optional[PriceQuote]:
         from shared.database.models import LiveQuote
         import shared.database.session as db_session
-        
+
         db = self._db or db_session.SessionLocal()
         try:
             model = db.query(LiveQuote).filter(LiveQuote.symbol == symbol).first()
@@ -89,19 +95,23 @@ class DBPriceQuoteProvider(PriceQuoteProvider):
             if not self._db:
                 db.close()
 
+
 class RealPriceQuoteProvider(PriceQuoteProvider):
     """Stub for future direct broker integration."""
+
     def get_quote(self, symbol: str) -> Optional[PriceQuote]:
         raise NotImplementedError("RealPriceQuoteProvider is a stub.")
 
+
 _global_provider: Optional[PriceQuoteProvider] = None
+
 
 def get_price_quote_provider() -> PriceQuoteProvider:
     """Factory: select provider from PRICE_PROVIDER env var, or return global override."""
     global _global_provider
     if _global_provider:
         return _global_provider
-        
+
     choice = os.getenv("PRICE_PROVIDER", "mock").lower()
     is_prod = os.getenv("ENV", "dev").lower() == "prod"
 
@@ -115,6 +125,7 @@ def get_price_quote_provider() -> PriceQuoteProvider:
     if choice == "real":
         return RealPriceQuoteProvider()
     return MockPriceQuoteProvider()
+
 
 def set_price_quote_provider(provider: PriceQuoteProvider):
     """Override the global price quote provider (useful for testing)."""

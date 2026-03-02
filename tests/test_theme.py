@@ -1,9 +1,9 @@
-import pytest
 from fastapi.testclient import TestClient
 from services.dashboard.main import app
 from shared.ui.theme import ACCENTS, NEUTRALS
 
 client = TestClient(app)
+
 
 def test_theme_preview_route():
     response = client.get("/dashboard/theme")

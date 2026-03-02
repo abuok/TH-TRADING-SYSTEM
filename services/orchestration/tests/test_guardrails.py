@@ -3,17 +3,22 @@ services/orchestration/tests/test_guardrails.py
 Unit + integration tests for the Strategy Guardrails Engine.
 Uses in-memory SQLite + deterministic Nairobi datetime mocks.
 """
+
 import pytest
-from datetime import datetime, timezone, timedelta, time
-from unittest.mock import patch
+from datetime import datetime, timedelta
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from shared.database.models import Base, Packet, Run, KillSwitch, OrderTicket, GuardrailsLog
+from shared.database.models import Base, Run, OrderTicket, GuardrailsLog
 from shared.logic.guardrails import (
-    GuardrailsEngine, load_config,
-    _rule_session_window, _rule_news_window, _rule_phx_sequence,
-    _rule_displacement_quality, _rule_setup_score, _rule_risk_state,
+    GuardrailsEngine,
+    load_config,
+    _rule_session_window,
+    _rule_news_window,
+    _rule_phx_sequence,
+    _rule_displacement_quality,
+    _rule_setup_score,
+    _rule_risk_state,
     _rule_duplicate_signal,
 )
 from shared.types.guardrails import GuardrailsResult
@@ -80,6 +85,7 @@ def _setup_data(pair="XAUUSD", stage="TRIGGER", score=90, **extras):
 # GR-S01: Session Window
 # ══════════════════════════════════════════════
 
+
 def test_s01_pass_during_london(cfg):
     result = _rule_session_window(LONDON_TIME, cfg, {})
     assert result.status == "PASS"
@@ -103,6 +109,7 @@ def test_s01_evidence_refs_populated(cfg):
 # GR-N01: News Window
 # ══════════════════════════════════════════════
 
+
 def test_n01_pass_no_events(cfg):
     result = _rule_news_window(LONDON_TIME, cfg, {"high_impact_events": []})
     assert result.status == "PASS"
@@ -110,7 +117,9 @@ def test_n01_pass_no_events(cfg):
 
 def test_n01_fail_near_event(cfg):
     event_time = LONDON_TIME.strftime("%H:%M")  # event right now → within 30 min
-    ctx = {"high_impact_events": [{"time": event_time, "currency": "USD", "event": "NFP"}]}
+    ctx = {
+        "high_impact_events": [{"time": event_time, "currency": "USD", "event": "NFP"}]
+    }
     result = _rule_news_window(LONDON_TIME, cfg, ctx)
     assert result.status == "FAIL"
     assert "NFP" in result.details
@@ -120,7 +129,11 @@ def test_n01_fail_near_event(cfg):
 def test_n01_pass_event_far_away(cfg):
     """An event 61 min away should not trigger the 30-min buffer."""
     far_time = (LONDON_TIME + timedelta(hours=2)).strftime("%H:%M")
-    ctx = {"high_impact_events": [{"time": far_time, "currency": "EUR", "event": "ECB Rate"}]}
+    ctx = {
+        "high_impact_events": [
+            {"time": far_time, "currency": "EUR", "event": "ECB Rate"}
+        ]
+    }
     result = _rule_news_window(LONDON_TIME, cfg, ctx)
     assert result.status == "PASS"
 
@@ -128,6 +141,7 @@ def test_n01_pass_event_far_away(cfg):
 # ══════════════════════════════════════════════
 # GR-P01: PHX Sequence Completeness
 # ══════════════════════════════════════════════
+
 
 def test_p01_pass_at_trigger(cfg):
     result = _rule_phx_sequence(_setup_data(stage="TRIGGER"), cfg)
@@ -158,6 +172,7 @@ def test_p01_fail_at_sweep_with_hard_config(cfg):
 # GR-D01: Displacement Quality
 # ══════════════════════════════════════════════
 
+
 def test_d01_pass_with_good_meta(cfg):
     data = _setup_data(displacement_meta={"total_candles": 3, "directional_candles": 3})
     result = _rule_displacement_quality(data, cfg)
@@ -175,14 +190,20 @@ def test_d01_pass_via_stage_inference(cfg):
     # At TRIGGER stage, inference gives 2/3 which rounds to 0.67. We test the status
     # is PASS or WARN — both are acceptable since inference is approximate.
     # More importantly: with explicit good meta it passes (covered in test_d01_pass_with_good_meta)
-    data = _setup_data(stage="TRIGGER", displacement_meta={"total_candles": 3, "directional_candles": 2})
+    data = _setup_data(
+        stage="TRIGGER",
+        displacement_meta={"total_candles": 3, "directional_candles": 2},
+    )
     result = _rule_displacement_quality(data, cfg)
-    assert result.status == "PASS"  # explicit 2/3 = 0.667, threshold 0.67 is boundary — OK
+    assert (
+        result.status == "PASS"
+    )  # explicit 2/3 = 0.667, threshold 0.67 is boundary — OK
 
 
 # ══════════════════════════════════════════════
 # GR-SC01: Setup Score
 # ══════════════════════════════════════════════
+
 
 def test_sc01_pass_high_score(cfg):
     result = _rule_setup_score(_setup_data(score=90), cfg)
@@ -204,6 +225,7 @@ def test_sc01_fail_with_hard_config(cfg):
 # ══════════════════════════════════════════════
 # GR-R01: Risk State
 # ══════════════════════════════════════════════
+
 
 def test_r01_pass_healthy_state(cfg):
     state = {"consecutive_losses": 0, "daily_loss": 0.0, "account_balance": 10000.0}
@@ -239,6 +261,7 @@ def test_r01_fail_with_mandatory_evidence(cfg):
 # GR-U01: Duplicate Signal Suppression
 # ══════════════════════════════════════════════
 
+
 def test_u01_pass_no_recent_tickets(db, cfg):
     data = _setup_data("XAUUSD", stage="TRIGGER")
     result = _rule_duplicate_signal(data, cfg, db, LONDON_TIME)
@@ -248,11 +271,20 @@ def test_u01_pass_no_recent_tickets(db, cfg):
 def test_u01_warn_with_recent_ticket(db, cfg):
     # Insert a recent ticket for XAUUSD BUY
     tkt = OrderTicket(
-        ticket_id="TKT-DUPE01", setup_packet_id=0, risk_packet_id=0,
-        pair="XAUUSD", direction="BUY",
-        entry_price=2000.0, stop_loss=1990.0, take_profit_1=2030.0,
-        lot_size=0.1, risk_usd=100.0, risk_pct=0.5, rr_tp1=3.0,
-        status="PENDING", idempotency_key="test-dupe-key",
+        ticket_id="TKT-DUPE01",
+        setup_packet_id=0,
+        risk_packet_id=0,
+        pair="XAUUSD",
+        direction="BUY",
+        entry_price=2000.0,
+        stop_loss=1990.0,
+        take_profit_1=2030.0,
+        lot_size=0.1,
+        risk_usd=100.0,
+        risk_pct=0.5,
+        rr_tp1=3.0,
+        status="PENDING",
+        idempotency_key="test-dupe-key",
     )
     db.add(tkt)
     db.commit()
@@ -266,19 +298,24 @@ def test_u01_warn_with_recent_ticket(db, cfg):
 # Full GuardrailsEngine.evaluate()
 # ══════════════════════════════════════════════
 
+
 def test_engine_full_pass_scenario(db):
     engine = GuardrailsEngine()
     result = engine.evaluate(
         setup_data=_setup_data("XAUUSD", stage="TRIGGER", score=95),
         context_data={"high_impact_events": []},
-        account_state={"consecutive_losses": 0, "daily_loss": 0.0, "account_balance": 10000.0},
+        account_state={
+            "consecutive_losses": 0,
+            "daily_loss": 0.0,
+            "account_balance": 10000.0,
+        },
         db=db,
         now_nairobi=LONDON_TIME,
     )
     assert isinstance(result, GuardrailsResult)
     assert result.hard_block is False
-    assert result.discipline_score > 50    # should be high
-    assert result.pass_count >= 5          # most rules should pass
+    assert result.discipline_score > 50  # should be high
+    assert result.pass_count >= 5  # most rules should pass
 
 
 def test_engine_hard_block_outside_session(db):
@@ -286,9 +323,13 @@ def test_engine_hard_block_outside_session(db):
     result = engine.evaluate(
         setup_data=_setup_data("GBPJPY", stage="TRIGGER", score=95),
         context_data={"high_impact_events": []},
-        account_state={"consecutive_losses": 0, "daily_loss": 0.0, "account_balance": 10000.0},
+        account_state={
+            "consecutive_losses": 0,
+            "daily_loss": 0.0,
+            "account_balance": 10000.0,
+        },
         db=db,
-        now_nairobi=OUTSIDE_TIME,     # 3 AM EAT → outside all sessions
+        now_nairobi=OUTSIDE_TIME,  # 3 AM EAT → outside all sessions
     )
     assert result.hard_block is True
     assert result.primary_block_reason is not None
@@ -300,7 +341,11 @@ def test_engine_hard_block_risk_state(db):
     result = engine.evaluate(
         setup_data=_setup_data(stage="TRIGGER", score=95),
         context_data={"high_impact_events": []},
-        account_state={"consecutive_losses": 5, "daily_loss": 0.0, "account_balance": 10000.0},
+        account_state={
+            "consecutive_losses": 5,
+            "daily_loss": 0.0,
+            "account_balance": 10000.0,
+        },
         db=db,
         now_nairobi=LONDON_TIME,
     )
@@ -313,7 +358,11 @@ def test_engine_discipline_score_range(db):
     result = engine.evaluate(
         setup_data=_setup_data(stage="BIAS", score=10),  # low score, early stage
         context_data={"high_impact_events": []},
-        account_state={"consecutive_losses": 0, "daily_loss": 0.0, "account_balance": 10000.0},
+        account_state={
+            "consecutive_losses": 0,
+            "daily_loss": 0.0,
+            "account_balance": 10000.0,
+        },
         db=db,
         now_nairobi=LONDON_TIME,
     )
@@ -325,7 +374,11 @@ def test_engine_brief_summary(db):
     result = engine.evaluate(
         setup_data=_setup_data(stage="TRIGGER", score=90),
         context_data={"high_impact_events": []},
-        account_state={"consecutive_losses": 0, "daily_loss": 0.0, "account_balance": 10000.0},
+        account_state={
+            "consecutive_losses": 0,
+            "daily_loss": 0.0,
+            "account_balance": 10000.0,
+        },
         db=db,
         now_nairobi=LONDON_TIME,
     )
@@ -337,6 +390,7 @@ def test_engine_brief_summary(db):
 # ══════════════════════════════════════════════
 # INTEGRATION: guardrails hard_block overrides risk engine ALLOW
 # ══════════════════════════════════════════════
+
 
 def test_integration_guardrails_overrides_risk_allow(db):
     """
@@ -378,7 +432,11 @@ def test_integration_guardrails_overrides_risk_allow(db):
             "take_profit": 2030.0,
         },
         context_data={"high_impact_events": []},
-        account_state={"consecutive_losses": 5, "daily_loss": 0.0, "account_balance": 10000.0},
+        account_state={
+            "consecutive_losses": 5,
+            "daily_loss": 0.0,
+            "account_balance": 10000.0,
+        },
         db=db,
         now_nairobi=LONDON_TIME,
     )
@@ -403,7 +461,11 @@ def test_integration_persist_guardrails_to_db(db):
     result = engine.evaluate(
         setup_data=_setup_data(),
         context_data={},
-        account_state={"consecutive_losses": 0, "daily_loss": 0.0, "account_balance": 10000.0},
+        account_state={
+            "consecutive_losses": 0,
+            "daily_loss": 0.0,
+            "account_balance": 10000.0,
+        },
         db=db,
         now_nairobi=LONDON_TIME,
     )
@@ -413,7 +475,5 @@ def test_integration_persist_guardrails_to_db(db):
     assert record.discipline_score == result.discipline_score
     assert record.result_json is not None
 
-    found = db.query(GuardrailsLog).filter(
-        GuardrailsLog.id == record.id
-    ).first()
+    found = db.query(GuardrailsLog).filter(GuardrailsLog.id == record.id).first()
     assert found is not None
