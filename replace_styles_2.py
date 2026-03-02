@@ -24,7 +24,6 @@ replacements = {
     r'style="text-align: right; font-family: monospace; font-weight: 900; font-size: 0\.85rem; color: var\(--accent-pink\);"': 'class="text-right text-mono text-black text-sm text-pink"',
     r'style="text-align: center; font-family: monospace; font-weight: 900;"': 'class="text-center text-mono text-black"',
     r'style="font-size: 0\.65rem; color: var\(--text-muted\);"': 'class="text-xxs text-muted"',
-    
     # Catch all single styles
     r'style="color: var\(--accent-yellow\);"': 'class="text-yellow"',
     r'style="color: var\(--accent-purple\);"': 'class="text-purple"',
@@ -33,17 +32,20 @@ replacements = {
     r'style="margin-bottom: 1rem;"': 'class="mb-3"',
 }
 
+
 def advanced_replace(content):
     # First apply exact regex text replacements
     for pattern, repl in replacements.items():
         content = re.sub(pattern, repl, content)
-        
+
     # Merge classes: class="badge" class="badge-cyan" -> class="badge badge-cyan"
     while re.search(r'class="([^"]+)"\s+class="([^"]+)"', content):
-        content = re.sub(r'class="([^"]+)"\s+class="([^"]+)"', 
-                         lambda m: f'class="{m.group(1)} {m.group(2)}"', 
-                         content)
-                         
+        content = re.sub(
+            r'class="([^"]+)"\s+class="([^"]+)"',
+            lambda m: f'class="{m.group(1)} {m.group(2)}"',
+            content,
+        )
+
     # Deduplicate classes just in case
     def dedup_classes(match):
         cls_attr = match.group(1)
@@ -54,11 +56,12 @@ def advanced_replace(content):
             if c not in seen:
                 out.append(c)
                 seen.add(c)
-        return 'class="' + ' '.join(out) + '"'
+        return 'class="' + " ".join(out) + '"'
 
     content = re.sub(r'class="([^"]+)"', dedup_classes, content)
 
     return content
+
 
 count_files_modified = 0
 
@@ -66,13 +69,13 @@ for root, _, files in os.walk(target_dir):
     for filename in files:
         if filename.endswith(".html"):
             path = os.path.join(root, filename)
-            with open(path, 'r', encoding='utf-8') as f:
+            with open(path, "r", encoding="utf-8") as f:
                 content = f.read()
-                
+
             new_content = advanced_replace(content)
-            
+
             if new_content != content:
-                with open(path, 'w', encoding='utf-8') as f:
+                with open(path, "w", encoding="utf-8") as f:
                     f.write(new_content)
                 count_files_modified += 1
 

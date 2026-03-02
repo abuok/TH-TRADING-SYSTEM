@@ -29,7 +29,11 @@ class TradingSessions:
         nairobi_tz = pytz.timezone("Africa/Nairobi")
         for candle in candles:
             # Explicitly force raw DB/MT5 timestamps into EAT (Nairobi) before comparing
-            dt_aware = candle.timestamp if candle.timestamp.tzinfo else candle.timestamp.replace(tzinfo=pytz.utc)
+            dt_aware = (
+                candle.timestamp
+                if candle.timestamp.tzinfo
+                else candle.timestamp.replace(tzinfo=pytz.utc)
+            )
             t_nairobi = dt_aware.astimezone(nairobi_tz).time()
             if cls.is_in_range(t_nairobi, start, end):
                 session_candles.append(candle)

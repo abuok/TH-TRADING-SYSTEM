@@ -250,24 +250,24 @@ def _rule_eod_gap(now_nairobi: datetime, cfg: Dict) -> RuleCheck:
     eet_tz = pytz.timezone("EET")
     now_eet = now_nairobi.astimezone(eet_tz)
     t = now_eet.time()
-    
+
     # Block from 23:55 to 00:10 broker server time
     hard = True
     eod_start = time_(23, 55)
     eod_end = time_(0, 10)
-    
+
     # Check if time crosses midnight broker time
     is_gap = t >= eod_start or t <= eod_end
-    
+
     evidence = [
         EvidenceRef(
-            ref_type="metric", 
-            key="broker_eet_time", 
+            ref_type="metric",
+            key="broker_eet_time",
             value=now_eet.strftime("%H:%M"),
-            description="Broker Server Time (EET/EEST)"
+            description="Broker Server Time (EET/EEST)",
         )
     ]
-    
+
     if is_gap:
         return RuleCheck(
             id="GR-E01",
@@ -558,33 +558,30 @@ def _rule_quote_staleness(setup_data: Dict, cfg: Dict, db: Session) -> RuleCheck
     """GR-Q01: Check if the live quotes for this pair are unacceptably stale."""
     from shared.database.models import QuoteStaleLog
     from sqlalchemy import func
-    
+
     limit = float(cfg.get("quote_staleness_limit_seconds", 15.0))
     pair = setup_data.get("asset_pair", "")
     hard = True  # Staleness is inherently a life-safety issue, fail-closed.
-    
+
     cutoff = datetime.now(timezone.utc) - timedelta(minutes=2)
-    
+
     # Get max stale duration in the last 2 minutes for this pair
     max_stale = (
         db.query(func.max(QuoteStaleLog.stale_duration_seconds))
-        .filter(
-            QuoteStaleLog.symbol == pair,
-            QuoteStaleLog.created_at >= cutoff
-        )
+        .filter(QuoteStaleLog.symbol == pair, QuoteStaleLog.created_at >= cutoff)
         .scalar()
     )
-    
+
     max_stale = float(max_stale) if max_stale is not None else 0.0
     evidence = [
         EvidenceRef(
-            ref_type="metric", 
-            key="max_quote_stale_seconds", 
+            ref_type="metric",
+            key="max_quote_stale_seconds",
             value=round(max_stale, 1),
-            description=f"Max staleness in last 2 mins"
+            description="Max staleness in last 2 mins",
         )
     ]
-    
+
     if max_stale > limit:
         return RuleCheck(
             id="GR-Q01",
@@ -595,7 +592,7 @@ def _rule_quote_staleness(setup_data: Dict, cfg: Dict, db: Session) -> RuleCheck
             deduction=cfg.get("score_deduction_fail", 20),
             evidence_refs=evidence,
         )
-        
+
     return RuleCheck(
         id="GR-Q01",
         name="Quote Staleness Check",
@@ -682,9 +679,7 @@ class GuardrailsEngine:
             checks.append(
                 _rule_duplicate_signal(setup_data, effective_cfg, db, now_nairobi)
             )
-            checks.append(
-                _rule_quote_staleness(setup_data, effective_cfg, db)
-            )
+            checks.append(_rule_quote_staleness(setup_data, effective_cfg, db))
         else:
             checks.append(
                 RuleCheck(
