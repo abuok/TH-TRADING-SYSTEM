@@ -38,8 +38,7 @@ def test_dashboard_overview_basic():
 
         response = client.get("/dashboard")
         assert response.status_code == 200
-        assert "SYSTEM EVENT LOG" in response.text
-        assert "SYDNEY" in response.text
+        assert "SYSTEM ARMED" in response.text
 
 
 def test_dashboard_kill_switches_reflected():
