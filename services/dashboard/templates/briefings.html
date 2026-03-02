@@ -7,7 +7,7 @@
         <header class="hud-panel-header">
             <div class="hud-panel-title">SESSION BRIEFINGS // TACTICAL OPERATIONS HUB</div>
         </header>
-        <div style="padding: 1rem; display: flex; justify-content: space-between; align-items: center;">
+        <div class="p-3 flex justify-between align-center">
             <div style="color: var(--text-muted); font-size: 0.8rem; letter-spacing: 1px;">DAILY AND INTRADAY BRIEFING
                 PACKS — EAT SYNC (AFRICA/NAIROBI)</div>
             {% if latest %}
@@ -18,7 +18,7 @@
     </div>
 
     {% if not briefings %}
-    <div class="hud-panel glass-panel col-span-12" style="padding: 5rem; text-align: center;">
+    <div class="hud-panel glass-panel col-span-12 p-5 text-center">
         <div style="font-size: 1.5rem; color: var(--accent-pink); font-weight: 800; margin-bottom: 1rem;">ZERO BRIEFINGS
             GENERATED</div>
         <div class="text-muted opacity-50">Awaiting automated trigger at session starts (London/NY) or
@@ -68,7 +68,7 @@
                                     <a href="/dashboard/briefings/{{ b.briefing_id }}"
                                         class="btn btn-secondary btn-tiny">VIEW</a>
                                     <a href="/dashboard/briefings/{{ b.briefing_id }}/print" target="_blank"
-                                        class="btn btn-secondary btn-tiny" style="opacity: 0.6;">🖨</a>
+                                        class="btn btn-secondary btn-tiny opacity-60">🖨</a>
                                 </div>
                             </div>
                         </div>

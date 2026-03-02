@@ -79,7 +79,7 @@
                 style="background: rgba(242, 201, 76, 0.1); color: var(--accent-yellow); border: 1px solid var(--accent-yellow); font-family: monospace;"></span>
         </header>
         <div class="p-5">
-            <div style="margin-bottom: 1.5rem;">
+            <div class="mb-4">
                 <label
                     style="display: block; font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 1px;">PRIMARY_REASON</label>
                 <select id="skip-reason" title="Primary skip reason" aria-label="Primary Skip Reason"
@@ -153,8 +153,8 @@
 
                 html += `
                 <div id="card-${t.ticket_id}" class="hud-panel glass-panel" style="margin-bottom: 1.5rem; border-left: 4px solid ${borderAccent}; padding: 0;">
-                    <header class="hud-panel-header" style="background: rgba(0,0,0,0.2);">
-                        <div style="display: flex; gap: 1rem; align-items: center;">
+                    <header class="hud-panel-header bg-dark-overlay">
+                        <div class="flex gap-4 align-center">
                             <div style="font-weight: 900; font-size: 1.25rem; color: var(--text-main);">${t.pair}</div>
                             <span class="badge" style="background: ${t.direction === 'BUY' ? 'rgba(39, 174, 96, 0.1)' : 'rgba(235, 47, 150, 0.1)'}; color: ${t.direction === 'BUY' ? 'var(--accent-green)' : 'var(--accent-pink)'}; border: 1px solid ${t.direction === 'BUY' ? 'var(--accent-green)' : 'var(--accent-pink)'}; font-size: 0.6rem; font-weight: 900;">${t.direction}</span>
                             <span style="font-family: monospace; font-size: 0.65rem; color: var(--text-muted); letter-spacing: 0.5px;">IDENT: ${t.ticket_id}</span>
@@ -310,7 +310,7 @@
                         </div>
                         <!-- Formats -->
                         <div style="flex: 2;">
-                            <div style="margin-bottom: 1rem;">
+                            <div class="mb-3">
                                 <div style="font-size: 0.55rem; color:var(--text-muted); text-transform: uppercase; margin-bottom: 0.4rem; letter-spacing: 1px;">MT5_EXECUTION_VECTOR</div>
                                 <div style="display:flex; gap: 0.5rem; align-items: center;">
                                     <code style="background: rgba(0,0,0,0.4); padding: 0.6rem; border-radius: 2px; font-size: 0.7rem; flex-grow:1; border: 1px solid rgba(86, 204, 242, 0.1); color: var(--accent-cyan); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: monospace;">${p.platform_formats.mt5_text}</code>

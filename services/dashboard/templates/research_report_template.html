@@ -68,12 +68,12 @@
                                 {{ variant.metrics.win_rate_pct }}%
                             </span>
                         </td>
-                        <td style="text-align: right; font-family: monospace; font-weight: 900; font-size: 0.85rem;">{{
+                        <td class="text-right text-mono text-black text-sm">{{
                             variant.metrics.expectancy_r }}R</td>
                         <td
-                            style="text-align: right; font-family: monospace; font-weight: 900; font-size: 0.85rem; color: var(--accent-pink);">
+                            class="text-right text-mono text-black text-sm text-pink">
                             {{ variant.metrics.max_drawdown_r }}R</td>
-                        <td style="text-align: center; font-family: monospace; font-weight: 900;">{{
+                        <td class="text-center text-mono text-black">{{
                             variant.metrics.profit_factor }}</td>
                         <td class="text-right">
                             <span
@@ -103,7 +103,7 @@
 
         {% for name, variant in run.variants.items() %}
         <div class="hud-panel glass-panel mb-4">
-            <header class="hud-panel-header" style="background: rgba(0,0,0,0.2);">
+            <header class="hud-panel-header bg-dark-overlay">
                 <div class="hud-panel-title">TRACT_LOG: {{ name | upper }}</div>
                 <div style="font-size: 0.6rem; color: var(--text-muted); font-family: monospace; opacity: 0.7;">
                     TOTAL_TRADES_IN_VARIANT: {{ variant.trades | length }}</div>

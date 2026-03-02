@@ -454,3 +454,10 @@ body {
 .border-divider {
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
+.opacity-60 { opacity: 0.6; }
+.w-250 { width: 250px; }
+.w-full { width: 100%; }
+.display-block { display: block; }
+.bg-dark-overlay { background: rgba(0,0,0,0.2); }
+.bg-transparent { background: transparent; }
+.mt-3 { margin-top: 1rem; }

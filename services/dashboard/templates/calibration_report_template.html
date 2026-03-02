@@ -194,9 +194,9 @@
                             {{ report.pair }} // CALIBRATION_FINDINGS</div>
                         <div
                             style="display: flex; gap: 2rem; font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">
-                            <span>DATE_WINDOW: <span style="color: var(--text-main); font-weight: 700;">{{
+                            <span>DATE_WINDOW: <span class="text-main text-bold">{{
                                     report.date_range }}</span></span>
-                            <span>TIMEFRAME: <span style="color: var(--text-main); font-weight: 700;">{{
+                            <span>TIMEFRAME: <span class="text-main text-bold">{{
                                     report.timeframe }}</span></span>
                         </div>
                     </div>
@@ -252,7 +252,7 @@
                             <div
                                 class="text-mini text-muted text-upper letter-spacing-1 mb-2">
                                 PROPOSED_CHANGE</div>
-                            <div style="font-size: 0.7rem; color: var(--text-main); line-height: 1.5;">{{
+                            <div class="text-xs text-main line-height-relaxed">{{
                                 rec.proposed_change }}</div>
                         </div>
                         <div>
@@ -266,7 +266,7 @@
                             <div
                                 class="text-mini text-muted text-upper letter-spacing-1 mb-2">
                                 RATIONALE</div>
-                            <div style="font-size: 0.7rem; color: var(--text-main); line-height: 1.5;">{{ rec.rationale
+                            <div class="text-xs text-main line-height-relaxed">{{ rec.rationale
                                 }}</div>
                         </div>
                     </div>
@@ -281,7 +281,7 @@
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                         <div>
                             <label
-                                style="font-size: 0.55rem; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; display: block; margin-bottom: 0.4rem;"
+                                class="text-mini text-muted letter-spacing-1 text-upper display-block mb-1"
                                 for="skip-reason-{{ loop.index }}">SKIP_REASON</label>
                             <select id="skip-reason-{{ loop.index }}" class="form-control" title="Skip Reason">
                                 <option value="none" selected disabled>SELECT_REASON</option>
@@ -293,7 +293,7 @@
                         </div>
                         <div>
                             <label
-                                style="font-size: 0.55rem; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; display: block; margin-bottom: 0.4rem;"
+                                class="text-mini text-muted letter-spacing-1 text-upper display-block mb-1"
                                 for="skip-notes-{{ loop.index }}">ANALYST_NOTES</label>
                             <textarea id="skip-notes-{{ loop.index }}" rows="2" class="form-control" title="Skip Notes"
                                 placeholder="Add_context..."></textarea>
@@ -302,7 +302,7 @@
                 </div>
                 {% endfor %}
                 {% else %}
-                <div style="padding: 4rem; text-align: center;">
+                <div class="hud-empty-state">
                     <div
                         style="font-size: 0.85rem; color: var(--accent-green); font-weight: 900; letter-spacing: 2px; margin-bottom: 0.5rem;">
                         ZERO_IMPROVEMENTS_DETECTED</div>
@@ -349,12 +349,12 @@
                                 </span>
                             </td>
                             <td
-                                style="text-align: right; font-family: monospace; font-weight: 900; font-size: 0.85rem;">
+                                class="text-right text-mono text-black text-sm">
                                 {{ "%.2f"|format(metrics.expectancy_r) }}R</td>
                             <td
-                                style="text-align: right; font-family: monospace; font-weight: 900; font-size: 0.85rem; color: var(--accent-pink);">
+                                class="text-right text-mono text-black text-sm text-pink">
                                 {{ "%.2f"|format(metrics.max_drawdown_r) }}R</td>
-                            <td style="text-align: center; font-family: monospace; font-weight: 900;">{{
+                            <td class="text-center text-mono text-black">{{
                                 "%.2f"|format(metrics.profit_factor) }}</td>
                             <td class="text-mono text-xs text-right">
                                 <span class="text-main">{{ metrics.executed_trades }}</span> / <span

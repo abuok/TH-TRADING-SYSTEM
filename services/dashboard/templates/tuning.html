@@ -16,7 +16,7 @@
     <div class="hud-panel glass-panel col-span-12"
         style="background: rgba(155, 81, 224, 0.03); border-left: 4px solid var(--accent-purple); margin-bottom: 2rem;">
         <header class="hud-panel-header">
-            <div style="display: flex; gap: 1rem; align-items: center;">
+            <div class="flex gap-4 align-center">
                 <div class="hud-panel-title">REPORT: {{ report.report_id }}</div>
                 <span
                     class="badge {% if report.status == 'OPEN' %}badge-warning{% elif 'REVIEWED' %}badge-success{% else %}badge-info{% endif %}">{{
@@ -48,8 +48,7 @@
             <!-- Proposals Stream -->
             <div style="display: grid; gap: 1rem;">
                 {% for prop in report.data.get("proposals", []) %}
-                <div class="hud-scanline"
-                    style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 4px; padding: 1rem;">
+                <div class="hud-scanline bg-dark-overlay border-divider p-3">
                     <div
                         style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem;">
                         <div>
@@ -141,7 +140,7 @@
     </div>
     {% endfor %}
     {% else %}
-    <div class="hud-panel glass-panel col-span-12" style="padding: 5rem; text-align: center;"
+    <div class="hud-panel glass-panel col-span-12 p-5 text-center"
         data-hud-corner="bottom-left">
         <div style="font-size: 1.5rem; color: var(--text-muted); font-weight: 800; margin-bottom: 1rem;">NO TUNING
             REPORTS AVAILABLE</div>

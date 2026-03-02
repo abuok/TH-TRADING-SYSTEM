@@ -133,7 +133,7 @@
                             style="font-size: 1rem; color: var(--text-muted); margin: 0 0.5rem;">/</span>{{
                         latest.aggregates.total_days }}</div>
                     <div
-                        style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 0.5rem;">
+                        class="text-xxs text-muted text-upper letter-spacing-1 mt-2">
                         PASSING_DAYS // QUANT_VALIDATION</div>
                 </div>
 
@@ -142,7 +142,7 @@
                     <div style="font-size: 2.5rem; font-weight: 900; color: var(--accent-green); line-height: 1;">{{
                         (latest.aggregates.passing_days / latest.aggregates.total_days * 100) | round(1) }}%</div>
                     <div
-                        style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 0.5rem;">
+                        class="text-xxs text-muted text-upper letter-spacing-1 mt-2">
                         SYSTEM_RELIABILITY_COEFFICIENT</div>
                 </div>
 
@@ -151,7 +151,7 @@
                     <div style="font-size: 2.5rem; font-weight: 900; color: var(--text-main); line-height: 1;">{{
                         latest.aggregates.net_realized_r | round(2) }}R</div>
                     <div
-                        style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 0.5rem;">
+                        class="text-xxs text-muted text-upper letter-spacing-1 mt-2">
                         NET_REALIZED_EXPECTANCY // CUMULATIVE</div>
                 </div>
             </div>

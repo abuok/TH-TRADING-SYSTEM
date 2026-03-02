@@ -36,8 +36,8 @@
     <div class="hud-panel glass-panel col-span-12"
         data-hud-corner="{% if loop.last %}bottom-left{% else %}none{% endif %}"
         style="border-left: 4px solid {{ 'var(--accent-green)' if ticket.status != 'BLOCKED' else 'var(--accent-pink)' }}; margin-bottom: 1.5rem; padding: 0;">
-        <header class="hud-panel-header" style="background: rgba(0,0,0,0.2);">
-            <div style="display: flex; gap: 1rem; align-items: center;">
+        <header class="hud-panel-header bg-dark-overlay">
+            <div class="flex gap-4 align-center">
                 <div style="font-weight: 900; font-size: 1.25rem; color: var(--text-main);">{{ ticket.pair }} // {{
                     ticket.direction }}</div>
                 <span class="badge"
