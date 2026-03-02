@@ -38,8 +38,8 @@ def test_dashboard_overview_basic():
 
         response = client.get("/dashboard")
         assert response.status_code == 200
-        assert "System Overview" in response.text
-        assert "Ingestion" in response.text
+        assert "SYSTEM EVENT LOG" in response.text
+        assert "SYDNEY" in response.text
 
 
 def test_dashboard_kill_switches_reflected():
@@ -94,7 +94,7 @@ def test_dashboard_stale_packets_reflected():
         response = client.get("/dashboard")
         assert response.status_code == 200
         assert "BTC-USD" in response.text
-        assert "Stale" in response.text
+        assert "STALE" in response.text
 
 
 def test_dashboard_routes_render():

@@ -1,7 +1,8 @@
 import unittest
 from datetime import time
 from risk_engine import RiskEngine
-from core_models import SignalPacket, ScorePacket, Direction
+from core_models import SignalPacket, ScorePacket, Direction, RiskDecision
+from unittest.mock import patch
 
 
 class TestTradingDeskSafety(unittest.TestCase):
@@ -15,7 +16,9 @@ class TestTradingDeskSafety(unittest.TestCase):
         # 11:00 EAT should be IN
         self.assertTrue(time(10, 0) <= time(11, 0) <= time(19, 0))
 
-    def test_risk_engine_blocking(self):
+    @patch("risk_engine.SessionManager.is_in_session")
+    def test_risk_engine_blocking(self, mock_session):
+        mock_session.return_value = True
         signal = SignalPacket(
             id="test-001",
             symbol="XAUUSD",
@@ -30,7 +33,7 @@ class TestTradingDeskSafety(unittest.TestCase):
         # Case 1: Low confidence should block
         score_low = ScorePacket(signal_id="test-001", confidence_score=50.0)
         risk_low = RiskEngine.evaluate_risk(signal, score_low)
-        self.assertEqual(risk_low.decision, "BLOCK")
+        self.assertEqual(risk_low.decision, RiskDecision.BLOCK)
         self.assertIn("Confidence 50.0% below threshold", risk_low.reason)
 
         # Case 2: Approval works
@@ -38,12 +41,12 @@ class TestTradingDeskSafety(unittest.TestCase):
         # Reset count for test
         RiskEngine._signal_count_today = 0
         risk_high = RiskEngine.evaluate_risk(signal, score_high)
-        self.assertEqual(risk_high.decision, "APPROVE")
+        self.assertEqual(risk_high.decision, RiskDecision.APPROVE)
 
         # Case 3: Daily limit hits
         RiskEngine._signal_count_today = RiskEngine.MAX_DAILY_SIGNALS
         risk_limit = RiskEngine.evaluate_risk(signal, score_high)
-        self.assertEqual(risk_limit.decision, "BLOCK")
+        self.assertEqual(risk_limit.decision, RiskDecision.BLOCK)
         self.assertIn("Daily Max Signal Limit reached", risk_limit.reason)
 
 

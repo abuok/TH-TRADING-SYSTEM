@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antigravity Operator Dashboard</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@400;600;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/theme.css">
+    
+</head>
+
+<body>
+    <div class="hud-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="/dashboard" class="sidebar-brand">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                    </svg>
+                    TRADEHALL
+                </a>
+                <div class="sidebar-version">OPERATOR DASHBOARD v1.0.0</div>
+            </div>
+
+            <div class="sidebar-content">
+                <section class="sidebar-section">
+                    <h4 class="sidebar-section-title">Operations</h4>
+                    <ul class="sidebar-nav">
+                        <li class="sidebar-item">
+                            <a href="/dashboard" class="sidebar-link active">
+                                <span class="sidebar-dot"></span>Overview
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="/dashboard/ops/daily" class="sidebar-link">
+                                <span class="sidebar-dot"></span>Ops Daily
+                            </a>
+                        </li>
+                    </ul>
+                </section>
+
+                <section class="sidebar-section">
+                    <h4 class="sidebar-section-title">Trading</h4>
+                    <ul class="sidebar-nav">
+                        <li class="sidebar-item">
+                            <a href="/dashboard/queue" class="sidebar-link">
+                                <span class="sidebar-dot"></span>Queue
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="/dashboard/trades" class="sidebar-link">
+                                <span class="sidebar-dot"></span>Trades
+                            </a>
+                        </li>
+                    </ul>
+                </section>
+
+                <section class="sidebar-section">
+                    <h4 class="sidebar-section-title">Analytics</h4>
+                    <ul class="sidebar-nav">
+                        <li class="sidebar-item">
+                            <a href="/dashboard/pilot" class="sidebar-link">
+                                <span class="sidebar-dot"></span>Pilot
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="/dashboard/fundamentals" class="sidebar-link">
+                                <span class="sidebar-dot"></span>Fundamentals
+                            </a>
+                        </li>
+                    </ul>
+                </section>
+
+                <section class="sidebar-section">
+                    <h4 class="sidebar-section-title">System</h4>
+                    <ul class="sidebar-nav">
+                        <li class="sidebar-item">
+                            <a href="/dashboard/health" class="sidebar-link">
+                                <span class="sidebar-dot"></span>Health
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="/dashboard/theme" class="sidebar-link">
+                                <span class="sidebar-dot"></span>Theme
+                            </a>
+                        </li>
+                    </ul>
+                </section>
+            </div>
+        </aside>
+
+        <header class="hud-top-bar">
+            <div class="flex-1 align-center flex gap-4">
+                <span class="badge badge-success Intense-glow-cyan">SYSTEM ARMED</span>
+                <span class="m-0 sidebar-version" style="opacity: 0.8;">SESSIONS: LDN / NY</span>
+            </div>
+            <div class="header-clock flex align-center gap-5">
+                <div id="clock" class="clock-display text-lg text-cyan text-mono">--:--:--</div>
+                <div class="text-upper text-xs clock-label text-muted letter-spacing-1">
+                    UTC+3 (NAIROBI)</div>
+            </div>
+        </header>
+
+        <main class="hud-main">
+            
+<div class="header-section">
+    <div class="header-title">
+        <h1>Weekly Review Pack</h1>
+        <p>Performance Audit & Quality Insights: Feb 24 - Mar 03, 2026</p>
+    </div>
+    <div class="header-clock">
+        <div class="clock-display">0.00R</div>
+        <div class="clock-label">Weekly P/L Proxy</div>
+    </div>
+</div>
+
+<div class="grid">
+    <!-- performance card -->
+    <div class="card animate-fade">
+        <div class="card-header">
+            <h2>Performance Metrics</h2>
+            <span class="badge badge-info">Win Rate: 0.0%</span>
+        </div>
+        <div class="sub-grid">
+            <div>
+                <div class="metric-value">0.00R</div>
+                <div class="metric-label">Realized R</div>
+            </div>
+            <div>
+                <div class="metric-value text-orange">0.00R</div>
+                <div class="metric-label">Missed R (Hindsight)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- discipline card -->
+    <div class="card animate-fade delay-1">
+        <div class="card-header">
+            <h2>Discipline & Quality</h2>
+        </div>
+        <div class="sub-grid">
+            <div>
+                <div class="metric-value">0</div>
+                <div class="metric-label">Rule Violations</div>
+            </div>
+            <div>
+                <div class="metric-value">0.0</div>
+                <div class="metric-label">Avg Guardrails Score</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- decision quality card -->
+    <div class="card animate-fade delay-2">
+        <div class="card-header">
+            <h2>Decision Quality</h2>
+        </div>
+        <table>
+            <tr>
+                <th>Segment</th>
+                <th>Winners</th>
+                <th>Losers</th>
+            </tr>
+            <tr>
+                <td>Approved</td>
+                <td class="text-green">0</td>
+                <td class="text-red">0</td>
+            </tr>
+            <tr>
+                <td>Skipped/Expired</td>
+                <td class="text-green">0</td>
+                <td class="text-red">0</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<div class="grid">
+    <!-- insights card -->
+    <div class="card animate-fade delay-3">
+        <h2>Top Insights & Mistakes</h2>
+        <div class="sub-grid">
+            <div>
+                <div class="sub-header text-green">Insights</div>
+                <ul class="list-unstyled">
+                    <li class="event-item border-left-green">Policy Router effectively switched to RISK_OFF 0 times during high news density.</li>
+                    
+                    <li class="event-item border-left-green">Average Guardrails score for winners: 0.0</li>
+                    
+                    <li class="event-item border-left-green">Auto-capture rate (bridge fills): 0.0% (0 of 0 closed trades logged automatically).</li>
+                    
+                </ul>
+            </div>
+            <div>
+                <div class="sub-header text-red">Mistakes</div>
+                <ul class="list-unstyled">
+                    <li class="event-item border-left-red">Most frequent skip reason: HIGH_SPREAD (10 times).</li>
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- action items card -->
+    <div class="card animate-fade delay-4">
+        <div class="card-header">
+            <h2>Auto-Created Action Items</h2>
+            <a href="/dashboard/action-items" class="badge badge-info no-underline">View Tracker</a>
+        </div>
+        <ul class="list-unstyled">
+            <li class="event-item border-left-orange">Review and optimize skip reason: HIGH_SPREAD</li>
+            
+            
+        </ul>
+    </div>
+</div>
+
+        </main>
+    </div>
+
+    <script>
+        function updateClock() {
+            const now = new Date();
+            const options = { timeZone: 'Africa/Nairobi', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            const timeStr = new Intl.DateTimeFormat('en-GB', options).format(now);
+            const clockEl = document.getElementById('clock');
+            if (clockEl) clockEl.textContent = timeStr;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
+</body>
+
+</html>

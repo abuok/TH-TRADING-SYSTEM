@@ -30,6 +30,7 @@ class OpsEngine:
             self.jinja_env = jinja2.Environment(
                 loader=jinja2.FileSystemLoader(TEMPLATE_DIR)
             )
+            self.jinja_env.globals['url_for'] = lambda endpoint, **kwargs: f"/{endpoint}/{kwargs.get('path', '')}"
 
     def generate_daily_report(self) -> DailyOpsReport:
         now = get_nairobi_time()

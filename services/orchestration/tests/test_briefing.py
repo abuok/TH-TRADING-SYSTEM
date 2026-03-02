@@ -347,4 +347,4 @@ def test_dashboard_briefings_route(db, tmp_path, monkeypatch):
         dash_app.dependency_overrides.clear()
 
     assert response.status_code == 200
-    assert "Briefing" in response.text
+    assert "BRIEFINGS" in response.text.upper()

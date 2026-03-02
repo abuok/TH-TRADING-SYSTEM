@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antigravity Operator Dashboard</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@400;600;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/theme.css">
+    
+</head>
+
+<body>
+    <div class="hud-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="/dashboard" class="sidebar-brand">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                    </svg>
+                    TRADEHALL
+                </a>
+                <div class="sidebar-version">OPERATOR DASHBOARD v1.0.0</div>
+            </div>
+
+            <div class="sidebar-content">
+                <section class="sidebar-section">
+                    <h4 class="sidebar-section-title">Operations</h4>
+                    <ul class="sidebar-nav">
+                        <li class="sidebar-item">
+                            <a href="/dashboard" class="sidebar-link active">
+                                <span class="sidebar-dot"></span>Overview
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="/dashboard/ops/daily" class="sidebar-link">
+                                <span class="sidebar-dot"></span>Ops Daily
+                            </a>
+                        </li>
+                    </ul>
+                </section>
+
+                <section class="sidebar-section">
+                    <h4 class="sidebar-section-title">Trading</h4>
+                    <ul class="sidebar-nav">
+                        <li class="sidebar-item">
+                            <a href="/dashboard/queue" class="sidebar-link">
+                                <span class="sidebar-dot"></span>Queue
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="/dashboard/trades" class="sidebar-link">
+                                <span class="sidebar-dot"></span>Trades
+                            </a>
+                        </li>
+                    </ul>
+                </section>
+
+                <section class="sidebar-section">
+                    <h4 class="sidebar-section-title">Analytics</h4>
+                    <ul class="sidebar-nav">
+                        <li class="sidebar-item">
+                            <a href="/dashboard/pilot" class="sidebar-link">
+                                <span class="sidebar-dot"></span>Pilot
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="/dashboard/fundamentals" class="sidebar-link">
+                                <span class="sidebar-dot"></span>Fundamentals
+                            </a>
+                        </li>
+                    </ul>
+                </section>
+
+                <section class="sidebar-section">
+                    <h4 class="sidebar-section-title">System</h4>
+                    <ul class="sidebar-nav">
+                        <li class="sidebar-item">
+                            <a href="/dashboard/health" class="sidebar-link">
+                                <span class="sidebar-dot"></span>Health
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="/dashboard/theme" class="sidebar-link">
+                                <span class="sidebar-dot"></span>Theme
+                            </a>
+                        </li>
+                    </ul>
+                </section>
+            </div>
+        </aside>
+
+        <header class="hud-top-bar">
+            <div class="flex-1 align-center flex gap-4">
+                <span class="badge badge-success Intense-glow-cyan">SYSTEM ARMED</span>
+                <span class="m-0 sidebar-version" style="opacity: 0.8;">SESSIONS: LDN / NY</span>
+            </div>
+            <div class="header-clock flex align-center gap-5">
+                <div id="clock" class="clock-display text-lg text-cyan text-mono">--:--:--</div>
+                <div class="text-upper text-xs clock-label text-muted letter-spacing-1">
+                    UTC+3 (NAIROBI)</div>
+            </div>
+        </header>
+
+        <main class="hud-main">
+            
+<div class="header-section">
+    <div class="header-title">
+        <h1>Daily Ops Playbook</h1>
+        <p>System Intelligence & Actionable Insights for 2026-03-03</p>
+    </div>
+    <div class="header-clock">
+        <div class="clock-display">01:57</div>
+        <div class="clock-label">Nairobi (EAT)</div>
+    </div>
+</div>
+
+<div class="grid">
+    <!-- Health Card -->
+    <div class="card animate-fade">
+        <div class="card-header">
+            <h2>System Health</h2>
+            <span class="badge badge-success">
+                STABLE
+            </span>
+        </div>
+        <div class="metric-value">0</div>
+        <div class="metric-label">Recent Incidents (24h)</div>
+    </div>
+
+    <!-- Policy Card -->
+    <div class="card animate-fade delay-1">
+        <div class="card-header">
+            <h2>Regime Context</h2>
+            <span class="badge badge-info">0 Switches</span>
+        </div>
+        <div class="list-unstyled">
+            
+        </div>
+    </div>
+
+    <!-- Queue Card -->
+    <div class="card animate-fade delay-2">
+        <div class="card-header">
+            <h2>Queue Summary</h2>
+        </div>
+        <div class="sub-grid">
+            <div>
+                <div class="metric-value">0</div>
+                <div class="metric-label">Approved</div>
+            </div>
+            <div>
+                <div class="metric-value">1</div>
+                <div class="metric-label">Skipped/Expired</div>
+            </div>
+        </div>
+        <div class="sub-header mt-1">Top Skip Reasons</div>
+        <ul class="list-unstyled">
+            <li class="event-item border-left-orange">
+                ALREADY_MOVED
+            </li>
+            
+        </ul>
+    </div>
+</div>
+
+<div class="grid">
+    <!-- Hindsight Highlights -->
+    <div class="card animate-fade delay-3">
+        <h2>Missed Opportunity (Hindsight)</h2>
+        <div class="sub-grid">
+            <div>
+                <div class="metric-value text-orange">1</div>
+                <div class="metric-label">Missed Tickets</div>
+            </div>
+            <div>
+                <div class="metric-value text-orange">+0.00R</div>
+                <div class="metric-label">Estimated Missed R</div>
+            </div>
+        </div>
+        <div class="sub-header mt-1">Winners identified that were not traded.</div>
+    </div>
+
+    <!-- Actionable Checklist -->
+    <div class="card animate-fade delay-4">
+        <h2>Action Checklist</h2>
+        <div class="sub-grid">
+            <div>
+                <div class="sub-header text-green">Do (Best Execution)</div>
+                <ul class="list-unstyled">
+                    <li class="event-item border-left-green">Review Manual Review Queue every 4 hours.</li>
+                    
+                    <li class="event-item border-left-green">Ensure hindsight scoring is running for all skipped trades.</li>
+                    
+                </ul>
+            </div>
+            <div>
+                <div class="sub-header text-red">Don't (Risk Management)</div>
+                <ul class="list-unstyled">
+                    <li class="event-item border-left-red">Over-leverage during high volatility session openings.</li>
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+        </main>
+    </div>
+
+    <script>
+        function updateClock() {
+            const now = new Date();
+            const options = { timeZone: 'Africa/Nairobi', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            const timeStr = new Intl.DateTimeFormat('en-GB', options).format(now);
+            const clockEl = document.getElementById('clock');
+            if (clockEl) clockEl.textContent = timeStr;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
+</body>
+
+</html>
