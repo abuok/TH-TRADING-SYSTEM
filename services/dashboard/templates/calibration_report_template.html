@@ -4,157 +4,371 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calibration Report: {{ report.report_id }}</title>
+    <title>CALIBRATION_REPORT: {{ report.report_id }}</title>
+    <link rel="stylesheet" href="/static/css/theme.css">
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-main);
+        :root {
+            --bg-dark: #0a0c10;
+            --bg-panel: rgba(255, 255, 255, 0.025);
+            --border-dim: rgba(255, 255, 255, 0.07);
+            --text-main: #e8eaf0;
+            --text-muted: rgba(232, 234, 240, 0.45);
+            --accent-cyan: #56ccf2;
+            --accent-green: #27ae60;
+            --accent-pink: #eb2f96;
+            --accent-yellow: #f2c94c;
+            --accent-orange: #f2994a;
+        }
+
+        * {
+            box-sizing: border-box;
             margin: 0;
-            padding: 20px;
+            padding: 0;
         }
 
-        .container {
-            max-width: 1000px;
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background-color: var(--bg-dark);
+            background-image: radial-gradient(ellipse at 20% 50%, rgba(86, 204, 242, 0.04) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(235, 47, 150, 0.03) 0%, transparent 60%);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .hud-container {
+            max-width: 1200px;
             margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 1.5rem;
         }
 
-        .header {
+        .col-span-12 {
+            grid-column: span 12;
+        }
+
+        .col-span-8 {
+            grid-column: span 8;
+        }
+
+        .col-span-4 {
+            grid-column: span 4;
+        }
+
+        .hud-panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-dim);
+            border-radius: 2px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .glass-panel {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .hud-panel::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255, 255, 255, 0.01) 2px, rgba(255, 255, 255, 0.01) 4px);
+            pointer-events: none;
+        }
+
+        .hud-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.6rem 1rem;
             border-bottom: 1px solid var(--border-dim);
-            padding-bottom: 20px;
-            margin-bottom: 20px;
+            background: rgba(0, 0, 0, 0.15);
         }
 
-        h1,
-        h2,
-        h3 {
+        .hud-panel-title {
+            font-size: 0.6rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-transform: uppercase;
             color: var(--accent-cyan);
         }
 
         .badge {
             display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: bold;
-            background: var(--accent-green);
-            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 2px;
+            font-size: 0.55rem;
+            font-weight: 900;
+            letter-spacing: 1px;
+            text-transform: uppercase;
         }
 
-        .badge-warn {
-            background: var(--accent-yellow);
-        }
-
-        .badge-danger {
-            background: var(--accent-pink);
-        }
-
-        .card {
-            background: var(--bg-dark);
-            border: 1px solid var(--border-dim);
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        table {
+        .hud-compact-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
+            font-size: 0.75rem;
         }
 
-        th,
-        td {
-            border: 1px solid #30363d;
-            padding: 10px;
+        .hud-compact-table th {
+            padding: 0.5rem 0.75rem;
             text-align: left;
+            font-size: 0.55rem;
+            font-weight: 900;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-dim);
+            background: rgba(0, 0, 0, 0.1);
         }
 
-        th {
-            background-color: #21262d;
+        .hud-compact-table td {
+            padding: 0.6rem 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            color: var(--text-main);
+            vertical-align: middle;
+        }
+
+        .hud-compact-table tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .rec-card {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-dim);
+            border-radius: 2px;
+            padding: 1.25rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .rec-card-high {
+            border-left: 3px solid var(--accent-green);
+        }
+
+        .rec-card-medium {
+            border-left: 3px solid var(--accent-yellow);
+        }
+
+        .rec-card-low {
+            border-left: 3px solid var(--accent-pink);
+        }
+
+        .form-control {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-dim);
+            border-radius: 2px;
+            color: var(--text-main);
+            padding: 0.4rem 0.6rem;
+            font-size: 0.7rem;
+            font-family: inherit;
+            width: 100%;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+        }
+
+        select.form-control option {
+            background: #1a1d25;
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Calibration Findings: {{ report.pair }}</h1>
-            <p class="util-33e95d">Report ID: {{ report.report_id }} | Generated: {{
-                report.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
-            <p><strong>Date Range:</strong> {{ report.date_range }} | <strong>Timeframes:</strong> {{ report.timeframe
-                }}</p>
-            <p><strong>Baseline Hash:</strong> <code>{{ report.baseline_policy_hash }}</code></p>
+    <div class="hud-container">
+
+        <!-- Report Header -->
+        <div class="hud-panel glass-panel col-span-12">
+            <header class="hud-panel-header">
+                <div class="hud-panel-title">CALIBRATION_REPORT // REPORT_ID: {{ report.report_id }}</div>
+                <span class="badge"
+                    style="background: rgba(86, 204, 242, 0.1); color: var(--accent-cyan); border: 1px solid var(--accent-cyan);">GENERATED:
+                    {{ report.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+            </header>
+            <div style="padding: 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <div
+                    style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <div
+                            style="font-size: 1.5rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.4rem;">
+                            {{ report.pair }} // CALIBRATION_FINDINGS</div>
+                        <div
+                            style="display: flex; gap: 2rem; font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">
+                            <span>DATE_WINDOW: <span style="color: var(--text-main); font-weight: 700;">{{
+                                    report.date_range }}</span></span>
+                            <span>TIMEFRAME: <span style="color: var(--text-main); font-weight: 700;">{{
+                                    report.timeframe }}</span></span>
+                        </div>
+                    </div>
+                    <div>
+                        <div
+                            style="font-size: 0.55rem; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 0.3rem;">
+                            BASELINE_POLICY_HASH</div>
+                        <code
+                            style="font-family: monospace; font-size: 0.75rem; color: var(--accent-cyan); background: rgba(86, 204, 242, 0.05); padding: 0.3rem 0.6rem; border: 1px solid rgba(86, 204, 242, 0.15); border-radius: 2px;">{{ report.baseline_policy_hash }}</code>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <h2>Policy Recommendations</h2>
-        {% if report.recommendations %}
-        {% for rec in report.recommendations %}
-        {% set score_color = "var(--accent-pink)" if score < 60 else ("var(--accent-yellow)" if score < 80
-            else "var(--accent-green)" ) %} <!-- Score Banner -->
-            {% set conf_class = 'border-left-green' if rec.confidence == 'HIGH' else ('border-left-orange' if
-            rec.confidence
-            == 'MEDIUM' else 'border-left-red') %}
-            <div class="card {{ conf_class }}">
-                <h3>[{{ rec.change_type | upper }}] {{ rec.title }}</h3>
-                <p>
-                    <label class="util-c1739c" for="skip-reason-{{ loop.index }}">Reason</label>
-                    <select id="skip-reason-{{ loop.index }}" class="badge util-28de3a" title="Skip Reason">
-                        <option value="none" selected disabled>Select a reason</option>
-                        <option value="redundant">Redundant</option>
-                        <option value="low_impact">Low Impact</option>
-                        <option value="risky">Too Risky</option>
-                        <option value="other">Other</option>
-                    </select>
-                    <span
-                        class="badge {% if rec.confidence == 'HIGH' %}badge-success{% elif rec.confidence == 'MEDIUM' %}badge-warn{% else %}badge-danger{% endif %}">{{
-                        rec.confidence }}</span>
-                </p>
-                <p><strong>Proposed Change:</strong> {{ rec.proposed_change }}</p>
-                <p><strong>Expected Impact:</strong> {{ rec.expected_impact }}</p>
-                <p><strong>Rationale:</strong> {{ rec.rationale }}</p>
-                <p>
-                    <label class="util-c1739c" for="skip-notes-{{ loop.index }}">Notes (Optional)</label>
-                    <textarea id="skip-notes-{{ loop.index }}" rows="3" class="util-5b64ac" title="Skip Notes"
-                        placeholder="Add any additional context..."></textarea>
-                </p>
-                <p class="util-33e95d"><em>Caveat: {{ rec.caveats }}</em></p>
-            </div>
-            {% endfor %}
-            {% else %}
-            <div class="card">
-                <p class="util-2de1c7">No meaningful improvements found over the baseline policy in
-                    the tested variants.</p>
-            </div>
-            {% endif %}
+        <!-- Policy Recommendations -->
+        <div class="hud-panel glass-panel col-span-12">
+            <header class="hud-panel-header">
+                <div class="hud-panel-title">POLICY_RECOMMENDATIONS // CALIBRATION_DELTA</div>
+                {% if report.recommendations %}
+                <span class="badge"
+                    style="background: rgba(242, 201, 76, 0.1); color: var(--accent-yellow); border: 1px solid var(--accent-yellow);">
+                    {{ report.recommendations | length }} RECOMMENDATIONS_QUEUED
+                </span>
+                {% endif %}
+            </header>
+            <div style="padding: 1.25rem;">
+                {% if report.recommendations %}
+                {% for rec in report.recommendations %}
+                {% set conf = rec.confidence | upper %}
+                {% set card_class = 'rec-card-high' if conf == 'HIGH' else ('rec-card-medium' if conf == 'MEDIUM' else
+                'rec-card-low') %}
+                {% set conf_color = 'var(--accent-green)' if conf == 'HIGH' else ('var(--accent-yellow)' if conf ==
+                'MEDIUM' else 'var(--accent-pink)') %}
 
-            <h2>Evidence (Metrics per Variant)</h2>
-            <div class="card">
-                <table>
+                <div class="rec-card {{ card_class }}">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                        <div>
+                            <div
+                                style="font-size: 0.55rem; color: var(--text-muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 0.3rem;">
+                                [{{ rec.change_type | upper }}]
+                            </div>
+                            <div style="font-size: 0.9rem; font-weight: 900; color: var(--text-main);">{{ rec.title }}
+                            </div>
+                        </div>
+                        <span class="badge"
+                            style="background: transparent; color: {{ conf_color }}; border: 1px solid {{ conf_color }}; flex-shrink: 0; margin-left: 1rem;">
+                            CONF: {{ conf }}
+                        </span>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div>
+                            <div
+                                style="font-size: 0.55rem; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 0.4rem;">
+                                PROPOSED_CHANGE</div>
+                            <div style="font-size: 0.7rem; color: var(--text-main); line-height: 1.5;">{{
+                                rec.proposed_change }}</div>
+                        </div>
+                        <div>
+                            <div
+                                style="font-size: 0.55rem; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 0.4rem;">
+                                EXPECTED_IMPACT</div>
+                            <div style="font-size: 0.7rem; color: var(--accent-cyan); line-height: 1.5;">{{
+                                rec.expected_impact }}</div>
+                        </div>
+                        <div>
+                            <div
+                                style="font-size: 0.55rem; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 0.4rem;">
+                                RATIONALE</div>
+                            <div style="font-size: 0.7rem; color: var(--text-main); line-height: 1.5;">{{ rec.rationale
+                                }}</div>
+                        </div>
+                    </div>
+
+                    {% if rec.caveats %}
+                    <div
+                        style="font-size: 0.6rem; color: var(--accent-yellow); background: rgba(242, 201, 76, 0.05); border: 1px solid rgba(242, 201, 76, 0.1); padding: 0.5rem 0.75rem; margin-bottom: 1rem; border-radius: 2px;">
+                        ⚠ CAVEAT: {{ rec.caveats }}
+                    </div>
+                    {% endif %}
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <label
+                                style="font-size: 0.55rem; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; display: block; margin-bottom: 0.4rem;"
+                                for="skip-reason-{{ loop.index }}">SKIP_REASON</label>
+                            <select id="skip-reason-{{ loop.index }}" class="form-control" title="Skip Reason">
+                                <option value="none" selected disabled>SELECT_REASON</option>
+                                <option value="redundant">REDUNDANT</option>
+                                <option value="low_impact">LOW_IMPACT</option>
+                                <option value="risky">TOO_RISKY</option>
+                                <option value="other">OTHER</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label
+                                style="font-size: 0.55rem; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; display: block; margin-bottom: 0.4rem;"
+                                for="skip-notes-{{ loop.index }}">ANALYST_NOTES</label>
+                            <textarea id="skip-notes-{{ loop.index }}" rows="2" class="form-control" title="Skip Notes"
+                                placeholder="Add_context..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div style="padding: 4rem; text-align: center;">
+                    <div
+                        style="font-size: 0.85rem; color: var(--accent-green); font-weight: 900; letter-spacing: 2px; margin-bottom: 0.5rem;">
+                        ZERO_IMPROVEMENTS_DETECTED</div>
+                    <div
+                        style="font-size: 0.6rem; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase;">
+                        NO_MEANINGFUL_GAINS_OVER_BASELINE_IN_TESTED_VARIANTS</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Evidence Metrics Matrix -->
+        <div class="hud-panel glass-panel col-span-12">
+            <header class="hud-panel-header">
+                <div class="hud-panel-title">EVIDENCE_MATRIX // VARIANT_METRICS_COMPARISON</div>
+            </header>
+            <div style="overflow-x: auto;">
+                <table class="hud-compact-table">
                     <thead>
                         <tr>
-                            <th>Variant</th>
-                            <th>Win Rate</th>
-                            <th>E[R]</th>
-                            <th>Max DD</th>
-                            <th>Profit Factor</th>
-                            <th>Trades</th>
+                            <th>VARIANT_LABEL</th>
+                            <th style="text-align: center;">WIN_RATE</th>
+                            <th style="text-align: right;">EXPECTANCY_(R)</th>
+                            <th style="text-align: right;">MAX_DD_(R)</th>
+                            <th style="text-align: center;">PROFIT_FACTOR</th>
+                            <th style="text-align: right;">TRADES_(EXEC/TOTAL)</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for name, metrics in report.evidence_tables['Metrics'].items() %}
-                        <tr class="{{ 'bg-baseline' if name == 'baseline' else '' }}">
-                            <td>{{ name }}</td>
-                            <td>{{ "%.1f"|format(metrics.win_rate_pct) }}%</td>
-                            <td>{{ "%.2f"|format(metrics.expectancy_r) }}R</td>
-                            <td>{{ "%.2f"|format(metrics.max_drawdown_r) }}R</td>
-                            <td>{{ "%.2f"|format(metrics.profit_factor) }}</td>
-                            <td>{{ metrics.executed_trades }} / {{ metrics.total_trades }}</td>
+                        <tr {% if name=='baseline' %}style="background: rgba(86, 204, 242, 0.04);" {% endif %}>
+                            <td>
+                                <span
+                                    style="font-weight: 900; color: {{ 'var(--accent-cyan)' if name == 'baseline' else 'var(--text-main)' }}; font-family: monospace; font-size: 0.8rem; text-transform: uppercase;">{{
+                                    name }}</span>
+                                {% if name == 'baseline' %}<span class="badge"
+                                    style="background: rgba(86, 204, 242, 0.1); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); font-size: 0.45rem; margin-left: 0.5rem;">BASELINE</span>{%
+                                endif %}
+                            </td>
+                            <td style="text-align: center;">
+                                <span class="badge"
+                                    style="background: {{ 'rgba(39, 174, 96, 0.1)' if metrics.win_rate_pct >= 50 else 'rgba(235, 47, 150, 0.1)' }}; color: {{ 'var(--accent-green)' if metrics.win_rate_pct >= 50 else 'var(--accent-pink)' }}; border: 1px solid {{ 'var(--accent-green)' if metrics.win_rate_pct >= 50 else 'var(--accent-pink)' }}; font-size: 0.65rem; font-weight: 900;">
+                                    {{ "%.1f"|format(metrics.win_rate_pct) }}%
+                                </span>
+                            </td>
+                            <td
+                                style="text-align: right; font-family: monospace; font-weight: 900; font-size: 0.85rem;">
+                                {{ "%.2f"|format(metrics.expectancy_r) }}R</td>
+                            <td
+                                style="text-align: right; font-family: monospace; font-weight: 900; font-size: 0.85rem; color: var(--accent-pink);">
+                                {{ "%.2f"|format(metrics.max_drawdown_r) }}R</td>
+                            <td style="text-align: center; font-family: monospace; font-weight: 900;">{{
+                                "%.2f"|format(metrics.profit_factor) }}</td>
+                            <td style="text-align: right; font-family: monospace; font-size: 0.75rem;">
+                                <span style="color: var(--text-main);">{{ metrics.executed_trades }}</span> / <span
+                                    style="color: var(--text-muted);">{{ metrics.total_trades }}</span>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
+        </div>
+
     </div>
 </body>
 
