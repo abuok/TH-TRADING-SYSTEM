@@ -1,54 +1,56 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="header-section">
-    <div class="header-title">
-        <h1>Fundamentals & Market Movers</h1>
-        <p>Deterministic bias based on macroeconomic proxy snapshots and events.</p>
-    </div>
-</div>
-
 <div class="hud-grid">
     <!-- Macro Context Panel -->
     <div class="hud-panel glass-panel col-span-12" data-hud-corner="top-left">
         <header class="hud-panel-header">
-            <div class="hud-panel-title">🌍 OVERALL MARKET CONTEXT</div>
+            <div class="hud-panel-title">🌍 MACRO HUD // GLOBAL SENTIMENT Snapshot</div>
             {% if movers %}
-            <span class="badge badge-info">{{ movers.data.get('sentiment_flags', ['NEUTRAL']) | join(', ') }}</span>
+            <div style="display: flex; gap: 0.5rem;">
+                {% for flag in movers.data.get('sentiment_flags', []) %}
+                <span class="badge"
+                    style="background: rgba(86, 204, 242, 0.1); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); font-size: 0.6rem;">{{
+                    flag }}</span>
+                {% endfor %}
+            </div>
             {% else %}
-            <span class="badge badge-warning">NO DATA</span>
+            <span class="badge"
+                style="background: rgba(242, 201, 76, 0.1); color: var(--accent-yellow); border: 1px solid var(--accent-yellow);">DATA_OFFLINE</span>
             {% endif %}
         </header>
 
         {% if movers %}
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+        <div
+            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; padding: 1rem;">
             {% for sym, proxy in (movers.data.get('proxies', {})).items() %}
-            <div class="hud-scanline"
-                style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 4px; border: 1px solid rgba(86, 204, 242, 0.1);">
-                <div
-                    style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">
-                    {{ sym }}</div>
-                <div style="font-size: 1.5rem; font-weight: 700; color: var(--text-main); margin: 0.25rem 0;">{{
-                    proxy.current_value }}</div>
-
-                {% set delta = proxy.delta_pct %}
-                <div style="font-size: 0.8rem; font-weight: 700;">
-                    {% if delta %}
-                    {% if delta > 0 %}
-                    <span style="color: var(--accent-green);">+{{ delta }}%</span>
-                    {% elif delta < 0 %} <span style="color: var(--accent-pink);">{{ delta }}%</span>
-                        {% else %}
-                        <span style="color: var(--text-muted);">0.0%</span>
-                        {% endif %}
-                        {% else %}
-                        <span style="color: var(--text-muted); opacity: 0.5;">NO PREV DATA</span>
-                        {% endif %}
+            <div class="hud-panel glass-panel hud-scanline" style="margin: 0;">
+                <header class="hud-panel-header" style="padding: 0.5rem 0.75rem; background: rgba(255,255,255,0.03);">
+                    <div class="hud-panel-title" style="font-size: 0.65rem; color: var(--text-muted);">{{ sym }} //
+                        PROXY</div>
+                </header>
+                <div style="padding: 1rem;">
+                    <div style="font-size: 1.5rem; font-weight: 900; color: var(--text-main); line-height: 1;">{{
+                        proxy.current_value }}</div>
+                    {% set delta = proxy.delta_pct %}
+                    <div style="margin-top: 0.5rem; font-family: monospace; font-size: 0.8rem; font-weight: 800;">
+                        {% if delta %}
+                        {% if delta > 0 %}
+                        <span style="color: var(--accent-green);">+{{ delta }}%</span>
+                        {% elif delta < 0 %} <span style="color: var(--accent-pink);">{{ delta }}%</span>
+                            {% else %}
+                            <span style="color: var(--text-muted);">0.00%</span>
+                            {% endif %}
+                            {% else %}
+                            <span style="color: var(--text-muted); opacity: 0.4;">NO_PREV</span>
+                            {% endif %}
+                    </div>
                 </div>
             </div>
             {% endfor %}
         </div>
         <div
-            style="font-size: 0.65rem; color: var(--text-muted); margin-top: 1rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.6;">
-            GENERATED {{ movers.created_at.strftime('%H:%M:%S') }} EAT (DETERMINISTIC PROXY SNAPSHOT)
+            style="padding: 0.5rem 1rem; font-size: 0.55rem; color: var(--text-muted); text-transform: uppercase; border-top: 1px solid rgba(255,255,255,0.05);">
+            SNAPSHOT GENERATED: {{ movers.created_at.strftime('%Y-%m-%d %H:%M:%S') }} EAT // DETERMINISTIC MACRO OVERLAY
         </div>
         {% endif %}
     </div>
@@ -58,82 +60,89 @@
     {% set latest = packets[0] if packets else None %}
     <div class="hud-panel glass-panel col-span-4" data-hud-corner="top-right">
         <header class="hud-panel-header">
-            <div class="hud-panel-title">{{ pair }} BIAS MONITOR</div>
+            <div class="hud-panel-title">{{ pair }} // STRATEGIC BIAS</div>
             {% if latest %}
             {% set bias = latest.data.bias_label %}
-            {% if bias == 'BULLISH' %}
-            <span class="badge badge-success">BULLISH</span>
-            {% elif bias == 'BEARISH' %}
-            <span class="badge badge-danger">BEARISH</span>
+            <span class="badge"
+                style="background: {{ 'rgba(39, 174, 96, 0.1)' if bias == 'BULLISH' else ('rgba(235, 47, 150, 0.1)' if bias == 'BEARISH' else 'rgba(242, 201, 76, 0.1)') }}; color: {{ 'var(--accent-green)' if bias == 'BULLISH' else ('var(--accent-pink)' if bias == 'BEARISH' else 'var(--accent-yellow)') }}; border: 1px solid {{ 'var(--accent-green)' if bias == 'BULLISH' else ('var(--accent-pink)' if bias == 'BEARISH' else 'var(--accent-yellow)') }}; font-size: 0.55rem; font-weight: 900;">
+                {{ bias }}
+            </span>
             {% else %}
-            <span class="badge badge-warning">NEUTRAL</span>
-            {% endif %}
-            {% else %}
-            <span class="badge badge-warning">OFFLINE</span>
+            <span class="badge"
+                style="background: rgba(161, 161, 179, 0.1); color: var(--text-muted); border: 1px solid var(--text-muted); font-size: 0.55rem;">NULL_STATE</span>
             {% endif %}
         </header>
 
         {% if latest %}
-        <div class="hud-scroll-body" style="max-height: 500px;">
-            <div style="margin-bottom: 1.5rem;">
-                <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">BIAS SCORE</div>
-                <div style="display: flex; align-items: baseline; gap: 0.75rem;">
+        <div class="hud-scroll-body" style="height: 400px; padding: 1rem;">
+            <!-- Bias Score Gauge -->
+            <div style="margin-bottom: 2rem;">
+                <div
+                    style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem;">
+                    BIAS CONFLUENCE SCORE</div>
+                <div style="display: flex; align-items: baseline; gap: 1rem;">
                     <div
-                        style="font-size: 2.5rem; font-weight: 800; color: {{ 'var(--accent-green)' if latest.data.bias_score > 0 else ('var(--accent-pink)' if latest.data.bias_score < 0 else 'var(--text-main)') }};">
-                        {{ latest.data.bias_score | round(1) }}
+                        style="font-size: 3rem; font-weight: 900; color: {{ 'var(--accent-green)' if latest.data.bias_score > 0 else ('var(--accent-pink)' if latest.data.bias_score < 0 else 'var(--text-main)') }}; line-height: 1;">
+                        {{ latest.data.bias_score | round(2) }}
                     </div>
-                    <div style="font-size: 0.8rem; color: var(--text-muted);">CONF: <strong>{{
-                            latest.data.confidence_label }}</strong></div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted);">SIG_STRENGTH: <strong
+                            style="color: var(--accent-cyan);">{{ latest.data.confidence_label }}</strong></div>
                 </div>
 
                 <div
-                    style="width: 100%; height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; margin-top: 0.5rem; position: relative; overflow: hidden;">
+                    style="width: 100%; height: 2px; background: rgba(255,255,255,0.05); margin-top: 0.75rem; position: relative;">
                     {% set pct = ((latest.data.bias_score + 5) / 10) * 100 %}
                     <div class="js-progress-bar" data-pct="{{ pct }}"
-                        style="height: 100%; background: {{ 'var(--accent-green)' if latest.data.bias_score > 0 else ('var(--accent-pink)' if latest.data.bias_score < 0 else 'var(--text-muted)') }}; transition: width 0.6s ease;">
+                        style="position: absolute; left: 0; top: 0; height: 100%; background: {{ 'var(--accent-green)' if latest.data.bias_score > 0 else ('var(--accent-pink)' if latest.data.bias_score < 0 else 'var(--text-muted)') }}; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); width: 0;">
                     </div>
                     <div
-                        style="position: absolute; left: 50%; top: 0; height: 100%; width: 1px; background: rgba(255,255,255,0.3);">
+                        style="position: absolute; left: 50%; top: -4px; height: 10px; width: 1px; background: rgba(255,255,255,0.3);">
                     </div>
                 </div>
             </div>
 
-            <div style="margin-bottom: 1.5rem;">
+            <!-- Drivers Stream -->
+            <div style="margin-bottom: 2rem;">
                 <div
-                    style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">
-                    KEY DRIVERS</div>
-                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.75rem;">
+                    FUNDAMENTAL VECTORS</div>
+                <div style="display: flex; flex-direction: column; gap: 0.4rem;">
                     {%- for drv in latest.data.get('drivers', []) -%}
                     <div
-                        style="background: rgba(255,255,255,0.02); padding: 0.5rem; border-left: 2px solid {{ 'var(--accent-green)' if drv.impact > 0 else ('var(--accent-pink)' if drv.impact < 0 else 'var(--text-muted)') }}; font-size: 0.8rem;">
-                        <div style="color: var(--text-main);">{{ drv.text }}</div>
-                        <div style="font-size: 0.7rem; color: var(--text-muted);">IMPACT: {{ drv.impact }}</div>
+                        style="background: rgba(255,255,255,0.02); padding: 0.6rem; border-left: 2px solid {{ 'var(--accent-green)' if drv.impact > 0 else ('var(--accent-pink)' if drv.impact < 0 else 'var(--text-muted)') }};">
+                        <div style="font-size: 0.75rem; color: var(--text-main); font-weight: 700; line-height: 1.3;">{{
+                            drv.text }}</div>
+                        <div
+                            style="font-size: 0.55rem; color: var(--text-muted); margin-top: 0.2rem; font-family: monospace;">
+                            IMPACT_COEFFICIENT: {{ drv.impact }}</div>
                     </div>
                     {%- else -%}
-                    <div style="font-size: 0.8rem; color: var(--text-muted); opacity: 0.5;">NO EXPLICIT DRIVERS DETECTED
-                    </div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted); opacity: 0.4; font-style: italic;">
+                        NO_VECTORS_DETECTED</div>
                     {%- endfor -%}
                 </div>
             </div>
 
+            <!-- Invalidation Area -->
             <div>
                 <div
-                    style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">
-                    INVALIDATION CRITERIA</div>
+                    style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem;">
+                    INVALIDATION PROTOCOL</div>
                 <div
-                    style="background: rgba(235, 47, 150, 0.05); padding: 0.75rem; border: 1px dashed var(--accent-pink); border-radius: 4px; color: var(--text-main); font-size: 0.8rem; font-style: italic;">
-                    {{ latest.data.get('invalidation_criteria', 'N/A') }}
+                    style="background: rgba(235, 47, 150, 0.03); border: 1px dashed rgba(235, 47, 150, 0.3); padding: 0.75rem; border-radius: 2px; color: var(--accent-pink); font-size: 0.7rem; font-family: monospace; line-height: 1.4;">
+                    > {{ latest.data.get('invalidation_criteria', 'STOCHASTIC_UNCERTAINTY_DETECTED') }}
                 </div>
             </div>
         </div>
 
         <footer
-            style="border-top: 1px solid rgba(255,255,255,0.05); margin-top: 1rem; padding-top: 0.5rem; text-align: right; font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; opacity: 0.6;">
-            SYNCED {{ latest.created_at.strftime('%H:%M:%S') }} EAT
+            style="padding: 0.5rem 1rem; border-top: 1px solid rgba(255,255,255,0.05); text-align: right; font-size: 0.55rem; color: var(--text-muted); text-transform: uppercase;">
+            TELEMETRY_SYNCED: {{ latest.created_at.strftime('%H:%M:%S') }} EAT
         </footer>
         {% else %}
-        <div style="padding: 2rem; text-align: center; color: var(--text-muted); opacity: 0.5; font-size: 0.8rem;">
-            NO RECENT FUNDAMENTALS DATA
+        <div
+            style="height: 400px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 0.7rem; letter-spacing: 2px; opacity: 0.3;">
+            SIGNAL_INTERRUPTED_NO_DATA
         </div>
         {% endif %}
     </div>
@@ -142,10 +151,12 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        document.querySelectorAll('.js-progress-bar').forEach(function (bar) {
-            const pct = bar.getAttribute('data-pct');
-            bar.style.width = pct + '%';
-        });
+        setTimeout(() => {
+            document.querySelectorAll('.js-progress-bar').forEach(function (bar) {
+                const pct = bar.getAttribute('data-pct');
+                bar.style.width = pct + '%';
+            });
+        }, 100);
     });
 </script>
 {% endblock %}
