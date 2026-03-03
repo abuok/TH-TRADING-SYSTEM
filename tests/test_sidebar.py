@@ -17,8 +17,11 @@ def test_sidebar_renders_on_dashboard():
     # Verify specific links
     assert "Queue" in content
     assert "Pilot" in content
+    assert "Queue" in content
+    assert "Pilot" in content
     assert "Fundamentals" in content
     assert "Ops Daily" in content
+    assert "Execution Prep" in content
 
     # Verify sidebar structure
     assert 'class="sidebar"' in content

@@ -138,18 +138,10 @@ import json
 from datetime import datetime
 import yaml
 
-from shared.types.research import CounterfactualConfig
-from services.research.simulator import run_replay
-from services.research.reporting import (
-    save_research_run,
-    load_research_run,
-    save_calibration_report,
-    compile_calibration_html,
-)
-from services.research.calibration import generate_calibration_report
-
 
 def save_json(result):
+    from services.research.reporting import save_research_run
+
     return save_research_run(result)
 
 
@@ -191,6 +183,9 @@ def research_run(
     ),
 ):
     """Run a historical replay and generate reports."""
+    from shared.types.research import CounterfactualConfig
+    from services.research.simulator import run_replay
+
     try:
         dt_from = datetime.fromisoformat(date_from)
         dt_to = datetime.fromisoformat(date_to)
@@ -230,6 +225,13 @@ def research_calibrate(
 ):
     """Generate a Policy Calibration pack from a historical replay run."""
     try:
+        from services.research.calibration import generate_calibration_report
+        from services.research.reporting import (
+            compile_calibration_html,
+            load_research_run,
+            save_calibration_report,
+        )
+
         run_res = load_research_run(run_id)
 
         with console.status(f"[bold green]Generating calibration for {run_id}...[/]"):
@@ -328,6 +330,9 @@ def validate_proposals(
     timeframe: str = "15m",
 ):
     """Validate a tuning proposal by running research simulations over a historical window."""
+    from shared.types.research import CounterfactualConfig
+    from services.research.simulator import run_replay
+
     try:
         dt_from = datetime.fromisoformat(date_from)
         dt_to = datetime.fromisoformat(date_to)
