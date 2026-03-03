@@ -5,7 +5,6 @@ from core_models import SignalPacket, ScorePacket, Direction, RiskDecision
 from unittest.mock import patch
 
 
-
 class TestTradingDeskSafety(unittest.TestCase):
     def test_session_boundaries(self):
         # London Session: 10:00 - 19:00 EAT

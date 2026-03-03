@@ -47,10 +47,7 @@ def load_config(path: str = _DEFAULT_CONFIG_PATH) -> Dict[str, Any]:
 
     # Apply env overrides for scalar values
     scalar_keys = [
-<<<<<<< HEAD
         "quote_staleness_limit_seconds",
-=======
->>>>>>> a131891 (Add minimal Ruff pre-commit hooks and helper targets)
         "news_buffer_minutes",
         "phx_min_stages_required",
         "displacement_min_candle_ratio",
@@ -247,7 +244,6 @@ def _rule_news_window(
     )
 
 
-<<<<<<< HEAD
 def _rule_eod_gap(now_nairobi: datetime, cfg: Dict) -> RuleCheck:
     """GR-E01: Block trading around broker End Of Day (00:00 EET) due to spread widening."""
     # Convert Nairobi time to broker time (EET/EEST)
@@ -293,8 +289,6 @@ def _rule_eod_gap(now_nairobi: datetime, cfg: Dict) -> RuleCheck:
     )
 
 
-=======
->>>>>>> a131891 (Add minimal Ruff pre-commit hooks and helper targets)
 def _rule_phx_sequence(setup_data: Dict, cfg: Dict) -> RuleCheck:
     """GR-P01: Does the setup reach the minimum required PHX stage?"""
     stage_name = setup_data.get(
@@ -557,7 +551,6 @@ def _rule_duplicate_signal(
         is_mandatory=hard,
         deduction=0,
         evidence_refs=evidence,
-<<<<<<< HEAD
     )
 
 
@@ -608,8 +601,6 @@ def _rule_quote_staleness(setup_data: Dict, cfg: Dict, db: Session) -> RuleCheck
         is_mandatory=hard,
         deduction=0,
         evidence_refs=evidence,
-=======
->>>>>>> a131891 (Add minimal Ruff pre-commit hooks and helper targets)
     )
 
 
@@ -688,10 +679,7 @@ class GuardrailsEngine:
             checks.append(
                 _rule_duplicate_signal(setup_data, effective_cfg, db, now_nairobi)
             )
-<<<<<<< HEAD
             checks.append(_rule_quote_staleness(setup_data, effective_cfg, db))
-=======
->>>>>>> a131891 (Add minimal Ruff pre-commit hooks and helper targets)
         else:
             checks.append(
                 RuleCheck(
@@ -703,7 +691,6 @@ class GuardrailsEngine:
                     deduction=effective_cfg["score_deduction_warn"],
                 )
             )
-<<<<<<< HEAD
             checks.append(
                 RuleCheck(
                     id="GR-Q01",
@@ -714,8 +701,6 @@ class GuardrailsEngine:
                     deduction=effective_cfg["score_deduction_warn"],
                 )
             )
-=======
->>>>>>> a131891 (Add minimal Ruff pre-commit hooks and helper targets)
 
         # ── Score computation ──────────────────────────────────────────
         deductions = sum(c.deduction for c in checks)
