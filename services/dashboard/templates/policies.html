@@ -27,7 +27,7 @@
                 REGIME SIGNALS</div>
             <div class="gap-2 grid mb-3 grid-cols-2">
                 {% for key, val in policy.regime_signals.items() %}
-                <div style="background: rgba(255,255,255,0.03); padding: 0.4rem; border-radius: 2px;">
+                <div class="bg-white-3 p-2 rounded">
                     <div class="text-muted text-micro text-upper">{{ key |
                         replace('_', ' ') }}</div>
                     <div class="text-mono text-bold text-xs text-cyan">
@@ -76,10 +76,8 @@
                         <td class="text-bold text-main">{{ entry.pair }}</td>
                         <td>
                             <div class="align-center flex gap-2">
-                                <span class="bg-cyan-dim text-cyan badge" style="border: 1px solid rgba(86, 204, 242, 0.2);">{{
-                                    entry.policy_name }}</span>
-                                <span class="text-muted text-xxs text-mono">#{{
-                                    entry.policy_hash[:8] }}</span>
+                                <span class="bg-cyan-dim text-cyan badge border-cyan-dim">{{ entry.policy_name }}</span>
+                                <span class="text-muted text-xxs text-mono">#{{ entry.policy_hash[:8] }}</span>
                             </div>
                         </td>
                         <td class="text-xxs text-muted">

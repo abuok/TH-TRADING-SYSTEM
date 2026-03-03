@@ -10,6 +10,7 @@
         rel="stylesheet">
     <link rel="stylesheet" href="/static/style.css">
     <link rel="stylesheet" href="/static/theme.css">
+    <link rel="stylesheet" href="/static/components.css">
     <style>
         @keyframes riskFlash {
             0% {
@@ -131,7 +132,7 @@
         <header class="hud-top-bar">
             <div class="flex-1 align-center flex gap-4">
                 <span class="badge badge-success Intense-glow-cyan">SYSTEM ARMED</span>
-                <span class="m-0 sidebar-version" style="opacity: 0.8;">SESSIONS: LDN / NY</span>
+                <span class="m-0 sidebar-version opacity-80">SESSIONS: LDN / NY</span>
             </div>
             <div class="header-clock flex align-center gap-5">
                 <div id="clock" class="clock-display text-lg text-cyan text-mono">--:--:--</div>
@@ -225,21 +226,15 @@
         <div class="sub-grid">
             <div>
                 <div class="sub-header text-green">Insights</div>
-                <ul class="list-unstyled">
-                    <li class="event-item border-left-green">Policy Router effectively switched to RISK_OFF 0 times during high news density.</li>
-                    
-                    <li class="event-item border-left-green">Average Guardrails score for winners: 0.0</li>
-                    
-                    <li class="event-item border-left-green">Auto-capture rate (bridge fills): 0.0% (0 of 0 closed trades logged automatically).</li>
-                    
-                </ul>
+                <ul class="list-unstyled"><li
+                        class="event-item border-left-green">Policy Router effectively switched to RISK_OFF 0 times during high news density.</li><li
+                        class="event-item border-left-green">Average Guardrails score for winners: 0.0</li><li
+                        class="event-item border-left-green">Auto-capture rate (bridge fills): 0.0% (0 of 0 closed trades logged automatically).</li></ul>
             </div>
             <div>
                 <div class="sub-header text-red">Mistakes</div>
-                <ul class="list-unstyled">
-                    <li class="event-item border-left-red">Most frequent skip reason: HIGH_SPREAD (10 times).</li>
-                    
-                </ul>
+                <ul class="list-unstyled"><li
+                        class="event-item border-left-red">Most frequent skip reason: HIGH_SPREAD (10 times).</li></ul>
             </div>
         </div>
     </div>
@@ -250,11 +245,8 @@
             <h2>Auto-Created Action Items</h2>
             <a href="/dashboard/action-items" class="badge badge-info no-underline">View Tracker</a>
         </div>
-        <ul class="list-unstyled">
-            <li class="event-item border-left-orange">Review and optimize skip reason: HIGH_SPREAD</li>
-            
-            
-        </ul>
+        <ul class="list-unstyled"><li
+                class="event-item border-left-orange">Review and optimize skip reason: HIGH_SPREAD</li></ul>
     </div>
 </div>
 

@@ -39,12 +39,11 @@
                         <td><span class="text-purple badge text-mini bg-purple-dim-2 border-purple">{{
                                 setup.data.stage }}</span></td>
                         <td class="text-bold text-mono">{{ setup.data.score }}</td>
-                        <td
-                            style="font-weight: 700; color: {{ 'var(--accent-green)' if setup.data.bias == 'BULLISH' else 'var(--accent-pink)' }}">
+                        <td class="font-700 {{ 'text-buy' if setup.data.bias == 'BULLISH' else 'text-sell' }}">
                             {{ setup.data.bias }}</td>
                         <td>
-                            <span class="badge"
-                                style="background: {{ 'rgba(39, 174, 96, 0.1)' if setup.is_fresh else 'rgba(242, 201, 76, 0.1)' }}; color: {{ 'var(--accent-green)' if setup.is_fresh else 'var(--accent-yellow)' }}; border: 1px solid {{ 'var(--accent-green)' if setup.is_fresh else 'var(--accent-yellow)' }}; font-size: 0.55rem; font-weight: 900;">
+                            <span
+                                class="badge badge-sm font-900 {{ 'bg-buy-dim border-buy text-buy' if setup.is_fresh else 'bg-warn-dim border-warn text-warn' }} text-mini">
                                 {{ 'SYNCED // FRESH' if setup.is_fresh else 'DEGRADED // STALE' }}
                             </span>
                         </td>
@@ -52,8 +51,7 @@
                     {% endfor %}
                     {% if not setups %}
                     <tr>
-                        <td colspan="6"
-                            class="hud-empty-state">
+                        <td colspan="6" class="hud-empty-state">
                             SCANNING FOR TECHNICAL CONFLUENCE... NO SETUPS DETECTED</td>
                     </tr>
                     {% endif %}

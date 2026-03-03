@@ -1,0 +1,841 @@
+/* Centralized components and utility classes for TH Trading System Dashboard */
+
+/* Layout & Grid */
+.grid-bridge {
+    grid-template-columns: 3fr 1fr;
+}
+
+.grid-cols-3 {
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
+.grid-cols-4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.grid-autofit-180 {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.grid-cols-hindsight {
+    grid-template-columns: 1fr 2fr;
+}
+
+.grid-cols-tickets {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+.grid-cols-briefings {
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+}
+
+.grid-cols-300 {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+.flex-1 {
+    flex: 1;
+}
+
+.flex-2 {
+    flex: 2;
+}
+
+.flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ws-nowrap {
+    white-space: nowrap;
+}
+
+.w-15 {
+    width: 15px;
+}
+
+.w-0 {
+    width: 0;
+}
+
+.flex-2 {
+    flex: 2;
+}
+
+.relative {
+    position: relative;
+}
+
+.absolute {
+    position: absolute;
+}
+
+.left-0 {
+    left: 0;
+}
+
+.top-0 {
+    top: 0;
+}
+
+.h-full {
+    height: 100%;
+}
+
+.w-full {
+    width: 100%;
+}
+
+.items-start {
+    align-items: flex-start;
+}
+
+/* Sizing */
+.w-120 {
+    width: 120px;
+}
+
+.w-100 {
+    width: 100px;
+}
+
+.w-150 {
+    width: 150px;
+}
+
+.w-180 {
+    width: 180px;
+}
+
+.w-250 {
+    width: 250px;
+}
+
+.w-1-2 {
+    width: 50%;
+}
+
+.w-full {
+    width: 100%;
+}
+
+.w-500 {
+    width: 500px;
+}
+
+/* Spacing */
+.mr-16 {
+    margin-right: 4rem;
+}
+
+/* Semantic Colors & Backgrounds */
+.bg-buy {
+    background: var(--accent-green);
+}
+
+.bg-sell {
+    background: var(--accent-pink);
+}
+
+.bg-warn {
+    background: var(--accent-yellow);
+}
+
+.bg-black-dim {
+    background: rgba(0, 0, 0, 0.6);
+}
+
+/* Borders */
+.rounded-b-4 {
+    border-radius: 0 0 4px 4px;
+}
+
+.rounded-4 {
+    border-radius: 4px;
+}
+
+.border-1 {
+    border-width: 1px;
+}
+
+.border-t-1 {
+    border-top-width: 1px;
+}
+
+.border-t-2 {
+    border-top-width: 2px;
+}
+
+.border-t-2-main {
+    border-top: 2px solid var(--border-main);
+}
+
+.border-b-1 {
+    border-bottom-width: 1px;
+}
+
+.border-l-2 {
+    border-left-width: 2px;
+}
+
+.border-l-4 {
+    border-left-width: 4px;
+}
+
+.border-buy-soft {
+    border-color: rgba(39, 174, 96, 0.3);
+}
+
+.border-sell-soft {
+    border-color: rgba(235, 47, 150, 0.3);
+}
+
+.border-buy-10 {
+    border: 1px solid rgba(39, 174, 96, 0.1);
+}
+
+.border-buy-20 {
+    border: 1px solid rgba(39, 174, 96, 0.2);
+}
+
+.border-sell-10 {
+    border: 1px solid rgba(235, 47, 150, 0.1);
+}
+
+.border-sell-20 {
+    border: 1px solid rgba(235, 47, 150, 0.2);
+}
+
+.border-warn-soft {
+    border-color: rgba(242, 153, 74, 0.2);
+}
+
+.border-warn-10 {
+    border: 1px solid rgba(242, 201, 76, 0.1);
+}
+
+.border-warn-20 {
+    border: 1px solid rgba(242, 201, 76, 0.2);
+}
+
+.border-cyan-dim {
+    border: 1px solid rgba(86, 204, 242, 0.2);
+}
+
+.border-cyan-30 {
+    border: 1px solid rgba(86, 204, 242, 0.3);
+}
+
+.border-white-5 {
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.border-white-3 {
+    border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.border-cyan-left-2 {
+    border-left: 2px solid var(--accent-cyan);
+}
+
+.border-cyan-left-3 {
+    border-left: 3px solid var(--accent-cyan);
+}
+
+.border-cyan-bottom {
+    border-bottom: 1px solid rgba(86, 204, 242, 0.2);
+}
+
+.border-l-2-cyan {
+    border-left: 2px solid var(--accent-cyan);
+}
+
+.border-l-2-warn {
+    border-left: 2px solid var(--accent-yellow);
+}
+
+.border-l-2-green {
+    border-left: 2px solid var(--accent-green);
+}
+
+.border-l-2-sell {
+    border-left: 2px solid var(--accent-pink);
+}
+
+.border-l-2-muted {
+    border-left: 2px solid var(--text-muted);
+}
+
+.border-l-3-cyan {
+    border-left: 3px solid var(--accent-cyan);
+}
+
+.border-l-3-yellow {
+    border-left: 3px solid var(--accent-yellow);
+}
+
+.border-l-3-purple {
+    border-left: 3px solid var(--accent-purple);
+}
+
+.border-l-3-green {
+    border-left: 3px solid var(--accent-green);
+}
+
+.border-l-3-sell {
+    border-left: 3px solid var(--accent-pink);
+}
+
+.border-l-4-orange {
+    border-left: 4px solid var(--accent-orange);
+}
+
+.border-main-1 {
+    border: 1px solid var(--border-main);
+}
+
+.border-cyan-10 {
+    border: 1px solid rgba(86, 204, 242, 0.1);
+}
+
+.border-dashed-sell {
+    border: 1px dashed rgba(235, 47, 150, 0.3);
+}
+
+.border-t-white-5 {
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.border-divider-1 {
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.border-theme-soft {
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Typography */
+.text-extra-bold {
+    font-weight: 700;
+}
+
+.text-bold-lg {
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+/* Effects */
+.shadow-sell {
+    box-shadow: 0 0 5px var(--accent-pink);
+}
+
+/* Dynamic Sides / Statuses */
+.bg-buy-dim {
+    background: rgba(39, 174, 96, 0.1);
+}
+
+.bg-sell-dim {
+    background: rgba(235, 47, 150, 0.1);
+}
+
+.bg-warn-dim {
+    background: rgba(242, 201, 76, 0.1);
+}
+
+.bg-cyan-dim {
+    background: rgba(86, 204, 242, 0.1);
+}
+
+.bg-white-5 {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.bg-white-2 {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.bg-white-3 {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.bg-white-10 {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.bg-cyan-04 {
+    background: rgba(86, 204, 242, 0.04);
+}
+
+.bg-cyan-10 {
+    background: rgba(86, 204, 242, 0.1);
+}
+
+.bg-cyan-dim-15 {
+    background: rgba(86, 204, 242, 0.15);
+}
+
+.bg-black-15 {
+    background: rgba(0, 0, 0, 0.15);
+}
+
+.bg-black-20 {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.bg-black-25 {
+    background: rgba(0, 0, 0, 0.25);
+}
+
+.bg-black-30 {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.bg-black-50 {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.bg-stop-loss-dim {
+    background: rgba(235, 47, 150, 0.03);
+}
+
+.bg-target-dim {
+    background: rgba(39, 174, 96, 0.03);
+}
+
+.bg-warn-05 {
+    background: rgba(242, 201, 76, 0.05);
+}
+
+.bg-warn-02 {
+    background: rgba(242, 201, 76, 0.02);
+}
+
+.bg-buy-05 {
+    background: rgba(39, 174, 96, 0.05);
+}
+
+.bg-buy-02 {
+    background: rgba(39, 174, 96, 0.02);
+}
+
+.bg-orange-05 {
+    background: rgba(242, 153, 74, 0.05);
+}
+
+.bg-sell-05 {
+    background: rgba(235, 47, 150, 0.05);
+}
+
+.bg-sell-03 {
+    background: rgba(235, 47, 150, 0.03);
+}
+
+.bg-glass-light {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.text-buy {
+    color: var(--accent-green);
+}
+
+.text-sell {
+    color: var(--accent-pink);
+}
+
+.text-warn {
+    color: var(--accent-yellow);
+}
+
+.text-cyan {
+    color: var(--accent-cyan);
+}
+
+.border-buy {
+    border: 1px solid var(--accent-green);
+}
+
+.border-sell {
+    border: 1px solid var(--accent-pink);
+}
+
+.border-warn {
+    border: 1px solid var(--accent-yellow);
+}
+
+.border-cyan {
+    border: 1px solid var(--accent-cyan);
+}
+
+/* Layout Helpers */
+.flex-grow-1 {
+    flex-grow: 1;
+}
+
+.display-block {
+    display: block;
+}
+
+.overflow-hidden {
+    overflow: hidden;
+}
+
+.h-min-800 {
+    min-height: 800px;
+}
+
+.h-0-5 {
+    height: 2px;
+}
+
+.h-1 {
+    height: 1px;
+}
+
+.h-10 {
+    height: 10px;
+}
+
+.h-25 {
+    height: 25px;
+}
+
+.h-40 {
+    height: 40px;
+}
+
+.h-100 {
+    height: 100px;
+}
+
+.h-200 {
+    height: 200px;
+}
+
+.h-300 {
+    height: 300px;
+}
+
+.h-400 {
+    height: 400px;
+}
+
+.h-500 {
+    height: 500px;
+}
+
+.h-full {
+    height: 100% !important;
+}
+
+.h-0 {
+    height: 0;
+}
+
+.h-4 {
+    height: 4px;
+}
+
+.h-6 {
+    height: 6px;
+}
+
+.h-180 {
+    height: 180px;
+}
+
+.h-220 {
+    height: 220px;
+}
+
+.h-250 {
+    height: 250px;
+}
+
+.h-300 {
+    height: 300px;
+}
+
+.h-350 {
+    height: 350px;
+}
+
+.h-400 {
+    height: 400px;
+}
+
+.h-450 {
+    height: 450px;
+}
+
+.h-500 {
+    height: 500px;
+}
+
+.h-600 {
+    height: 600px;
+}
+
+/* Custom Borders / Accents */
+.border-accent-left {
+    border-left: 3px solid var(--accent-cyan);
+}
+
+.border-theme {
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.border-divider {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Score Confidence */
+.text-confidence-high {
+    color: var(--accent-green);
+    font-weight: 800;
+}
+
+.text-confidence-medium {
+    color: var(--accent-yellow);
+    font-weight: 800;
+}
+
+.text-confidence-low {
+    color: var(--accent-pink);
+    font-weight: 800;
+}
+
+/* Hindsight Classes */
+.text-hs-win {
+    color: var(--accent-green);
+    border-color: var(--accent-green);
+}
+
+.text-hs-loss {
+    color: var(--accent-pink);
+    border-color: var(--accent-pink);
+}
+
+.text-hs-neutral {
+    color: var(--accent-yellow);
+    border-color: var(--accent-yellow);
+}
+
+.text-hs-stale {
+    color: var(--text-muted);
+    border-color: var(--text-muted);
+}
+
+/* Dashboard Specific Utility */
+.font-700 {
+    font-weight: 700;
+}
+
+.font-800 {
+    font-weight: 800;
+}
+
+.font-900 {
+    font-weight: 900;
+}
+
+.text-mini-mono {
+    font-family: monospace;
+    font-size: 0.6rem;
+}
+
+.text-lg-bold-mono {
+    font-size: 1.5rem;
+    font-weight: 900;
+    font-family: monospace;
+}
+
+.rec-card {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 2px;
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+}
+
+.rec-card-high {
+    border-left: 3px solid var(--accent-green);
+}
+
+.rec-card-medium {
+    border-left: 3px solid var(--accent-yellow);
+}
+
+.rec-card-low {
+    border-left: 3px solid var(--accent-pink);
+}
+
+.form-control {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 2px;
+    color: var(--text-main);
+    padding: 0.4rem 0.6rem;
+    font-size: 0.7rem;
+    font-family: inherit;
+    width: 100%;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--accent-cyan);
+}
+
+.text-md {
+    font-size: 1rem;
+}
+
+.text-3xl {
+    font-size: 1.875rem;
+}
+
+.text-3-5xl {
+    font-size: 3.5rem;
+}
+
+.text-4xl {
+    font-size: 4rem;
+}
+
+.text-5xl {
+    font-size: 3rem;
+}
+
+.text-upper {
+    text-transform: uppercase;
+}
+
+.letter-spacing-1 {
+    letter-spacing: 1px;
+}
+
+.letter-spacing-2 {
+    letter-spacing: 2px;
+}
+
+.line-height-1 {
+    line-height: 1;
+}
+
+.m-0-3 {
+    margin: 0 0.3rem;
+}
+
+.m-0-5 {
+    margin: 0 0.5rem;
+}
+
+.p-0-5-0-75 {
+    padding: 0.5rem 0.75rem;
+}
+
+.p-0-5-1 {
+    padding: 0.5rem 1rem;
+}
+
+.p-1-2-5 {
+    padding: 1.25rem;
+}
+
+.p-4-8 {
+    padding: 1rem 2rem;
+}
+
+.p-6 {
+    padding: 1.5rem;
+}
+
+.p-8 {
+    padding: 2rem;
+}
+
+.p-10 {
+    padding: 2.5rem;
+}
+
+.p-12 {
+    padding: 3rem;
+}
+
+.p-0 {
+    padding: 0 !important;
+}
+
+.p-2-4 {
+    padding: 0.6rem;
+}
+
+.p-2-5 {
+    padding: 0.625rem;
+}
+
+.p-24 {
+    padding: 6rem;
+}
+
+.pl-3 {
+    padding-left: 0.75rem;
+}
+
+.pr-6 {
+    padding-right: 1.5rem;
+}
+
+.pt-4 {
+    padding-top: 1rem;
+}
+
+.mt-0 {
+    margin-top: 0 !important;
+}
+
+.mt-1 {
+    margin-top: 0.25rem;
+}
+
+.mt-2 {
+    margin-top: 0.5rem;
+}
+
+.mt-3 {
+    margin-top: 0.75rem;
+}
+
+.mt-4 {
+    margin-top: 1rem;
+}
+
+.mt-5 {
+    margin-top: 1.25rem;
+}
+
+.mt-6 {
+    margin-top: 1.5rem;
+}
+
+.flex-2 {
+    flex: 2;
+}
+
+.w-500 {
+    width: 500px;
+}
+
+.justify-end {
+    justify-content: flex-end;
+}
+
+.modal-overlay-blur {
+    background: rgba(0, 0, 0, 0.85);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+}
+
+.bg-buy-02 {
+    background: rgba(39, 174, 96, 0.02);
+}

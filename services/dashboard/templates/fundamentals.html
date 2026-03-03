@@ -18,10 +18,10 @@
         </header>
 
         {% if movers %}
-        <div style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));" class="gap-4 grid p-3">
+        <div class="gap-4 grid p-3 grid-autofit-180">
             {% for sym, proxy in (movers.data.get('proxies', {})).items() %}
             <div class="glass-panel m-0 hud-panel hud-scanline">
-                <header class="hud-panel-header" style="padding: 0.5rem 0.75rem; background: rgba(255,255,255,0.03);">
+                <header class="hud-panel-header p-0-5-0-75 bg-white-3">
                     <div class="hud-panel-title text-xxs text-muted">{{ sym }} //
                         PROXY</div>
                 </header>
@@ -45,7 +45,7 @@
             </div>
             {% endfor %}
         </div>
-        <div style="padding: 0.5rem 1rem; border-top: 1px solid rgba(255,255,255,0.05);" class="text-mini text-muted text-upper">
+        <div class="p-0-5-1 border-t-white-5 text-mini text-muted text-upper">
             SNAPSHOT GENERATED: {{ movers.created_at.strftime('%Y-%m-%d %H:%M:%S') }} EAT // DETERMINISTIC MACRO OVERLAY
         </div>
         {% endif %}
@@ -59,12 +59,12 @@
             <div class="hud-panel-title">{{ pair }} // STRATEGIC BIAS</div>
             {% if latest %}
             {% set bias = latest.data.bias_label %}
-            <span class="badge"
-                style="background: {{ 'rgba(39, 174, 96, 0.1)' if bias == 'BULLISH' else ('rgba(235, 47, 150, 0.1)' if bias == 'BEARISH' else 'rgba(242, 201, 76, 0.1)') }}; color: {{ 'var(--accent-green)' if bias == 'BULLISH' else ('var(--accent-pink)' if bias == 'BEARISH' else 'var(--accent-yellow)') }}; border: 1px solid {{ 'var(--accent-green)' if bias == 'BULLISH' else ('var(--accent-pink)' if bias == 'BEARISH' else 'var(--accent-yellow)') }}; font-size: 0.55rem; font-weight: 900;">
+            <span
+                class="badge badge-sm font-900 {{ 'bg-buy-dim text-buy border-buy' if bias == 'BULLISH' else ('bg-sell-dim text-sell border-sell' if bias == 'BEARISH' else 'bg-warn-dim text-warn border-warn') }} text-mini">
                 {{ bias }}
             </span>
             {% else %}
-            <span class="text-mini text-muted badge" style="background: rgba(161, 161, 179, 0.1); border: 1px solid var(--text-muted);">NULL_STATE</span>
+            <span class="text-mini text-muted badge bg-white-10 border-theme">NULL_STATE</span>
             {% endif %}
         </header>
 
@@ -76,19 +76,19 @@
                     BIAS CONFLUENCE SCORE</div>
                 <div class="align-baseline gap-4 flex">
                     <div
-                        style="font-size: 3rem; font-weight: 900; color: {{ 'var(--accent-green)' if latest.data.bias_score > 0 else ('var(--accent-pink)' if latest.data.bias_score < 0 else 'var(--text-main)') }}; line-height: 1;">
+                        class="text-5xl font-900 line-height-1 {{ 'text-buy' if latest.data.bias_score > 0 else ('text-sell' if latest.data.bias_score < 0 else 'text-main') }}">
                         {{ latest.data.bias_score | round(2) }}
                     </div>
-                    <div class="text-muted text-xs">SIG_STRENGTH: <strong class="text-cyan">{{ latest.data.confidence_label }}</strong></div>
+                    <div class="text-muted text-xs">SIG_STRENGTH: <strong class="text-cyan">{{
+                            latest.data.confidence_label }}</strong></div>
                 </div>
 
-                <div style="height: 2px; background: rgba(255,255,255,0.05); margin-top: 0.75rem; position: relative;" class="w-full">
+                <div class="h-0-5 bg-white-5 mt-3 relative w-full">
                     {% set pct = ((latest.data.bias_score + 5) / 10) * 100 %}
-                    <div class="js-progress-bar" data-pct="{{ pct }}"
-                        style="position: absolute; left: 0; top: 0; height: 100%; background: {{ 'var(--accent-green)' if latest.data.bias_score > 0 else ('var(--accent-pink)' if latest.data.bias_score < 0 else 'var(--text-muted)') }}; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); width: 0;">
+                    <div class="js-progress-bar h-full absolute left-0 top-0 transition-width-1-cubic-bezier {{ 'bg-buy' if latest.data.bias_score > 0 else ('bg-sell' if latest.data.bias_score < 0 else 'bg-muted') }} w-0"
+                        data-pct="{{ pct }}">
                     </div>
-                    <div
-                        style="position: absolute; left: 50%; top: -4px; height: 10px; width: 1px; background: rgba(255,255,255,0.3);">
+                    <div class="absolute left-center top-n4 h-10 w-px-1 bg-white-3">
                     </div>
                 </div>
             </div>
@@ -100,7 +100,7 @@
                 <div class="gap-2 flex-col flex">
                     {%- for drv in latest.data.get('drivers', []) -%}
                     <div
-                        style="background: rgba(255,255,255,0.02); padding: 0.6rem; border-left: 2px solid {{ 'var(--accent-green)' if drv.impact > 0 else ('var(--accent-pink)' if drv.impact < 0 else 'var(--text-muted)') }};">
+                        class="bg-white-2 p-2 {{ 'border-l-2-green' if drv.impact > 0 else ('border-l-2-sell' if drv.impact < 0 else 'border-l-2-muted') }}">
                         <div class="text-bold text-main text-xs line-height-relaxed">{{
                             drv.text }}</div>
                         <div class="text-mini text-muted text-mono mt-1">
@@ -117,17 +117,17 @@
             <div>
                 <div class="text-upper text-muted text-xxs mb-2 letter-spacing-1">
                     INVALIDATION PROTOCOL</div>
-                <div style="background: rgba(235, 47, 150, 0.03); border: 1px dashed rgba(235, 47, 150, 0.3); border-radius: 2px;" class="text-xs line-height-relaxed text-mono text-pink p-2">
+                <div class="text-xs line-height-relaxed text-mono text-pink p-2 bg-sell-03 border-dashed-sell rounded">
                     > {{ latest.data.get('invalidation_criteria', 'STOCHASTIC_UNCERTAINTY_DETECTED') }}
                 </div>
             </div>
         </div>
 
-        <footer style="padding: 0.5rem 1rem; border-top: 1px solid rgba(255,255,255,0.05);" class="text-mini text-right text-muted text-upper">
+        <footer class="p-0-5-1 border-t-white-5 text-mini text-right text-muted text-upper">
             TELEMETRY_SYNCED: {{ latest.created_at.strftime('%H:%M:%S') }} EAT
         </footer>
         {% else %}
-        <div class="align-center text-xs text-muted h-400 flex letter-spacing-2" style="justify-content: center; opacity: 0.3;">
+        <div class="align-center text-xs text-muted h-400 flex letter-spacing-2 justify-center opacity-30">
             SIGNAL_INTERRUPTED_NO_DATA
         </div>
         {% endif %}

@@ -20,8 +20,7 @@
                 </div>
             </div>
 
-            <div class="hud-scanline p-4"
-                style="background: rgba(155, 81, 224, 0.05); border: 1px solid rgba(155, 81, 224, 0.2);">
+            <div class="hud-scanline p-4 bg-purple-dim border-purple-soft mb-4">
                 <div class="text-upper text-muted mb-3 text-xxs letter-spacing-1">
                     REALIZED_OUTCOMES // SESSION</div>
                 <div id="stats-closed" class="text-bold mb-2 text-main text-xs">
@@ -37,11 +36,10 @@
         <header class="hud-panel-header">
             <div class="hud-panel-title">EXECUTION_PREP_LAYER // APPROVED_PLANS</div>
             <div class="flex gap-3 align-center">
-                <span class="text-mini text-green badge"
-                    style="background: rgba(39, 174, 96, 0.1); border: 1px solid var(--accent-green);">CORE_READY</span>
+                <span class="text-mini text-green badge bg-buy-dim border-buy text-buy">CORE_READY</span>
             </div>
         </header>
-        <div id="prep-container" class="hud-scroll-body" style="height: 250px;">
+        <div id="prep-container" class="hud-scroll-body h-250">
             <div class="text-center text-bold text-xs text-muted letter-spacing-2 p-6">
                 INITIALIZING_PREP_LAYER...</div>
         </div>
@@ -53,16 +51,16 @@
             <div class="hud-panel-title">SCANNER_QUEUE // PENDING_MANUAL_REVIEW</div>
             <div id="queue-status-badge"></div>
         </header>
-        <div id="queue-container" class="hud-scroll-body" style="height: 600px;">
-            <div style="padding: 6rem;" class="text-center text-bold text-xs text-muted letter-spacing-2">
+        <div id="queue-container" class="hud-scroll-body h-600">
+            <div class="text-center text-bold text-xs text-muted letter-spacing-2 p-24">
                 SCANNING_NETWORK_FOR_TICKETS...</div>
         </div>
     </div>
 </div>
 
 <!-- skip modal -->
-<div id="skipModal" class="modal" style="background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);">
-    <div class="hud-panel glass-panel" style="width: 500px; padding: 0;" data-hud-corner="top-right">
+<div id="skipModal" class="modal modal-overlay-blur">
+    <div class="hud-panel glass-panel w-500 p-0" data-hud-corner="top-right">
         <header class="hud-panel-header">
             <div class="hud-panel-title">SKIP_SIGNAL_REQ // PROTOCOL</div>
             <span id="skip-ticket-id" class="text-mono border-yellow badge bg-yellow-dim text-yellow"></span>
@@ -71,8 +69,7 @@
             <div class="mb-4">
                 <label class="text-upper text-muted display-block text-xxs mb-2 letter-spacing-1">PRIMARY_REASON</label>
                 <select id="skip-reason" title="Primary skip reason" aria-label="Primary Skip Reason"
-                    style="border: 1px solid var(--border-main); outline: none;"
-                    class="w-full text-sm text-main rounded text-mono bg-darker-overlay p-2">
+                    class="w-full text-sm text-main rounded text-mono bg-darker-overlay p-2 border-main-1 outline-none">
                     <option value="NEWS_WINDOW">News Window</option>
                     <option value="STALE">Stale / Too Late</option>
                     <option value="SPREAD_TOO_HIGH">Spread Too High</option>
@@ -87,13 +84,12 @@
                 <label
                     class="text-upper text-muted display-block text-xxs mb-2 letter-spacing-1">OBSERVATIONAL_NOTES</label>
                 <textarea id="skip-notes" rows="3" placeholder="Log additional context..."
-                    style="border: 1px solid var(--border-main); resize: none; outline: none;"
-                    class="w-full text-sm text-main rounded bg-darker-overlay p-2"></textarea>
+                    class="w-full text-sm text-main rounded bg-darker-overlay p-2 border-main-1 resize-none outline-none"></textarea>
             </div>
-            <div style="justify-content: flex-end;" class="gap-4 flex">
+            <div class="justify-end gap-4 flex">
                 <button onclick="closeModal('skipModal')" class="btn btn-secondary text-xs">ABORT_CANCEL</button>
-                <button onclick="submitSkip()" class="btn text-xs text-black-color text-black btn-primary"
-                    style="background: var(--accent-yellow); border-color: var(--accent-yellow);">CONFIRM_SKIP</button>
+                <button onclick="submitSkip()"
+                    class="btn text-xs text-black-color text-black btn-primary bg-accent-yellow border-accent-yellow">CONFIRM_SKIP</button>
             </div>
         </div>
     </div>
@@ -124,8 +120,8 @@
             const statusBadge = document.getElementById('queue-status-badge');
 
             if (tickets.length === 0) {
-                container.innerHTML = `<div style="padding: 6rem;" class="text-center text-bold text-xs text-muted letter-spacing-2">QUEUE_NOMINAL // ZERO_PENDING</div>`;
-                statusBadge.innerHTML = `<span class="text-mini text-green badge" style="background: rgba(39, 174, 96, 0.1); border: 1px solid var(--accent-green);">NOMINAL</span>`;
+                container.innerHTML = `<div class="text-center text-bold text-xs text-muted letter-spacing-2 p-24">QUEUE_NOMINAL // ZERO_PENDING</div>`;
+                statusBadge.innerHTML = `<span class="text-mini text-green badge bg-buy-dim border-buy">NOMINAL</span>`;
                 return;
             }
 
@@ -140,42 +136,42 @@
                 const borderAccent = t.direction === 'BUY' ? 'var(--accent-green)' : 'var(--accent-pink)';
 
                 html += `
-                <div id="card-${t.ticket_id}" class="glass-panel hud-panel mb-3" style="border-left: 4px solid ${borderAccent}; padding: 0;">
+                <div id="card-${t.ticket_id}" class="glass-panel hud-panel mb-3 p-0 border-l-4">
                     <header class="hud-panel-header bg-dark-overlay">
                         <div class="flex gap-4 align-center">
                             <div class="text-lg text-black text-main">${t.pair}</div>
-                            <span class="text-black text-xxs badge" style="background: ${t.direction === 'BUY' ? 'rgba(39, 174, 96, 0.1)' : 'rgba(235, 47, 150, 0.1)'}; color: ${t.direction === 'BUY' ? 'var(--accent-green)' : 'var(--accent-pink)'}; border: 1px solid ${t.direction === 'BUY' ? 'var(--accent-green)' : 'var(--accent-pink)'};">${t.direction}</span>
+                            <span class="text-black text-xxs badge border-1 ${t.direction === 'BUY' ? 'bg-buy-dim text-buy border-buy' : 'bg-sell-dim text-sell border-sell'}">${t.direction}</span>
                             <span class="text-muted text-xxs text-mono">IDENT: ${t.ticket_id}</span>
                         </div>
                         <div class="flex align-center gap-5">
-                            <div class="text-muted text-xxs text-upper">SCORE: <span class="text-black text-xxs badge" style="background: rgba(255,255,255,0.05); color: ${scoreAccent}; border: 1px solid ${scoreAccent};">${t.guardrails_score || '---'}</span></div>
-                            <span data-expiry="${t.expires_at}" id="timer-${t.ticket_id}" class="text-xxs border-yellow badge text-black text-yellow" style="background: rgba(242, 201, 76, 0.05);">TTL_SYNC...</span>
+                            <div class="text-muted text-xxs text-upper">SCORE: <span class="text-black text-xxs badge bg-white-5 border-1">${t.guardrails_score || '---'}</span></div>
+                            <span data-expiry="${t.expires_at}" id="timer-${t.ticket_id}" class="text-xxs border-yellow badge text-black text-yellow bg-white-5">TTL_SYNC...</span>
                         </div>
                     </header>
                     
                     <div class="p-4">
                         ${blockWarning}
                         
-                        <div style="grid-template-columns: repeat(4, 1fr);" class="mb-4 grid gap-5">
-                            <div class="border-theme p-2 hud-scanline" style="background: rgba(0,0,0,0.25);">
+                        <div class="mb-4 grid gap-5 grid-cols-4">
+                            <div class="border-theme p-2 hud-scanline bg-black-25">
                                 <div class="text-upper text-muted text-mini mb-1 letter-spacing-1">ENTRY_PRICE</div>
                                 <div class="text-black text-lg text-main text-mono">${t.entry_price}</div>
                             </div>
-                            <div class="p-2 hud-scanline" style="background: rgba(235, 47, 150, 0.03); border: 1px solid rgba(235, 47, 150, 0.2);">
+                            <div class="p-2 hud-scanline bg-stop-loss-dim border-sell-20 border-1">
                                 <div class="text-upper text-mini text-pink mb-1 letter-spacing-1">STOP_LOSS</div>
                                 <div class="text-black text-pink text-lg text-mono">${t.stop_loss}</div>
                             </div>
-                            <div class="p-2 hud-scanline" style="background: rgba(39, 174, 96, 0.03); border: 1px solid rgba(39, 174, 96, 0.2);">
+                            <div class="p-2 hud-scanline bg-target-dim border-buy-20 border-1">
                                 <div class="text-upper text-mini text-green mb-1 letter-spacing-1">TARGET_1 (${t.rr_tp1.toFixed(2)}R)</div>
                                 <div class="text-black text-green text-lg text-mono">${t.take_profit_1}</div>
                             </div>
-                            <div class="p-2 hud-scanline" style="background: rgba(242, 201, 76, 0.03); border: 1px solid rgba(242, 201, 76, 0.2);">
+                            <div class="p-2 hud-scanline bg-warn-dim border-warn-20 border-1">
                                 <div class="text-upper text-mini text-yellow mb-1 letter-spacing-1">ALLOC (${t.lot_size} LOTS)</div>
                                 <div class="text-black text-lg text-yellow">$${t.risk_usd.toFixed(2)}</div>
                             </div>
                         </div>
 
-                        <div style="justify-content: flex-end; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1.25rem;" class="gap-4 flex">
+                        <div class="justify-end border-t-1 border-white-5 pt-4 gap-4 flex">
                             <button onclick="openSkipModal('${t.ticket_id}')" class="btn btn-secondary btn-tiny">ABORT_SIGNAL</button>
                             <button onclick="approveTicket('${t.ticket_id}')" class="bg-green btn text-black-color text-black btn-tiny border-green btn-primary">AUTHORIZE_EXECUTION_PLAN</button>
                         </div>
@@ -200,12 +196,14 @@
 
                 if (diff <= 0) {
                     el.innerText = "EXPIRED";
-                    el.style.color = "var(--accent-pink)";
-                    el.style.borderColor = "var(--accent-pink)";
+                    el.classList.add('text-pink', 'border-pink');
+                    el.classList.remove('text-yellow', 'border-yellow');
                 } else {
                     const m = Math.floor(diff / 60);
                     const s = diff % 60;
                     el.innerText = `TTL: ${m}m ${s.toString().padStart(2, '0')}s`;
+                    el.classList.add('text-yellow', 'border-yellow');
+                    el.classList.remove('text-pink', 'border-pink');
                 }
             });
         }, 1000);
@@ -277,18 +275,18 @@
                 const checkHtml = p.preflight_checks.map(c => `
                     <div class="justify-between text-xs flex text-mono mb-2">
                         <span class="text-muted text-upper">${c.name}</span>
-                        <span class="text-black text-micro badge" style="background: ${c.status === 'PASS' ? 'rgba(39, 174, 96, 0.1)' : (c.status === 'WARN' ? 'rgba(242, 201, 76, 0.1)' : 'rgba(235, 47, 150, 0.1)')}; color: ${c.status === 'PASS' ? 'var(--accent-green)' : (c.status === 'WARN' ? 'var(--accent-yellow)' : 'var(--accent-pink)')}; border: 1px solid ${c.status === 'PASS' ? 'var(--accent-green)' : (c.status === 'WARN' ? 'var(--accent-yellow)' : 'var(--accent-pink)')}; padding: 1px 6px;">${c.status}</span>
+                        <span class="text-black text-micro badge border-1 p-1 px-2 ${c.status === 'PASS' ? 'bg-buy-dim text-buy border-buy' : (c.status === 'WARN' ? 'bg-warn-dim text-warn border-warn' : 'bg-sell-dim text-sell border-sell')}">${c.status}</span>
                     </div>
                 `).join('');
 
                 const overrideBtn = p.override_required ?
-                    `<button onclick="openOverrideModal('${p.ticket_id}')" class="btn w-full text-xxs text-black-color text-black btn-primary" style="background: var(--accent-pink); border-color: var(--accent-pink); margin-top: 0.75rem;">BYPASS_REQ // OVERRIDE</button>` : '';
+                    `<button onclick="openOverrideModal('${p.ticket_id}')" class="btn w-full text-xxs text-black text-black-color btn-primary mt-3 bg-accent-pink border-accent-pink">BYPASS_REQ // OVERRIDE</button>` : '';
 
                 html += `
-                <div id="prep-${p.ticket_id}" class="glass-panel mb-3 hud-panel p-3" style="background: rgba(39, 174, 96, 0.02); border: 1px solid rgba(39, 174, 96, 0.2); border-left: 3px solid var(--accent-green);">
+                <div id="prep-${p.ticket_id}" class="glass-panel mb-3 hud-panel p-3 bg-buy-02 border-buy-20 border-l-3-green">
                     <div class="flex gap-6">
                         <!-- Checks -->
-                        <div style="padding-right: 1.5rem;" class="flex-1 border-right">
+                        <div class="flex-1 pr-6 border-theme-soft">
                             <div class="justify-between align-center flex mb-3">
                                 <div class="text-black text-mono text-green text-xs">EXE_PREP: ${p.ticket_id}</div>
                                 <span data-expiry="${p.expires_at}" class="border-yellow badge text-mini text-black text-yellow">EXP_SYNC...</span>
@@ -297,18 +295,18 @@
                             ${overrideBtn}
                         </div>
                         <!-- Formats -->
-                        <div style="flex: 2;">
+                        <div class="flex-2">
                             <div class="mb-3">
                                 <div class="text-upper text-muted text-mini mb-1 letter-spacing-1">MT5_EXECUTION_VECTOR</div>
                                 <div class="align-center flex gap-2">
-                                    <code style="padding: 0.6rem; border-radius: 2px; flex-grow:1; border: 1px solid rgba(86, 204, 242, 0.1); text-overflow: ellipsis; white-space: nowrap;" class="text-xs overflow-hidden text-cyan text-mono bg-darker-overlay">${p.platform_formats.mt5_text}</code>
+                                    <code class="p-2-5 rounded flex-grow-1 border-cyan-10 text-xs overflow-hidden text-cyan text-mono bg-darker-overlay">MT5_V: ${p.platform_formats.mt5_text}</code>
                                     <button onclick="copyToClipboard('${p.platform_formats.mt5_text}')" class="btn btn-secondary btn-tiny">COPY</button>
                                 </div>
                             </div>
                             <div>
                                 <div class="text-upper text-muted text-mini mb-1 letter-spacing-1">CTRADER_EXECUTION_VECTOR</div>
                                 <div class="align-center flex gap-2">
-                                    <code style="padding: 0.6rem; border-radius: 2px; flex-grow:1; border: 1px solid rgba(86, 204, 242, 0.1); text-overflow: ellipsis; white-space: nowrap;" class="text-xs overflow-hidden text-cyan text-mono bg-darker-overlay">${p.platform_formats.ctrader_text}</code>
+                                    <code class="p-2-5 rounded flex-grow-1 border-cyan-10 text-xs overflow-hidden text-cyan text-mono bg-darker-overlay">CTR_V: ${p.platform_formats.ctrader_text}</code>
                                     <button onclick="copyToClipboard('${p.platform_formats.ctrader_text}')" class="btn btn-secondary btn-tiny">COPY</button>
                                 </div>
                             </div>

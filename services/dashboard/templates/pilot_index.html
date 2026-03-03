@@ -11,8 +11,7 @@
             </div>
         </header>
 
-        <div
-            class="hud-panel-desc text-xs border-divider">
+        <div class="hud-panel-desc text-xs border-divider">
             MONITORING ROLLING 10-SESSION PERFORMANCE VECTORS FOR SYSTEM PROMOTION</div>
 
         <div class="hud-scroll-body h-350">
@@ -36,8 +35,8 @@
                             sc.scorecard_id }}</td>
                         <td class="text-main text-xs">{{ sc.date_range }}</td>
                         <td class="text-center">
-                            <span class="badge"
-                                style="background: {{ 'rgba(39, 174, 96, 0.1)' if sc.pass_fail == 'PASS' else 'rgba(235, 47, 150, 0.1)' }}; color: {{ 'var(--accent-green)' if sc.pass_fail == 'PASS' else 'var(--accent-pink)' }}; border: 1px solid {{ 'var(--accent-green)' if sc.pass_fail == 'PASS' else 'var(--accent-pink)' }}; font-size: 0.55rem; font-weight: 900;">
+                            <span
+                                class="badge badge-sm font-900 {{ 'bg-buy-dim text-buy border-buy' if sc.pass_fail == 'PASS' else 'bg-sell-dim text-sell border-sell' }} text-mini">
                                 {{ sc.pass_fail }}
                             </span>
                         </td>
@@ -50,14 +49,13 @@
                 </tbody>
             </table>
             {% else %}
-            <div
-                class="hud-empty-state">
+            <div class="hud-empty-state">
                 ZERO_SCORECARDS_GENERATED</div>
             {% endif %}
         </div>
 
         <div class="hud-scroll-body h-450">
-            <header class="bg-dark-overlay hud-panel-header border-divider" style="border-top: 2px solid var(--border-main);">
+            <header class="bg-dark-overlay hud-panel-header border-divider border-t-2-main">
                 <div class="hud-panel-title text-xxs">HISTORICAL SESSION OUTCOMES // AUDIT TRAIL</div>
             </header>
             {% if recent_sessions %}
@@ -80,14 +78,14 @@
                         <td class="text-xxs text-mono text-cyan">{{
                             s.session_id }}</td>
                         <td class="text-center">
-                            <span class="badge"
-                                style="background: {{ 'rgba(39, 174, 96, 0.1)' if s.pass_fail == 'PASS' else 'rgba(235, 47, 150, 0.1)' }}; color: {{ 'var(--accent-green)' if s.pass_fail == 'PASS' else 'var(--accent-pink)' }}; border: 1px solid {{ 'var(--accent-green)' if s.pass_fail == 'PASS' else 'var(--accent-pink)' }}; font-size: 0.55rem; font-weight: 900;">
+                            <span
+                                class="badge badge-sm font-900 {{ 'bg-buy-dim text-buy border-buy' if s.pass_fail == 'PASS' else 'bg-sell-dim text-sell border-sell' }} text-mini">
                                 {{ s.pass_fail }}
                             </span>
                         </td>
                         <td
-                            style="text-align: right; font-weight: 800; color: {{ 'var(--accent-green)' if s.data.performance_metrics.approved_expectancy_r > 0 else 'var(--accent-pink)' }};">
-                            {{ "%.2f"|format(s.data.performance_metrics.approved_expectancy_r) }}R
+                            class="text-right font-800 {{ 'text-buy' if s.data.performance_metrics.approved_expectancy_r > 0 else 'text-sell' }}">
+                            {{ "%.2fR" | format(s.data.performance_metrics.approved_expectancy_r) }}
                         </td>
                         <td class="text-right text-xs text-mono">
                             {{ "%.1f"|format(s.data.reliability_metrics.max_quote_stale_seconds) }}s
@@ -100,8 +98,7 @@
                 </tbody>
             </table>
             {% else %}
-            <div
-                class="hud-empty-state">
+            <div class="hud-empty-state">
                 ZERO_SESSIONS_RECORDED</div>
             {% endif %}
         </div>
@@ -116,35 +113,32 @@
         <div class="p-5">
             {% if scorecards %}
             {% set latest = scorecards[0].data %}
-            <div style="border-left: 2px solid var(--accent-yellow); padding-left: 0.75rem;" class="mb-4 text-muted text-xxs">
+            <div class="border-l-2-warn pl-3 mb-4 text-muted text-xxs">
                 <div class="text-black text-yellow">SOURCE_LATEST: {{ scorecards[0].scorecard_id
                     }}</div>
                 <div>ANALYSIS PERIOD: {{ scorecards[0].date_range }}</div>
             </div>
 
             <div class="gap-5 flex-col flex">
-                <div class="p-4 bg-cyan-dim hud-scanline" style="border: 1px solid rgba(86, 204, 242, 0.2);">
+                <div class="p-4 bg-cyan-dim hud-scanline border-cyan-dim">
                     <div class="line-height-1 text-black text-cyan text-3xl">{{
-                        latest.aggregates.passing_days }}<span style="margin: 0 0.5rem;" class="text-muted text-md">/</span>{{
+                        latest.aggregates.passing_days }}<span class="text-muted text-md m-0-5">/</span>{{
                         latest.aggregates.total_days }}</div>
-                    <div
-                        class="text-xxs text-muted text-upper letter-spacing-1 mt-2">
+                    <div class="text-xxs text-muted text-upper letter-spacing-1 mt-2">
                         PASSING_DAYS // QUANT_VALIDATION</div>
                 </div>
 
-                <div class="hud-scanline p-4" style="background: rgba(39, 174, 96, 0.05); border: 1px solid rgba(39, 174, 96, 0.2);">
+                <div class="hud-scanline p-4 bg-buy-dim border-buy-20">
                     <div class="line-height-1 text-black text-green text-3xl">{{
                         (latest.aggregates.passing_days / latest.aggregates.total_days * 100) | round(1) }}%</div>
-                    <div
-                        class="text-xxs text-muted text-upper letter-spacing-1 mt-2">
+                    <div class="text-xxs text-muted text-upper letter-spacing-1 mt-2">
                         SYSTEM_RELIABILITY_COEFFICIENT</div>
                 </div>
 
-                <div class="bg-glass-light hud-scanline border-glass p-4">
+                <div class="bg-glass-light hud-scanline border-white-5 border-1 p-4">
                     <div class="line-height-1 text-black text-main text-3xl">{{
                         latest.aggregates.net_realized_r | round(2) }}R</div>
-                    <div
-                        class="text-xxs text-muted text-upper letter-spacing-1 mt-2">
+                    <div class="text-xxs text-muted text-upper letter-spacing-1 mt-2">
                         NET_REALIZED_EXPECTANCY // CUMULATIVE</div>
                 </div>
             </div>
@@ -161,18 +155,18 @@
             <div class="hud-panel-title">STRATEGIC PROJECTION // NEXT_WEEK</div>
         </header>
 
-        <div class="hud-scroll-body p-3" style="height: 300px;">
+        <div class="hud-scroll-body p-3 h-300">
             {% if scorecards %}
             <div class="gap-4 flex flex-col">
                 {%- for item in scorecards[0].data.next_week_plan -%}
-                <div style="background: rgba(255,255,255,0.02); border-left: 2px solid var(--accent-cyan);" class="p-3">
+                <div class="bg-white-2 border-l-2-cyan p-3">
                     <div class="text-bold text-main text-xs line-height-relaxed">{{
                         item }}</div>
                 </div>
                 {%- endfor -%}
             </div>
             {% else %}
-            <div style="opacity: 0.3;" class="text-center text-bold text-xs text-muted letter-spacing-2 p-6">
+            <div class="opacity-30 text-center text-bold text-xs text-muted letter-spacing-2 p-6">
                 NO_ACTIVE_PROJECTIONS</div>
             {% endif %}
         </div>

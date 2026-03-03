@@ -44,8 +44,7 @@
                             <span class="badge badge-green">{{
                                 report.recommendations|length }} DETECTED</span>
                             {% else %}
-                            <span class="border-theme text-muted badge" style="background: rgba(255,255,255,0.05);">0
-                                FOUND</span>
+                            <span class="border-theme text-muted badge bg-white-5">0 FOUND</span>
                             {% endif %}
                         </td>
                         <td class="text-right">
@@ -62,7 +61,8 @@
                     CALIBRATION DATA</div>
                 <div class="opacity-50 mb-4 text-muted">Initiate research calibration
                     via CLI:</div>
-                <code class="text-left max-w-600 text-xs border-theme mx-auto p-3 bg-darker-overlay display-block text-mono rounded text-cyan">
+                <code
+                    class="text-left max-w-600 text-xs border-theme mx-auto p-3 bg-darker-overlay display-block text-mono rounded text-cyan">
                     python infra/cli.py research calibrate --run &lt;run_id&gt;
                 </code>
             </div>

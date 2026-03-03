@@ -50,17 +50,19 @@
                                 <h3 class="text-bold text-main text-sm m-0">{{
                                     prop.title }}</h3>
                                 <span
-                                    class="badge {% if prop.status == 'ACCEPT' %}badge-success{% elif 'REJECT' %}badge-danger{% else %}badge-warning{% endif %} text-mini">{{ prop.status | default('PENDING') }}</span>
+                                    class="badge {% if prop.status == 'ACCEPT' %}badge-success{% elif prop.status == 'REJECT' %}badge-danger{% else %}badge-warning{% endif %} text-mini">{{
+                                    prop.status | default('PENDING') }}</span>
                             </div>
                             <div class="text-muted text-xxs text-mono mt-1">
                                 ID: {{ prop.id }} | TARGET: {{ prop.target | upper }} | CONFIDENCE: <span
-                                    style="font-weight: 800; color: {% if prop.confidence == 'HIGH' %}var(--accent-green){% elif prop.confidence == 'MEDIUM' %}var(--accent-yellow){% else %}var(--accent-pink){% endif %};">{{
-                                    prop.confidence }}</span></div>
+                                    class="badge {{ 'text-confidence-high' if prop.confidence == 'HIGH' else ('text-confidence-medium' if prop.confidence == 'MEDIUM' else 'text-confidence-low') }}">
+                                    {{ prop.confidence }}</span></div>
                         </div>
 
                         {% if not prop.status %}
                         <div class="align-center flex gap-2">
-                            <input type="text" id="notes_{{ prop.id }}" placeholder="ADD ANALYST NOTES..." class="py-1 text-xs border-theme px-2 w-180 text-main rounded bg-darker-overlay">
+                            <input type="text" id="notes_{{ prop.id }}" placeholder="ADD ANALYST NOTES..."
+                                class="py-1 text-xs border-theme px-2 w-180 text-main rounded bg-darker-overlay">
                             <button onclick="reviewProposal('{{ report.report_id }}', '{{ prop.id }}', 'ACCEPT')"
                                 class="py-1 text-black-color bg-green btn px-2 text-xxs text-black border-green btn-primary">ACCEPT</button>
                             <button onclick="reviewProposal('{{ report.report_id }}', '{{ prop.id }}', 'REJECT')"
@@ -89,10 +91,8 @@
                         <div>
                             <div class="mb-1 text-muted text-bold text-xxs">
                                 SUPPORTING EVIDENCE</div>
-                            <ul class="m-0 text-muted text-xs pl-3">
-                                {%- for ref in prop.evidence_refs -%}<li class="mb-1">{{ ref }}</li>
-                                {%- endfor -%}
-                            </ul>
+                            <ul class="m-0 text-muted text-xs pl-3">{% for ref in prop.evidence_refs %}<li class="mb-1">
+                                    {{ ref }}</li>{% endfor %}</ul>
 
                             <div class="text-bold mt-2 text-xxs text-pink mb-1">
                                 RISKS & ROLLBACK</div>
@@ -106,8 +106,8 @@
                     </div>
 
                     {% if prop.status == 'ACCEPT' %}
-                    <div style="border: 1px solid rgba(86, 204, 242, 0.2);" class="overflow-hidden bg-darker-overlay mt-3 rounded">
-                        <div style="border-bottom: 1px solid rgba(86, 204, 242, 0.2);" class="py-1 bg-cyan-dim text-bold text-mini px-2 text-cyan">
+                    <div class="overflow-hidden bg-darker-overlay mt-3 rounded border-cyan-dim">
+                        <div class="py-1 bg-cyan-dim text-bold text-mini px-2 text-cyan border-cyan-bottom">
                             CONFIG YAML SNIPPET // MANUAL SYNC REQUIRED</div>
                         <pre class="overflow-x-auto text-xs line-height-relaxed m-0 text-cyan text-mono p-2">
 # File: config/{{ prop.target }}.yaml
@@ -123,8 +123,7 @@
     </div>
     {% endfor %}
     {% else %}
-    <div class="hud-panel glass-panel col-span-12 p-5 text-center"
-        data-hud-corner="bottom-left">
+    <div class="hud-panel glass-panel col-span-12 p-5 text-center" data-hud-corner="bottom-left">
         <div class="text-xl text-bold text-muted mb-3">NO TUNING
             REPORTS AVAILABLE</div>
         <div class="text-muted opacity-50">Tuning reports are generated periodically based on

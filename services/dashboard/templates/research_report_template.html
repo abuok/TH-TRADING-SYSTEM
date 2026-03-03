@@ -10,11 +10,12 @@
         <div class="p-3 border-divider">
             <div class="justify-between align-center flex">
                 <div>
-                    <div class="text-lg text-black text-main">{{ run.pair }} //
-                        HISTORICAL_REPLAY</div>
-                    <div style="margin-top: 0.25rem;" class="text-muted text-xxs text-upper letter-spacing-1">
-                        WINDOW: {{ run.start_date.strftime('%Y-%m-%d') }} <span class="opacity-50">&rarr;</span> {{
-                        run.end_date.strftime('%Y-%m-%d') }} // TIMEFRAMES: {{ run.timeframes | join(', ') }}
+                    <div class="flex-col flex">
+                        <h1 class="text-main m-0 p-0 text-xl">{{ report.title }}</h1>
+                        <div class="text-muted text-xxs text-upper letter-spacing-1 mt-1">
+                            GENERATED: {{ report.created_at.strftime('%Y-%m-%d %H:%M:%S') }} | RUN_ID: {{ report.run_id
+                            }}
+                        </div>
                     </div>
                 </div>
                 <div class="text-right">
@@ -48,9 +49,9 @@
                 <tbody>
                     {% for name, variant in run.variants.items() %}
                     <tr>
-                        <td style="padding: 1rem 0.5rem;">
-                            <div class="text-upper text-cyan text-sm text-black mb-1">
-                                {{ name }}</div>
+                        <td class="p-3">
+                            <span class="text-mini text-muted text-upper letter-spacing-1">VARIANT_NAME</span>
+                            <div class="text-bold text-main">{{ name }}</div>
                             <div class="text-mini text-muted text-mono line-height-relaxed">
                                 MIN_SCORE: {{ variant.config.min_setup_score or 'N/A' }}<br>
                                 HARD_BLOCK: {{ variant.config.hard_block_displacement or 'N/A' }}<br>
@@ -58,23 +59,20 @@
                             </div>
                         </td>
                         <td class="text-center">
-                            <span class="badge"
-                                style="background: {{ 'rgba(39, 174, 96, 0.1)' if variant.metrics.win_rate_pct >= 50 else 'rgba(235, 47, 150, 0.1)' }}; color: {{ 'var(--accent-green)' if variant.metrics.win_rate_pct >= 50 else 'var(--accent-pink)' }}; border: 1px solid {{ 'var(--accent-green)' if variant.metrics.win_rate_pct >= 50 else 'var(--accent-pink)' }}; font-size: 0.65rem; font-weight: 900;">
-                                {{ variant.metrics.win_rate_pct }}%
-                            </span>
+                            <span
+                                class="badge badge-sm font-900 {{ 'bg-buy-dim text-buy border-buy' if variant.metrics.win_rate_pct >= 50 else 'bg-sell-dim text-sell border-sell' }} text-mini">
+                                {{ "%.1f%%" | format(variant.metrics.win_rate_pct) }}</span>
                         </td>
                         <td class="text-right text-mono text-black text-sm">{{
                             variant.metrics.expectancy_r }}R</td>
-                        <td
-                            class="text-right text-mono text-black text-sm text-pink">
+                        <td class="text-right text-mono text-black text-sm text-pink">
                             {{ variant.metrics.max_drawdown_r }}R</td>
                         <td class="text-center text-mono text-black">{{
                             variant.metrics.profit_factor }}</td>
                         <td class="text-right">
                             <span
-                                style="font-family: monospace; font-weight: 900; font-size: 1rem; color: {{ 'var(--accent-green)' if variant.metrics.total_r > 0 else ('var(--accent-pink)' if variant.metrics.total_r < 0 else 'var(--text-muted)') }}">
-                                {% if variant.metrics.total_r > 0 %}+{% endif %}{{ variant.metrics.total_r }}R
-                            </span>
+                                class="text-mini-mono font-900 text-lg {{ 'text-buy' if variant.metrics.total_r > 0 else ('text-sell' if variant.metrics.total_r < 0 else 'text-muted') }}">
+                                {{ "%+.2fR" | format(variant.metrics.total_r) }}</span>
                         </td>
                         <td class="text-mono text-xs text-right">
                             <span class="text-main">{{ variant.metrics.executed_trades }}</span> / <span
@@ -92,7 +90,7 @@
         <header class="gap-4 align-center mb-3 flex">
             <div class="text-upper text-xs text-muted letter-spacing-2 text-black">
                 VARIANT_EXECUTION_SAMPLES</div>
-            <div style="flex-grow: 1; height: 1px; background: rgba(255,255,255,0.05);"></div>
+            <div class="flex-grow-1 h-1 bg-white-5"></div>
         </header>
 
         {% for name, variant in run.variants.items() %}
@@ -105,8 +103,11 @@
 
             <div class="hud-scroll-body">
                 {% if variant.trades | length == 0 %}
-                <div style="padding: 3rem;" class="text-center text-xs text-black text-pink letter-spacing-1">
-                    ZERO_SIGNALS_TRIGGERED // NO_DATA_AVAILABLE</div>
+                <div class="hud-panel border-none shadow-none">
+                    <div class="p-6 text-center text-xs text-black text-pink letter-spacing-1">
+                        [ END OF FORENSIC TRADING REPORT ]
+                    </div>
+                </div>
                 {% else %}
                 <table class="hud-compact-table">
                     <thead>
@@ -125,9 +126,9 @@
                             <td class="text-mono text-xs text-muted">{{
                                 t.ticket_id }}</td>
                             <td class="text-center">
-                                <span class="badge"
-                                    style="background: {{ 'rgba(39, 174, 96, 0.1)' if t.direction == 'LONG' else 'rgba(235, 47, 150, 0.1)' }}; color: {{ 'var(--accent-green)' if t.direction == 'LONG' else 'var(--accent-pink)' }}; border: 1px solid {{ 'var(--accent-green)' if t.direction == 'LONG' else 'var(--accent-pink)' }}; font-size: 0.5rem; font-weight: 900;">{{
-                                    t.direction }}</span>
+                                <span
+                                    class="badge badge-sm font-900 {{ 'bg-buy-dim text-buy border-buy' if t.direction == 'LONG' else 'bg-sell-dim text-sell border-sell' }} text-mini">
+                                    {{ t.direction }}</span>
                             </td>
                             <td class="text-center">
                                 {% set res_color = 'var(--text-muted)' %}
@@ -136,24 +137,23 @@
                                 {% elif t.status == 'BE' %}{% set res_color = 'var(--accent-yellow)' %}
                                 {% elif t.status == 'BLOCKED' %}{% set res_color = 'var(--text-muted)' %}
                                 {% endif %}
-                                <span class="badge"
-                                    style="border: 1px solid {{ res_color }}; color: {{ res_color }}; background: transparent; font-size: 0.5rem; font-weight: 900;">{{
-                                    t.status }}</span>
+                                <span
+                                    class="badge badge-sm font-900 border-1 bg-transparent text-mini {{ 'text-hs-win' if t.status.startswith('WIN') else ('text-hs-loss' if t.status == 'LOSS' else ('text-hs-neutral' if t.status == 'BE' else 'text-muted')) }}">
+                                    {{ t.status }}</span>
                             </td>
                             <td class="text-mono text-xs text-muted">
                                 {{ t.exit_time.strftime('%Y-%m-%d %H:%M') if t.exit_time else 'OPEN/BLOCKED' }}
                             </td>
                             <td class="text-right">
                                 <span
-                                    style="font-family: monospace; font-weight: 900; font-size: 0.8rem; color: {{ 'var(--accent-green)' if t.realized_r > 0 else ('var(--accent-pink)' if t.realized_r < 0 else 'var(--text-muted)') }}">
-                                    {% if t.realized_r > 0 %}+{% endif %}{{ t.realized_r | round(2) }}R
-                                </span>
+                                    class="text-mini-mono font-900 text-sm {{ 'text-buy' if t.realized_r > 0 else ('text-sell' if t.realized_r < 0 else 'text-muted') }}">
+                                    {{ "%+.2fR" | format(t.realized_r) }}</span>
                             </td>
                             <td>
                                 <div class="align-center flex gap-2">
-                                    <span class="badge"
-                                        style="background: {{ 'rgba(39, 174, 96, 0.1)' if t.guardrails_status == 'PASS' else 'rgba(235, 47, 150, 0.1)' }}; color: {{ 'var(--accent-green)' if t.guardrails_status == 'PASS' else 'var(--accent-pink)' }}; border: 1px solid {{ 'var(--accent-green)' if t.guardrails_status == 'PASS' else 'var(--accent-pink)' }}; font-size: 0.5rem; font-weight: 900;">{{
-                                        t.guardrails_status }}</span>
+                                    <span
+                                        class="badge badge-sm font-900 {{ 'bg-buy-dim text-buy border-buy' if t.guardrails_status == 'PASS' else 'bg-sell-dim text-sell border-sell' }} text-mini">
+                                        {{ t.guardrails_status }}</span>
                                     {% if t.block_reason %}
                                     <div class="text-mini text-pink text-bold text-mono">
                                         // {{ t.block_reason | truncate(30) }}</div>
@@ -165,8 +165,9 @@
                     </tbody>
                 </table>
                 {% if variant.trades|length > 20 %}
-                <div style="padding: 0.5rem 1rem; background: rgba(0,0,0,0.1); border-top: 1px solid rgba(255,255,255,0.05);" class="text-mini text-muted text-upper letter-spacing-1">
-                    SHOWING_LAST_20_OF_{{ variant.trades|length }}_SAMPLES // FULL_LOG_AVAILABLE_IN_JSON_EXPORT
+                <div
+                    class="px-3 bg-black-dim border-t border-white-5 py-2 text-mini text-muted text-upper letter-spacing-1">
+                    REPORT_VERSION: 2.1.0-KAYA | SYSTEM_HASH: {{ report.run_id[:8] }}
                 </div>
                 {% endif %}
                 {% endif %}

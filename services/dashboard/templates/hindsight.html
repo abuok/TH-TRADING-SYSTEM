@@ -15,17 +15,19 @@
             </div>
             <form id="dateForm" class="flex gap-3 align-center">
                 <input type="date" id="datePicker" name="date_str" value="{{ date_str }}"
-                    title="Select date to load hindsight archive" aria-label="Hindsight Archive Date" style="border: 1px solid var(--border-main); padding: 0.5rem 0.75rem; border-left: 2px solid var(--accent-cyan);" class="text-xs rounded text-main text-mono bg-darker-overlay">
-                <button type="submit" class="btn text-xxs text-black-color text-black btn-primary" style="background: var(--accent-cyan);">LOAD_ARCHIVE</button>
-                <button type="button" onclick="runHindsight()" class="btn text-xxs text-black-color text-black btn-secondary" style="background: var(--accent-yellow); border-color: var(--accent-yellow);">RUN_BATCH</button>
+                    title="Select date to load hindsight archive" aria-label="Hindsight Archive Date"
+                    class="text-xs rounded text-main text-mono bg-darker-overlay border-main-1 p-2 border-l-2-cyan">
+                <button type="submit"
+                    class="btn text-xxs text-black-color text-black btn-primary bg-cyan">LOAD_ARCHIVE</button>
+                <button type="button" onclick="runHindsight()"
+                    class="btn text-xxs text-black-color text-black btn-secondary bg-warn border-warn">RUN_BATCH</button>
             </form>
         </div>
     </div>
 
     {% if summary.total == 0 %}
     <div class="hud-panel glass-panel col-span-12 hud-empty-state p-5">
-        <div
-            class="text-sm text-pink text-black mb-3 letter-spacing-2">
+        <div class="text-sm text-pink mb-3 letter-spacing-2">
             ZERO_EVALUATIONS_IN_CACHE</div>
         <div class="text-muted text-xs letter-spacing-1">NO HINDSIGHT DATA FOR {{
             date_str }} // INITIATE "RUN_BATCH" TO ANALYZE VECTORS</div>
@@ -33,41 +35,40 @@
     {% else %}
 
     <!-- Top Level Stats & Costliest Miss -->
-    <div class="grid gap-5 col-span-12" style="grid-template-columns: 1fr 2fr;">
+    <div class="grid gap-5 col-span-12 grid-cols-hindsight">
         <div class="hud-panel glass-panel">
             <header class="hud-panel-header">
                 <div class="hud-panel-title">TOTAL_EVALUATED</div>
             </header>
-            <div style="padding: 1.5rem;" class="text-center">
-                <div class="text-mono line-height-1 text-black text-cyan" style="font-size: 3.5rem;">
+            <div class="p-6 text-center">
+                <div class="text-mono line-height-1 text-black text-cyan text-3-5xl">
                     {{ summary.total }}</div>
-                <div style="margin-top: 0.75rem;" class="text-mini letter-spacing-2 text-muted text-upper">
+                <div class="mt-3 text-mini letter-spacing-2 text-muted text-upper">
                     VECTORS_IN_BATCH</div>
             </div>
         </div>
 
         {% if summary.costliest_miss %}
-        <div class="hud-panel glass-panel"
-            style="background: rgba(242, 153, 74, 0.05); border-left: 4px solid var(--accent-orange);">
+        <div class="hud-panel glass-panel bg-orange-05 border-l-4-orange">
             <header class="hud-panel-header">
                 <div class="text-orange hud-panel-title">COSTLIEST_MISSED_OPPORTUNITY</div>
             </header>
-            <div class="align-center flex p-4" style="gap: 2.5rem;">
-                <div class="text-mono text-orange text-black" style="font-size: 3rem;">+{{
+            <div class="align-center flex p-4 gap-10">
+                <div class="text-mono text-orange text-5xl">+{{
                     "{:.2f}".format(summary.costliest_miss.missed_r) }}R</div>
-                <div style="flex-grow: 1;">
-                    <div class="text-main text-sm text-mono text-black letter-spacing-1">
+                <div class="flex-grow-1">
+                    <div class="text-main text-sm text-mono letter-spacing-1">
                         TICKET_ID: {{ summary.costliest_miss.ticket_id }}</div>
                     <div class="text-upper mt-2 text-muted text-xxs flex align-center gap-2">
                         SKIP_REASON_VECTOR:
-                        <span class="text-mini badge text-yellow text-black bg-darker-overlay" style="border: 1px solid var(--border-main);">{{
+                        <span class="text-mini badge text-yellow bg-darker-overlay border-main-1">{{
                             summary.costliest_miss.reason }}</span>
                     </div>
                 </div>
             </div>
         </div>
         {% else %}
-        <div class="glass-panel hud-panel align-center flex" style="padding: 2rem; justify-content: center;">
+        <div class="glass-panel hud-panel align-center flex p-8 justify-center">
             <div class="text-muted text-bold text-xs letter-spacing-1">
                 NO_COSTLY_MISSES_DETECTED // EFFICIENCY_STABLE</div>
         </div>
@@ -96,11 +97,11 @@
                             {{ item.reason.replace("_", " ") }}</td>
                         <td class="text-center text-mono">{{ item.count }}</td>
                         <td
-                            style="text-align: right; font-weight: 900; font-family: monospace; color: {% if item.win_rate > 50 %}var(--accent-green){% elif item.win_rate < 30 %}var(--accent-pink){% else %}var(--text-main){% endif %};">
+                            class="text-right font-900 text-mono {{ 'text-buy' if item.win_rate > 50 else ('text-sell' if item.win_rate < 30 else 'text-main') }}">
                             {{ item.win_rate }}%
                         </td>
                         <td
-                            style="text-align: right; font-family: monospace; font-weight: 900; font-size: 0.85rem; color: {% if item.avg_r > 0 %}var(--accent-green){% elif item.avg_r < 0 %}var(--accent-pink){% else %}var(--text-muted){% endif %};">
+                            class="text-right text-mono font-900 text-sm {{ 'text-buy' if item.avg_r > 0 else ('text-sell' if item.avg_r < 0 else 'text-muted') }}">
                             {{ "{:+.2f}".format(item.avg_r) }}R
                         </td>
                     </tr>
@@ -116,37 +117,38 @@
             <div class="hud-panel-title">EVALUATED_TICKET_STREAM</div>
         </header>
         <div class="hud-scroll-body p-4">
-            <div style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));" class="gap-4 grid">
+            <div class="gap-4 grid grid-cols-tickets">
                 {% for t in tickets %}
-                <div class="glass-panel bg-darker-overlay hud-panel border-theme" style="padding: 0;">
-                    <header style="background: rgba(255,255,255,0.03); padding: 0.6rem 0.8rem;" class="justify-between align-center flex border-divider">
+                <div class="glass-panel bg-darker-overlay hud-panel border-theme p-0">
+                    <header class="justify-between align-center flex border-divider bg-white-3 p-2">
                         <div class="text-black text-main text-xxs text-mono">
                             ID: {{ t.ticket_id[:12] }}...</div>
-                        {% set h_color = 'var(--text-muted)' %}
-                        {% if t.hindsight_outcome_label == 'WIN' %}{% set h_color = 'var(--accent-green)' %}
-                        {% elif t.hindsight_outcome_label == 'LOSS' %}{% set h_color = 'var(--accent-pink)' %}
-                        {% elif t.hindsight_outcome_label == 'BE' %}{% set h_color = 'var(--accent-yellow)' %}
+                        {% set h_class = 'text-hs-neutral' %}
+                        {% if t.hindsight_outcome_label == 'WIN' %}{% set h_class = 'text-hs-win' %}
+                        {% elif t.hindsight_outcome_label == 'LOSS' %}{% set h_class = 'text-hs-loss' %}
+                        {% elif t.hindsight_outcome_label == 'STALE' %}{% set h_class = 'text-hs-stale' %}
                         {% endif %}
-                        <span class="badge"
-                            style="background: transparent; border: 1px solid {{ h_color }}; color: {{ h_color }}; font-size: 0.5rem; font-weight: 900;">RESULT_{{
+                        <span class="badge badge-mini font-900 border-1 bg-transparent {{ h_class }}">RESULT_{{
                             t.hindsight_outcome_label }}</span>
                     </header>
                     <div class="p-3">
                         <div class="justify-between align-center mb-2 flex">
                             <span class="text-mini text-muted text-upper">STATUS_ORIG</span>
-                            <span class="'BLOCKED' else 'badge-danger' }} if 'badge-success' != badge text-black {{ text-micro t.status">{{ t.status }}</span>
+                            <span
+                                class="badge text-black text-micro {{ 'bg-buy-dim border-buy' if t.status == 'APPROVED' else 'bg-sell-dim border-sell' }}">{{
+                                t.status }}</span>
                         </div>
                         {% if t.skip_reason %}
                         <div class="justify-between align-center flex mb-3">
                             <span class="text-mini text-muted text-upper">BIAS_VECTOR</span>
-                            <span style="background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); padding: 1px 6px; border-radius: 2px;" class="text-mini text-black text-mono text-yellow">{{
+                            <span class="bg-black-50 border-white-5 p-1 px-2 rounded text-mini text-mono text-yellow">{{
                                 t.skip_reason }}</span>
                         </div>
                         {% endif %}
-                        <div class="justify-between align-center flex hud-scanline" style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.6rem; background: rgba(0,0,0,0.15); margin: 0 -0.25rem; padding-left: 0.5rem; padding-right: 0.5rem; border-radius: 2px;">
+                        <div
+                            class="justify-between align-center flex hud-scanline border-t-1 border-white-5 pt-2-4 bg-black-15 m-0-1 pl-2 pr-2 rounded">
                             <span class="text-black text-main text-xxs">IMAGINARY_YIELD</span>
-                            <span
-                                style="font-size: 1rem; font-weight: 900; color: {{ h_color }}; font-family: monospace;">{{
+                            <span class="text-lg font-900 text-mono {{ h_class }}">{{
                                 "{:+.2f}".format(t.hindsight_realized_r) }}R</span>
                         </div>
                     </div>

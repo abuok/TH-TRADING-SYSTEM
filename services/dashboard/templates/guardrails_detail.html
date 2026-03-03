@@ -19,7 +19,7 @@
     </div>
 
     {% if not result %}
-    <div class="glass-panel hud-panel text-center col-span-12" style="padding: 3rem;">
+    <div class="glass-panel hud-panel text-center col-span-12 p-12">
         <div class="text-bold text-xl letter-spacing-2 mb-3 text-pink">
             NO GUARDRAILS RECORD FOUND</div>
         <div class="text-muted text-sm">Evaluations are generated during active Orchestrator
@@ -29,19 +29,19 @@
 
     {% set score = result.discipline_score %}
     {% set hard = result.hard_block %}
-    {% set score_color = "var(--accent-pink)" if score < 60 else ("var(--accent-yellow)" if score < 80
-        else "var(--accent-green)" ) %} <!-- [4] Discipline Score Monitor -->
+    {% set shadow_class = "text-shadow-sell" if score < 60 else ("text-shadow-warn" if score < 80 else "text-shadow-buy"
+        ) %} {% set score_color_class="text-sell" if score < 60 else ("text-warn" if score < 80 else "text-buy" ) %}
+        <!-- [4] Discipline Score Monitor -->
         <div class="hud-panel glass-panel col-span-4 hud-scanline">
             <header class="hud-panel-header">
                 <div class="hud-panel-title">DISCIPLINE SCORE</div>
             </header>
-            <div class="gap-4 flex flex-col align-center" style="padding: 1.5rem;">
-                <div
-                    style="font-size: 4rem; font-weight: 900; color: {{ score_color }}; text-shadow: 0 0 20px {{ score_color }}44; line-height: 1;">
+            <div class="gap-4 flex flex-col align-center p-6">
+                <div class="text-4xl font-900 line-height-1 {{ score_color_class }} {{ shadow_class }}">
                     {{ score }}<span class="opacity-50 text-xl">%</span>
                 </div>
 
-                <div style="justify-content: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem;" class="gap-4 w-full flex">
+                <div class="justify-center border-t-1 border-white-5 pt-4 gap-4 w-full flex">
                     <div class="text-center">
                         <div class="text-black text-green text-sm">{{
                             result.rule_checks | selectattr("status","equalto","PASS") | list | length }}</div>
@@ -59,12 +59,12 @@
                     </div>
                 </div>
 
-                <div class="mt-2">
+                <div class="mt-2 text-center w-full">
                     {% if hard %}
-                    <span class="bg-pink-dim badge text-pink text-black letter-spacing-1" style="border: 2px solid var(--accent-pink); padding: 0.4rem 1rem;">⛔
+                    <span class="bg-pink-dim badge text-pink border-l-3-sell letter-spacing-1 p-2 px-4 border-sell">⛔
                         HARD BLOCK ACTIVE</span>
                     {% else %}
-                    <span class="text-black text-green badge letter-spacing-1" style="background: rgba(39, 174, 96, 0.1); border: 2px solid var(--accent-green); padding: 0.4rem 1rem;">✅
+                    <span class="bg-buy-dim text-buy badge border-l-3-green letter-spacing-1 p-2 px-4 border-buy">✅
                         TRANSMISSION ALLOWED</span>
                     {% endif %}
                 </div>
@@ -78,14 +78,14 @@
             </header>
             <div class="p-5">
                 {% if hard and result.primary_block_reason %}
-                <div class="p-3 border-pink rounded mb-3" style="background: rgba(235, 47, 150, 0.05);">
+                <div class="p-3 border-sell rounded mb-3 bg-sell-05">
                     <div class="text-upper text-black text-xxs text-pink mb-2 letter-spacing-1">
                         CRITICAL BLOCK INITIATED</div>
                     <div class="text-bold text-main text-md line-height-relaxed">{{
                         result.primary_block_reason }}</div>
                 </div>
                 {% else %}
-                <div style="background: rgba(39, 174, 96, 0.05); border: 1px solid var(--accent-green);" class="p-3 rounded">
+                <div class="p-3 rounded bg-buy-05 border-buy">
                     <div class="text-upper text-green text-xxs text-black mb-2 letter-spacing-1">
                         NOMINAL RISK STANDING</div>
                     <div class="text-muted text-sm line-height-relaxed">Setup satisfies all
@@ -134,19 +134,19 @@
                                 check.id }}</td>
                             <td class="text-main text-bold">{{ check.name }}</td>
                             <td>
-                                <span class="badge"
-                                    style="background: {{ s_color }}11; color: {{ s_color }}; border: 1px solid {{ s_color }}33; font-size: 0.55rem; font-weight: 900;">{{
-                                    check.status }}</span>
+                                <span
+                                    class="badge badge-sm font-900 {{ 'bg-buy-dim text-buy border-buy' if check.status == 'PASS' else ('bg-warn-dim text-warn border-warn' if check.status == 'WARN' else 'bg-sell-dim text-sell border-sell') }} text-mini">
+                                    {{ check.status }}</span>
                             </td>
                             <td
-                                style="text-align: right; font-family: monospace; font-weight: 800; color: {{ s_color }};">
+                                class="text-right font-800 text-mono {{ 'text-buy' if check.status == 'PASS' else ('text-warn' if check.status == 'WARN' else 'text-sell') }}">
                                 {% if check.deduction > 0 %}-{{ check.deduction }}{% else %}0{% endif %}
                             </td>
                             <td class="text-muted text-xs">{{ check.details }}</td>
                         </tr>
                         {% if check.evidence_refs %}
-                        <tr style="background: rgba(0,0,0,0.15);">
-                            <td colspan="5" style="padding: 0.5rem 1rem;">
+                        <tr class="bg-black-15">
+                            <td colspan="5" class="p-0-5-1">
                                 <div class="flex-wrap flex gap-4 text-xxs">
                                     {% for ev in check.evidence_refs %}
                                     <span class="text-muted">

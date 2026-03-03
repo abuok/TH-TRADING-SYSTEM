@@ -11,12 +11,10 @@
         </header>
         <div class="gap-2 grid grid-cols-2 p-2">
             {% for service, status in health.items() %}
-            <div
-                style="background: rgba(0,0,0,0.2); padding: 0.4rem; border-radius: 2px; border-left: 2px solid {{ 'var(--accent-green)' if status == 'OK' else 'var(--accent-pink)' }};">
+            <div class="p-2 rounded bg-dark-overlay border-l-2 {{ 'border-buy' if status == 'OK' else 'border-sell' }}">
                 <div class="text-mini text-muted text-bold text-upper">
                     {{ service }}</div>
-                <div
-                    style="font-size: 0.7rem; font-weight: 800; color: {{ 'var(--accent-green)' if status == 'OK' else 'var(--accent-pink)' }}; font-family: monospace;">
+                <div class="text-mini-mono text-bold {{ 'text-buy' if status == 'OK' else 'text-sell' }}">
                     {{ status }}</div>
             </div>
             {% endfor %}
@@ -38,9 +36,8 @@
                 <span class="text-xxs text-muted">UNREALIZED PNL</span>
                 <span class="text-green text-lg text-bold text-mono">+$1,240.50</span>
             </div>
-            <div style="height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; position: relative;" class="mt-1">
-                <div
-                    style="position: absolute; left: 0; top: 0; height: 100%; width: 1.2%; background: var(--accent-pink); border-radius: 2px; box-shadow: 0 0 5px var(--accent-pink);">
+            <div class="mt-1 relative h-4 bg-dark-overlay rounded">
+                <div class="absolute left-0 top-0 h-full w-1-2 bg-sell rounded shadow-sell">
                 </div>
             </div>
             <div class="justify-between text-muted flex text-mini">
@@ -64,13 +61,13 @@
                     now_eat_str }}</div>
                 <div class="text-mini text-cyan">SYNCED TO EAT (AFRICA/NAIROBI)</div>
             </div>
-            <div style="flex: 2; height: 100%;">
+            <div class="flex-2 h-full">
                 <div class="mb-1 text-muted text-xxs">UPCOMING SAFETY WINDOWS
                 </div>
                 <div class="overflow-x-auto flex gap-2">
                     {% if no_trade_windows %}
                     {% for window in no_trade_windows[:2] %}
-                    <div style="background: rgba(242, 153, 74, 0.05); border: 1px solid rgba(242, 153, 74, 0.2);" class="w-120 px-2 py-1 rounded">
+                    <div class="w-120 px-2 py-1 rounded bg-warn-dim border-warn-soft">
                         <div class="text-orange text-bold text-micro">RESTRICTION</div>
                         <div class="text-xxs text-mono">{{ window.start }}</div>
                     </div>
@@ -96,7 +93,7 @@
             <table class="hud-compact-table">
                 <thead>
                     <tr>
-                        <th style="width: 15px;">#</th>
+                        <th class="w-15">#</th>
                         <th>SYMBOL</th>
                         <th>STAGE</th>
                         <th class="text-center">SIGNAL SCORE</th>
@@ -112,16 +109,16 @@
                         <td><span class="badge badge-cyan-dim badge-sm">{{
                                 setup.stage }}</span></td>
                         <td
-                            style="text-align: center; font-family: monospace; font-size: 1rem; font-weight: 800; color: {{ 'var(--accent-green)' if setup.score|float >= 7 else ('var(--accent-yellow)' if setup.score|float >= 5 else 'var(--text-muted)') }};">
+                            class="text-center text-mono text-bold-lg {{ 'text-buy' if setup.score|float >= 7 else ('text-warn' if setup.score|float >= 5 else 'text-muted') }}">
                             {{ "%.1f" | format(setup.score|float) }}
                         </td>
                         <td>
                             <div class="flex align-center gap-2">
-                                <span class="status-dot {{ 'status-healthy' if setup.is_fresh else 'status-error' }}"
-                                    style="width: 6px; height: 6px;"></span>
                                 <span
-                                    style="font-size: 0.6rem; font-weight: 700; color: {{ 'var(--accent-green)' if setup.is_fresh else 'var(--accent-pink)' }};">{{
-                                    'FRESH' if setup.is_fresh else 'STALE' }}</span>
+                                    class="status-dot {{ 'status-healthy' if setup.is_fresh else 'status-error' }} w-6 h-6"></span>
+                                <span
+                                    class="text-micro text-extra-bold {{ 'text-buy' if setup.is_fresh else 'text-sell' }}">
+                                    {{ 'FRESH' if setup.is_fresh else 'STALE' }}</span>
                             </div>
                         </td>
                         <td class="text-right text-muted text-xxs text-mono">
@@ -141,11 +138,11 @@
         </header>
         <div class="h-400 hud-scroll-body p-2">
             {% if kill_switches %}
-            <div class="bg-pink-dim mb-3 border-pink rounded p-2">
-                <div style="margin-bottom: 0.3rem;" class="text-pink text-bold text-xxs">
+            <div class="bg-sell-dim mb-3 border-sell rounded p-2">
+                <div class="mb-1 text-sell text-bold text-xxs">
                     ACTIVE INTERVENTION</div>
                 {% for ks in kill_switches %}
-                <div class="text-mono text-pink text-xs">[!] {{ ks.switch_type
+                <div class="text-mono text-sell text-xs">[!] {{ ks.switch_type
                     }} &rarr; {{ ks.target or 'GLOBAL' }}</div>
                 {% endfor %}
             </div>
@@ -154,12 +151,12 @@
             <div class="flex-col flex gap-3">
                 {% for decision in latest_decisions %}
                 <div class="rounded border-theme bg-darker-overlay p-2 hud-scanline">
-                    <div style="align-items: start; margin-bottom: 0.3rem;" class="justify-between flex">
+                    <div class="justify-between flex mb-1 items-start">
                         <span class="text-sm text-main text-bold">{{
                             decision.asset_pair }}</span>
-                        <span class="badge"
-                            style="background: {{ 'rgba(39, 174, 96, 0.1)' if decision.action == 'ALLOW' else 'rgba(235, 47, 150, 0.1)' }}; color: {{ 'var(--accent-green)' if decision.action == 'ALLOW' else 'var(--accent-pink)' }}; border: 1px solid {{ 'var(--accent-green)' if decision.action == 'ALLOW' else 'var(--accent-pink)' }}; font-size: 0.55rem;">{{
-                            decision.action }}</span>
+                        <span
+                            class="badge border-1 text-micro {{ 'bg-buy-dim text-buy border-buy' if decision.action == 'ALLOW' else 'bg-sell-dim text-sell border-sell' }}">
+                            {{ decision.action }}</span>
                     </div>
                     <div class="mb-1 text-muted text-xs line-height-relaxed">
                         {{ decision.reason }}</div>
@@ -182,13 +179,13 @@
                     <span class="text-bold text-green text-xxs">LINK STABLE</span>
                 </div>
                 <div class="flex align-center gap-2">
-                    <span class="status-dot status-healthy Intense-glow-cyan" style="width: 6px; height: 6px;"></span>
+                    <span class="status-dot status-healthy Intense-glow-cyan w-6 h-6"></span>
                     <span class="text-bold text-xxs text-cyan">FEED HOT</span>
                 </div>
             </div>
         </header>
-        <div class="grid gap-6" style="grid-template-columns: 3fr 1fr;">
-            <div class="hud-scroll-body" style="height: 220px;">
+        <div class="grid gap-6 grid-bridge">
+            <div class="hud-scroll-body h-220">
                 <table class="hud-compact-table">
                     <thead>
                         <tr>
@@ -206,8 +203,8 @@
                             <td class="text-right text-md text-mono">{{ q.bid }}</td>
                             <td class="text-right text-md text-mono">{{ q.ask }}</td>
                             <td class="text-center">
-                                <span class="text-sm text-mono badge text-cyan" style="background: rgba(86, 204, 242, 0.1);">{{
-                                    q.spread }}</span>
+                                <span class="text-sm text-mono badge bg-cyan-dim text-cyan">
+                                    {{ q.spread }}</span>
                             </td>
                             <td class="text-mono text-right text-muted text-xs">
                                 {{ q.captured_at.strftime('%H:%M:%S') if q.captured_at else '---' }}</td>
@@ -216,12 +213,12 @@
                     </tbody>
                 </table>
             </div>
-            <div style="border-left: 1px solid rgba(255,255,255,0.05); padding-left: 1.5rem;">
+            <div class="border-l border-theme-soft pl-6">
                 <div class="text-xxs text-upper mb-3 text-muted text-bold letter-spacing-1">
                     SYMBOL SPECIFICATIONS</div>
-                <div class="hud-scroll-body" style="height: 180px;">
+                <div class="hud-scroll-body h-180">
                     {% for s in symbol_specs %}
-                    <div style="border: 1px solid rgba(255,255,255,0.03);" class="bg-dark-overlay mb-2 rounded p-2">
+                    <div class="bg-dark-overlay mb-2 rounded p-2 border-theme">
                         <div class="justify-between mb-1 align-center flex">
                             <span class="text-main text-bold text-xs">{{ s.symbol
                                 }}</span>
@@ -238,16 +235,14 @@
     </section>
 
     <!-- FOOTER: INCIDENT TICKER -->
-    <section class="hud-panel col-span-12"
-        style="background: rgba(0,0,0,0.6); padding: 0.4rem 1rem; border-color: rgba(235, 47, 150, 0.3);">
+    <section class="hud-panel col-span-12 bg-black-dim p-2 border-sell-soft">
         <div class="flex align-center gap-5">
-            <span class="text-mini text-black badge" style="background: var(--accent-pink); color: #fff; border: none; padding: 2px 8px;">INCIDENT
+            <span class="text-mini text-white badge bg-sell border-none px-2">INCIDENT
                 TICKER</span>
-            <div style="white-space: nowrap;" class="text-xs text-muted flex-1 overflow-hidden text-mono">
-                <div style="display: inline-block; animation: ticker 40s linear infinite;">
+            <div class="text-xs text-muted flex-1 overflow-hidden text-mono ws-nowrap">
+                <div class="ticker-animate">
                     {% for incident in latest_incidents %}
-                    <span
-                        style="color: {{ 'var(--accent-pink)' if incident.severity == 'ERROR' else 'var(--accent-yellow)' }}; margin-right: 4rem;">
+                    <span class="mr-16 {{ 'text-sell' if incident.severity == 'ERROR' else 'text-warn' }}">
                         [{{ incident.created_at.strftime('%H:%M:%S') }}] {{ incident.component }}: {{ incident.message
                         }}
                     </span>

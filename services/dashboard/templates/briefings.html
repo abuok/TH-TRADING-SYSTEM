@@ -32,25 +32,26 @@
                 briefings|length }} PACKS</span>
         </header>
         <div class="hud-scroll-body">
-            <div style="grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));" class="gap-4 grid p-3">
+            <div class="gap-4 grid p-3 grid-cols-briefings">
                 {% for b in briefings %}
-                {% set s_color = 'var(--text-muted)' %}
-                {% if b.session_label == 'LONDON' %}{% set s_color = 'var(--accent-cyan)' %}
-                {% elif b.session_label == 'NEW YORK' %}{% set s_color = 'var(--accent-yellow)' %}
-                {% elif b.session_label == 'ASIA' %}{% set s_color = 'var(--accent-purple)' %}
+                {% set s_class = 'border-l-2-muted' %}
+                {% if b.session_label == 'LONDON' %}{% set s_class = 'border-l-3-cyan' %}
+                {% elif b.session_label == 'NEW YORK' %}{% set s_class = 'border-l-3-yellow' %}
+                {% elif b.session_label == 'ASIA' %}{% set s_class = 'border-l-3-purple' %}
                 {% endif %}
-                <div class="hud-scanline"
-                    style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 4px; border-left: 3px solid {{ s_color }}; overflow: hidden;">
+                <div class="hud-scanline bg-black-20 border-divider-1 rounded-4 {{ s_class }} overflow-hidden">
                     <div class="p-3">
                         <div class="justify-between mb-2 align-start flex">
                             <div>
                                 <div class="mb-1 align-center flex gap-2">
-                                    <span style="font-size: 0.9rem; font-weight: 800; color: {{ s_color }};">{{
+                                    <span
+                                        class="text-lg font-800 {{ 'text-cyan' if b.session_label == 'LONDON' else ('text-warn' if b.session_label == 'NEW YORK' else ('text-purple' if b.session_label == 'ASIA' else 'text-muted')) }}">{{
                                         b.session_label }}</span>
                                     {% if b.is_delta %}
-                                    <span class="bg-pink-dim text-micro badge border-pink text-pink">DELTA</span>
+                                    <span class="badge border-theme text-muted bg-white-5">0 FOUND</span>
                                     {% else %}
-                                    <span class="bg-transparent text-micro text-cyan badge" style="border: 1px solid var(--accent-cyan);">PRE-SESSION</span>
+                                    <span
+                                        class="bg-transparent text-micro text-cyan badge border-cyan-10">PRE-SESSION</span>
                                     {% endif %}
                                 </div>
                                 <div class="text-mono text-xxs text-muted">{{

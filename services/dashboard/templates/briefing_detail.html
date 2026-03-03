@@ -30,12 +30,13 @@
 
     {% if html_content %}
     <!-- Primary Briefing Display (Iframe) -->
-    <div class="hud-panel glass-panel col-span-12" style="background: rgba(0,0,0,0.5);">
+    <div class="hud-panel glass-panel col-span-12 bg-black-50">
         <header class="hud-panel-header">
             <div class="hud-panel-title">PRE-RENDERED INTEL STREAM</div>
         </header>
-        <div style="padding: 0; position: relative;">
-            <iframe id="briefing-frame" src="/dashboard/briefings/{{ record.briefing_id }}/print" title="Briefing Pack" style="border: none; min-height: 800px; border-radius: 0 0 4px 4px;" class="w-full display-block"></iframe>
+        <div class="relative p-0">
+            <iframe id="briefing-frame" src="/dashboard/briefings/{{ record.briefing_id }}/print" title="Briefing Pack"
+                class="w-full h-min-800 border-none rounded-b-4 display-block"></iframe>
         </div>
     </div>
     {% else %}
@@ -81,13 +82,12 @@
                     Operator Directives</div>
                 {% for action in d.get("operator_actions", []) %}
                 <div
-                    style="margin-bottom: 1rem; border-left: 2px solid {{ 'var(--accent-pink)' if action.priority == 'HIGH' else ('var(--accent-yellow)' if action.priority == 'MEDIUM' else 'var(--accent-cyan)') }}; padding-left: 0.75rem;">
+                    class="mb-5 pl-3 {{ 'border-l-2-sell' if action.priority == 'HIGH' else ('border-l-2-warn' if action.priority == 'MEDIUM' else 'border-l-2-cyan') }}">
                     <div class="mb-1 align-center flex gap-2">
                         <span
-                            style="font-size: 0.55rem; font-weight: 900; color: {{ 'var(--accent-pink)' if action.priority == 'HIGH' else ('var(--accent-yellow)' if action.priority == 'MEDIUM' else 'var(--accent-cyan)') }}; text-transform: uppercase;">{{
+                            class="badge-mini font-900 {{ 'text-sell' if action.priority == 'HIGH' else ('text-warn' if action.priority == 'MEDIUM' else 'text-cyan') }} text-upper">{{
                             action.priority }}</span>
-                        <span class="text-main text-bold text-xs">{{ action.category
-                            }}</span>
+                        <span class="text-main text-bold text-xs">{{ action.category }}</span>
                     </div>
                     <div class="text-xs text-muted line-height-relaxed">{{ action.description }}
                     </div>
@@ -103,10 +103,10 @@
             <div class="hud-panel-title">PAIR OVERVIEWS // QUANTITATIVE ANALYSIS</div>
         </header>
         <div class="hud-scroll-body p-3">
-            <div style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));" class="gap-4 grid">
+            <div class="gap-4 grid grid-cols-300">
                 {% for po in d.get("pair_overviews", []) %}
                 <div class="hud-scanline bg-dark-overlay border-divider p-3">
-                    <div class="justify-between flex mb-3" style="align-items: start;">
+                    <div class="justify-between flex mb-3 align-start">
                         <span class="text-bold text-md text-cyan">{{ po.pair }}</span>
                         <span class="badge badge-cyan text-xxs">{{
                             po.bias }}</span>
@@ -134,17 +134,6 @@
     </div>
     {% endif %}
 </div>
-
-<script>
-    const iframe = document.getElementById("briefing-frame");
-    if (iframe) {
-        iframe.onload = function () {
-            try {
-                iframe.style.minHeight = iframe.contentWindow.document.body.scrollHeight + "px";
-            } catch (e) { }
-        };
-    }
-</script>
 
 <script>
     // Auto-resize iframe to content height

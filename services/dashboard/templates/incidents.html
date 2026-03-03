@@ -17,8 +17,9 @@
             <div class="text-muted text-bold text-xxs text-upper">
                 Filter Stream:</div>
             <div class="gap-3 flex">
-                <a href="?severity=ERROR" class="text-pink btn btn-tiny btn-secondary" style="border-color: rgba(235, 47, 150, 0.3);">ERROR ONLY</a>
-                <a href="?severity=WARNING" class="btn btn-tiny btn-secondary text-yellow" style="border-color: rgba(242, 201, 76, 0.3);">WARNING ONLY</a>
+                <a href="?severity=ERROR" class="text-pink btn btn-tiny btn-secondary border-sell-soft">ERROR ONLY</a>
+                <a href="?severity=WARNING" class="btn btn-tiny btn-secondary text-yellow border-warn-soft">WARNING
+                    ONLY</a>
                 <a href="?" class="btn btn-secondary btn-tiny opacity-60">RESET ALL</a>
             </div>
         </div>
@@ -35,7 +36,7 @@
             <table class="hud-compact-table">
                 <thead>
                     <tr>
-                        <th style="width: 180px;">TIMESTAMP (UTC)</th>
+                        <th class="w-180">TIMESTAMP (UTC)</th>
                         <th>COMPONENT</th>
                         <th>CODE</th>
                         <th class="w-100">SEVERITY</th>
@@ -52,18 +53,16 @@
                         <td class="text-mono text-xs text-muted">{{
                             incident.error_code }}</td>
                         <td>
-                            <span class="badge"
-                                style="background: {{ 'rgba(235, 47, 150, 0.1)' if incident.severity == 'ERROR' else 'rgba(242, 201, 76, 0.1)' }}; color: {{ 'var(--accent-pink)' if incident.severity == 'ERROR' else 'var(--accent-yellow)' }}; border: 1px solid {{ 'var(--accent-pink)' if incident.severity == 'ERROR' else 'var(--accent-yellow)' }}; font-size: 0.55rem; font-weight: 900;">
-                                {{ incident.severity }}
-                            </span>
+                            <span
+                                class="badge badge-sm font-900 {{ 'bg-sell-dim text-sell border-sell' if incident.severity == 'ERROR' else 'bg-warn-dim text-warn border-warn' }} text-mini">
+                                {{ incident.severity }}</span>
                         </td>
                         <td class="text-muted text-xs">{{ incident.message }}</td>
                     </tr>
                     {% endfor %}
                     {% if not incidents %}
                     <tr>
-                        <td colspan="5"
-                            class="hud-empty-state">
+                        <td colspan="5" class="hud-empty-state">
                             ZERO INCIDENTS DETECTED IN SELECTED RANGE</td>
                     </tr>
                     {% endif %}

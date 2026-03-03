@@ -16,20 +16,20 @@
     <div class="hud-panel glass-panel col-span-12" data-hud-corner="bottom-left">
         <header class="hud-panel-header">
             <div class="hud-panel-title">AVAILABLE_SIMULATION_RECORDS</div>
-            <span class="text-mini text-black text-cyan badge" style="background: rgba(86, 204, 242, 0.1); border: 1px solid var(--accent-cyan);">{{
+            <span class="text-mini text-black text-cyan badge bg-cyan-dim border-cyan">{{
                 runs|length }} RUNS_DETECTED</span>
         </header>
 
-        <div class="hud-scroll-body">
+        <div id="prep-container" class="hud-scroll-body h-250">
             {% if runs | length == 0 %}
             <div class="hud-empty-state p-5">
-                <div
-                    class="text-sm text-pink text-black mb-3 letter-spacing-2">
+                <div class="text-sm text-pink text-black mb-3 letter-spacing-2">
                     ZERO_SIMULATION_DATA_DETECTED</div>
                 <div class="mb-4 text-muted text-xs letter-spacing-1">
                     RUN_HISTORICAL_SIMS_VIA_CLI_TO_POPULATE</div>
-                <div class="text-left mx-auto max-w-600">
-                    <code class="text-mono text-xs p-4 rounded bg-darker-overlay display-block text-cyan" style="border: 1px solid rgba(86, 204, 242, 0.2); border-left: 3px solid var(--accent-cyan);">
+                <div class="hud-scroll-body h-180 p-0 rounded">
+                    <code
+                        class="text-mono text-xs p-4 rounded bg-darker-overlay display-block text-cyan border-cyan-dim border-accent-left">
                         # EXECUTE SIMULATION VECTOR<br>
                         python infra/cli.py research run XAUUSD 2026-01-01 2026-01-31 ./data.csv --variants eq.yaml
                     </code>
@@ -52,8 +52,16 @@
                         <td class="text-black text-sm text-main text-mono">
                             {{ r.run_id }}</td>
                         <td>
-                            <span class="border-yellow badge text-mini bg-yellow-dim text-black text-yellow">{{
-                                r.pair }}</span>
+                            {# Assuming 'r' has 'hindsight_outcome_label' and 'high_stakes_mode' properties,
+                            or this is a placeholder for future data structure.
+                            Original content for this cell was:
+                            <span class="border-yellow badge text-mini bg-yellow-dim text-black text-yellow">{{ r.pair
+                                }}</span>
+                            #}
+                            <span
+                                class="badge badge-sm font-900 border-1 bg-transparent text-mini {{ 'text-hs-win' if r.hindsight_outcome_label == 'WIN' else ('text-hs-loss' if r.hindsight_outcome_label == 'LOSS' else 'text-hs-neutral') }}">
+                                {{ r.high_stakes_mode }}
+                            </span>
                         </td>
                         <td class="text-mono text-muted text-xs">
                             {{ r.start_date[:10] }} <span class="text-muted opacity-50">&rarr;</span>
@@ -62,8 +70,8 @@
                         <td class="text-center text-xs text-cyan text-mono text-black">
                             {{ r.variants | length }} STRATS</td>
                         <td class="text-right">
-                            <a href="/dashboard/research/{{ r.run_id }}" class="text-black btn btn-secondary text-xxs" style="padding: 0.4rem 0.75rem;">AUDIT_REPORT
-                                &rarr;</a>
+                            <a href="/dashboard/research/{{ r.run_id }}"
+                                class="text-black btn btn-secondary text-xxs px-2 py-1">AUDIT_REPORT &rarr;</a>
                         </td>
                     </tr>
                     {% endfor %}

@@ -6,173 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CALIBRATION_REPORT: {{ report.report_id }}</title>
     <link rel="stylesheet" href="/static/css/theme.css">
-    <style>
-        :root {
-            --bg-dark: #0a0c10;
-            --bg-panel: rgba(255, 255, 255, 0.025);
-            --border-dim: rgba(255, 255, 255, 0.07);
-            --text-main: #e8eaf0;
-            --text-muted: rgba(232, 234, 240, 0.45);
-            --accent-cyan: #56ccf2;
-            --accent-green: #27ae60;
-            --accent-pink: #eb2f96;
-            --accent-yellow: #f2c94c;
-            --accent-orange: #f2994a;
-        }
+    <link rel="stylesheet" href="/static/components.css">
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            background-color: var(--bg-dark);
-            background-image: radial-gradient(ellipse at 20% 50%, rgba(86, 204, 242, 0.04) 0%, transparent 60%),
-                radial-gradient(ellipse at 80% 20%, rgba(235, 47, 150, 0.03) 0%, transparent 60%);
-            color: var(--text-main);
-            min-height: 100vh;
-            padding: 2rem;
-        }
-
-        .hud-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(12, 1fr);
-            gap: 1.5rem;
-        }
-
-        .col-span-12 {
-            grid-column: span 12;
-        }
-
-        .col-span-8 {
-            grid-column: span 8;
-        }
-
-        .col-span-4 {
-            grid-column: span 4;
-        }
-
-        .hud-panel {
-            background: var(--bg-panel);
-            border: 1px solid var(--border-dim);
-            border-radius: 2px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .glass-panel {
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-        }
-
-        .hud-panel::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255, 255, 255, 0.01) 2px, rgba(255, 255, 255, 0.01) 4px);
-            pointer-events: none;
-        }
-
-        .hud-panel-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0.6rem 1rem;
-            border-bottom: 1px solid var(--border-dim);
-            background: rgba(0, 0, 0, 0.15);
-        }
-
-        .hud-panel-title {
-            font-size: 0.6rem;
-            font-weight: 900;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: var(--accent-cyan);
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 0.2rem 0.5rem;
-            border-radius: 2px;
-            font-size: 0.55rem;
-            font-weight: 900;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        .hud-compact-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.75rem;
-        }
-
-        .hud-compact-table th {
-            padding: 0.5rem 0.75rem;
-            text-align: left;
-            font-size: 0.55rem;
-            font-weight: 900;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            border-bottom: 1px solid var(--border-dim);
-            background: rgba(0, 0, 0, 0.1);
-        }
-
-        .hud-compact-table td {
-            padding: 0.6rem 0.75rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-            color: var(--text-main);
-            vertical-align: middle;
-        }
-
-        .hud-compact-table tr:hover td {
-            background: rgba(255, 255, 255, 0.02);
-        }
-
-        .rec-card {
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid var(--border-dim);
-            border-radius: 2px;
-            padding: 1.25rem;
-            margin-bottom: 1.25rem;
-        }
-
-        .rec-card-high {
-            border-left: 3px solid var(--accent-green);
-        }
-
-        .rec-card-medium {
-            border-left: 3px solid var(--accent-yellow);
-        }
-
-        .rec-card-low {
-            border-left: 3px solid var(--accent-pink);
-        }
-
-        .form-control {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--border-dim);
-            border-radius: 2px;
-            color: var(--text-main);
-            padding: 0.4rem 0.6rem;
-            font-size: 0.7rem;
-            font-family: inherit;
-            width: 100%;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: var(--accent-cyan);
-        }
-
-        select.form-control option {
-            background: #1a1d25;
-        }
-    </style>
 </head>
 
 <body>
@@ -186,7 +21,7 @@
                     {{ report.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
             </header>
             <div class="border-divider p-4">
-                <div style="align-items: flex-end;" class="justify-between flex gap-4 flex-wrap">
+                <div class="justify-between flex gap-4 flex-wrap align-end">
                     <div>
                         <div class="text-black mb-1 text-xl text-main">
                             {{ report.pair }} // CALIBRATION_FINDINGS</div>
@@ -198,9 +33,10 @@
                         </div>
                     </div>
                     <div>
-                        <div style="margin-bottom: 0.3rem;" class="text-mini text-muted text-upper letter-spacing-1">
+                        <div class="text-mini text-muted text-upper letter-spacing-1 mb-1">
                             BASELINE_POLICY_HASH</div>
-                        <code style="border: 1px solid rgba(86, 204, 242, 0.15); border-radius: 2px;" class="py-1 bg-cyan-dim text-xs px-2 text-cyan text-mono">{{ report.baseline_policy_hash }}</code>
+                        <code
+                            class="py-1 bg-cyan-dim-15 text-xs px-2 text-cyan text-mono border-1 border-cyan-dim rounded-2">{{ report.baseline_policy_hash }}</code>
                     </div>
                 </div>
             </div>
@@ -228,36 +64,34 @@
                 <div class="rec-card {{ card_class }}">
                     <div class="justify-between mb-3 align-start flex">
                         <div>
-                            <div style="letter-spacing: 1.5px; margin-bottom: 0.3rem;" class="text-mini text-muted text-upper">
+                            <div class="text-mini text-muted text-upper letter-spacing-1 mb-1">
                                 [{{ rec.change_type | upper }}]
                             </div>
                             <div class="text-black text-main text-sm">{{ rec.title }}
                             </div>
                         </div>
-                        <span class="badge"
-                            style="background: transparent; color: {{ conf_color }}; border: 1px solid {{ conf_color }}; flex-shrink: 0; margin-left: 1rem;">
+                        {% set conf_class = 'text-green border-green' if conf == 'HIGH' else ('text-yellow
+                        border-yellow' if conf == 'MEDIUM' else 'text-pink border-pink') %}
+                        <span class="badge border-1 bg-transparent flex-shrink-0 ml-4 {{ conf_class }}">
                             CONF: {{ conf }}
                         </span>
                     </div>
 
-                    <div style="grid-template-columns: 1fr 1fr 1fr;" class="gap-4 mb-3 grid">
+                    <div class="gap-4 mb-3 grid grid-cols-3">
                         <div>
-                            <div
-                                class="text-mini text-muted text-upper letter-spacing-1 mb-2">
+                            <div class="text-mini text-muted text-upper letter-spacing-1 mb-2">
                                 PROPOSED_CHANGE</div>
                             <div class="text-xs text-main line-height-relaxed">{{
                                 rec.proposed_change }}</div>
                         </div>
                         <div>
-                            <div
-                                class="text-mini text-muted text-upper letter-spacing-1 mb-2">
+                            <div class="text-mini text-muted text-upper letter-spacing-1 mb-2">
                                 EXPECTED_IMPACT</div>
                             <div class="text-cyan text-xs line-height-relaxed">{{
                                 rec.expected_impact }}</div>
                         </div>
                         <div>
-                            <div
-                                class="text-mini text-muted text-upper letter-spacing-1 mb-2">
+                            <div class="text-mini text-muted text-upper letter-spacing-1 mb-2">
                                 RATIONALE</div>
                             <div class="text-xs text-main line-height-relaxed">{{ rec.rationale
                                 }}</div>
@@ -265,15 +99,14 @@
                     </div>
 
                     {% if rec.caveats %}
-                    <div style="background: rgba(242, 201, 76, 0.05); border: 1px solid rgba(242, 201, 76, 0.1); padding: 0.5rem 0.75rem; border-radius: 2px;" class="mb-3 text-xxs text-yellow">
+                    <div class="mb-3 text-xxs text-yellow bg-warn-05 border-warn-10 p-2-3 rounded-2">
                         ⚠ CAVEAT: {{ rec.caveats }}
                     </div>
                     {% endif %}
 
                     <div class="grid-cols-2 gap-4 grid">
                         <div>
-                            <label
-                                class="text-mini text-muted letter-spacing-1 text-upper display-block mb-1"
+                            <label class="text-mini text-muted letter-spacing-1 text-upper display-block mb-1"
                                 for="skip-reason-{{ loop.index }}">SKIP_REASON</label>
                             <select id="skip-reason-{{ loop.index }}" class="form-control" title="Skip Reason">
                                 <option value="none" selected disabled>SELECT_REASON</option>
@@ -284,8 +117,7 @@
                             </select>
                         </div>
                         <div>
-                            <label
-                                class="text-mini text-muted letter-spacing-1 text-upper display-block mb-1"
+                            <label class="text-mini text-muted letter-spacing-1 text-upper display-block mb-1"
                                 for="skip-notes-{{ loop.index }}">ANALYST_NOTES</label>
                             <textarea id="skip-notes-{{ loop.index }}" rows="2" class="form-control" title="Skip Notes"
                                 placeholder="Add_context..."></textarea>
@@ -323,25 +155,24 @@
                     </thead>
                     <tbody>
                         {% for name, metrics in report.evidence_tables['Metrics'].items() %}
-                        <tr {% if name=='baseline' %}style="background: rgba(86, 204, 242, 0.04);" {% endif %}>
+                        <tr class="{{ 'bg-cyan-04' if name == 'baseline' else '' }}">
                             <td>
                                 <span
-                                    style="font-weight: 900; color: {{ 'var(--accent-cyan)' if name == 'baseline' else 'var(--text-main)' }}; font-family: monospace; font-size: 0.8rem; text-transform: uppercase;">{{
+                                    class="font-900 {{ 'text-cyan' if name == 'baseline' else 'text-main' }} text-mono text-xs text-upper">{{
                                     name }}</span>
-                                {% if name == 'baseline' %}<span class="text-cyan badge" style="background: rgba(86, 204, 242, 0.1); border: 1px solid var(--accent-cyan); font-size: 0.45rem; margin-left: 0.5rem;">BASELINE</span>{%
+                                {% if name == 'baseline' %}<span
+                                    class="text-cyan badge bg-cyan-10 border-cyan text-mini ml-2">BASELINE</span>{%
                                 endif %}
                             </td>
                             <td class="text-center">
-                                <span class="badge"
-                                    style="background: {{ 'rgba(39, 174, 96, 0.1)' if metrics.win_rate_pct >= 50 else 'rgba(235, 47, 150, 0.1)' }}; color: {{ 'var(--accent-green)' if metrics.win_rate_pct >= 50 else 'var(--accent-pink)' }}; border: 1px solid {{ 'var(--accent-green)' if metrics.win_rate_pct >= 50 else 'var(--accent-pink)' }}; font-size: 0.65rem; font-weight: 900;">
+                                <span
+                                    class="badge badge-sm font-900 {{ 'bg-buy-dim text-buy border-buy' if metrics.win_rate_pct >= 50 else 'bg-sell-dim text-sell border-sell' }} text-mini">
                                     {{ "%.1f"|format(metrics.win_rate_pct) }}%
                                 </span>
                             </td>
-                            <td
-                                class="text-right text-mono text-black text-sm">
+                            <td class="text-right text-mono text-black text-sm">
                                 {{ "%.2f"|format(metrics.expectancy_r) }}R</td>
-                            <td
-                                class="text-right text-mono text-black text-sm text-pink">
+                            <td class="text-right text-mono text-black text-sm text-pink">
                                 {{ "%.2f"|format(metrics.max_drawdown_r) }}R</td>
                             <td class="text-center text-mono text-black">{{
                                 "%.2f"|format(metrics.profit_factor) }}</td>

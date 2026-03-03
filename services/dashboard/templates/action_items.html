@@ -20,8 +20,7 @@
         </header>
         <div class="hud-scroll-body">
             {% if not items %}
-            <div
-                class="hud-empty-state-green">
+            <div class="hud-empty-state-green">
                 NOMINAL STATUS: SYSTEM OPERATING AT PEAK EFFICIENCY</div>
             {% else %}
             <table class="hud-compact-table">
@@ -49,12 +48,14 @@
                                 }}</div>
                         </td>
                         <td>
-                            <span class="badge badge-sm {% if item.severity == 'CRITICAL' %}badge-pink{% elif 'WARNING' %}badge-yellow{% else %}badge-cyan{% endif %}">
+                            <span
+                                class="badge badge-sm {% if item.severity == 'CRITICAL' %}badge-pink{% elif item.severity == 'WARNING' %}badge-yellow{% else %}badge-cyan{% endif %}">
                                 {{ item.severity }}
                             </span>
                         </td>
                         <td>
-                            <span class="badge badge-sm {% if item.status == 'OPEN' %}badge-yellow{% else %}badge-green{% endif %}">
+                            <span
+                                class="badge badge-sm {% if item.status == 'OPEN' %}badge-yellow{% else %}badge-green{% endif %}">
                                 {{ item.status }}
                             </span>
                         </td>

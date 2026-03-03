@@ -36,8 +36,8 @@
                             decision.created_at.strftime('%H:%M:%S') }}</td>
                         <td class="text-bold text-cyan">{{ decision.data.asset_pair }}</td>
                         <td>
-                            <span class="badge"
-                                style="background: {{ 'rgba(39, 174, 96, 0.1)' if decision.data.action == 'ALLOW' else 'rgba(235, 47, 150, 0.1)' }}; color: {{ 'var(--accent-green)' if decision.data.action == 'ALLOW' else 'var(--accent-pink)' }}; border: 1px solid {{ 'var(--accent-green)' if decision.data.action == 'ALLOW' else 'var(--accent-pink)' }}; font-size: 0.55rem; font-weight: 900;">
+                            <span
+                                class="badge badge-sm font-900 {{ 'bg-buy-dim text-buy border-buy' if decision.data.action == 'ALLOW' else 'bg-sell-dim text-sell border-sell' }} text-mini">
                                 {{ decision.data.action }}
                             </span>
                         </td>
@@ -48,8 +48,7 @@
                     {% endfor %}
                     {% if not decisions %}
                     <tr>
-                        <td colspan="5"
-                            class="hud-empty-state">
+                        <td colspan="5" class="hud-empty-state">
                             ZERO RISK DECISIONS DETECTED IN SELECTED RANGE</td>
                     </tr>
                     {% endif %}

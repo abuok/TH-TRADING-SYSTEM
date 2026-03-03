@@ -82,17 +82,13 @@
         <div class="sub-grid">
             <div>
                 <div class="sub-header text-green">Insights</div>
-                <ul class="list-unstyled">{% for insight in report.top_insights %}
-                    <li class="event-item border-left-green">{{ insight }}</li>
-                    {% endfor %}
-                </ul>
+                <ul class="list-unstyled">{% for insight in report.top_insights %}<li
+                        class="event-item border-left-green">{{ insight }}</li>{% endfor %}</ul>
             </div>
             <div>
                 <div class="sub-header text-red">Mistakes</div>
-                <ul class="list-unstyled">{% for mistake in report.top_mistakes %}
-                    <li class="event-item border-left-red">{{ mistake }}</li>
-                    {% endfor %}
-                </ul>
+                <ul class="list-unstyled">{% for mistake in report.top_mistakes %}<li
+                        class="event-item border-left-red">{{ mistake }}</li>{% endfor %}</ul>
             </div>
         </div>
     </div>
@@ -103,13 +99,9 @@
             <h2>Auto-Created Action Items</h2>
             <a href="/dashboard/action-items" class="badge badge-info no-underline">View Tracker</a>
         </div>
-        <ul class="list-unstyled">{% for item in report.created_action_items %}
-            <li class="event-item border-left-orange">{{ item }}</li>
-            {% endfor %}
-            {% if not report.created_action_items %}
-            <li class="event-meta">No critical issues identified this week. Keep going!</li>
-            {% endif %}
-        </ul>
+        <ul class="list-unstyled">{% for item in report.created_action_items %}<li
+                class="event-item border-left-orange">{{ item }}</li>{% endfor %}{% if not report.created_action_items
+            %}<li class="event-meta">No critical issues identified this week. Keep going!</li>{% endif %}</ul>
     </div>
 </div>
 {% endblock %}
