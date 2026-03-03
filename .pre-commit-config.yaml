@@ -1,10 +1,6 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-<<<<<<< HEAD
     rev: v0.15.4  # latest stable version
-=======
-    rev: v0.6.9
->>>>>>> a131891 (Add minimal Ruff pre-commit hooks and helper targets)
     hooks:
       - id: ruff
         args: [--fix]

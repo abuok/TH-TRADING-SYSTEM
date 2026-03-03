@@ -22,7 +22,6 @@ class EventBus:
         if "timestamp" in data and isinstance(data["timestamp"], datetime):
             data["timestamp"] = data["timestamp"].isoformat()
 
-<<<<<<< HEAD
         payload = {"payload": json.dumps(data)}
 
         for attempt in range(1, retries + 1):
@@ -52,9 +51,6 @@ class EventBus:
                 time.sleep(
                     0.5 * (2 ** (attempt - 1))
                 )  # Exponential backoff (0.5s, 1.0s, 2.0s)
-=======
-        return self.client.xadd(stream_name, {"payload": json.dumps(data)})
->>>>>>> a131891 (Add minimal Ruff pre-commit hooks and helper targets)
 
     def subscribe(self, stream_name: str, group_name: str, consumer_name: str):
         """Create a consumer group if it doesn't exist."""
