@@ -115,7 +115,7 @@ void OnTrade()
 //+------------------------------------------------------------------+
 void SyncPositions()
 {
-   string json = "{\"snapshots\":[";
+   string json = StringFormat("{\"account_id\":\"%s\",\"snapshots\":[", InpAccountId);
    int total = PositionsTotal();
    bool added = false;
    
@@ -142,7 +142,7 @@ void SyncPositions()
    }
    json += "]}";
    
-   if(added) SendToBridge("/bridge/trades/positions", json);
+   SendToBridge("/bridge/trades/positions", json);
 }
 
 //+------------------------------------------------------------------+

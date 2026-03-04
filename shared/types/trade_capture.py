@@ -41,4 +41,5 @@ class TradeFillBatch(BaseModel):
 
 
 class PositionSnapshotBatch(BaseModel):
+    account_id: str
     snapshots: List[PositionSnapshot]

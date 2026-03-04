@@ -173,36 +173,27 @@ async def post_trades_positions(
     Ingest a batch of current position snapshots. Updates position_snapshots table.
     """
     try:
-        # Clear old snapshots for the accounts reported (or just upsert)
+        # Clear old snapshots for the account entirely to prevent phantom closed trades
+        db.query(PositionSnapshotModel).filter(
+            PositionSnapshotModel.account_id == batch.account_id
+        ).delete()
+
+        # Insert the fresh batch
         for snap in batch.snapshots:
-            existing = (
-                db.query(PositionSnapshotModel)
-                .filter(PositionSnapshotModel.position_id == snap.position_id)
-                .first()
+            new_snap = PositionSnapshotModel(
+                position_id=snap.position_id,
+                symbol=snap.symbol,
+                side=snap.side,
+                lots=snap.lots,
+                avg_price=snap.avg_price,
+                floating_pnl=snap.floating_pnl,
+                sl=snap.sl,
+                tp=snap.tp,
+                updated_at_utc=snap.updated_at_utc,
+                updated_at_eat=snap.updated_at_eat,
+                account_id=snap.account_id,
             )
-            if existing:
-                existing.lots = snap.lots
-                existing.avg_price = snap.avg_price
-                existing.floating_pnl = snap.floating_pnl
-                existing.sl = snap.sl
-                existing.tp = snap.tp
-                existing.updated_at_utc = snap.updated_at_utc
-                existing.updated_at_eat = snap.updated_at_eat
-            else:
-                new_snap = PositionSnapshotModel(
-                    position_id=snap.position_id,
-                    symbol=snap.symbol,
-                    side=snap.side,
-                    lots=snap.lots,
-                    avg_price=snap.avg_price,
-                    floating_pnl=snap.floating_pnl,
-                    sl=snap.sl,
-                    tp=snap.tp,
-                    updated_at_utc=snap.updated_at_utc,
-                    updated_at_eat=snap.updated_at_eat,
-                    account_id=snap.account_id,
-                )
-                db.add(new_snap)
+            db.add(new_snap)
 
         db.commit()
         return {"status": "success", "updated": len(batch.snapshots)}
