@@ -199,7 +199,6 @@ def _rule_news_window(
     """GR-N01: Is current time within news_buffer_minutes of a red-folder event?"""
     buffer_mins = int(cfg["news_buffer_minutes"])
     events = context_data.get("high_impact_events", [])
-    date_str = now_nairobi.strftime("%Y-%m-%d")
 
     impacted_events: List[str] = []
     for ev in events:
@@ -207,10 +206,25 @@ def _rule_news_window(
         if not ev_time_str:
             continue
         try:
-            ev_dt = datetime.strptime(f"{date_str} {ev_time_str}", "%Y-%m-%d %H:%M")
-            ev_nairobi = NAIROBI.localize(ev_dt)
-            diff = abs((now_nairobi - ev_nairobi).total_seconds() / 60)
-            if diff <= buffer_mins:
+            # Build candidate dates: always try today; for early-morning times (<06:00)
+            # also try tomorrow, since the event may belong to the next calendar day
+            # (e.g. now=23:50 EAT, event=00:30 EAT next day).
+            candidates = [now_nairobi.date()]
+            ev_hour = int(ev_time_str.split(":")[0])
+            if ev_hour < 6:
+                candidates.append(now_nairobi.date() + timedelta(days=1))
+
+            best_diff: Optional[float] = None
+            for candidate_date in candidates:
+                ev_dt = datetime.strptime(
+                    f"{candidate_date.isoformat()} {ev_time_str}", "%Y-%m-%d %H:%M"
+                )
+                ev_nairobi = NAIROBI.localize(ev_dt)
+                d = abs((now_nairobi - ev_nairobi).total_seconds() / 60)
+                if best_diff is None or d < best_diff:
+                    best_diff = d
+
+            if best_diff is not None and best_diff <= buffer_mins:
                 label = f"{ev.get('event', '?')} ({ev.get('currency', '?')}) at {ev_time_str}"
                 impacted_events.append(label)
         except ValueError:
@@ -565,20 +579,50 @@ def _rule_quote_staleness(setup_data: Dict, cfg: Dict, db: Session) -> RuleCheck
 
     cutoff = datetime.now(timezone.utc) - timedelta(minutes=2)
 
-    # Get max stale duration in the last 2 minutes for this pair
+    # Count records first — zero records means bridge is offline, not "fresh"
+    log_count = (
+        db.query(func.count(QuoteStaleLog.id))
+        .filter(QuoteStaleLog.symbol == pair, QuoteStaleLog.created_at >= cutoff)
+        .scalar()
+        or 0
+    )
+
+    if log_count == 0:
+        # FAIL-CLOSED: no telemetry in the last 2 min → bridge may be offline
+        return RuleCheck(
+            id="GR-Q01",
+            name="Quote Staleness Check",
+            status="FAIL",
+            details=(
+                f"FAIL-CLOSED: No QuoteStaleLog records for '{pair}' in the last 2 min. "
+                "Bridge may be offline or never connected."
+            ),
+            is_mandatory=hard,
+            deduction=cfg.get("score_deduction_fail", 20),
+            evidence_refs=[
+                EvidenceRef(
+                    ref_type="metric",
+                    key="log_count_2min",
+                    value=0,
+                    description="No stale-log records found in 2-min lookback window",
+                )
+            ],
+        )
+
+    # Records exist — evaluate max observed staleness
     max_stale = (
         db.query(func.max(QuoteStaleLog.stale_duration_seconds))
         .filter(QuoteStaleLog.symbol == pair, QuoteStaleLog.created_at >= cutoff)
         .scalar()
     )
-
     max_stale = float(max_stale) if max_stale is not None else 0.0
+
     evidence = [
         EvidenceRef(
             ref_type="metric",
             key="max_quote_stale_seconds",
             value=round(max_stale, 1),
-            description="Max staleness in last 2 mins",
+            description=f"Max staleness in last 2 mins ({log_count} records)",
         )
     ]
 
@@ -597,7 +641,7 @@ def _rule_quote_staleness(setup_data: Dict, cfg: Dict, db: Session) -> RuleCheck
         id="GR-Q01",
         name="Quote Staleness Check",
         status="PASS",
-        details=f"Quotes are fresh (max staleness {max_stale:.1f}s ≤ {limit}s).",
+        details=f"Quotes are fresh (max staleness {max_stale:.1f}s ≤ {limit}s, {log_count} records).",
         is_mandatory=hard,
         deduction=0,
         evidence_refs=evidence,

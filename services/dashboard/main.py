@@ -2,6 +2,7 @@
 import os
 import json
 import sys
+import logging
 from fastapi import FastAPI, Request, Depends, HTTPException
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
@@ -56,10 +57,14 @@ templates = None
 if os.path.exists("services/dashboard/templates"):
     templates = Jinja2Templates(directory="services/dashboard/templates")
 
+logger = logging.getLogger("Dashboard")
+
 
 def render_template(template_name: str, context: dict):
     if templates is not None:
-        return templates.TemplateResponse(template_name, context)
+        return templates.TemplateResponse(
+            request=context.get("request"), name=template_name, context=context
+        )
     # Fallback generic rendering for test environments missing templates
     body = f"<h1>{template_name}</h1>"
 
@@ -291,8 +296,8 @@ async def dashboard_research(request: Request):
                 with open(os.path.join("artifacts/research", f), "r") as rfile:
                     data = json.load(rfile)
                     runs.append(data)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"Failed to load research report {f}: {e}")
 
     return render_template(
         "research.html", {"request": request, "active_page": "research", "runs": runs}
@@ -324,8 +329,8 @@ async def dashboard_calibration(request: Request):
                 with open(os.path.join("artifacts/research", f), "r") as rfile:
                     data = json.load(rfile)
                     reports.append(data)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"Failed to load calibration report {f}: {e}")
 
     return render_template(
         "calibration.html",

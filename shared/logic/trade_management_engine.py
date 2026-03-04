@@ -265,7 +265,26 @@ def generate_suggestions_for_position(
     events = calendar.fetch_events()
     now_utc = datetime.now(timezone.utc)
     for ev in events:
-        ev_time = datetime.fromisoformat(ev["time"].replace("Z", "+00:00"))
+        # Calendar events store time as HH:MM (same contract used in guardrails.py).
+        # Reconstruct a full UTC datetime by placing the HH:MM on today or tomorrow.
+        try:
+            ev_time_str = ev.get("time", "")
+            ev_naive = datetime.strptime(ev_time_str, "%H:%M")
+            # Build today's candidate in UTC
+            ev_today_utc = now_utc.replace(
+                hour=ev_naive.hour,
+                minute=ev_naive.minute,
+                second=0,
+                microsecond=0,
+            )
+            # If that time has already passed, use tomorrow
+            ev_time = (
+                ev_today_utc
+                if ev_today_utc >= now_utc
+                else ev_today_utc + timedelta(days=1)
+            )
+        except (ValueError, AttributeError):
+            continue
         if now_utc < ev_time < now_utc + timedelta(minutes=60):
             # Check if currency relates to symbol
             if ev["currency"] in snapshot.symbol:
@@ -302,8 +321,15 @@ def run_management_cycle(db: Session):
     now_eat = get_nairobi_time()
     quote_provider = get_price_quote_provider()
 
-    # Get all active snapshots
-    snapshots = db.query(PositionSnapshot).all()
+    # Filter to recently-updated snapshots only.
+    # PositionSnapshot has no explicit status column; positions that have not
+    # been updated in the last 4 hours are treated as closed/gone.
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=4)
+    snapshots = (
+        db.query(PositionSnapshot)
+        .filter(PositionSnapshot.updated_at_utc >= cutoff)
+        .all()
+    )
 
     for snapshot in snapshots:
         suggestions = generate_suggestions_for_position(

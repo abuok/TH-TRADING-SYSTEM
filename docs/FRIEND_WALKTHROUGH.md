@@ -378,7 +378,7 @@ The **Queue** is the heart of your daily workflow. This is where tickets waiting
 
 **What you see for each ticket:**
 - Pair (e.g., GBPJPY)
-- Direction (BUY or BUY)
+- Direction (BUY or SELL)
 - Entry price, Stop Loss, Take Profit 1, Take Profit 2
 - Guardrails score (0–100) — higher is better
 - Expiry time — the ticket is time-limited. If it expires, it's gone.

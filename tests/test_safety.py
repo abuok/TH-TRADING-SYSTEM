@@ -1,19 +1,37 @@
+"""
+V1 prototype safety tests — preserved for reference only.
+The modules tested here (risk_engine, core_models) have been archived to
+scripts/v1_demo/ and are no longer on the import path.
+"""
+
 import unittest
-from datetime import time
-from risk_engine import RiskEngine
-from core_models import SignalPacket, ScorePacket, Direction, RiskDecision
+import pytest
 from unittest.mock import patch
+
+# Skip the entire module if V1 modules are not importable (expected in production)
+risk_engine = pytest.importorskip(
+    "risk_engine",
+    reason="V1 risk_engine archived to scripts/v1_demo/ — skipping V1 safety tests",
+)
+core_models = pytest.importorskip(
+    "core_models",
+    reason="V1 core_models archived to scripts/v1_demo/ — skipping V1 safety tests",
+)
+
+RiskEngine = risk_engine.RiskEngine
+SignalPacket = core_models.SignalPacket
+ScorePacket = core_models.ScorePacket
+Direction = core_models.Direction
+RiskDecision = core_models.RiskDecision
 
 
 class TestTradingDeskSafety(unittest.TestCase):
     def test_session_boundaries(self):
+        from datetime import time
+
         # London Session: 10:00 - 19:00 EAT
         # NY Session: 15:00 - 23:59 EAT
-
-        # 09:00 EAT should be OUT
         self.assertFalse(time(10, 0) <= time(9, 0) <= time(19, 0))
-
-        # 11:00 EAT should be IN
         self.assertTrue(time(10, 0) <= time(11, 0) <= time(19, 0))
 
     @patch("risk_engine.SessionManager.is_in_session")
@@ -38,7 +56,6 @@ class TestTradingDeskSafety(unittest.TestCase):
 
         # Case 2: Approval works
         score_high = ScorePacket(signal_id="test-001", confidence_score=85.0)
-        # Reset count for test
         RiskEngine._signal_count_today = 0
         risk_high = RiskEngine.evaluate_risk(signal, score_high)
         self.assertEqual(risk_high.decision, RiskDecision.APPROVE)

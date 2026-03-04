@@ -29,6 +29,23 @@ class PHXDetector:
         self.stage_timestamps: Dict[PHXStage, datetime] = {}
         self.reason_codes: List[str] = []
 
+    def reset_if_triggered(self) -> bool:
+        """Reset the detector back to IDLE if it has reached TRIGGER.
+
+        Call this when a ticket generated from this detector is skipped or
+        expires, so the detector can detect the next valid setup on the same
+        pair.  The reset is intentionally explicit (not automatic) so the
+        caller controls the lifecycle.
+
+        Returns:
+            True  — a reset was performed (detector was at TRIGGER).
+            False — no reset needed (detector was not yet at TRIGGER).
+        """
+        if self.stage == PHXStage.TRIGGER:
+            self.reset()
+            return True
+        return False
+
     def get_score(self) -> int:
         """Calculate a basic setup score (0-100)."""
         score_map = {

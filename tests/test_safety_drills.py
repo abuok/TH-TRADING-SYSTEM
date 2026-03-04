@@ -99,12 +99,147 @@ def test_drill_missing_calendar_feed_fail_closed():
         assert "Calendar fetch failed" in str(exc_info.value)
 
 
-def test_drill_db_concurrent_lock_handling():
+def test_drill_db_concurrent_lock_handling(memory_db):
     """
     DRILL: DB Concurrent Locks
-    Scenario: Verifying SQLAlchemy handles operational locks on busy sqlite DB safely.
-    Expected: Integrity exceptions or OperationalErrors are correctly trapped and do not authorize ghost tickets.
+    Scenario: Two inserts race on a UniqueConstraint column.
+    Expected: IntegrityError is raised and caught, no ghost row is committed.
     """
-    # Simply establishing that our write patterns use transactions (commit() followed by refresh() or rollback())
-    # This is a passive check; the codebase's use of session.commit() inside try/except blocks (e.g. queue_logic, main) handles this.
-    pass
+    from sqlalchemy.exc import IntegrityError
+    from shared.database.models import QuoteStaleLog
+    import datetime
+    from datetime import timezone
+
+    # Insert a QuoteStaleLog row first
+    row1 = QuoteStaleLog(
+        symbol="GBPJPY",
+        stale_duration_seconds=5.0,
+        created_at=datetime.datetime.now(timezone.utc),
+    )
+    memory_db.add(row1)
+    memory_db.commit()
+
+    # Attempt a duplicate via ManagementSuggestionLog UniqueConstraint
+    from shared.database.models import ManagementSuggestionLog, OrderTicket, Run, Packet
+    import uuid
+
+    # Set up the minimum required FK chain
+    run = Run(run_id=str(uuid.uuid4()), status="running")
+    memory_db.add(run)
+    memory_db.commit()
+
+    pkt = Packet(
+        run_id=run.id,
+        packet_type="TechnicalSetupPacket",
+        schema_version="1.0.0",
+        data={},
+    )
+    memory_db.add(pkt)
+    memory_db.commit()
+
+    ticket = OrderTicket(
+        ticket_id=f"TKT-{uuid.uuid4().hex[:8]}",
+        setup_packet_id=pkt.id,
+        risk_packet_id=pkt.id,
+        pair="GBPJPY",
+        direction="BUY",
+        entry_price=190.0,
+        stop_loss=189.5,
+        take_profit_1=191.0,
+        lot_size=0.01,
+        risk_usd=50.0,
+        risk_pct=2.0,
+        rr_tp1=2.0,
+        idempotency_key=str(uuid.uuid4()),
+    )
+    memory_db.add(ticket)
+    memory_db.commit()
+
+    bucket = "2026-01-01-10"
+    sug1 = ManagementSuggestionLog(
+        ticket_id=ticket.ticket_id,
+        broker_trade_id="BRK001",
+        suggestion_type="MOVE_SL_TO_BE",
+        severity="WARN",
+        data={},
+        time_bucket=bucket,
+        expires_at=datetime.datetime.now(timezone.utc),
+    )
+    memory_db.add(sug1)
+    memory_db.commit()
+
+    # Attempt a second insert with the same (ticket_id, suggestion_type, time_bucket)
+    sug2 = ManagementSuggestionLog(
+        ticket_id=ticket.ticket_id,
+        broker_trade_id="BRK001",
+        suggestion_type="MOVE_SL_TO_BE",
+        severity="WARN",
+        data={},
+        time_bucket=bucket,
+        expires_at=datetime.datetime.now(timezone.utc),
+    )
+    memory_db.add(sug2)
+    with pytest.raises(IntegrityError):
+        memory_db.commit()
+
+    memory_db.rollback()  # clean up for test isolation
+
+
+def test_drill_bridge_offline_no_logs_fail_closed(memory_db):
+    """
+    DRILL: Bridge Offline — No QuoteStaleLog records.
+    Scenario: MT5 bridge has never logged any staleness data for a pair.
+    Expected: GR-Q01 must FAIL (fail-closed), NOT pass with 0.0s staleness.
+    This is the regression test for the false-pass bug fixed in guardrails.py.
+    """
+    from shared.logic.guardrails import _rule_quote_staleness
+
+    pair = "GBPJPY"
+    setup_data = {"asset_pair": pair}
+    cfg = {"quote_staleness_limit_seconds": 15.0, "score_deduction_fail": 20}
+
+    # No QuoteStaleLog rows inserted — simulates bridge never having connected
+    rule_check = _rule_quote_staleness(setup_data, cfg, memory_db)
+
+    assert rule_check.status == "FAIL", (
+        f"GR-Q01 must FAIL when bridge is offline (no log records). Got: {rule_check.status}"
+    )
+    assert rule_check.is_mandatory is True
+    assert "FAIL-CLOSED" in rule_check.details
+    assert pair in rule_check.details
+
+
+def test_rule_news_window_midnight_crossover():
+    """
+    DRILL: News event at 00:30 EAT detected when current time is 23:50 EAT.
+    This is the regression test for the midnight date-boundary bug fixed in guardrails.py.
+    """
+    import pytz
+    from shared.logic.guardrails import _rule_news_window
+
+    NAIROBI = pytz.timezone("Africa/Nairobi")
+
+    # Simulate: current time is 23:50 EAT
+    now = NAIROBI.localize(
+        datetime.datetime(2026, 3, 4, 23, 50, 0)  # 23:50 EAT
+    )
+
+    # Event is at 00:30 (early morning — 40 min away, on the next calendar day)
+    cfg = {
+        "news_buffer_minutes": 60,  # 60-min buffer — should catch 40-min-away event
+        "news_window_hard_block": True,
+        "score_deduction_fail": 20,
+    }
+    context_data = {
+        "high_impact_events": [
+            {"time": "00:30", "event": "FOMC Minutes", "currency": "USD"}
+        ]
+    }
+
+    result = _rule_news_window(now, cfg, context_data)
+
+    assert result.status == "FAIL", (
+        f"GR-N01 must FAIL: event at 00:30 is only 40 min away from 23:50. Got: {result.status}. "
+        f"Details: {result.details}"
+    )
+    assert "FOMC Minutes" in result.details

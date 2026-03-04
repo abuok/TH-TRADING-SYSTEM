@@ -34,7 +34,18 @@ def db():
     set_price_quote_provider(None)
 
 
-def test_move_sl_to_be_suggestion(db):
+def test_move_sl_to_be_suggestion(db, monkeypatch):
+    import shared.logic.trade_management_engine as tme
+
+    # Pin Nairobi time to 14:00 EAT (London session, well clear of 00:30-01:00 session-close window)
+    def mock_get_nairobi_time():
+        from pytz import timezone as py_tz
+
+        eat = py_tz("Africa/Nairobi")
+        return datetime(2026, 3, 4, 14, 0, tzinfo=eat)
+
+    monkeypatch.setattr(tme, "get_nairobi_time", mock_get_nairobi_time)
+
     # 1. Setup Mock Provider
     mock_quotes = MockPriceQuoteProvider()
     set_price_quote_provider(mock_quotes)
@@ -341,7 +352,18 @@ def test_end_of_session_suggestion(db, monkeypatch):
     assert sug.severity == "WARN"
 
 
-def test_policy_risk_off_suggestion(db):
+def test_policy_risk_off_suggestion(db, monkeypatch):
+    import shared.logic.trade_management_engine as tme
+
+    # Pin Nairobi time to 14:00 EAT (London session, well clear of 00:30-01:00 session-close window)
+    def mock_get_nairobi_time():
+        from pytz import timezone as py_tz
+
+        eat = py_tz("Africa/Nairobi")
+        return datetime(2026, 3, 4, 14, 0, tzinfo=eat)
+
+    monkeypatch.setattr(tme, "get_nairobi_time", mock_get_nairobi_time)
+
     from shared.database.models import PolicySelectionLog
 
     mock_quotes = MockPriceQuoteProvider()

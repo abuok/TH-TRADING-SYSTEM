@@ -106,7 +106,7 @@ class ForexFactoryCalendarProvider(CalendarProvider):
                     events.append(
                         {
                             "event": entry.title,
-                            "time": dt_eat.isoformat(),
+                            "time": dt_eat.strftime("%H:%M"),
                             "currency": getattr(entry, "country", "USD"),
                             "impact": "High",
                         }
