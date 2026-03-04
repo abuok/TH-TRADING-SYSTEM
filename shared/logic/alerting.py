@@ -25,22 +25,12 @@ def send_critical_alert(service: str, event_type: str, details: Dict[str, Any]):
         .replace("</code>", "")
     )
 
-    # 2. Telegram Notification (Fire and Forget)
-    import asyncio
+    # 2. Telegram Notification (Fire and Forget/Synchronous)
     from shared.providers.alerting.telegram import TelegramProvider
 
     tp = TelegramProvider()
     try:
-        # Note: In a production sync context, we'd use a background task or queue.
-        # For simplicity here, we try to get the existing loop or create a temporary one.
-        try:
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                loop.create_task(tp.send_message(alert_msg))
-            else:
-                loop.run_until_complete(tp.send_message(alert_msg))
-        except RuntimeError:
-            asyncio.run(tp.send_message(alert_msg))
+        tp.send_message(alert_msg)
     except Exception as e:
         logger.error(f"Alerting: Telegram send failed - {e}")
 

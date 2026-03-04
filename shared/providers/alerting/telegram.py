@@ -20,7 +20,7 @@ class TelegramProvider:
             else None
         )
 
-    async def send_message(self, text: str) -> bool:
+    def send_message(self, text: str) -> bool:
         if not self.api_url or not self.chat_id:
             logger.warning(
                 "TelegramProvider: Credentials missing. Skipping notification."
@@ -28,8 +28,8 @@ class TelegramProvider:
             return False
 
         try:
-            async with httpx.AsyncClient() as client:
-                response = await client.post(
+            with httpx.Client() as client:
+                response = client.post(
                     self.api_url,
                     json={"chat_id": self.chat_id, "text": text, "parse_mode": "HTML"},
                     timeout=5.0,
