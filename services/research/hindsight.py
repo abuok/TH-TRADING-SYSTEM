@@ -2,29 +2,34 @@ import logging
 from typing import List, Optional
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
-import httpx
-
 from shared.database.models import OrderTicket, HindsightOutcomeLog
 from shared.types.hindsight import HindsightOutcome
 from shared.types.packets import Candle
+from shared.messaging.event_bus import EventBus
 
 logger = logging.getLogger("HindsightEngine")
+event_bus = EventBus()
 
 
 def _log_hindsight_event(ticket_id: str, outcome_label: str, realized_r: float):
-    """Helper to send hindsight results to Journal Service."""
+    """Helper to send hindsight results to Journal Service via Event Bus."""
     try:
-        httpx.post(
-            "http://localhost:8004/log/ticket_transition",
-            json={
-                "hindsight_outcome": outcome_label,
-                "hindsight_realized_r": realized_r,
+        event_bus.publish(
+            "journal_events",
+            {
+                "event_type": "ticket_transition",
+                "ticket_id": ticket_id,
+                "transition_type": "HINDSIGHT_COMPUTED",
+                "details": {
+                    "hindsight_outcome": outcome_label,
+                    "hindsight_realized_r": realized_r,
+                },
             },
-            params={"ticket_id": ticket_id, "transition_type": "HINDSIGHT_COMPUTED"},
-            timeout=2.0,
         )
     except Exception as e:
-        logger.warning(f"Failed to log HINDSIGHT_COMPUTED for {ticket_id}: {e}")
+        logger.warning(
+            f"Failed to log HINDSIGHT_COMPUTED for {ticket_id} via EventBus: {e}"
+        )
 
 
 def walk_forward(

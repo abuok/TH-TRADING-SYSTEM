@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from shared.database.models import Base, Run, OrderTicket, GuardrailsLog
+from shared.database.models import Base, Run, OrderTicket, GuardrailsLog, QuoteStaleLog
 from shared.logic.guardrails import (
     GuardrailsEngine,
     load_config,
@@ -301,6 +301,14 @@ def test_u01_warn_with_recent_ticket(db, cfg):
 
 def test_engine_full_pass_scenario(db):
     engine = GuardrailsEngine()
+    # Seed QuoteStaleLog to satisfy staleness guardrail
+    db.add(
+        QuoteStaleLog(
+            symbol="XAUUSD", stale_duration_seconds=0.1, created_at=LONDON_TIME
+        )
+    )
+    db.commit()
+
     result = engine.evaluate(
         setup_data=_setup_data("XAUUSD", stage="TRIGGER", score=95),
         context_data={"high_impact_events": []},

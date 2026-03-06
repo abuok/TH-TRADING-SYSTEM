@@ -30,13 +30,14 @@ from shared.database.models import OpsReportLog
 from shared.logic.logging import setup_production_logging
 from shared.logic.metrics import metrics_registry
 from shared.logic.trade_management_engine import run_management_cycle
-import httpx
+from shared.messaging.event_bus import EventBus
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("OrchestrationAPI")
 
 app = FastAPI(title="Orchestration Service API")
 notifier = NotificationService([ConsoleNotificationAdapter()])
+event_bus = EventBus()
 _guardrails_engine = GuardrailsEngine()
 _policy_router = PolicyRouter()
 
@@ -216,7 +217,7 @@ async def log_incident(incident_data: IncidentSchema, db: Session = Depends(get_
 
     # Metrics & Alerting
     metrics_registry.increment("incidents_total", incident.severity)
-    check_incident_alerts(incident_data)
+    await check_incident_alerts(incident_data)
 
     return {"status": "success", "id": incident.id}
 
@@ -472,17 +473,21 @@ async def generate_ticket(pair: str, db: Session = Depends(get_db)):
     ticket.risk_packet_id = risk_db.id
     db.commit()
 
+    # Decentralized Journal Logging via Event Bus
     try:
-        async with httpx.AsyncClient() as client:
-            await client.post(
-                "http://localhost:8004/log/ticket",
-                json=OrderTicketSchema.model_validate(
+        event_bus.publish(
+            "journal_events",
+            {
+                "event_type": "ticket",
+                "setup_id": setup_db.id,
+                "risk_decision_id": risk_db.id,
+                "ticket": OrderTicketSchema.model_validate(
                     ticket, from_attributes=True
                 ).model_dump(mode="json"),
-                params={"setup_id": setup_db.id, "risk_decision_id": risk_db.id},
-            )
+            },
+        )
     except Exception as e:
-        logger.warning(f"Failed to log ticket to Journal: {e}")
+        logger.warning(f"Failed to publish ticket to Journal via EventBus: {e}")
 
     return ticket
 
@@ -618,15 +623,18 @@ async def update_ticket_status(
     db.commit()
     db.refresh(ticket)
 
+    # Decentralized Journal Logging via Event Bus
     try:
-        async with httpx.AsyncClient() as client:
-            await client.post(
-                "http://localhost:8004/log/ticket",
-                json=OrderTicketSchema.model_validate(
+        event_bus.publish(
+            "journal_events",
+            {
+                "event_type": "ticket",
+                "ticket": OrderTicketSchema.model_validate(
                     ticket, from_attributes=True
                 ).model_dump(mode="json"),
-            )
+            },
+        )
     except Exception as e:
-        logger.warning(f"Failed to update ticket in Journal: {e}")
+        logger.warning(f"Failed to update ticket in Journal via EventBus: {e}")
 
     return ticket

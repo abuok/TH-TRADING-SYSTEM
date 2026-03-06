@@ -2,26 +2,29 @@ import logging
 from datetime import datetime, timezone
 from typing import Optional
 from sqlalchemy.orm import Session
-import httpx
-
 from shared.database.models import OrderTicket
 from shared.types.trading import SkipReasonEnum, TicketOutcomeEnum
+from shared.messaging.event_bus import EventBus
 
 logger = logging.getLogger("TicketQueueLogic")
+event_bus = EventBus()
 
 
 def _log_transition(ticket_id: str, transition_type: str, details: dict):
-    """Helper to send transitions to the Journal Service."""
+    """Helper to send transitions to the Journal Service via Event Bus."""
     try:
-        httpx.post(
-            "http://localhost:8004/log/ticket_transition",
-            json=details,
-            params={"ticket_id": ticket_id, "transition_type": transition_type},
-            timeout=2.0,
+        event_bus.publish(
+            "journal_events",
+            {
+                "event_type": "ticket_transition",
+                "ticket_id": ticket_id,
+                "transition_type": transition_type,
+                "details": details,
+            },
         )
     except Exception as e:
         logger.warning(
-            f"Failed to log transition {transition_type} for {ticket_id}: {e}"
+            f"Failed to log transition {transition_type} for {ticket_id} via EventBus: {e}"
         )
 
 

@@ -10,7 +10,7 @@ from typing import Dict, Any
 logger = logging.getLogger("Alerting")
 
 
-def send_critical_alert(service: str, event_type: str, details: Dict[str, Any]):
+async def send_critical_alert(service: str, event_type: str, details: Dict[str, Any]):
     """
     Sends a critical alert to the configured output (Console and Telegram).
     """
@@ -25,23 +25,23 @@ def send_critical_alert(service: str, event_type: str, details: Dict[str, Any]):
         .replace("</code>", "")
     )
 
-    # 2. Telegram Notification (Fire and Forget/Synchronous)
+    # 2. Telegram Notification (Fire and Forget/Asynchronous)
     from shared.providers.alerting.telegram import TelegramProvider
 
     tp = TelegramProvider()
     try:
-        tp.send_message(alert_msg)
+        await tp.send_message_async(alert_msg)
     except Exception as e:
         logger.error(f"Alerting: Telegram send failed - {e}")
 
 
-def check_incident_alerts(incident_data: Dict[str, Any]):
+async def check_incident_alerts(incident_data: Dict[str, Any]):
     """
     Evaluates an incident for alert triggering.
     """
     severity = incident_data.get("severity", "INFO").upper()
     if severity in ["ERROR", "CRITICAL"]:
-        send_critical_alert(
+        await send_critical_alert(
             service=incident_data.get("source", "UNKNOWN"),
             event_type=f"Incident: {severity}",
             details=incident_data,

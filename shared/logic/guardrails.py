@@ -568,7 +568,9 @@ def _rule_duplicate_signal(
     )
 
 
-def _rule_quote_staleness(setup_data: Dict, cfg: Dict, db: Session) -> RuleCheck:
+def _rule_quote_staleness(
+    setup_data: Dict, cfg: Dict, db: Session, now_utc: datetime
+) -> RuleCheck:
     """GR-Q01: Check if the live quotes for this pair are unacceptably stale."""
     from shared.database.models import QuoteStaleLog
     from sqlalchemy import func
@@ -577,7 +579,7 @@ def _rule_quote_staleness(setup_data: Dict, cfg: Dict, db: Session) -> RuleCheck
     pair = setup_data.get("asset_pair", "")
     hard = True  # Staleness is inherently a life-safety issue, fail-closed.
 
-    cutoff = datetime.now(timezone.utc) - timedelta(minutes=2)
+    cutoff = now_utc - timedelta(minutes=2)
 
     # Count records first — zero records means bridge is offline, not "fresh"
     log_count = (
@@ -723,7 +725,9 @@ class GuardrailsEngine:
             checks.append(
                 _rule_duplicate_signal(setup_data, effective_cfg, db, now_nairobi)
             )
-            checks.append(_rule_quote_staleness(setup_data, effective_cfg, db))
+            # Quote staleness needs UTC time
+            now_utc = now_nairobi.astimezone(timezone.utc)
+            checks.append(_rule_quote_staleness(setup_data, effective_cfg, db, now_utc))
         else:
             checks.append(
                 RuleCheck(

@@ -1,4 +1,6 @@
 from contextlib import asynccontextmanager
+import logging
+import os
 
 from fastapi import FastAPI, Depends, status
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -19,14 +21,18 @@ from datetime import datetime, timedelta, timezone
 
 import asyncio
 from shared.logic.notifications import NotificationService, ConsoleNotificationAdapter
+from shared.messaging.event_bus import EventBus
+import json
 
 notifier = NotificationService([ConsoleNotificationAdapter()])
+event_bus = EventBus()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     db_session.init_db()
     asyncio.create_task(mark_missed_setups())
+    asyncio.create_task(journal_worker())
     yield
 
 
@@ -279,6 +285,74 @@ def weekly_report(db: Session = Depends(db_session.get_db)):
     avg_r = sum(o.r_multiple for o in outcomes) / len(outcomes) if outcomes else 0
 
     return f"<h1>Weekly Summary</h1><p>Total PnL: ${total_pnl:.2f}</p><p>Avg R-multiple: {avg_r:.2f}</p>"
+
+
+async def journal_worker():
+    """Background task to consume events for logging into the Journal."""
+    consumer_id = f"journal_service_{os.getpid()}"
+    event_bus.subscribe("journal_events", "journal_group", consumer_id)
+
+    logger = logging.getLogger("JournalWorker")
+    logger.info("Journal Service: Worker started. Listening for journal_events...")
+
+    while True:
+        try:
+            msgs = event_bus.consume(
+                "journal_events", "journal_group", consumer_id, count=10
+            )
+            for _, message_list in msgs:
+                for msg_id, payload in message_list:
+                    data = json.loads(payload["payload"])
+                    event_type = data.get("event_type")
+                    db = db_session.SessionLocal()
+                    try:
+                        if event_type == "setup":
+                            log_setup(
+                                TechnicalSetupPacket(**data["setup"]), data["score"], db
+                            )
+                        elif event_type == "risk_decision":
+                            log_risk_decision(
+                                RiskApprovalPacket(**data["decision"]),
+                                data.get("setup_id"),
+                                db,
+                            )
+                        elif event_type == "outcome":
+                            log_outcome(
+                                data["setup_id"],
+                                data["is_win"],
+                                data["r_multiple"],
+                                data["pnl"],
+                                data.get("notes"),
+                                db,
+                            )
+                        elif event_type == "ticket":
+                            log_ticket(
+                                OrderTicketSchema(**data["ticket"]),
+                                data.get("setup_id"),
+                                data.get("risk_decision_id"),
+                                db,
+                            )
+                        elif event_type == "ticket_transition":
+                            log_ticket_transition(
+                                data["ticket_id"],
+                                data["transition_type"],
+                                data["details"],
+                                db,
+                            )
+                        elif event_type == "guardrails":
+                            await log_guardrails(data["payload"], db)
+                        else:
+                            logger.warning(f"Unknown incident event type: {event_type}")
+                    except Exception as e:
+                        logger.error(
+                            f"Error processing journal event {event_type}: {e}"
+                        )
+                    finally:
+                        db.close()
+            await asyncio.sleep(1.0)
+        except Exception as e:
+            logger.error(f"Journal Worker error: {e}")
+            await asyncio.sleep(5.0)
 
 
 @app.post("/log/guardrails", status_code=201)
