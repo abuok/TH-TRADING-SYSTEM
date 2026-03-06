@@ -53,6 +53,14 @@ class TelegramProvider:
                 )
                 response.raise_for_status()
                 return True
+        except httpx.TimeoutException:
+            logger.error("TelegramProvider: Request timed out")
+            return False
+        except httpx.HTTPStatusError as e:
+            logger.error(
+                f"TelegramProvider: HTTP error {e.response.status_code} - {e.response.text}"
+            )
+            return False
         except Exception as e:
-            logger.error(f"TelegramProvider: Failed to send message - {e}")
+            logger.error(f"TelegramProvider: Unexpected error - {e}")
             return False

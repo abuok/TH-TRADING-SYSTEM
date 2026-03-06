@@ -58,6 +58,39 @@ The hooks run automatically on every `git commit` and will auto-fix safe issues;
 - `infra/`: Infrastructure scripts and CLI tools.
 - `docs/`: Detailed guides and architecture documentation.
 
+## Configuration
+
+The system uses a hierarchical configuration approach:
+
+1. **Environment Variables**: Override any setting (e.g., `GUARDRAILS_NEWS_BUFFER_MINUTES=60`)
+2. **YAML Config Files**: Located in `config/` directory for guardrails, policies, etc.
+3. **Default Values**: Hardcoded fallbacks in code
+
+Key config files:
+
+- `config/guardrails_config.yaml`: Risk management rules and thresholds
+- `config/execution_prep.yaml`: Trade execution parameters
+- `config/policies/`: Trading policy definitions
+- `.env`: Environment-specific overrides
+
+## Security
+
+### Production Deployment Checklist
+
+- [ ] Replace all placeholder secrets in `.env.prod` and `bridge/mt5/LiveBridgeEA.mq5`
+- [ ] Verify dashboard authentication credentials are set
+- [ ] Ensure MT5 bridge secret matches production environment
+- [ ] Review kill switch configurations for appropriate thresholds
+- [ ] Validate guardrails settings for production risk tolerance
+- [ ] Check that no hardcoded credentials remain in codebase
+
+### Regular Security Audits
+
+- Review for exposed secrets in logs and configuration files
+- Monitor for unauthorized access attempts
+- Keep dependencies updated with `pip install -r requirements.txt --upgrade`
+- Regularly rotate API keys and database credentials
+
 ## Running Tests
 
 ```bash

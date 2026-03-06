@@ -149,116 +149,103 @@
             
 <div class="header-section">
     <div class="header-title">
-        <h1>Weekly Review Pack</h1>
-        <p>Performance Audit & Quality Insights: Feb 27 - Mar 06, 2026</p>
+        <h1>Daily Ops Playbook</h1>
+        <p>System Intelligence & Actionable Insights for 2026-03-06</p>
     </div>
     <div class="header-clock">
-        <div class="clock-display">0.00R</div>
-        <div class="clock-label">Weekly P/L Proxy</div>
+        <div class="clock-display">18:08</div>
+        <div class="clock-label">Nairobi (EAT)</div>
     </div>
 </div>
 
 <div class="grid">
-    <!-- performance card -->
+    <!-- Health Card -->
     <div class="card animate-fade">
         <div class="card-header">
-            <h2>Performance Metrics</h2>
-            <span class="badge badge-info">Win Rate: 0.0%</span>
+            <h2>System Health</h2>
+            <span class="badge badge-success">
+                STABLE
+            </span>
         </div>
-        <div class="sub-grid">
-            <div>
-                <div class="metric-value">0.00R</div>
-                <div class="metric-label">Realized R</div>
-            </div>
-            <div>
-                <div class="metric-value text-orange">0.00R</div>
-                <div class="metric-label">Missed R (Hindsight)</div>
-            </div>
+        <div class="metric-value">0</div>
+        <div class="metric-label">Recent Incidents (24h)</div>
+    </div>
+
+    <!-- Policy Card -->
+    <div class="card animate-fade delay-1">
+        <div class="card-header">
+            <h2>Regime Context</h2>
+            <span class="badge badge-info">0 Switches</span>
+        </div>
+        <div class="list-unstyled">
+            
         </div>
     </div>
 
-    <!-- discipline card -->
-    <div class="card animate-fade delay-1">
+    <!-- Queue Card -->
+    <div class="card animate-fade delay-2">
         <div class="card-header">
-            <h2>Discipline & Quality</h2>
+            <h2>Queue Summary</h2>
         </div>
         <div class="sub-grid">
             <div>
                 <div class="metric-value">0</div>
-                <div class="metric-label">Rule Violations</div>
+                <div class="metric-label">Approved</div>
             </div>
             <div>
-                <div class="metric-value">0.0</div>
-                <div class="metric-label">Avg Guardrails Score</div>
+                <div class="metric-value">1</div>
+                <div class="metric-label">Skipped/Expired</div>
             </div>
         </div>
-    </div>
-
-    <!-- decision quality card -->
-    <div class="card animate-fade delay-2">
-        <div class="card-header">
-            <h2>Decision Quality</h2>
-        </div>
-        <table>
-            <tr>
-                <th>Segment</th>
-                <th>Winners</th>
-                <th>Losers</th>
-            </tr>
-            <tr>
-                <td>Approved</td>
-                <td class="text-green">0</td>
-                <td class="text-red">0</td>
-            </tr>
-            <tr>
-                <td>Skipped/Expired</td>
-                <td class="text-green">0</td>
-                <td class="text-red">0</td>
-            </tr>
-        </table>
+        <div class="sub-header mt-1">Top Skip Reasons</div>
+        <ul class="list-unstyled">
+            
+            <li class="event-item border-left-orange">ALREADY_MOVED</li>
+            
+        </ul>
     </div>
 </div>
 
 <div class="grid">
-    <!-- insights card -->
+    <!-- Hindsight Highlights -->
     <div class="card animate-fade delay-3">
-        <h2>Top Insights & Mistakes</h2>
+        <h2>Missed Opportunity (Hindsight)</h2>
         <div class="sub-grid">
             <div>
-                <div class="sub-header text-green">Insights</div>
+                <div class="metric-value text-orange">1</div>
+                <div class="metric-label">Missed Tickets</div>
+            </div>
+            <div>
+                <div class="metric-value text-orange">+0.00R</div>
+                <div class="metric-label">Estimated Missed R</div>
+            </div>
+        </div>
+        <div class="sub-header mt-1">Winners identified that were not traded.</div>
+    </div>
+
+    <!-- Actionable Checklist -->
+    <div class="card animate-fade delay-4">
+        <h2>Action Checklist</h2>
+        <div class="sub-grid">
+            <div>
+                <div class="sub-header text-green">Do (Best Execution)</div>
                 <ul class="list-unstyled">
                     
-                    <li class="event-item border-left-green">Policy Router effectively switched to RISK_OFF 0 times during high news density.</li>
+                    <li class="event-item border-left-green">Review Manual Review Queue every 4 hours.</li>
                     
-                    <li class="event-item border-left-green">Average Guardrails score for winners: 0.0</li>
-                    
-                    <li class="event-item border-left-green">Auto-capture rate (bridge fills): 0.0% (0 of 0 closed trades logged automatically).</li>
+                    <li class="event-item border-left-green">Ensure hindsight scoring is running for all skipped trades.</li>
                     
                 </ul>
             </div>
             <div>
-                <div class="sub-header text-red">Mistakes</div>
+                <div class="sub-header text-red">Don't (Risk Management)</div>
                 <ul class="list-unstyled">
                     
-                    <li class="event-item border-left-red">Most frequent skip reason: HIGH_SPREAD (10 times).</li>
+                    <li class="event-item border-left-red">Over-leverage during high volatility session openings.</li>
                     
                 </ul>
             </div>
         </div>
-    </div>
-
-    <!-- action items card -->
-    <div class="card animate-fade delay-4">
-        <div class="card-header">
-            <h2>Auto-Created Action Items</h2>
-            <a href="/dashboard/action-items" class="badge badge-info no-underline">View Tracker</a>
-        </div>
-        <ul class="list-unstyled">
-            
-            <li class="event-item border-left-orange">Review and optimize skip reason: HIGH_SPREAD</li>
-            
-            
-        </ul>
     </div>
 </div>
 

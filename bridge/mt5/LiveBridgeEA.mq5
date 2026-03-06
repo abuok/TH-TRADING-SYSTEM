@@ -10,7 +10,7 @@
 
 //--- input parameters
 input string   InpServerUrl = "http://localhost:8005"; // Bridge Server URL
-input string   InpSecret    = "change-me-in-prod";   // Bridge Secret Key
+input string   InpSecret    = "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6";   // Bridge Secret Key - CHANGE IN PRODUCTION
 input int      InpInterval  = 5;                    // Sync interval (seconds)
 input string   InpAccountId = "ACC-001";            // Account ID
 

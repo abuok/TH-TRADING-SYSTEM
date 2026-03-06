@@ -1,4 +1,4 @@
-.PHONY: install run-all stop clean lint test help precommit-install precommit-run
+.PHONY: install run-all stop clean lint test test-cov help precommit-install precommit-run
 
 help:
 	@echo "Available commands:"
@@ -10,6 +10,7 @@ help:
 	@echo "  precommit-install : Install pre-commit hooks"
 	@echo "  precommit-run     : Run pre-commit on all files"
 	@echo "  test      : Run tests"
+	@echo "  test-cov  : Run tests with coverage report"
 	@echo "  demo      : Run E2E demo (requires Docker)"
 	@echo "  dashboard : Run dashboard locally (port 8005)"
 	@echo "  release-check : Run all pre-release validations"
@@ -17,6 +18,8 @@ help:
 release-check:
 	@echo "Running Release Validation..."
 	$(MAKE) test
+	@echo "Checking Database Migrations..."
+	alembic check
 	@echo "Running Smoke Test..."
 	python scripts/smoke_test.py
 	@echo "Verifying Artifacts..."
@@ -53,6 +56,9 @@ precommit-run:
 test:
 	pytest
 
+test-cov:
+	pytest --cov=shared --cov=services --cov-report=term-missing --cov-report=html
+
 db-init:
 	alembic revision --autogenerate -m "Initial migration"
 
@@ -71,7 +77,7 @@ tech-scan:
 demo: run-all
 	@echo "Waiting for services to start..."
 	@sleep 10
-	python services/orchestration/demo.py
+	python scripts/v1_demo/demo.py
 	@echo "Demo complete. Open dashboard: http://localhost:8005/dashboard"
 
 dashboard:

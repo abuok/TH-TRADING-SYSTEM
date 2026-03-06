@@ -185,6 +185,12 @@ def health():
     return {"status": "healthy", "service": "orchestration"}
 
 
+@app.get("/metrics")
+def metrics():
+    """Prometheus-style metrics endpoint for monitoring."""
+    return metrics_registry.get_metrics_text()
+
+
 # ──────────────────────────────────────────────
 # Briefing endpoints
 # ──────────────────────────────────────────────

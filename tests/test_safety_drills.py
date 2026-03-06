@@ -75,8 +75,9 @@ def test_drill_mt5_bridge_latency_staleness_guardrail(memory_db):
     # 2. Evaluate the staleness rule directly
     setup_data = {"asset_pair": pair}
     cfg = {"quote_staleness_limit_seconds": 15.0}  # 15s limit
+    now_utc = datetime.datetime.now(datetime.timezone.utc)
 
-    rule_check = _rule_quote_staleness(setup_data, cfg, memory_db)
+    rule_check = _rule_quote_staleness(setup_data, cfg, memory_db, now_utc)
 
     # 3. Assert fail-closed posture
     assert rule_check.status == "FAIL"
@@ -197,9 +198,10 @@ def test_drill_bridge_offline_no_logs_fail_closed(memory_db):
     pair = "GBPJPY"
     setup_data = {"asset_pair": pair}
     cfg = {"quote_staleness_limit_seconds": 15.0, "score_deduction_fail": 20}
+    now_utc = datetime.datetime.now(datetime.timezone.utc)
 
     # No QuoteStaleLog rows inserted — simulates bridge never having connected
-    rule_check = _rule_quote_staleness(setup_data, cfg, memory_db)
+    rule_check = _rule_quote_staleness(setup_data, cfg, memory_db, now_utc)
 
     assert rule_check.status == "FAIL", (
         f"GR-Q01 must FAIL when bridge is offline (no log records). Got: {rule_check.status}"

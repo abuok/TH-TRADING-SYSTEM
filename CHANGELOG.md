@@ -1,10 +1,31 @@
 # Changelog
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2026-03-06
+
+### Added
+- **Metrics Endpoint**: Added `/metrics` endpoint to Orchestration service for Prometheus-style monitoring
+- **Test Coverage**: Added pytest-cov for coverage reporting with `make test-cov` command
+- **Configuration Documentation**: Added comprehensive configuration hierarchy documentation to README
+
+### Changed
+- **Error Handling**: Improved error handling in Telegram alerting with specific exception types
+- **Makefile**: Fixed demo script path and added migration validation to release checks
+
+### Fixed
+- **Test Failures**: Fixed missing `now_utc` parameter in safety drill tests
+- **MT5 Bridge Security**: Updated placeholder secret to more secure default
+- **Demo Path**: Corrected Makefile to point to actual demo script location
+
+### Security
+- Enhanced secret management practices in MT5 bridge configuration
+
 ## [1.0.0] - 2026-02-28
+
 ### Added
 - **Mission A-C**: Research, Calibration, and Hindsight scoring systems.
 - **Mission D-E**: Live Data Bridge and Trade Capture integration with MT5.
