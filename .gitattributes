@@ -1,0 +1,41 @@
+# Normalize line endings to LF (Unix style) to prevent "unstaged" issues
+* text=auto
+
+# Text files
+*.md text eol=lf
+*.txt text eol=lf
+*.py text eol=lf
+*.json text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.sh text eol=lf
+*.ini text eol=lf
+*.toml text eol=lf
+*.cfg text eol=lf
+*.conf text eol=lf
+*.dockerfile text eol=lf
+*.mak text eol=lf
+
+# Binary files
+*.pyc binary
+*.pyo binary
+*.so binary
+*.eggs binary
+*.egg-info binary
+dist/ binary
+build/ binary
+*.db binary
+*.sqlite binary
+
+# Docker files
+Dockerfile text eol=lf
+docker-compose.yml text eol=lf
+docker-compose.prod.yml text eol=lf
+
+# Git
+.gitattributes text eol=lf
+.gitignore text eol=lf
+
+# Actions
+.github/workflows/*.yml text eol=lf
+.github/workflows/*.yaml text eol=lf

@@ -1,4 +1,4 @@
-.PHONY: install run-all stop clean lint test test-cov help precommit-install precommit-run
+.PHONY: install run-all stop clean lint test test-cov help precommit-install precommit-run git-stage git-commit
 
 help:
 	@echo "Available commands:"
@@ -14,6 +14,8 @@ help:
 	@echo "  demo      : Run E2E demo (requires Docker)"
 	@echo "  dashboard : Run dashboard locally (port 8005)"
 	@echo "  release-check : Run all pre-release validations"
+	@echo "  git-stage : Stage all modified files (prevents 'unstaged' issues)"
+	@echo "  git-commit MSG=<msg> : Stage all changes and commit with message"
 
 release-check:
 	@echo "Running Release Validation..."
@@ -52,6 +54,19 @@ precommit-install:
 
 precommit-run:
 	pre-commit run --all-files
+
+git-stage:
+	@echo "Staging all modified files..."
+	git add .
+	@echo "All changes staged. Status:"
+	git status
+
+git-commit:
+	@if [ -z "$(MSG)" ]; then echo "Error: MSG required. Usage: make git-commit MSG='your message'"; exit 1; fi
+	@echo "Staging all changes..."
+	git add .
+	@echo "Committing with message: $(MSG)"
+	git commit -m "$(MSG)"
 
 test:
 	pytest

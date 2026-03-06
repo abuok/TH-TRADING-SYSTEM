@@ -1,0 +1,24 @@
+# Bandit configuration for security scanning
+# https://bandit.readthedocs.io/
+
+[bandit]
+# Tests to run
+tests = [B101, B102, B103, B104, B105, B106, B107, B108, B110, B112, B201, B301, B302, B303, B304, B305, B306, B307, B308, B309, B310, B311, B312, B313, B314, B315, B316, B317, B318, B319, B320, B321, B322, B323, B324, B325, B601, B602, B603, B604, B605, B606, B607, B608, B609, B610, B611, B612, B613, B614, B615, B616, B617, B618, B619, B620, B621, B622, B623, B624, B701, B702, B703, B704, B705, B706, B707, B708, B709, B710, B711, B712, B713, B714, B715, B716, B717, B718, B719, B720, B801, B802, B803, B804, B805, B806, B807, B808, B809, B810, B811, B812, B813, B814, B815, B816, B817, B818, B819, B820, B821, B822, B823, B824, B901, B902]
+
+# Tests to skip
+skip_ids = []
+
+# Files to exclude
+exclude_dirs = [/test, /venv]
+
+# Assertion level (MEDIUM, HIGH)
+level = MEDIUM
+
+# Report format (json, csv, custom)
+format = txt
+
+# Recursive scanning
+recursive = true
+
+[assert_used]
+skips = [*/test_*.py, *_test.py]

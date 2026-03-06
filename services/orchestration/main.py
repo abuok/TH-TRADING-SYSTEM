@@ -31,6 +31,7 @@ from shared.logic.logging import setup_production_logging
 from shared.logic.metrics import metrics_registry
 from shared.logic.trade_management_engine import run_management_cycle
 from shared.messaging.event_bus import EventBus
+from shared.task_management import get_task_supervisor
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("OrchestrationAPI")
@@ -40,6 +41,7 @@ notifier = NotificationService([ConsoleNotificationAdapter()])
 event_bus = EventBus()
 _guardrails_engine = GuardrailsEngine()
 _policy_router = PolicyRouter()
+_task_supervisor = get_task_supervisor(timeout_seconds=30)
 
 
 # ──────────────────────────────────────────────
@@ -56,7 +58,7 @@ def get_db():
 
 
 # ──────────────────────────────────────────────
-# Startup — initialise DB and start scheduler
+# Startup & Shutdown Events
 # ──────────────────────────────────────────────
 
 
@@ -66,16 +68,48 @@ async def startup_event():
         setup_production_logging()
     logger.info("Orchestration Service starting up...")
     db_session.init_db()
-    asyncio.create_task(fundamentals_scheduler())
-    asyncio.create_task(briefing_scheduler())
-    asyncio.create_task(ops_scheduler())
-    asyncio.create_task(management_loop())
+
+    # Start background tasks with supervision
+    await _task_supervisor.create_task(
+        "fundamentals_scheduler",
+        fundamentals_scheduler,
+        timeout_seconds=120,  # 2 minute timeout for fundamentals processing
+        max_retries=3,
+    )
+    await _task_supervisor.create_task(
+        "briefing_scheduler",
+        briefing_scheduler,
+        timeout_seconds=60,
+        max_retries=3,
+    )
+    await _task_supervisor.create_task(
+        "ops_scheduler",
+        ops_scheduler,
+        timeout_seconds=90,
+        max_retries=3,
+    )
+    await _task_supervisor.create_task(
+        "management_loop",
+        management_loop,
+        timeout_seconds=120,
+        max_retries=3,
+    )
+    logger.info("Background task supervisors started")
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    logger.info("Orchestration Service shutting down...")
+    await _task_supervisor.shutdown_all(timeout_seconds=10)
+    logger.info("Shutdown complete")
 
 
 async def fundamentals_scheduler(interval_minutes: int = 30):
     """
     Runs a fundamentals background job every `interval_minutes` to re-score
     XAUUSD and GBPJPY bias based on the latest proxy movements.
+
+    Protected with timeout and automatic retry logic via task supervisor.
     """
     while True:
         try:
@@ -83,8 +117,15 @@ async def fundamentals_scheduler(interval_minutes: int = 30):
             _run_fundamentals_generation(db)
             db.close()
         except Exception as e:
-            logger.error(f"Fundamentals generator error: {e}")
-        await asyncio.sleep(interval_minutes * 60)
+            logger.error(f"Fundamentals generator error: {e}", exc_info=True)
+
+        # Sleep in smaller chunks to allow cancellation
+        sleep_seconds = interval_minutes * 60
+        for _ in range(sleep_seconds):
+            await asyncio.sleep(1)
+            if _task_supervisor._shutdown:
+                logger.info("Fundamentals scheduler shutting down")
+                return
 
 
 def _run_fundamentals_generation(db: Session, now: Optional[datetime] = None):
@@ -181,8 +222,36 @@ async def briefing_scheduler(interval_minutes: int = 30):
 
 
 @app.get("/health")
-def health():
-    return {"status": "healthy", "service": "orchestration"}
+def health(db: Session = Depends(get_db)):
+    """Service health check endpoint.
+
+    Returns:
+        Health status with database and task supervisor status
+    """
+
+    health_data = {
+        "status": "healthy",
+        "service": "orchestration",
+        "version": os.getenv("VERSION", "unknown"),
+        "environment": os.getenv("ENVIRONMENT", "development"),
+        "timestamp": datetime.utcnow().isoformat(),
+        "checks": {
+            "database": {"status": "ok"},
+            "background_tasks": {
+                "status": "ok",
+                "tasks": _task_supervisor.get_all_tasks_status(),
+            },
+        },
+    }
+
+    # Check database connectivity
+    try:
+        db.execute("SELECT 1")
+    except Exception as e:
+        health_data["status"] = "degraded"
+        health_data["checks"]["database"] = {"status": "error", "detail": str(e)}
+
+    return health_data
 
 
 @app.get("/metrics")
