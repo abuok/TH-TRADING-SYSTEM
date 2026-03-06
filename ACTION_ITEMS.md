@@ -212,7 +212,7 @@ docker-compose logs orchestration | grep "startup"
 
 ### Week 1: Input Validation & Logging
 
-**Task 1: Apply Validators to Models**
+#### Task 1: Apply Validators to Models
 
 ```python
 # File: shared/database/models.py
@@ -231,7 +231,7 @@ class OrderTicket(Base):
         return SecurityValidators.validate_price_range(v, "exit_price")
 ```
 
-**Task 2: Implement Structured Logging**
+#### Task 2: Implement Structured Logging
 
 ```python
 # File: shared/logic/logging.py
@@ -256,7 +256,7 @@ logger.info("order_executed", order_id=123, price=1.234, quantity=100)
 
 ### Week 2: Performance Optimization
 
-**Task 1: Fix N+1 Queries**
+#### Task 1: Fix N+1 Queries
 
 ```python
 # Before (N+1 query)
@@ -271,7 +271,7 @@ packets = db.query(Packet).options(
 ).all()
 ```
 
-**Task 2: Add Pagination**
+#### Task 2: Add Pagination
 
 ```python
 @app.get("/briefings")
@@ -279,7 +279,7 @@ def list_briefings(db: Session, skip: int = 0, limit: int = 20):
     return db.query(SessionBriefing).offset(skip).limit(limit).all()
 ```
 
-**Task 3: Implement Caching**
+#### Task 3: Implement Caching
 
 ```python
 from shared.providers.cache import get_cache
@@ -298,7 +298,7 @@ if not config:
 
 ### Week 3: Event-Driven Architecture
 
-**Task 1: Set Up Message Broker**
+#### Task 1: Set Up Message Broker
 
 ```bash
 # Option 1: RabbitMQ
@@ -312,7 +312,7 @@ docker run -d --name kafka \
   confluentinc/cp-kafka:latest
 ```
 
-**Task 2: Create Event Publisher**
+#### Task 2: Create Event Publisher
 
 ```python
 # File: shared/messaging/event_publisher.py
@@ -326,7 +326,7 @@ class EventPublisher:
         )
 ```
 
-**Task 3: Refactor Service Communication**
+#### Task 3: Refactor Service Communication
 
 ```python
 # Instead of: DB → Packet table → Query
@@ -419,8 +419,18 @@ After completing all phases, you should have:
 
 1. Check GitHub Actions logs for CI/CD errors
 2. Review Docker logs: `docker-compose logs -f service_name`
-3. Test connectivity: `ping db.example.com && psql -U postgres -h db.example.com -d trading_journal`
-4. Verify secrets: `aws secretsmanager get-secret-value --secret-id trading-system/prod`
+3. Test connectivity:
+
+   ```bash
+   ping db.example.com
+   psql -U postgres -h db.example.com -d trading_journal
+   ```
+
+4. Verify secrets:
+
+   ```bash
+   aws secretsmanager get-secret-value --secret-id trading-system/prod
+   ```
 
 **Performance problems?**
 
