@@ -2,6 +2,9 @@
 trigger: always_on
 ---
 
+
+# Code Style Guide
+
 ## Workflow Orchestration
 
 ### 1. Plan Node Default
