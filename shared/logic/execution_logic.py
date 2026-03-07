@@ -180,15 +180,16 @@ class PreflightEngine:
             )
             return checks
 
-        # Context exists — check freshness (warn if context is stale > 2h)
+        # Context exists — check freshness (warn if context is stale > 5m)
         try:
-            ctx_age_hours = (
+            # Tighten from 2h to 5m for production safety
+            ctx_age_seconds = (
                 now - context.created_at.replace(tzinfo=now.tzinfo)
-            ).total_seconds() / 3600
-            if ctx_age_hours > 2:
+            ).total_seconds()
+            if ctx_age_seconds > 300:
                 logger.warning(
-                    "MarketContextPacket is %.1f hours old — news-window check may be stale.",
-                    ctx_age_hours,
+                    "MarketContextPacket is %.1f minutes old — news-window check may be stale.",
+                    ctx_age_seconds / 60,
                 )
         except Exception:
             pass

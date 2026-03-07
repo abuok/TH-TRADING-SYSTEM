@@ -1,11 +1,11 @@
-from typing import Dict
-from shared.types.packets import (
     TechnicalSetupPacket,
     MarketContextPacket,
     RiskApprovalPacket,
 )
-from datetime import datetime
+from datetime import datetime, timezone
 import pytz
+from shared.database.models import IncidentLog
+from sqlalchemy.orm import Session
 
 
 class RiskEngine:
@@ -60,6 +60,7 @@ class RiskEngine:
         setup: TechnicalSetupPacket,
         context: MarketContextPacket,
         account_state: Dict,
+        db: Session = None,
     ) -> RiskApprovalPacket:
         """
         account_state example:
@@ -70,50 +71,61 @@ class RiskEngine:
         }
         """
         reasons = []
-        status = "ALLOW"
-        is_approved = True
+        status = "BLOCK"  # FAIL-CLOSED: Default to BLOCK
+        is_approved = False
 
         # 0. Context Staleness Check (Fail Closed)
-        now_utc = datetime.now(pytz.UTC)
+        now_utc = datetime.now(timezone.utc)
         context_age = (now_utc - context.timestamp).total_seconds()
-        if context_age > 7200:  # 2 hours
-            status = "BLOCK"
-            is_approved = False
+        
+        # Tighten from 2h (7200s) to 5m (300s) for production safety
+        STALENESS_LIMIT = 300 
+        
+        if context_age > STALENESS_LIMIT:
             reasons.append(
                 f"Market context is stale ({context_age / 60:.1f} mins old). Fail-safe block triggered."
             )
-
+        
         # 1. RR Check
         rr = self.calculate_rr(setup)
         if rr < self.config["min_rr_threshold"]:
-            status = "BLOCK"
-            is_approved = False
             reasons.append(
                 f"RR Ratio {rr} below threshold {self.config['min_rr_threshold']}"
             )
 
         # 2. Daily Loss Check
         if account_state["daily_loss"] >= self.config["max_daily_loss"]:
-            status = "BLOCK"
-            is_approved = False
             reasons.append(f"Daily loss limit reached: ${account_state['daily_loss']}")
 
         # 3. Consecutive Losses Check
         if account_state["consecutive_losses"] >= self.config["max_consecutive_losses"]:
-            status = "BLOCK"
-            is_approved = False
             reasons.append(
                 f"Max consecutive losses reached: {account_state['consecutive_losses']}"
             )
 
         # 4. Event Window Check
         if self.is_in_event_window(setup.timestamp, context):
-            status = "BLOCK"
-            is_approved = False
             reasons.append("Trade falls within a high-impact economic event window")
 
+        # Result calculation: If no reasons for blocking, then we ALLOW
+        if not reasons:
+            status = "ALLOW"
+            is_approved = True
+        else:
+            # Log incident for observability
+            if db:
+                try:
+                    incident = IncidentLog(
+                        severity="WARNING",
+                        component="RiskEngine",
+                        message=f"Risk Block for {setup.asset_pair}: {'; '.join(reasons)}"
+                    )
+                    db.add(incident)
+                    db.commit()
+                except Exception:
+                    pass
+
         # 5. Position Size (Lot Size)
-        # Placeholder for complex lot size calculation
         max_pos = self.config["lot_size_limit"]
 
         return RiskApprovalPacket(

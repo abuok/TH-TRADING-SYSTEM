@@ -4,6 +4,7 @@ import os
 from fastapi import FastAPI
 from shared.logic.risk import RiskEngine
 from shared.messaging.event_bus import EventBus
+import shared.database.session as db_session
 import asyncio
 
 import logging
@@ -91,9 +92,13 @@ async def risk_worker():
                             reasons=["No market context available"],
                         )
                     else:
-                        approval = risk_engine.evaluate(
-                            setup, context_packet, account_state
-                        )
+                        db = db_session.SessionLocal()
+                        try:
+                            approval = risk_engine.evaluate(
+                                setup, context_packet, account_state, db=db
+                            )
+                        finally:
+                            db.close()
 
                     # Publish result
                     event_bus.publish("risk_approvals", approval.dict())
