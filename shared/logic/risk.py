@@ -79,15 +79,15 @@ class RiskEngine:
         # 0. Context Staleness Check (Fail Closed)
         now_utc = datetime.now(timezone.utc)
         context_age = (now_utc - context.timestamp).total_seconds()
-        
+
         # Tighten from 2h (7200s) to 5m (300s) for production safety
-        STALENESS_LIMIT = 300 
-        
+        STALENESS_LIMIT = 300
+
         if context_age > STALENESS_LIMIT:
             reasons.append(
                 f"Market context is stale ({context_age / 60:.1f} mins old). Fail-safe block triggered."
             )
-        
+
         # 1. RR Check
         rr = self.calculate_rr(setup)
         if rr < self.config["min_rr_threshold"]:
@@ -120,7 +120,7 @@ class RiskEngine:
                     incident = IncidentLog(
                         severity="WARNING",
                         component="RiskEngine",
-                        message=f"Risk Block for {setup.asset_pair}: {'; '.join(reasons)}"
+                        message=f"Risk Block for {setup.asset_pair}: {'; '.join(reasons)}",
                     )
                     db.add(incident)
                     db.commit()
