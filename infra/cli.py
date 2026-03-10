@@ -440,7 +440,7 @@ def build_scorecard(
     Build a Pilot Scorecard for a specified rolling window, computing graduation gates.
     """
     from datetime import datetime
-    from shared.database.connection import get_db
+    from shared.database.session import get_db
     from services.research.pilot import build_pilot_scorecard
 
     start_dt = datetime.strptime(from_date, "%Y-%m-%d").date()
@@ -465,7 +465,7 @@ def get_latest_scorecard():
     """
     Fetch the latest pilot scorecard aggregates from the database.
     """
-    from shared.database.connection import get_db
+    from shared.database.session import get_db
     from shared.database.models import PilotScorecardLog
 
     db = next(get_db())

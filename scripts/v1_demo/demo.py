@@ -6,7 +6,7 @@ from datetime import datetime, timezone, timedelta
 
 from shared.logic.notifications import NotificationService, ConsoleNotificationAdapter
 from shared.types.packets import Candle
-from services.orchestration.runner import Orchestrator
+from runner import Orchestrator
 from shared.database.session import init_db
 
 logging.basicConfig(level=logging.INFO)
@@ -64,7 +64,7 @@ class DemoRunner:
         # For simplicity in demo, we hit the local Journal endpoints if possible,
         # but since this script might run standalone, we'll assume Journal is reachable.
         try:
-            journal_url = "http://localhost:8002"
+        journal_url = "http://localhost:8004"  # Journal service (compose port 8004)
             setup_id = 1  # Assume first setup
 
             # Log an outcome manually to prove the journal works
