@@ -27,8 +27,11 @@ SERVICES = {
     "Technical": os.getenv("TECHNICAL_URL", "http://localhost:8002/health"),
     "Risk": os.getenv("RISK_URL", "http://localhost:8003/health"),
     "Journal": os.getenv("JOURNAL_URL", "http://localhost:8004/health"),
-    "Orchestrator": os.getenv("ORCHESTRATOR_URL", "http://localhost:8000/health"),
-    "Bridge": os.getenv("BRIDGE_URL", "http://localhost:8005/health"),
+    "Dashboard": os.getenv("DASHBOARD_URL", "http://localhost:8005/health"),
+    "Orchestrator": os.getenv("ORCHESTRATOR_URL", "http://localhost:8006/health"),
+    # Bridge is not included in the default compose stack.
+    # Set BRIDGE_URL env var to enable health checking when bridge is running.
+    "Bridge": os.getenv("BRIDGE_URL", ""),
 }
 
 
@@ -39,6 +42,11 @@ async def get_service_health() -> Dict[str, Any]:
     async with httpx.AsyncClient(timeout=1.0) as client:
         tasks = []
         for name, url in SERVICES.items():
+            if not url:
+                # Service not configured (e.g. bridge when BRIDGE_URL is unset)
+                health_results[name] = "unconfigured"
+                response_times[name] = 0
+                continue
             tasks.append(check_health(client, name, url))
 
         results = await asyncio.gather(*tasks)

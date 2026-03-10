@@ -113,5 +113,26 @@ services:
       - redis
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
+  # ── Bridge Service (MT5 EA telemetry + execution) ────────────────────────
+  # The bridge is NOT included in the default local stack because it requires
+  # a live MT5 instance. Uncomment and configure when running with a real broker.
+  #
+  # bridge:
+  #   build:
+  #     context: .
+  #     dockerfile: infra/Dockerfile.service
+  #   ports:
+  #     - "8007:8000"
+  #   volumes:
+  #     - ./services/bridge:/app
+  #     - ./shared:/app/shared
+  #   env_file: .env
+  #   depends_on:
+  #     - postgres
+  #     - redis
+  #   command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+  #   environment:
+  #     - BRIDGE_SECRET=${BRIDGE_SECRET}
+
 volumes:
   postgres_data:

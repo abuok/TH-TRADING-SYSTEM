@@ -4,11 +4,45 @@ __pycache__/
 *.pyo
 *.pyd
 
-# pytest cache
+# pytest / coverage
 .pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
 
-# mypy cache
+# mypy / ruff / type check caches
 .mypy_cache/
-
-# ruff cache
 .ruff_cache/
+
+# Environment files — NEVER commit secrets
+.env
+*.env
+.env.*
+
+# Database artifacts — never commit local state
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+logs/
+
+# Build / distribution artifacts
+dist/
+build/
+*.egg-info/
+
+# Research / report artifacts generated at runtime
+artifacts/
+
+# Jupyter/editor
+.ipynb_checkpoints/
+*.ipynb
+.DS_Store
+Thumbs.db
+
+# Backups
+*.bak
+backups/
