@@ -2,7 +2,7 @@ import os
 import asyncio
 import httpx
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timezone, time
 from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
 
@@ -18,6 +18,7 @@ from shared.database.models import (
     TicketTradeLink,
     TradeFillLog,
     JournalLog,
+    PositionSnapshot as PositionSnapshotModel,
 )
 from shared.logic.sessions import get_nairobi_time, get_session_label
 from shared.types.trading import OrderTicketSchema
@@ -70,28 +71,84 @@ async def check_health(client, name, url):
         return name, "unhealthy", elapsed
 
 
-def get_dashboard_data(db: Session):
+from shared.logic.lockout_engine import LockoutEngine
+from shared.logic.sessions import get_nairobi_time, get_session_label, SessionEngine
+from shared.types.enums import LockoutState
+
+def get_dashboard_data(db: Session, asset_pairs: List[str] = ["XAUUSD", "GBPJPY"]):
     # Nairobi Time
     now_nairobi = get_nairobi_time()
+    now_utc = datetime.now(timezone.utc)
 
-    # 1. Kill Switches
-    kill_switches = db.query(KillSwitch).filter(KillSwitch.is_active == 1).all()
+    # 1. PERMISSION STATE PANEL
+    # In a real scenario, these would come from a real sync with Risk/MT5. 
+    # For the HUD, we'll pull latest logs or static defaults if missing.
+    lockout_config = {
+        "max_daily_loss_pct": 2.0,
+        "max_consecutive_losses": 3,
+        "account_balance": 100000.0 # Standard pilot balance
+    }
+    # Mocking account state for now - in production, this pulls from a dedicated AccountState table/service
+    account_state = {
+        "daily_loss": 0.0,
+        "consecutive_losses": 0,
+        "account_balance": 100000.0
+    }
+    
+    lockout_engine = LockoutEngine(lockout_config)
+    permission_state, permission_msg = lockout_engine.evaluate(account_state, db=db)
 
-    # 2. Latest Market Context (for events and session)
-    latest_context = (
-        db.query(Packet)
-        .filter(Packet.packet_type == "MarketContextPacket")
-        .order_by(Packet.created_at.desc())
-        .first()
-    )
+    # 2. SESSION STATE PANEL
+    # Compute session for a primary pair or return a map
+    primary_pair = asset_pairs[0]
+    session_label = get_session_label(now_nairobi, primary_pair)
+    
+    # Simple countdown to next boundary
+    current_time = now_nairobi.time()
+    boundaries = [
+        (time(3, 0), "ASIA_SESSION" if primary_pair == "GBPJPY" else "OUT_OF_SESSION"),
+        (time(7, 0), "PRE_SESSION"),
+        (time(11, 0), "LONDON_OPEN"),
+        (time(14, 0), "LONDON_MID"),
+        (time(16, 0), "NY_OPEN"),
+        (time(19, 0), "POST_SESSION"),
+        (time(22, 0), "OUT_OF_SESSION")
+    ]
+    next_boundary = None
+    for b_time, b_label in boundaries:
+        if b_time > current_time:
+            next_boundary = b_time
+            break
+    if not next_boundary:
+        next_boundary = boundaries[0][0] # Next day Asia
 
-    events = []
-    no_trade_windows = []
-    if latest_context and "high_impact_events" in latest_context.data:
-        events = latest_context.data.get("high_impact_events", [])[:5]
-        no_trade_windows = latest_context.data.get("no_trade_windows", [])
+    # Calculate minutes until next boundary
+    today = now_nairobi.date()
+    boundary_dt = datetime.combine(today, next_boundary)
+    if next_boundary <= current_time:
+         from datetime import timedelta
+         boundary_dt += timedelta(days=1)
+    
+    time_to_transition = int((boundary_dt.replace(tzinfo=now_nairobi.tzinfo) - now_nairobi).total_seconds() / 60)
 
-    # 3. Latest 10 Setups
+    # 3. BIAS STATE PANEL (Per Pair)
+    bias_states = {}
+    for pair in asset_pairs:
+        p_fund = db.query(Packet).filter(
+            Packet.packet_type == "PairFundamentalsPacket",
+            Packet.data["asset_pair"].as_string() == pair
+        ).order_by(Packet.created_at.desc()).first()
+        
+        if p_fund:
+            bias_states[pair] = {
+                "bias": p_fund.data.get("bias"),
+                "is_invalidated": p_fund.data.get("is_invalidated", False),
+                "age_m": int((now_utc - p_fund.created_at.replace(tzinfo=timezone.utc)).total_seconds() / 60)
+            }
+        else:
+            bias_states[pair] = {"bias": "NEUTRAL", "is_invalidated": False, "age_m": 0}
+
+    # 4. SETUP PROGRESSION PANEL
     setup_packets = (
         db.query(Packet)
         .filter(Packet.packet_type == "TechnicalSetupPacket")
@@ -101,61 +158,51 @@ def get_dashboard_data(db: Session):
     )
     latest_setups = []
     for p in setup_packets:
-        # Check freshness (TTL 60s for setups)
-        is_fresh = (
-            datetime.now(timezone.utc) - p.created_at.replace(tzinfo=timezone.utc)
-        ).total_seconds() < 60
+        is_fresh = (now_utc - p.created_at.replace(tzinfo=timezone.utc)).total_seconds() < 60
         latest_setups.append(
             {
                 "asset_pair": p.data.get("asset_pair"),
                 "stage": p.data.get("stage"),
-                "score": p.data.get("score"),
+                "is_aligned": p.data.get("is_aligned", False), # Refactored from 'score'
                 "is_fresh": is_fresh,
+                "age_str": f"{int((now_utc - p.created_at.replace(tzinfo=timezone.utc)).total_seconds())}s"
             }
         )
 
-    # 4. Latest 10 Risk Decisions
-    decision_packets = (
-        db.query(Packet)
-        .filter(Packet.packet_type == "RiskApprovalPacket")
-        .order_by(Packet.created_at.desc())
-        .limit(10)
-        .all()
-    )
-    latest_decisions = []
-    for p in decision_packets:
-        latest_decisions.append(
-            {
-                "asset_pair": p.data.get("asset_pair"),
-                "action": p.data.get("action"),
-                "reason": p.data.get("reason"),
-            }
-        )
+    # 5. RISK BUDGET PANEL
+    risk_budget = {
+        "daily_loss_pct": account_state["daily_loss"] / account_state["account_balance"] * 100,
+        "max_daily_loss_pct": lockout_config["max_daily_loss_pct"],
+        "consecutive_losses": account_state["consecutive_losses"],
+        "max_consecutive_losses": lockout_config["max_consecutive_losses"]
+    }
 
-    # 5. Latest 10 Incidents
+    # 6. ACTIVE POSITIONS PANEL
+    live_positions = db.query(PositionSnapshotModel).all() # Already imported in main.py but needs to be here
+    # We will pass raw models and format in template
+
+    # 7. NOTICE / REVIEW LOG
     latest_incidents = (
         db.query(IncidentLog).order_by(IncidentLog.created_at.desc()).limit(10).all()
     )
 
-    # 6. Live Bridge Data
+    # Bridge Data for the bottom strip
     live_quotes = (
         db.query(LiveQuote).order_by(LiveQuote.captured_at.desc()).limit(5).all()
     )
-    symbol_specs = (
-        db.query(SymbolSpec).order_by(SymbolSpec.captured_at.desc()).limit(5).all()
-    )
 
     return {
-        "now_nairobi_str": now_nairobi.strftime("%Y-%m-%d %H:%M:%S"),
-        "session_label": get_session_label(now_nairobi),
-        "kill_switches": kill_switches,
-        "events": events,
-        "no_trade_windows": no_trade_windows,
+        "permission_state": permission_state.value,
+        "permission_msg": permission_msg,
+        "session_label": session_label,
+        "time_to_transition": time_to_transition,
+        "bias_states": bias_states,
         "latest_setups": latest_setups,
-        "latest_decisions": latest_decisions,
+        "risk_budget": risk_budget,
+        "live_positions": live_positions,
         "latest_incidents": latest_incidents,
         "live_quotes": live_quotes,
-        "symbol_specs": symbol_specs,
+        "now_nairobi_str": now_nairobi.strftime("%H:%M:%S"),
     }
 
 

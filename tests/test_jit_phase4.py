@@ -81,9 +81,13 @@ def test_jit_confirmation_success(db, validator, monkeypatch):
     assert is_valid is True
     assert state_hash != ""
 
-def test_jit_rejection_staleness(db, validator):
+def test_jit_rejection_staleness(db, validator, monkeypatch):
     ctx, fund = create_mock_packets(db)
     
+    # Mock session to LDN_OPEN to ensure rejection is due to EXPIRED, not Session
+    monkeypatch.setattr("services.orchestration.logic.jit_validator.SessionEngine.get_session_state", 
+                        lambda ts, pair: "LONDON_OPEN")
+
     ticket = OrderTicket(
         ticket_id="TKT-STALE",
         setup_packet_id=fund.id,
@@ -110,7 +114,8 @@ def test_jit_rejection_staleness(db, validator):
 
 def test_jit_rejection_invalidated_bias(db, validator, monkeypatch):
     ctx, fund = create_mock_packets(db)
-    fund.data["is_invalidated"] = True
+    # Mutation fix: replace entire dict for SQLAlchemy to track change
+    fund.data = {**fund.data, "is_invalidated": True}
     db.commit()
     
     # Mock session to LDN_OPEN to avoid session rejection

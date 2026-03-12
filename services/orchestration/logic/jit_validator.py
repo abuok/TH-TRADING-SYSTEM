@@ -39,14 +39,14 @@ class JITValidator:
         if lockout_state == LockoutState.HARD_LOCK:
             return False, f"REJECTED_JIT: HARD_LOCK - {lockout_msg}", ""
 
-        # Step 2: Session Check
+        # Step 2: Staleness / Expiry Check
+        if ticket.expires_at and now_utc > ticket.expires_at.replace(tzinfo=timezone.utc):
+            return False, "EXPIRED: Ticket TTL exceeded", ""
+
+        # Step 3: Session Check
         session_label = SessionEngine.get_session_state(now_nairobi, ticket.pair)
         if session_label == SessionState.OUT_OF_SESSION:
             return False, "REJECTED_JIT: Market Out of Session", ""
-
-        # Step 3: Staleness / Expiry Check
-        if ticket.expires_at and now_utc > ticket.expires_at.replace(tzinfo=timezone.utc):
-            return False, "EXPIRED: Ticket TTL exceeded", ""
 
         # Step 4: Alignment Check (Bias, Events, Direction)
         # Fetch latest fundamentals and context
