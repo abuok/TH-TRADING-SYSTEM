@@ -3,7 +3,7 @@ import logging
 from datetime import datetime, timezone
 from typing import Optional, Dict
 
-from shared.logic.sessions import TradingSessions
+from shared.logic.sessions import SessionEngine
 from shared.logic.phx_detector import PHXDetector
 from shared.logic.risk import RiskEngine
 from shared.types.packets import (
@@ -75,10 +75,10 @@ class Orchestrator:
             self.start_run()
         logger.info(f"Starting pre-session briefing for {asset_pair}...")
 
-        # Use the correct method name from TradingSessions
-        levels = self.sessions.compute_all_levels(historical_candles)
-        logger.info(f"Session Levels: {levels}")
-        return levels
+        # Use the correct method name from SessionEngine
+        session_levels = SessionEngine.compute_all_levels(historical_candles)
+        logger.info(f"Session Levels: {session_levels}")
+        return session_levels
 
     async def live_loop(self, asset_pair: str, interval_seconds: int = 60):
         """Main loop during active trading sessions."""

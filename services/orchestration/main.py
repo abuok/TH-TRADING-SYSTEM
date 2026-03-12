@@ -19,7 +19,7 @@ from shared.logic.trading_logic import generate_order_ticket
 from shared.logic.briefing import assemble_briefing, persist_briefing
 from shared.logic.guardrails import GuardrailsEngine
 from shared.logic.fundamentals_engine import evaluate_fundamentals
-from shared.logic.sessions import get_nairobi_time, get_session_label, TradingSessions
+from shared.logic.sessions import get_nairobi_time, get_session_label, SessionEngine
 from shared.logic.notifications import NotificationService, ConsoleNotificationAdapter
 from shared.types.packets import TechnicalSetupPacket, RiskApprovalPacket
 from shared.types.trading import OrderTicketSchema
@@ -176,9 +176,9 @@ async def briefing_scheduler(interval_minutes: int = 30):
         now = get_nairobi_time()
         label = get_session_label(now)
         t = now.time()
-        is_active = TradingSessions.is_in_range(
-            t, *TradingSessions.LONDON_RANGE
-        ) or TradingSessions.is_in_range(t, *TradingSessions.NY_RANGE)
+        is_active = SessionEngine.is_in_range(
+            t, *SessionEngine.LONDON_RANGE
+        ) or SessionEngine.is_in_range(t, *SessionEngine.NY_RANGE)
         if is_active:
             session_key = f"{now.date()}-{label}"
             is_delta = session_key in generated_sessions
@@ -415,9 +415,9 @@ async def management_loop():
             now = get_nairobi_time()
             t = now.time()
             # Run only if we are in London or NY session
-            is_active = TradingSessions.is_in_range(
-                t, *TradingSessions.LONDON_RANGE
-            ) or TradingSessions.is_in_range(t, *TradingSessions.NY_RANGE)
+            is_active = SessionEngine.is_in_range(
+                t, *SessionEngine.LONDON_RANGE
+            ) or SessionEngine.is_in_range(t, *SessionEngine.NY_RANGE)
 
             if is_active:
                 db = db_session.SessionLocal()

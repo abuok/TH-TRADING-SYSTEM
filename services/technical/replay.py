@@ -6,7 +6,7 @@ import sys
 sys.path.append(os.getcwd())
 
 from shared.adapters.price_feed import CSVPriceFeedAdapter
-from shared.logic.sessions import TradingSessions
+from shared.logic.sessions import SessionEngine
 from shared.logic.phx_detector import PHXDetector, PHXStage
 from rich.console import Console
 from rich.table import Table
@@ -53,7 +53,7 @@ def scan(
             best_reasons = list(detector.reason_codes)
 
     # Compute session levels for the most recent day in the set
-    session_levels = TradingSessions.compute_all_levels(candles)
+    session_levels = SessionEngine.compute_all_levels(candles)
 
     # Simple "mock" scan logic
     bullish_count = sum(1 for c in candles if c.close > c.open)

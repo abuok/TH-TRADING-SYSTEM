@@ -4,14 +4,11 @@ from shared.types.packets import Candle
 import pytz
 
 
-class TradingSessions:
-    # Nairobi is UTC+3
-    # Standard Session Ranges (Nairobi Time)
+class SessionEngine:
+    # Legacy ranges for backward compatibility during alignment
     ASIA_RANGE = (time(3, 0), time(12, 0))
-    LONDON_OPEN_WINDOW = (time(11, 0), time(14, 0))
     LONDON_RANGE = (time(11, 0), time(20, 0))
-    NY_WINDOW = (time(16, 0), time(19, 0))
-    NY_RANGE = (time(16, 0), time(1, 0))  # Note: Crosses midnight
+    NY_RANGE = (time(16, 0), time(1, 0))
 
     @staticmethod
     def is_in_range(t: time, start: time, end: time) -> bool:
@@ -28,7 +25,6 @@ class TradingSessions:
         session_candles = []
         nairobi_tz = pytz.timezone("Africa/Nairobi")
         for candle in candles:
-            # Explicitly force raw DB/MT5 timestamps into EAT (Nairobi) before comparing
             dt_aware = (
                 candle.timestamp
                 if candle.timestamp.tzinfo
@@ -50,7 +46,6 @@ class TradingSessions:
 
     @classmethod
     def compute_all_levels(cls, candles: List[Candle]) -> Dict[str, float]:
-        """Compute High/Low for Asia and London sessions."""
         asia_candles = cls.get_session_candles(candles, cls.ASIA_RANGE)
         london_candles = cls.get_session_candles(candles, cls.LONDON_RANGE)
 
@@ -67,19 +62,36 @@ class TradingSessions:
 
         return levels
 
+    @classmethod
+    def get_session_state(cls, now_nairobi: datetime, asset_pair: str) -> str:
+        t = now_nairobi.time()
+
+        # Shared windows
+        if cls.is_in_range(t, time(7, 0), time(10, 59)):
+            return "PRE_SESSION"
+        if cls.is_in_range(t, time(11, 0), time(13, 59)):
+            return "LONDON_OPEN"
+        if cls.is_in_range(t, time(14, 0), time(15, 59)):
+            return "LONDON_MID"
+        if cls.is_in_range(t, time(16, 0), time(18, 59)):
+            return "NY_OPEN"
+        if cls.is_in_range(t, time(19, 0), time(21, 59)):
+            return "POST_SESSION"
+
+        # Instrument specific
+        if cls.is_in_range(t, time(3, 0), time(6, 59)):
+            if asset_pair == "GBPJPY":
+                return "ASIA_SESSION"
+            # For XAUUSD and others, Asia is effectively OUT_OF_SESSION
+            return "OUT_OF_SESSION"
+        
+        # Catch-all
+        return "OUT_OF_SESSION"
 
 def get_nairobi_time() -> datetime:
     """Returns the current time in Africa/Nairobi."""
     return datetime.now(pytz.timezone("Africa/Nairobi"))
 
-
-def get_session_label(now_nairobi: datetime) -> str:
-    """Returns a label for the current trading session."""
-    t = now_nairobi.time()
-    if TradingSessions.is_in_range(t, *TradingSessions.LONDON_RANGE):
-        return "LONDON"
-    if TradingSessions.is_in_range(t, *TradingSessions.NY_RANGE):
-        return "NEW YORK"
-    if TradingSessions.is_in_range(t, *TradingSessions.ASIA_RANGE):
-        return "ASIA"
-    return "OUTSIDE"
+def get_session_label(now_nairobi: datetime, asset_pair: str = "UNKNOWN") -> str:
+    """Wrapper mapping to SessionEngine.get_session_state."""
+    return SessionEngine.get_session_state(now_nairobi, asset_pair)
