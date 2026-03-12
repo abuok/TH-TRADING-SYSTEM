@@ -47,7 +47,7 @@ def generate_order_ticket(
     spec_provider = get_symbol_spec_provider()
     spec = spec_provider.get_spec(setup.asset_pair)
 
-    status = "IN_REVIEW"
+    status = "PENDING"
     block_reason = None
 
     if not spec:
@@ -98,7 +98,7 @@ def generate_order_ticket(
 
     expires_at = (
         datetime.now(timezone.utc) + timedelta(minutes=15)
-        if status == "IN_REVIEW"
+        if status == "PENDING"
         else None
     )
 

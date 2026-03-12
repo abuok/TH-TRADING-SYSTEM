@@ -32,6 +32,8 @@ from shared.logic.metrics import metrics_registry
 from shared.logic.trade_management_engine import run_management_cycle
 from shared.messaging.event_bus import EventBus
 from shared.task_management import get_task_supervisor
+from services.orchestration.logic.jit_validator import JITValidator
+from shared.types.enums import TicketState
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("OrchestrationAPI")
@@ -42,6 +44,10 @@ event_bus = EventBus()
 _guardrails_engine = GuardrailsEngine()
 _policy_router = PolicyRouter()
 _task_supervisor = get_task_supervisor(timeout_seconds=30)
+_jit_validator = JITValidator(lockout_config={
+    "max_daily_loss_pct": 2.0,
+    "max_consecutive_losses": 3
+})
 
 
 # ──────────────────────────────────────────────
@@ -714,3 +720,58 @@ async def update_ticket_status(
         logger.warning(f"Failed to update ticket in Journal via EventBus: {e}")
 
     return ticket
+
+
+@app.post("/tickets/{ticket_id}/confirm", response_model=OrderTicketSchema)
+async def confirm_ticket(ticket_id: str, db: Session = Depends(get_db)):
+    """
+    Operator confirms a PENDING ticket. 
+    Performs synchronous JIT validation before emission to bridge.
+    """
+    ticket = db.query(OrderTicket).filter(OrderTicket.ticket_id == ticket_id).first()
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+
+    if ticket.status != TicketState.PENDING:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Only PENDING tickets can be confirmed. Current status: {ticket.status}"
+        )
+
+    # 5-Step JIT Validation
+    is_valid, reason, state_hash = _jit_validator.validate(db, ticket)
+
+    if not is_valid:
+        # Persistence-before-emission: record rejection
+        ticket.status = TicketState.REJECTED_JIT
+        ticket.block_reason = reason
+        ticket.reviewed_at = datetime.utcnow()
+        db.commit()
+        
+        # Log to Journal
+        event_bus.publish("journal_events", {
+            "event_type": "ticket_rejection",
+            "ticket_id": ticket.ticket_id,
+            "reason": reason
+        })
+        
+        raise HTTPException(status_code=403, detail=reason)
+
+    # All gates PASS -> CONFIRM
+    ticket.status = TicketState.CONFIRMED
+    ticket.jit_validation_hash = state_hash
+    ticket.reviewed_at = datetime.utcnow()
+    db.commit()
+
+    # Emit to Bridge/Journal
+    event_bus.publish("journal_events", {
+        "event_type": "ticket_confirmation",
+        "ticket_id": ticket.ticket_id,
+        "jit_hash": state_hash
+    })
+    
+    # In a real system, the ExecutionBridge would listen to this or we'd call it directly
+    logger.info(f"Ticket {ticket.ticket_id} CONFIRMED and JIT-validated.")
+    
+    return ticket
+
