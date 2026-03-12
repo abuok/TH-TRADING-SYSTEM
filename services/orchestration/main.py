@@ -245,8 +245,9 @@ def health(db: Session = Depends(get_db)):
     }
 
     # Check database connectivity
+    from sqlalchemy import text
     try:
-        db.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
     except Exception as e:
         health_data["status"] = "degraded"
         health_data["checks"]["database"] = {"status": "error", "detail": str(e)}
