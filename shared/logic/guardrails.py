@@ -17,7 +17,7 @@ import yaml
 from sqlalchemy.orm import Session
 
 from shared.database.models import GuardrailsLog, OrderTicket
-from shared.logic.sessions import get_nairobi_time, get_session_label
+from shared.logic.sessions import get_nairobi_time
 from shared.types.guardrails import (
     EvidenceRef,
     GuardrailsResult,
@@ -141,122 +141,8 @@ _PHX_STAGE_ORDER = [
 # Individual rule evaluators
 # ──────────────────────────────────────────────────────────────────────────
 
-
-def _rule_session_window(
-    now_nairobi: datetime, cfg: Dict, setup_data: Dict
-) -> RuleCheck:
-    """GR-S01: Is the current time inside an allowed trading session?"""
-    session = get_session_label(now_nairobi)
-    allowed = cfg["allowed_sessions"]
-    t = now_nairobi.time()
-    windows = cfg.get("session_windows", {})
-
-    in_window = False
-    for sess_name in allowed:
-        w = windows.get(sess_name, {})
-        if w and _time_in_window(t, w["start"], w["end"]):
-            in_window = True
-            break
-
-    if in_window:
-        return RuleCheck(
-            id="GR-S01",
-            name="Session Window",
-            status="PASS",
-            details=f"Current session is '{session}' — inside allowed window.",
-            is_mandatory=True,
-            deduction=0,
-            evidence_refs=[
-                EvidenceRef(
-                    ref_type="metric",
-                    key="current_session_label",
-                    value=session,
-                    description="Africa/Nairobi session label",
-                )
-            ],
-        )
-    return RuleCheck(
-        id="GR-S01",
-        name="Session Window",
-        status="FAIL",
-        details=f"Current session is '{session}' at {now_nairobi.strftime('%H:%M')} EAT — outside allowed windows {allowed}.",
-        is_mandatory=True,
-        deduction=cfg["score_deduction_fail"],
-        evidence_refs=[
-            EvidenceRef(ref_type="metric", key="current_session_label", value=session),
-            EvidenceRef(
-                ref_type="metric",
-                key="nairobi_time",
-                value=now_nairobi.strftime("%H:%M"),
-            ),
-        ],
-    )
-
-
-def _rule_news_window(
-    now_nairobi: datetime, cfg: Dict, context_data: Dict
-) -> RuleCheck:
-    """GR-N01: Is current time within news_buffer_minutes of a red-folder event?"""
-    buffer_mins = int(cfg["news_buffer_minutes"])
-    events = context_data.get("high_impact_events", [])
-
-    impacted_events: List[str] = []
-    for ev in events:
-        ev_time_str = ev.get("time", "")
-        if not ev_time_str:
-            continue
-        try:
-            # Build candidate dates: always try today; for early-morning times (<06:00)
-            # also try tomorrow, since the event may belong to the next calendar day
-            # (e.g. now=23:50 EAT, event=00:30 EAT next day).
-            candidates = [now_nairobi.date()]
-            ev_hour = int(ev_time_str.split(":")[0])
-            if ev_hour < 6:
-                candidates.append(now_nairobi.date() + timedelta(days=1))
-
-            best_diff: Optional[float] = None
-            for candidate_date in candidates:
-                ev_dt = datetime.strptime(
-                    f"{candidate_date.isoformat()} {ev_time_str}", "%Y-%m-%d %H:%M"
-                )
-                ev_nairobi = NAIROBI.localize(ev_dt)
-                d = abs((now_nairobi - ev_nairobi).total_seconds() / 60)
-                if best_diff is None or d < best_diff:
-                    best_diff = d
-
-            if best_diff is not None and best_diff <= buffer_mins:
-                label = f"{ev.get('event', '?')} ({ev.get('currency', '?')}) at {ev_time_str}"
-                impacted_events.append(label)
-        except ValueError:
-            continue
-
-    hard = cfg.get("news_window_hard_block", True)
-    if impacted_events:
-        return RuleCheck(
-            id="GR-N01",
-            name="News Window",
-            status="FAIL",
-            details=f"Within {buffer_mins}min of red-folder event(s): {'; '.join(impacted_events)}",
-            is_mandatory=hard,
-            deduction=cfg["score_deduction_fail"],
-            evidence_refs=[
-                EvidenceRef(
-                    ref_type="metric",
-                    key="impacted_events",
-                    value=impacted_events,
-                    description=f"{buffer_mins}min buffer",
-                )
-            ],
-        )
-    return RuleCheck(
-        id="GR-N01",
-        name="News Window",
-        status="PASS",
-        details=f"No red-folder events within {buffer_mins}min window.",
-        is_mandatory=hard,
-        deduction=0,
-    )
-
+# Removed _rule_session_window -> Migrated to AlignmentEngine
+# Removed _rule_news_window -> Migrated to AlignmentEngine
 
 def _rule_eod_gap(now_nairobi: datetime, cfg: Dict) -> RuleCheck:
     """GR-E01: Block trading around broker End Of Day (00:00 EET) due to spread widening."""
@@ -460,50 +346,7 @@ def _rule_setup_score(setup_data: Dict, cfg: Dict) -> RuleCheck:
     )
 
 
-def _rule_risk_state(account_state: Dict, cfg: Dict, setup_data: Dict) -> RuleCheck:
-    """GR-R01: Check consecutive losses and daily loss percentage against limits."""
-    hard = cfg.get("risk_state_hard_block", True)
-    max_losses = int(cfg["max_consecutive_losses"])
-    max_daily_pct = float(cfg["max_daily_loss_pct"])
-
-    consec = account_state.get("consecutive_losses", 0)
-    daily_loss = account_state.get("daily_loss", 0.0)
-    balance = account_state.get("account_balance", 10000.0)
-    daily_loss_pct = (daily_loss / balance * 100) if balance > 0 else 0.0
-
-    fails = []
-    evidence = [
-        EvidenceRef(ref_type="metric", key="consecutive_losses", value=consec),
-        EvidenceRef(
-            ref_type="metric", key="daily_loss_pct", value=round(daily_loss_pct, 2)
-        ),
-    ]
-
-    if consec >= max_losses:
-        fails.append(f"Consecutive losses {consec} ≥ limit {max_losses}")
-    if daily_loss_pct >= max_daily_pct:
-        fails.append(f"Daily loss {daily_loss_pct:.1f}% ≥ limit {max_daily_pct}%")
-
-    if fails:
-        return RuleCheck(
-            id="GR-R01",
-            name="Risk State",
-            status="FAIL",
-            details="; ".join(fails),
-            is_mandatory=hard,
-            deduction=cfg["score_deduction_fail"],
-            evidence_refs=evidence,
-        )
-    return RuleCheck(
-        id="GR-R01",
-        name="Risk State",
-        status="PASS",
-        details=f"Losses OK (consec={consec}, daily={daily_loss_pct:.1f}%).",
-        is_mandatory=hard,
-        deduction=0,
-        evidence_refs=evidence,
-    )
-
+# Removed _rule_risk_state -> Migrated to LockoutEngine
 
 def _rule_duplicate_signal(
     setup_data: Dict, cfg: Dict, db: Session, now_nairobi: datetime
@@ -698,14 +541,8 @@ class GuardrailsEngine:
 
         checks: List[RuleCheck] = []
 
-        # GR-S01 Session window
-        checks.append(_rule_session_window(now_nairobi, effective_cfg, setup_data))
-
         # GR-E01 End of Day Gap (Broker Spread Widening)
         checks.append(_rule_eod_gap(now_nairobi, effective_cfg))
-
-        # GR-N01 News window
-        checks.append(_rule_news_window(now_nairobi, effective_cfg, context_data))
 
         # GR-P01 PHX sequence completeness
         checks.append(_rule_phx_sequence(setup_data, effective_cfg))
@@ -715,9 +552,6 @@ class GuardrailsEngine:
 
         # GR-SC01 Setup score
         checks.append(_rule_setup_score(setup_data, effective_cfg))
-
-        # GR-R01 Risk state
-        checks.append(_rule_risk_state(account_state, effective_cfg, setup_data))
 
         # GR-U01 Duplicate signal (requires DB)
         # GR-Q01 Quote staleness (requires DB)

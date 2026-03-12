@@ -29,7 +29,7 @@ class Orchestrator:
         notifier: Optional[NotificationService] = None,
     ):
         self.risk_engine = RiskEngine(risk_config)
-        self.sessions = TradingSessions()
+        self.sessions = SessionEngine()
         self.dry_run = dry_run
         self.is_active = False
         self.run_id = None

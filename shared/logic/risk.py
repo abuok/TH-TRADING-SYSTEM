@@ -5,7 +5,6 @@ from shared.types.packets import (
     RiskApprovalPacket,
 )
 from datetime import datetime, timezone
-import pytz
 from shared.database.models import IncidentLog
 from sqlalchemy.orm import Session
 
@@ -32,31 +31,7 @@ class RiskEngine:
             return 0.0
         return round(reward / risk, 2)
 
-    def is_in_event_window(
-        self, setup_time: datetime, context: MarketContextPacket
-    ) -> bool:
-        # Ensure setup_time is timezone aware
-        if setup_time.tzinfo is None:
-            setup_time = setup_time.replace(tzinfo=pytz.UTC)
-
-        windows = context.no_trade_windows
-        for window in windows:
-            try:
-                start = datetime.fromisoformat(window["start"])
-                end = datetime.fromisoformat(window["end"])
-
-                # Align timezones for comparison
-                if start.tzinfo is None:
-                    start = start.replace(tzinfo=pytz.UTC)
-                if end.tzinfo is None:
-                    end = end.replace(tzinfo=pytz.UTC)
-
-                if start <= setup_time <= end:
-                    return True
-            except (KeyError, ValueError, TypeError):
-                continue
         return False
-
     def evaluate(
         self,
         setup: TechnicalSetupPacket,
@@ -95,19 +70,7 @@ class RiskEngine:
                 f"RR Ratio {rr} below threshold {self.config['min_rr_threshold']}"
             )
 
-        # 2. Daily Loss Check
-        if account_state["daily_loss"] >= self.config["max_daily_loss"]:
-            reasons.append(f"Daily loss limit reached: ${account_state['daily_loss']}")
-
-        # 3. Consecutive Losses Check
-        if account_state["consecutive_losses"] >= self.config["max_consecutive_losses"]:
-            reasons.append(
-                f"Max consecutive losses reached: {account_state['consecutive_losses']}"
-            )
-
-        # 4. Event Window Check
-        if self.is_in_event_window(setup.timestamp, context):
-            reasons.append("Trade falls within a high-impact economic event window")
+        # Event Window and Daily Loss are now handled by AlignmentEngine and LockoutEngine
 
         # Result calculation: If no reasons for blocking, then we ALLOW
         if not reasons:

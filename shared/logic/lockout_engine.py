@@ -6,7 +6,6 @@ Replaces fragmented checks in generic guardrails.
 
 from typing import Dict, Any, Tuple
 from sqlalchemy.orm import Session
-from datetime import datetime, timezone
 
 from shared.database.models import KillSwitch, DisciplineLockout
 from shared.types.enums import LockoutState
@@ -40,10 +39,10 @@ class LockoutEngine:
                     return LockoutState.HARD_LOCK, f"Kill switch active: {active_switch.switch_type}"
                 
                 # Also check if there's an active DisciplineLockout
-                active_lockout = db.query(DisciplineLockout).filter(DisciplineLockout.is_resolved == False).first()
+                active_lockout = db.query(DisciplineLockout).filter(DisciplineLockout.is_resolved.is_(False)).first()
                 if active_lockout:
                     return LockoutState.HARD_LOCK, f"Discipline Lockout active: {active_lockout.reason}"
-            except Exception as e:
+            except Exception:
                 # Fail-closed
                 return LockoutState.HARD_LOCK, "Database unreachable for kill switch check"
         else:
