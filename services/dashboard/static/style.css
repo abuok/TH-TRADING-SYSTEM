@@ -14,6 +14,11 @@
     --warning-color: var(--accent-yellow);
     --success-color: var(--accent-green);
     --danger-color: var(--accent-pink);
+    
+    /* Canonical TH Status Colors */
+    --color-buy: var(--accent-green);
+    --color-sell: var(--accent-pink);
+    --color-warn: var(--accent-yellow);
 }
 
 * {
@@ -291,8 +296,15 @@ footer {
     border-radius: 4px;
     display: flex;
     flex-direction: column;
-    padding: 1rem;
+    padding: 0;
     position: relative;
+    overflow: hidden;
+}
+
+.hud-panel.glass-panel {
+    background: rgba(18, 18, 26, 0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(86, 204, 242, 0.15);
 }
 
 .hud-panel-header {
@@ -799,6 +811,85 @@ footer {
 .util-f8a732 {
     margin-top: 0.5rem;
 }
+
+/* --- Phase 5: Constitutional HUD Layout --- */
+
+.text-buy { color: var(--color-buy); }
+.text-sell { color: var(--color-sell); }
+.text-warn { color: var(--color-warn); }
+
+.bg-buy-dim { background: rgba(39, 174, 96, 0.1); }
+.bg-sell-dim { background: rgba(235, 47, 150, 0.1); }
+.bg-warn-dim { background: rgba(242, 201, 76, 0.1); }
+
+.border-buy { border-color: var(--color-buy) !important; }
+.border-sell { border-color: var(--color-sell) !important; }
+.border-warn { border-color: var(--color-warn) !important; }
+
+.shadow-sell { box-shadow: 0 0 10px var(--color-sell); }
+
+.hud-6xl { font-size: 3.75rem; line-height: 1; }
+
+.hud-compact-table th {
+    background: rgba(0,0,0,0.3);
+    padding: 0.75rem 0.5rem;
+}
+
+.hud-panel-header {
+    background: rgba(86, 204, 242, 0.05);
+    padding: 0.5rem 1rem;
+    margin-bottom: 0;
+    border-bottom: 1px solid rgba(86, 204, 242, 0.1);
+}
+
+.hud-main-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 1rem;
+}
+
+.hud-vertical-flow {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.hud-hero-panel {
+    padding: 2rem;
+    border-radius: 0.5rem;
+    border-width: 2px;
+}
+
+.text-6xl { font-size: 3.75rem; line-height: 1; }
+.text-mini-mono { font-size: 0.65rem; font-family: monospace; }
+
+.animate-flash {
+    animation: flash-red 1s infinite;
+}
+@keyframes flash-red {
+    0% { border-color: var(--color-sell); }
+    50% { border-color: rgba(255,255,255,0.5); }
+    100% { border-color: var(--color-sell); }
+}
+
+.animate-pulse {
+    animation: pulse 2s infinite;
+}
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.8; }
+    100% { opacity: 1; }
+}
+
+.hud-scroll-body {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.h-200 { height: 200px; }
 
 .util-5bfe03 {
     grid-template-columns: 2fr 1fr;

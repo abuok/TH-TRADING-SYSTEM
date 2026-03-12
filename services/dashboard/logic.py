@@ -2,7 +2,7 @@ import os
 import asyncio
 import httpx
 import time
-from datetime import datetime, timezone, time
+from datetime import datetime, timezone, time as dt_time
 from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
 
@@ -106,13 +106,13 @@ def get_dashboard_data(db: Session, asset_pairs: List[str] = ["XAUUSD", "GBPJPY"
     # Simple countdown to next boundary
     current_time = now_nairobi.time()
     boundaries = [
-        (time(3, 0), "ASIA_SESSION" if primary_pair == "GBPJPY" else "OUT_OF_SESSION"),
-        (time(7, 0), "PRE_SESSION"),
-        (time(11, 0), "LONDON_OPEN"),
-        (time(14, 0), "LONDON_MID"),
-        (time(16, 0), "NY_OPEN"),
-        (time(19, 0), "POST_SESSION"),
-        (time(22, 0), "OUT_OF_SESSION")
+        (dt_time(3, 0), "ASIA_SESSION" if primary_pair == "GBPJPY" else "OUT_OF_SESSION"),
+        (dt_time(7, 0), "PRE_SESSION"),
+        (dt_time(11, 0), "LONDON_OPEN"),
+        (dt_time(14, 0), "LONDON_MID"),
+        (dt_time(16, 0), "NY_OPEN"),
+        (dt_time(19, 0), "POST_SESSION"),
+        (dt_time(22, 0), "OUT_OF_SESSION")
     ]
     next_boundary = None
     for b_time, b_label in boundaries:

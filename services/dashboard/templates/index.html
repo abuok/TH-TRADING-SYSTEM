@@ -1,267 +1,203 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="hud-grid">
-    <!-- ROW 1: TACTICAL OVERVIEW & HEALTH -->
-    <!-- [3] SYSTEM PULSE -->
-    <section class="hud-panel glass-panel col-span-3" data-hud-corner="top-left">
+<div class="hud-vertical-flow">
+    <!-- PANEL 1: PERMISSION STATE (Priority 1) -->
+    <section class="hud-hero-panel {% if permission_state == 'HARD_LOCK' %}bg-sell-dim border-sell{% elif permission_state == 'SOFT_LOCK' %}bg-warn-dim border-warn{% else %}bg-buy-dim border-buy{% endif %}">
+        <div class="hud-hero-content">
+            <div class="justify-between align-center flex">
+                <div class="flex-col flex">
+                    <span class="text-mini text-upper text-bold letter-spacing-1">PERMISSION STATE // SIGNAL</span>
+                    <h1 class="text-6xl text-bold letter-spacing-wide {% if permission_state == 'HARD_LOCK' %}text-sell{% elif permission_state == 'SOFT_LOCK' %}text-warn{% else %}text-buy{% endif %}">
+                        {{ permission_state }}
+                    </h1>
+                </div>
+                <div class="text-right flex-col flex">
+                    <div class="text-xxs text-muted mb-1">SYSTEM MESSAGE</div>
+                    <div class="text-sm text-mono letter-spacing-1">{{ permission_msg }}</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {% if permission_state != 'HARD_LOCK' %}
+    <div class="hud-main-grid mt-4">
+        <!-- LEFT COLUMN: LIVE STATE & SELECTION -->
+        <div class="col-span-8 flex-col flex gap-4">
+            
+            <!-- PANEL 2: SESSION STATE -->
+            <section class="hud-panel glass-panel">
+                <header class="hud-panel-header">
+                    <h2 class="hud-panel-title">02 // SESSION STATE // BOUNDARY NAVIGATOR</h2>
+                </header>
+                <div class="p-4 grid-cols-2 grid gap-4">
+                    <div class="bg-dark-overlay rounded p-3 border-theme">
+                        <div class="text-xxs text-muted text-upper mb-1">CURRENT CANONICAL STATE</div>
+                        <div class="text-2xl text-cyan text-bold text-mono">{{ session_label }}</div>
+                    </div>
+                    <div class="bg-dark-overlay rounded p-3 border-theme">
+                        <div class="text-xxs text-muted text-upper mb-1">BOUNDARY TRANSITION</div>
+                        <div class="text-2xl text-yellow text-bold text-mono">T-MINUS {{ time_to_transition }} MIN</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PANEL 3: BIAS STATE (Per Pair) -->
+            <section class="hud-panel glass-panel">
+                <header class="hud-panel-header">
+                    <h2 class="hud-panel-title">03 // BIAS STATE // STRATEGIC DIRECTION</h2>
+                </header>
+                <div class="p-4 flex gap-4">
+                    {% for pair, data in bias_states.items() %}
+                    <div class="flex-1 rounded p-3 border-2 {% if data.is_invalidated %}bg-sell-dim border-sell animate-flash{% else %}bg-dark-overlay border-theme{% endif %}">
+                        <div class="justify-between flex align-baseline mb-2">
+                            <span class="text-lg text-bold">{{ pair }}</span>
+                            <span class="text-mini text-muted text-mono">{{ data.age_m }}m OLD</span>
+                        </div>
+                        <div class="text-3xl text-bold {% if data.bias == 'BULLISH' %}text-buy{% elif data.bias == 'BEARISH' %}text-sell{% else %}text-muted{% endif %}">
+                            {{ data.bias }}
+                        </div>
+                        {% if data.is_invalidated %}
+                        <div class="mt-2 text-mini text-sell text-bold text-upper letter-spacing-1">[!!!] BIAS INVALIDATED [!!!]</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <!-- PANEL 4: SETUP PROGRESSION -->
+            <section class="hud-panel glass-panel">
+                <header class="hud-panel-header">
+                    <h2 class="hud-panel-title">04 // SETUP PROGRESSION // PHX ENGINE</h2>
+                </header>
+                <div class="p-2">
+                    <table class="hud-compact-table">
+                        <thead>
+                            <tr>
+                                <th>SYMBOL</th>
+                                <th>STAGE</th>
+                                <th class="text-center">ALIGNMENT</th>
+                                <th class="text-right">AGE</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for setup in latest_setups %}
+                            <tr>
+                                <td class="text-bold text-cyan">{{ setup.asset_pair }}</td>
+                                <td><span class="badge badge-cyan-dim">{{ setup.stage }}</span></td>
+                                <td class="text-center">
+                                    {% if setup.is_aligned %}
+                                    <span class="badge bg-buy-dim text-buy border-buy">ALIGNED</span>
+                                    {% else %}
+                                    <span class="badge bg-dark-overlay text-muted border-theme">UNALIGNED</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-right text-muted text-xxs text-mono">{{ setup.age_str }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+        <!-- RIGHT COLUMN: RISK & MANAGEMENT -->
+        <div class="col-span-4 flex-col flex gap-4">
+            <!-- PANEL 5: RISK BUDGET -->
+            <section class="hud-panel glass-panel">
+                <header class="hud-panel-header">
+                    <h2 class="hud-panel-title">05 // RISK BUDGET // BUDGET USAGE</h2>
+                </header>
+                <div class="p-4 flex-col flex gap-4">
+                    <div>
+                        <div class="justify-between flex mb-1">
+                            <span class="text-xxs text-muted">DAILY DRAWDOWN (%)</span>
+                            <span class="text-xxs text-mono">{{ "%.2f" | format(risk_budget.daily_loss_pct) }}% / {{ risk_budget.max_daily_loss_pct }}%</span>
+                        </div>
+                        <div class="h-2 bg-dark-overlay rounded overflow-hidden">
+                            <div class="h-full bg-sell shadow-sell" style="width: {{ (risk_budget.daily_loss_pct / risk_budget.max_daily_loss_pct * 100)|round }}%"></div>
+                        </div>
+                    </div>
+                    <div class="justify-between align-center flex border-t border-theme-soft pt-3">
+                        <span class="text-xxs text-muted">CONSECUTIVE LOSSES</span>
+                        <div class="flex gap-1">
+                            {% for i in range(risk_budget.max_consecutive_losses) %}
+                            <div class="w-4 h-4 rounded-sm {% if i < risk_budget.consecutive_losses %}bg-sell shadow-sell{% else %}bg-dark-overlay border border-theme{% endif %}"></div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PANEL 6: ACTIVE POSITIONS -->
+            <section class="hud-panel glass-panel">
+                <header class="hud-panel-header">
+                    <h2 class="hud-panel-title">06 // ACTIVE POSITIONS // MANAGEMENT</h2>
+                </header>
+                <div class="p-2 flex-col flex gap-2">
+                    {% if live_positions %}
+                        {% for pos in live_positions %}
+                        <div class="rounded p-2 bg-dark-overlay border-l-2 {% if pos.floating_pnl >= 0 %}border-buy{% else %}border-sell{% endif %}">
+                            <div class="justify-between flex mb-1">
+                                <span class="text-xs text-bold">{{ pos.symbol }}</span>
+                                <span class="text-xs text-mono {% if pos.floating_pnl >= 0 %}text-buy{% else %}text-sell{% endif %}">
+                                    {{ "%.2f" | format(pos.floating_pnl) }}
+                                </span>
+                            </div>
+                            <div class="text-micro text-muted">LOT: {{ pos.lots }} | {{ pos.side }}</div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="p-4 text-center text-muted text-xs italic">NO ACTIVE EXPOSURE</div>
+                    {% endif %}
+                </div>
+            </section>
+        </div>
+    </div>
+    {% else %}
+    <!-- HARD LOCKOUT ESCALATION VIEW -->
+    <div class="mt-8 p-12 bg-sell-dim border-2 border-sell rounded-lg text-center animate-pulse">
+        <h2 class="text-4xl text-sell text-bold mb-4">[!] EXECUTION PATH UNCONDITIONALLY SEALED [!]</h2>
+        <p class="text-xl text-white opacity-80 mb-8">Daily loss limit or system intervention has blocked all new enterprise entries.</p>
+        <div class="p-6 bg-black-dim rounded border border-sell-soft inline-block">
+            <span class="text-sell text-bold letter-spacing-2">REDUCE_ONLY MODE ACTIVE FOR OPEN POSITIONS</span>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- PANEL 7: NOTICE / REVIEW LOG -->
+    <section class="hud-panel glass-panel mt-4">
         <header class="hud-panel-header">
-            <h2 class="hud-panel-title">SYSTEM PULSE // HEALTH</h2>
-            <span class="status-dot status-healthy Intense-glow-cyan"></span>
+            <h2 class="hud-panel-title">07 // NOTICE & INCIDENT LOG // AUDIT TRAIL</h2>
         </header>
-        <div class="gap-2 grid grid-cols-2 p-2">
-            {% for service, status in health.items() %}
-            <div class="p-2 rounded bg-dark-overlay border-l-2 {{ 'border-buy' if status == 'OK' else 'border-sell' }}">
-                <div class="text-mini text-muted text-bold text-upper">
-                    {{ service }}</div>
-                <div class="text-mini-mono text-bold {{ 'text-buy' if status == 'OK' else 'text-sell' }}">
-                    {{ status }}</div>
+        <div class="p-2 h-200 hud-scroll-body">
+            {% for incident in latest_incidents %}
+            <div class="mb-1 text-mini-mono border-b border-theme-soft pb-1">
+                <span class="text-muted">[{{ incident.created_at.strftime('%H:%M:%S') }}]</span>
+                <span class="text-cyan">[{{ incident.component }}]</span>
+                <span class="ml-2 {% if incident.severity == 'ERROR' %}text-sell{% elif incident.severity == 'WARN' %}text-warn{% else %}text-white{% endif %}">
+                    {{ incident.message }}
+                </span>
             </div>
             {% endfor %}
         </div>
     </section>
 
-    <!-- [3] ACCOUNT STATUS -->
-    <section class="hud-panel glass-panel col-span-3">
-        <header class="hud-panel-header">
-            <h2 class="hud-panel-title">CAPITAL ALLOCATION</h2>
-            <span class="badge badge-purple">LIVE</span>
-        </header>
-        <div class="gap-2 flex-col flex p-2">
-            <div class="justify-between align-baseline flex">
-                <span class="text-xxs text-muted">FUNDED BALANCE</span>
-                <span class="text-lg text-bold text-mono">$100,000.00</span>
-            </div>
-            <div class="justify-between align-baseline flex">
-                <span class="text-xxs text-muted">UNREALIZED PNL</span>
-                <span class="text-green text-lg text-bold text-mono">+$1,240.50</span>
-            </div>
-            <div class="mt-1 relative h-4 bg-dark-overlay rounded">
-                <div class="absolute left-0 top-0 h-full w-1-2 bg-sell rounded shadow-sell">
-                </div>
-            </div>
-            <div class="justify-between text-muted flex text-mini">
-                <span>MAX DD (5.0%)</span>
-                <span class="text-pink">CURRENT: 1.2%</span>
-            </div>
-        </div>
-    </section>
-
-    <!-- [6] SESSION CONTEXT -->
-    <section class="hud-panel glass-panel col-span-6" data-hud-corner="top-right">
-        <header class="hud-panel-header">
-            <h2 class="hud-panel-title">SESSION CONTEXT // TEMPORAL AWARENESS</h2>
-            <span class="badge badge-yellow">LONDON
-                ACTIVE</span>
-        </header>
-        <div class="gap-4 p-2 flex">
-            <div class="border-theme flex-1 rounded bg-dark-overlay p-2">
-                <div class="mb-1 text-muted text-xxs">SYNK CLOCK</div>
-                <div class="text-mono text-bold text-lg letter-spacing-2">{{
-                    now_eat_str }}</div>
-                <div class="text-mini text-cyan">SYNCED TO EAT (AFRICA/NAIROBI)</div>
-            </div>
-            <div class="flex-2 h-full">
-                <div class="mb-1 text-muted text-xxs">UPCOMING SAFETY WINDOWS
-                </div>
-                <div class="overflow-x-auto flex gap-2">
-                    {% if no_trade_windows %}
-                    {% for window in no_trade_windows[:2] %}
-                    <div class="w-120 px-2 py-1 rounded bg-warn-dim border-warn-soft">
-                        <div class="text-orange text-bold text-micro">RESTRICTION</div>
-                        <div class="text-xxs text-mono">{{ window.start }}</div>
-                    </div>
-                    {% endfor %}
-                    {% else %}
-                    <div class="text-bold text-xs text-green align-center flex gap-2">
-                        <span class="status-dot status-healthy"></span> CLEAR SKIES // NO UPCOMING EVENTS
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ROW 2: CRITICAL TACTICAL DISPLAYS -->
-    <!-- [8] PRIMARY SENSORS (SETUPS) -->
-    <section class="hud-panel glass-panel col-span-8 row-span-2" data-hud-corner="bottom-left">
-        <header class="hud-panel-header">
-            <h2 class="hud-panel-title">PRIMARY SENSORS // ACTIVE SIGNAL STREAMS</h2>
-            <div class="text-xxs text-muted">SCAN RATE: 1.0Hz</div>
-        </header>
-        <div class="h-400 hud-scroll-body">
-            <table class="hud-compact-table">
-                <thead>
-                    <tr>
-                        <th class="w-15">#</th>
-                        <th>SYMBOL</th>
-                        <th>STAGE</th>
-                        <th class="text-center">SIGNAL SCORE</th>
-                        <th>HEALTH</th>
-                        <th class="text-right">TEMPORAL AGE</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for setup in latest_setups %}
-                    <tr>
-                        <td class="text-xxs opacity-50 text-muted">{{ loop.index }}</td>
-                        <td class="text-bold text-cyan">{{ setup.asset_pair }}</td>
-                        <td><span class="badge badge-cyan-dim badge-sm">{{
-                                setup.stage }}</span></td>
-                        <td
-                            class="text-center text-mono text-bold-lg {{ 'text-buy' if setup.score|float >= 7 else ('text-warn' if setup.score|float >= 5 else 'text-muted') }}">
-                            {{ "%.1f" | format(setup.score|float) }}
-                        </td>
-                        <td>
-                            <div class="flex align-center gap-2">
-                                <span
-                                    class="status-dot {{ 'status-healthy' if setup.is_fresh else 'status-error' }} w-6 h-6"></span>
-                                <span
-                                    class="text-micro text-extra-bold {{ 'text-buy' if setup.is_fresh else 'text-sell' }}">
-                                    {{ 'FRESH' if setup.is_fresh else 'STALE' }}</span>
-                            </div>
-                        </td>
-                        <td class="text-right text-muted text-xxs text-mono">
-                            {{ setup.age_str or '0s' }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </section>
-
-    <!-- [4] RISK & GOVERNANCE -->
-    <section class="hud-panel glass-panel col-span-4 row-span-2" data-hud-corner="bottom-right">
-        <header class="hud-panel-header">
-            <h2 class="hud-panel-title">RISK DECISIONS // GOVERNANCE</h2>
-            <span class="badge badge-danger">SECURE</span>
-        </header>
-        <div class="h-400 hud-scroll-body p-2">
-            {% if kill_switches %}
-            <div class="bg-sell-dim mb-3 border-sell rounded p-2">
-                <div class="mb-1 text-sell text-bold text-xxs">
-                    ACTIVE INTERVENTION</div>
-                {% for ks in kill_switches %}
-                <div class="text-mono text-sell text-xs">[!] {{ ks.switch_type
-                    }} &rarr; {{ ks.target or 'GLOBAL' }}</div>
-                {% endfor %}
-            </div>
-            {% endif %}
-
-            <div class="flex-col flex gap-3">
-                {% for decision in latest_decisions %}
-                <div class="rounded border-theme bg-darker-overlay p-2 hud-scanline">
-                    <div class="justify-between flex mb-1 items-start">
-                        <span class="text-sm text-main text-bold">{{
-                            decision.asset_pair }}</span>
-                        <span
-                            class="badge border-1 text-micro {{ 'bg-buy-dim text-buy border-buy' if decision.action == 'ALLOW' else 'bg-sell-dim text-sell border-sell' }}">
-                            {{ decision.action }}</span>
-                    </div>
-                    <div class="mb-1 text-muted text-xs line-height-relaxed">
-                        {{ decision.reason }}</div>
-                    <div class="text-mini opacity-60 text-cyan text-mono">{{
-                        decision.timestamp }}</div>
+    <!-- FOOTER LINK STRIP -->
+    <section class="mt-4 grid-bridge grid gap-4">
+        <div class="hud-panel glass-panel p-2">
+            <div class="text-micro text-muted text-upper mb-2">LIVE BRIDGE QUOTES</div>
+            <div class="flex gap-4 overflow-x-auto">
+                {% for q in live_quotes %}
+                <div class="bg-dark-overlay px-3 py-1 rounded border-theme flex gap-3 align-center">
+                    <span class="text-bold text-xxs">{{ q.symbol }}</span>
+                    <span class="text-mono text-cyan text-xs">{{ q.bid }}</span>
+                    <span class="badge badge-sm badge-cyan-dim">{{ q.spread }}</span>
                 </div>
                 {% endfor %}
-            </div>
-        </div>
-    </section>
-
-    <!-- ROW 3: INFRASTRUCTURE & BRIDGE MONITOR -->
-    <!-- [12] MT5 BRIDGE FEED -->
-    <section class="hud-panel glass-panel col-span-12 hud-scanline">
-        <header class="hud-panel-header">
-            <h2 class="hud-panel-title">METATRADER 5 BRIDGE // RAW DATA INGESTION STREAM</h2>
-            <div class="gap-4 flex">
-                <div class="flex align-center gap-2">
-                    <span class="status-dot status-healthy"></span>
-                    <span class="text-bold text-green text-xxs">LINK STABLE</span>
-                </div>
-                <div class="flex align-center gap-2">
-                    <span class="status-dot status-healthy Intense-glow-cyan w-6 h-6"></span>
-                    <span class="text-bold text-xxs text-cyan">FEED HOT</span>
-                </div>
-            </div>
-        </header>
-        <div class="grid gap-6 grid-bridge">
-            <div class="hud-scroll-body h-220">
-                <table class="hud-compact-table">
-                    <thead>
-                        <tr>
-                            <th>SYMBOL</th>
-                            <th class="text-right">BID</th>
-                            <th class="text-right">ASK</th>
-                            <th class="text-center">SPREAD (PIPS)</th>
-                            <th class="text-right">LAST SYNC</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for q in live_quotes %}
-                        <tr>
-                            <td class="text-bold text-yellow">{{ q.symbol }}</td>
-                            <td class="text-right text-md text-mono">{{ q.bid }}</td>
-                            <td class="text-right text-md text-mono">{{ q.ask }}</td>
-                            <td class="text-center">
-                                <span class="text-sm text-mono badge bg-cyan-dim text-cyan">
-                                    {{ q.spread }}</span>
-                            </td>
-                            <td class="text-mono text-right text-muted text-xs">
-                                {{ q.captured_at.strftime('%H:%M:%S') if q.captured_at else '---' }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            <div class="border-l border-theme-soft pl-6">
-                <div class="text-xxs text-upper mb-3 text-muted text-bold letter-spacing-1">
-                    SYMBOL SPECIFICATIONS</div>
-                <div class="hud-scroll-body h-180">
-                    {% for s in symbol_specs %}
-                    <div class="bg-dark-overlay mb-2 rounded p-2 border-theme">
-                        <div class="justify-between mb-1 align-center flex">
-                            <span class="text-main text-bold text-xs">{{ s.symbol
-                                }}</span>
-                            <span class="text-bold text-xxs text-cyan">Lot: {{
-                                s.min_lot }}</span>
-                        </div>
-                        <div class="text-xxs text-muted text-mono">Contract: {{
-                            s.contract_size }} | Tick: {{ s.tick_size }}</div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- FOOTER: INCIDENT TICKER -->
-    <section class="hud-panel col-span-12 bg-black-dim p-2 border-sell-soft">
-        <div class="flex align-center gap-5">
-            <span class="text-mini text-white badge bg-sell border-none px-2">INCIDENT
-                TICKER</span>
-            <div class="text-xs text-muted flex-1 overflow-hidden text-mono ws-nowrap">
-                <div class="ticker-animate">
-                    {% for incident in latest_incidents %}
-                    <span class="mr-16 {{ 'text-sell' if incident.severity == 'ERROR' else 'text-warn' }}">
-                        [{{ incident.created_at.strftime('%H:%M:%S') }}] {{ incident.component }}: {{ incident.message
-                        }}
-                    </span>
-                    {% endfor %}
-                </div>
             </div>
         </div>
     </section>
 </div>
 
-<style>
-    @keyframes ticker {
-        0% {
-            transform: translateX(100%);
-        }
-
-        100% {
-            transform: translateX(-100%);
-        }
-    }
-</style>
 {% endblock %}
