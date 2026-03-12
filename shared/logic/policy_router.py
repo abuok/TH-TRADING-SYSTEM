@@ -82,13 +82,11 @@ class PolicyRouter:
         events = _get(context_data, "high_impact_events", [])
         session = get_session_label(now_nairobi)
         bias_score = _get(pair_fundamentals, "bias_score", 0.0)
-        confidence = _get(pair_fundamentals, "confidence_label", "LOW")
 
         signals["sentiment_flags"] = sentiment_flags
         signals["event_count"] = len(events)
         signals["session"] = session
         signals["bias_score"] = bias_score
-        signals["confidence"] = confidence
 
         # 2. Selection Logic
 
@@ -107,14 +105,13 @@ class PolicyRouter:
             return self._build_decision("Event Heavy", reasons, signals)
 
         # C. BEST CONDITIONS
-        # Strong bias, high confidence, and in core sessions
+        # Strong bias and in core sessions
         if (
             session in ["LONDON", "NEW YORK"]
             and abs(bias_score) >= 4.0
-            and confidence == "HIGH"
         ):
             reasons.append(
-                f"Strong confluence: {session} session + High confidence bias ({bias_score})."
+                f"Strong confluence: {session} session + High conviction bias ({bias_score})."
             )
             return self._build_decision("Best Conditions", reasons, signals)
 

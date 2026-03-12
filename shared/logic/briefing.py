@@ -142,13 +142,12 @@ def _build_pair_overview(pair: str, db: Session) -> PairOverview:
         .first()
     )
 
-    bias, bias_score, conf, inval, drvs = "unknown", None, "UNKNOWN", "N/A", []
+    bias, bias_score, inval, drvs = "unknown", None, "N/A", []
     if bias_packet:
         d = bias_packet.data
         score = d.get("bias_score", 0)
         bias_score = score
         bias = d.get("bias_label", "unknown")
-        conf = d.get("confidence_label", "UNKNOWN")
         inval = d.get("invalidation_criteria", "N/A")
         drvs = d.get("drivers", [])
 
@@ -254,7 +253,6 @@ def _build_pair_overview(pair: str, db: Session) -> PairOverview:
         latest_ticket=latest_ticket,
         has_stale_data=has_stale,
         stale_warnings=warnings,
-        bias_confidence=conf,
         bias_drivers=drvs,
         bias_invalidation=inval,
     )

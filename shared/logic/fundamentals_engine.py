@@ -25,12 +25,6 @@ def _determine_label(score: float) -> str:
     return "NEUTRAL"
 
 
-def _determine_confidence(abs_score: float) -> str:
-    if abs_score >= 4.0:
-        return "HIGH"
-    elif abs_score >= 2.0:
-        return "MEDIUM"
-    return "LOW"
 
 
 # ── XAUUSD (Gold) Logic ──────────────────────────────────────────────────
@@ -130,7 +124,6 @@ def evaluate_xauusd(
     score = max(-5.0, min(5.0, score))
 
     label = _determine_label(score)
-    confidence = _determine_confidence(abs(score))
 
     invalidation = "Neutral proxy movement or sharp DXY reversal"
     if label == "BULLISH":
@@ -143,7 +136,6 @@ def evaluate_xauusd(
         created_at=created_at,
         bias_score=score,
         bias_label=label,
-        confidence_label=confidence,
         drivers=drivers,
         invalidation_criteria=invalidation,
         sources=["DeterministicModel_V1", "ProxyDeltas"],
@@ -233,7 +225,6 @@ def evaluate_gbpjpy(
 
     score = max(-5.0, min(5.0, score))
     label = _determine_label(score)
-    confidence = _determine_confidence(abs(score))
 
     invalidation = "Shift in broad risk sentiment (SPX reversal)"
     if label == "BULLISH":
@@ -246,7 +237,6 @@ def evaluate_gbpjpy(
         created_at=created_at,
         bias_score=score,
         bias_label=label,
-        confidence_label=confidence,
         drivers=drivers,
         invalidation_criteria=invalidation,
         sources=["DeterministicModel_V1", "ProxyDeltas"],
