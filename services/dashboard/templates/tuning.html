@@ -54,9 +54,9 @@
                                     prop.status | default('PENDING') }}</span>
                             </div>
                             <div class="text-muted text-xxs text-mono mt-1">
-                                ID: {{ prop.id }} | TARGET: {{ prop.target | upper }} | CONFIDENCE: <span
-                                    class="badge {{ 'text-confidence-high' if prop.confidence == 'HIGH' else ('text-confidence-medium' if prop.confidence == 'MEDIUM' else 'text-confidence-low') }}">
-                                    {{ prop.confidence }}</span></div>
+                                ID: {{ prop.id }} | TARGET: {{ prop.target | upper }} | CONVICTION: <span
+                                    class="badge {{ 'text-conviction-high' if prop.conviction == 'HIGH' else ('text-conviction-medium' if prop.conviction == 'MEDIUM' else 'text-conviction-low') }}">
+                                    {{ prop.conviction }}</span></div>
                         </div>
 
                         {% if not prop.status %}

@@ -13,7 +13,7 @@ def match_fill_to_ticket(
 ) -> Tuple[Optional[str], str, float]:
     """
     Attempts to match a trade fill to a ticket.
-    Returns: (ticket_id, method, confidence)
+    Returns: (ticket_id, method, match_score)
     """
 
     # 1. Deterministic Match: Comment parsing
@@ -53,7 +53,7 @@ def match_fill_to_ticket(
     )
 
     best_match = None
-    best_confidence = 0.0
+    best_match_score = 0.0
 
     for prep in possible_preps:
         ticket = prep.ticket
@@ -74,12 +74,12 @@ def match_fill_to_ticket(
 
         if price_diff <= price_tolerance:
             # Match found
-            confidence = 0.8  # Lower confidence for heuristic
-            if best_match is None or confidence > best_confidence:
+            match_score = 0.8  # Lower score for heuristic
+            if best_match is None or match_score > best_match_score:
                 best_match = ticket.ticket_id
-                best_confidence = confidence
+                best_match_score = match_score
 
     if best_match:
-        return best_match, "HEURISTIC", best_confidence
+        return best_match, "HEURISTIC", best_match_score
 
     return None, "NONE", 0.0

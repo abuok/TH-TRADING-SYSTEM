@@ -3,7 +3,7 @@
     "timestamp": "2026-02-26T13:46:00Z",
     "asset_pair": "ETH/BTC",
     "bias_score": 0.75,
-    "confidence": 0.9,
+    "conviction": "HIGH",
     "signals": [
         "golden_cross_1h",
         "oversold_rsi"

@@ -54,7 +54,7 @@ def process_trade_fill(db: Session, fill: TradeFillEvent):
     db.add(new_fill_log)
 
     # 3. Ticket Matching & Linking
-    ticket_id, method, confidence = match_fill_to_ticket(db, fill)
+    ticket_id, method, match_score = match_fill_to_ticket(db, fill)
 
     if ticket_id:
         # Link fill to ticket if not already linked for this broker_trade_id
@@ -69,7 +69,7 @@ def process_trade_fill(db: Session, fill: TradeFillEvent):
                 ticket_id=ticket_id,
                 broker_trade_id=fill.broker_trade_id,
                 match_method=method,
-                confidence=confidence,
+                match_score=match_score,
             )
             db.add(link)
 

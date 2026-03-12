@@ -18,8 +18,8 @@ class Proposal(BaseModel):
         ...,
         description="The hypothesized impact resulting from this change based on research",
     )
-    confidence: str = Field(
-        ..., description="Confidence level (e.g., HIGH, MEDIUM, LOW)"
+    conviction: str = Field(
+        ..., description="Conviction level (e.g., HIGH, MEDIUM, LOW)"
     )
     risks: str = Field(
         ..., description="Potential downsides or risks of applying the change"

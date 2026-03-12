@@ -55,7 +55,7 @@
             <div class="p-4">
                 {% if report.recommendations %}
                 {% for rec in report.recommendations %}
-                {% set conf = rec.confidence | upper %}
+                {% set conv = rec.conviction | upper %}
                 {% set card_class = 'rec-card-high' if conf == 'HIGH' else ('rec-card-medium' if conf == 'MEDIUM' else
                 'rec-card-low') %}
                 {% set conf_color = 'var(--accent-green)' if conf == 'HIGH' else ('var(--accent-yellow)' if conf ==

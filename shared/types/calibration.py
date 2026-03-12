@@ -10,7 +10,7 @@ class Recommendation(BaseModel):
     change_type: str  # e.g., "threshold", "hard_block", "regime_rule"
     proposed_change: str  # Human readable, e.g., "Increase min_setup_score to 80"
     expected_impact: str  # Expected impact summary, e.g., "Improves E[R] by +0.15R but reduces trades by 20%"
-    confidence: str  # "HIGH", "MEDIUM", "LOW"
+    conviction: str  # "HIGH", "MEDIUM", "LOW"
     rationale: str
     caveats: str
 

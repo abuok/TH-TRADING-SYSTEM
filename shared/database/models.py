@@ -331,7 +331,7 @@ class TicketTradeLink(Base):
     )
     broker_trade_id = Column(String, nullable=False, index=True)
     match_method = Column(String, nullable=False)  # COMMENT, HEURISTIC
-    confidence = Column(Float, default=1.0)
+    match_score = Column(Float, default=1.0)
     created_at = Column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )

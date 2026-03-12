@@ -589,18 +589,18 @@
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* Score Confidence */
-.text-confidence-high {
+/* Score Conviction */
+.text-conviction-high {
     color: var(--accent-green);
     font-weight: 800;
 }
 
-.text-confidence-medium {
+.text-conviction-medium {
     color: var(--accent-yellow);
     font-weight: 800;
 }
 
-.text-confidence-low {
+.text-conviction-low {
     color: var(--accent-pink);
     font-weight: 800;
 }

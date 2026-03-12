@@ -36,7 +36,7 @@ def analyze_variant(
 
     recco_id = f"rec_{uuid.uuid4().hex[:6]}"
 
-    # 1. High Confidence: Expectancy UP, Drawdown UP (towards 0), Volume Stable
+    # 1. High Conviction: Expectancy UP, Drawdown UP (towards 0), Volume Stable
     if er_delta > 0.05 and dd_delta >= 0.0 and retention >= min_volume_retention:
         return Recommendation(
             id=recco_id,
@@ -44,12 +44,12 @@ def analyze_variant(
             change_type="threshold",
             proposed_change=f"Apply configuration from variant '{variant_name}'",
             expected_impact=f"Improves expectancy by +{er_delta:.2f}R and reduces drawdown by {dd_delta:.2f}R, while retaining {retention * 100:.0f}% of trades.",
-            confidence="HIGH",
+            conviction="HIGH",
             rationale="Clear improvement in risk-adjusted returns without collapsing signal volume.",
             caveats="Ensure the historical window used is representative of current market regimes.",
         )
 
-    # 2. Medium Confidence: Win Rate UP, Expectancy Flat/Slight UP, Volume Significant Drop
+    # 2. Medium Conviction: Win Rate UP, Expectancy Flat/Slight UP, Volume Significant Drop
     if (
         win_rate_delta > 5.0
         and er_delta >= -0.05
@@ -60,14 +60,14 @@ def analyze_variant(
             id=recco_id,
             title=f"Consider {variant_name} for strict mode",
             change_type="hard_block",
-            proposed_change=f"Enable strict rules from '{variant_name}' during low confidence regimes.",
+            proposed_change=f"Enable strict rules from '{variant_name}' during low conviction regimes.",
             expected_impact=f"Boosts win rate by +{win_rate_delta:.1f}% but cuts trading volume significantly (retains {retention * 100:.0f}%).",
-            confidence="MEDIUM",
+            conviction="MEDIUM",
             rationale="Sacrifices opportunity for extreme precision. Suitable for ranging or choppy markets.",
             caveats=f"Severe volume reduction ({100 - retention * 100:.0f}% drop) may cause plateau periods.",
         )
 
-    # 3. Medium Confidence: Drawdown Significantly UP (towards 0), Expectancy Flat/Slight DOWN
+    # 3. Medium Conviction: Drawdown Significantly UP (towards 0), Expectancy Flat/Slight DOWN
     if dd_delta > 1.0 and er_delta >= -0.1 and retention >= 0.5:
         return Recommendation(
             id=recco_id,
@@ -75,7 +75,7 @@ def analyze_variant(
             change_type="threshold",
             proposed_change=f"Configure '{variant_name}' logic to arrest drawdowns.",
             expected_impact=f"Saves {dd_delta:.1f}R in max drawdown at a slight cost to expectancy ({er_delta:.2f}R).",
-            confidence="MEDIUM",
+            conviction="MEDIUM",
             rationale="Capital preservation strategy optimized for limiting tail-risk strings of losses.",
             caveats="Will filter out some winning trades.",
         )
@@ -149,9 +149,9 @@ def generate_calibration_report(
             if recco:
                 recommendations.append(recco)
 
-    # Sort recommendations by confidence
-    conf_rank = {"HIGH": 0, "MEDIUM": 1, "LOW": 2}
-    recommendations.sort(key=lambda x: conf_rank.get(x.confidence, 99))
+    # Sort recommendations by conviction
+    conv_rank = {"HIGH": 0, "MEDIUM": 1, "LOW": 2}
+    recommendations.sort(key=lambda x: conv_rank.get(x.conviction, 99))
 
     return CalibrationReport(
         report_id=report_id,

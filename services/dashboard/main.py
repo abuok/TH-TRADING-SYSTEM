@@ -68,36 +68,7 @@ def render_template(template_name: str, context: dict):
     # Fallback generic rendering for test environments missing templates
     body = f"<h1>{template_name}</h1>"
 
-    # Minimal mock output for index.html to appease tests if templates missing
-    if template_name == "index.html":
-        health = context.get("health", {})
-        kill_switches = context.get("kill_switches", [])
-        setups = context.get("latest_setups", [])
-        parts = [
-            "<h1>System Overview</h1>",
-            "System Overview",
-            " ".join(health.keys()) if isinstance(health, dict) else str(health),
-        ]
-        for ks in kill_switches:
-            parts.append(
-                f"{getattr(ks, 'switch_type', '')} {getattr(ks, 'target', None) or 'GLOBAL'}"
-            )
-        for s in setups:
-            if isinstance(s, dict):
-                label = "Stale" if not s.get("is_fresh", True) else "Fresh"
-                parts.append(f"{s.get('asset_pair', '')} {label}")
-
-        sidebar = (
-            '<aside class="sidebar">'
-            "<h4>Operations</h4>"
-            "<h4>Trading</h4>"
-            "<h4>Analytics</h4>"
-            "<h4>System</h4>"
-            '<ul class="sidebar-nav"><li>Queue</li><li>Pilot</li><li>Execution Prep</li></ul>'
-            "</aside>"
-        )
-        body = f"{sidebar} {' '.join([p for p in parts if p])}"
-    elif template_name == "theme_preview.html":
+    if template_name == "theme_preview.html":
         accents = context.get("accents", {})
         neutrals = context.get("neutrals", {})
         swatches = " ".join([*accents.values(), *neutrals.values()])
