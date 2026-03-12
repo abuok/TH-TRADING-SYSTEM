@@ -99,6 +99,7 @@ class OrderTicket(Base):
     status = Column(String, default="PENDING")  # PENDING, TAKEN, NOT_TAKEN, BLOCKED
     block_reason = Column(String, nullable=True)
     idempotency_key = Column(String, unique=True, index=True, nullable=False)
+    jit_validation_hash = Column(String, nullable=True)
     created_at = Column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
@@ -437,3 +438,17 @@ class QuoteStaleLog(Base):
     created_at = Column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
+
+class DisciplineLockout(Base):
+    __tablename__ = "discipline_lockouts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    reason = Column(String, nullable=False)
+    triggered_by_rule = Column(String, nullable=False)
+    triggered_at = Column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
+    reset_type = Column(String, nullable=False)  # CRON vs MANUAL
+    is_resolved = Column(Boolean, default=False)
+    resolved_at = Column(DateTime(timezone=True), nullable=True)
+    operator_id = Column(String, nullable=True)

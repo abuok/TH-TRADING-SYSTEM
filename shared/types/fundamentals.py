@@ -52,7 +52,8 @@ class PairFundamentalsPacket(BaseModel):
 
     bias_score: float  # -5.0 to +5.0 scale
     bias_label: str  # "BULLISH", "BEARISH", "NEUTRAL"
-    confidence_label: str  # "HIGH", "MEDIUM", "LOW"
+    is_invalidated: bool = False
+    invalidated_at: Optional[datetime] = None
 
     # Explainable drivers for dashboard and briefings
     drivers: List[BulletItem] = Field(default_factory=list)

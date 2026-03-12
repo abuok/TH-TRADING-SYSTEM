@@ -40,6 +40,7 @@ class OrderTicketSchema(BaseModel):
     status: str = "PENDING"
     block_reason: Optional[str] = None
     idempotency_key: str
+    jit_validation_hash: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     expires_at: Optional[datetime] = None
     reviewed_at: Optional[datetime] = None

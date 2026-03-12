@@ -41,7 +41,6 @@ class PairBiasPacket(BasePacket):
     bias_score: float = Field(
         ..., ge=-1.0, le=1.0, description="Bullish (+1) to Bearish (-1)"
     )
-    confidence: float = Field(..., ge=0.0, le=1.0)
     signals: List[str]
 
 
@@ -88,3 +87,11 @@ class JournalEntryPacket(BasePacket):
     message: str
     metadata: Dict[str, str] = Field(default_factory=dict)
     level: str = "INFO"
+
+
+class AlignmentDecision(BasePacket):
+    schema_version: str = "1.0.0"
+    asset_pair: str
+    is_aligned: bool
+    reason_codes: List[str] = Field(default_factory=list)
+    eval_timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
