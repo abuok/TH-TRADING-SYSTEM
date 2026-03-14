@@ -38,7 +38,7 @@ from services.research.calibration import analyze_variant, generate_calibration_
 
 def _ts(offset_hours: float = 0.0) -> datetime:
     # 08:00 UTC = 11:00 EAT (LONDON_OPEN)
-    return datetime(2025, 1, 1, 8, 0, tzinfo=timezone.utc) + timedelta(hours=offset_hours)
+    return datetime(2025, 1, 1, 8, 0, tzinfo=timezone.utc) + timedelta(minutes=15 * offset_hours)
 
 
 def _candle(open_, close, h=None, low_val=None, t=None, vol=1000.0) -> Candle:

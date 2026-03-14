@@ -84,12 +84,7 @@ class ReviewEngine:
         # 2. Discipline
         blocked_setups = (
             self.db.query(AlignmentLog)
-            .filter(AlignmentLog.created_at >= start_date, AlignmentLog.is_aligned == False)
-            .count()
-        )
-        total_alignment_checks = (
-            self.db.query(AlignmentLog)
-            .filter(AlignmentLog.created_at >= start_date)
+            .filter(AlignmentLog.created_at >= start_date, AlignmentLog.is_aligned.is_(False))
             .count()
         )
         avg_score = 0.0

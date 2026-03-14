@@ -42,7 +42,7 @@ def test_phx_bullish_progression():
     # We need at least 10 candles for sweep lookback
     prices = [95, 96, 97, 98, 99, 100, 101, 102, 103, 104]
     for i, p in enumerate(prices):
-        detector.update(create_candle(p, True, start_time + timedelta(hours=i)))
+        detector.update(create_candle(p, True, start_time + timedelta(minutes=15 * i)))
 
     assert detector.stage == PHXStage.BIAS
     assert detector.bias_direction == 1
@@ -51,10 +51,10 @@ def test_phx_bullish_progression():
     # Recent lows in the last 10: [95, 96, 97, 98, 99, 100, 101, 102, 103, 104]
     # min_low is 95.
     sweep_candle = Candle(
-        timestamp=start_time + timedelta(hours=11),
+        timestamp=start_time + timedelta(minutes=15 * 11),
         open=104,
         high=105,
-        low=94.5,  # Sweeps 95
+        low=94.0,  # Sweeps 95 (which has low=94.3)
         close=95.5,  # Closes above 95
         volume=200,
     )
@@ -62,12 +62,12 @@ def test_phx_bullish_progression():
     assert detector.stage == PHXStage.SWEEP
 
     # 3. Displace (2/3 strong green)
-    detector.update(create_candle(105, True, start_time + timedelta(hours=12)))
+    detector.update(create_candle(105, True, start_time + timedelta(minutes=15 * 12)))
     assert detector.stage == PHXStage.DISPLACE
 
     # 4. CHOCH (Break sweep high 105)
     choch_candle = Candle(
-        timestamp=start_time + timedelta(hours=13),
+        timestamp=start_time + timedelta(minutes=15 * 13),
         open=106,
         high=108,
         low=105.5,
@@ -79,7 +79,7 @@ def test_phx_bullish_progression():
 
     # 5. Retest (Pull back to 105)
     retest_candle = Candle(
-        timestamp=start_time + timedelta(hours=14),
+        timestamp=start_time + timedelta(minutes=15 * 14),
         open=107.5,
         high=107.5,
         low=104.5,  # Retest 105
@@ -90,7 +90,7 @@ def test_phx_bullish_progression():
     assert detector.stage == PHXStage.RETEST
 
     # 6. Trigger (Green candle)
-    detector.update(create_candle(107, True, start_time + timedelta(hours=15)))
+    detector.update(create_candle(107, True, start_time + timedelta(minutes=15 * 15)))
     assert detector.stage == PHXStage.TRIGGER
     assert detector.get_score() == 100
 

@@ -54,17 +54,21 @@ class AlignmentEngine:
         if pair_fundamentals.get("is_invalidated", False):
             return False
             
-        created_at_str = pair_fundamentals.get("created_at")
-        if not created_at_str:
+        created_at_val = pair_fundamentals.get("created_at")
+        if not created_at_val:
             return False
             
         try:
-            created_at = datetime.fromisoformat(created_at_str.replace('Z', '+00:00'))
+            if isinstance(created_at_val, str):
+                created_at = datetime.fromisoformat(created_at_val.replace('Z', '+00:00'))
+            else:
+                created_at = created_at_val
+                
             now_utc = datetime.now(timezone.utc)
             expiry = cfg.get("bias_expiry_minutes", 120)
             if (now_utc - created_at).total_seconds() / 60.0 > expiry:
                 return False
-        except (ValueError, TypeError):
+        except (ValueError, TypeError, AttributeError):
             return False
         return True
 

@@ -16,8 +16,8 @@ def synthetic_csv(tmp_path):
         start_time = datetime(2026, 1, 1, 10, 0, 0)
         base = 2000.0
 
-        # 1. BIAS: 3 higher highs
-        for i in range(3):
+        # 1. BIAS: 3 higher highs (needs 4 candles)
+        for i in range(4):
             writer.writerow(
                 [
                     (start_time + timedelta(minutes=15 * i)).isoformat() + "Z",
@@ -29,8 +29,8 @@ def synthetic_csv(tmp_path):
                 ]
             )
 
-        # 2. History padding to 10 candles
-        for i in range(3, 9):
+        # 2. History padding to 10 candles (already have 4, need 6 more)
+        for i in range(4, 10):
             writer.writerow(
                 [
                     (start_time + timedelta(minutes=15 * i)).isoformat() + "Z",
@@ -42,13 +42,13 @@ def synthetic_csv(tmp_path):
                 ]
             )
 
-        # 3. SWEEP: Price takes out min low (base-1)
+        # 3. SWEEP: Price takes out min low (base-1 = 1999)
         writer.writerow(
             [
-                (start_time + timedelta(minutes=15 * 9)).isoformat() + "Z",
+                (start_time + timedelta(minutes=15 * 10)).isoformat() + "Z",
                 base + 2,
                 base + 5,
-                base - 2,
+                base - 2,  # 1998
                 base + 3,
                 2000,
             ]
@@ -57,7 +57,7 @@ def synthetic_csv(tmp_path):
         # 4. DISPLACE: Bullish drive
         writer.writerow(
             [
-                (start_time + timedelta(minutes=15 * 10)).isoformat() + "Z",
+                (start_time + timedelta(minutes=15 * 11)).isoformat() + "Z",
                 base + 2,
                 base + 6,
                 base + 1,
@@ -67,7 +67,7 @@ def synthetic_csv(tmp_path):
         )
         writer.writerow(
             [
-                (start_time + timedelta(minutes=15 * 11)).isoformat() + "Z",
+                (start_time + timedelta(minutes=15 * 12)).isoformat() + "Z",
                 base + 4,
                 base + 8,
                 base + 3,
@@ -77,7 +77,7 @@ def synthetic_csv(tmp_path):
         )
         writer.writerow(
             [
-                (start_time + timedelta(minutes=15 * 12)).isoformat() + "Z",
+                (start_time + timedelta(minutes=15 * 13)).isoformat() + "Z",
                 base + 6,
                 base + 10,
                 base + 5,
@@ -86,10 +86,10 @@ def synthetic_csv(tmp_path):
             ]
         )
 
-        # 5. CHOCH_BOS: break sweep high (sweep candle high was base-2+7=base+5? wait, base+5)
+        # 5. CHOCH_BOS: break sweep high (sweep candle high was base+5 = 2005)
         writer.writerow(
             [
-                (start_time + timedelta(minutes=15 * 13)).isoformat() + "Z",
+                (start_time + timedelta(minutes=15 * 14)).isoformat() + "Z",
                 base + 4,
                 base + 15,
                 base + 3,
@@ -101,7 +101,7 @@ def synthetic_csv(tmp_path):
         # 6. RETEST
         writer.writerow(
             [
-                (start_time + timedelta(minutes=15 * 14)).isoformat() + "Z",
+                (start_time + timedelta(minutes=15 * 15)).isoformat() + "Z",
                 base + 12,
                 base + 13,
                 base + 4,
@@ -113,7 +113,7 @@ def synthetic_csv(tmp_path):
         # 7. TRIGGER
         writer.writerow(
             [
-                (start_time + timedelta(minutes=15 * 15)).isoformat() + "Z",
+                (start_time + timedelta(minutes=15 * 16)).isoformat() + "Z",
                 base + 6,
                 base + 10,
                 base + 5,
@@ -123,7 +123,7 @@ def synthetic_csv(tmp_path):
         )
 
         # 8. FUTURE (WIN)
-        for i in range(16, 25):
+        for i in range(17, 30):
             writer.writerow(
                 [
                     (start_time + timedelta(minutes=15 * i)).isoformat() + "Z",
@@ -138,7 +138,12 @@ def synthetic_csv(tmp_path):
     return str(filepath)
 
 
-def test_run_replay_integration(synthetic_csv):
+def test_run_replay_integration(synthetic_csv, monkeypatch):
+    from shared.providers.proxy import MockProxyProvider
+    # Force Bullish Gold: SPX drop + DXY drop
+    monkeypatch.setitem(MockProxyProvider.SNAPSHOTS["SPX"], "delta_pct", -0.6)
+    monkeypatch.setitem(MockProxyProvider.SNAPSHOTS["DXY"], "delta_pct", -0.2)
+    
     start_date = datetime(2026, 1, 1)
     end_date = datetime(2026, 1, 2)
 
