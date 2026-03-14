@@ -1,6 +1,7 @@
 # policy_event_heavy.yaml
 # Policy optimized for news-dense periods
 policy_name: "Event Heavy"
+terms: "PHX_V2_RESTRICTED"
 guardrails_version: "2.0.0"
 
 news_buffer_minutes: 90           # very wide buffer

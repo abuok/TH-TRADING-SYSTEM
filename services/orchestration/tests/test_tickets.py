@@ -48,14 +48,16 @@ def test_generate_ticket_success(db):
         timestamp=datetime.now(timezone.utc),
     )
 
-    ticket = generate_order_ticket(setup, risk, db, risk_usd=100.0)
+    from shared.types.packets import AlignmentDecision
+    alignment = AlignmentDecision(asset_pair="XAUUSD", is_aligned=True, reason_codes=[])
+    ticket = generate_order_ticket(setup, risk, db, risk_usd=100.0, alignment=alignment)
 
     assert ticket.pair == "XAUUSD"
     assert ticket.direction == "BUY"
     # Lot sizing for XAUUSD: Risk 100 / (Dist 10 * Factor 100) = 0.1
     assert ticket.lot_size == 0.1
     assert ticket.rr_tp1 == 3.0
-    assert ticket.status == "IN_REVIEW"
+    assert ticket.status == "PENDING"
     assert ticket.ticket_id.startswith("TKT-")
 
 

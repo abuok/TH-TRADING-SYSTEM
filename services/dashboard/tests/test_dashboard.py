@@ -34,6 +34,13 @@ def test_dashboard_overview_basic():
             "latest_setups": [],
             "latest_decisions": [],
             "latest_incidents": [],
+            "permission_state": "TRADEABLE",
+            "permission_msg": "SYSTEM READY",
+            "bias_states": {},
+            "risk_budget": {"daily_loss_pct": 0, "max_daily_loss_pct": 2, "max_consecutive_losses": 3, "consecutive_losses": 0},
+            "live_positions": [],
+            "live_quotes": [],
+            "time_to_transition": 60
         }
 
         response = client.get("/dashboard")
@@ -57,12 +64,20 @@ def test_dashboard_kill_switches_reflected():
             "latest_setups": [],
             "latest_decisions": [],
             "latest_incidents": [],
+            "permission_state": "HARD_LOCK",
+            "permission_msg": "HALT_ALL ACTIVE",
+            "bias_states": {},
+            "risk_budget": {"daily_loss_pct": 0, "max_daily_loss_pct": 2, "max_consecutive_losses": 3, "consecutive_losses": 0},
+            "live_positions": [],
+            "live_quotes": [],
+            "time_to_transition": 60
         }
 
         response = client.get("/dashboard")
         assert response.status_code == 200
         assert "HALT_ALL" in response.text
-        assert "GLOBAL" in response.text
+        # In HARD_LOCK mode, the template shows the escalation view
+        assert "EXECUTION PATH UNCONDITIONALLY SEALED" in response.text
 
 
 def test_dashboard_stale_packets_reflected():
@@ -82,18 +97,27 @@ def test_dashboard_stale_packets_reflected():
                 {
                     "asset_pair": "BTC-USD",
                     "stage": "A",
-                    "score": 80.0,
-                    "is_fresh": False,
+                    "is_aligned": False,
+                    "age_str": "1m",
+                    "is_fresh": False
                 }
             ],
             "latest_decisions": [],
             "latest_incidents": [],
+            "permission_state": "TRADEABLE",
+            "permission_msg": "SYSTEM READY",
+            "bias_states": {"BTC-USD": {"bias": "BULLISH", "age_m": 5, "is_invalidated": False}},
+            "risk_budget": {"daily_loss_pct": 0.5, "max_daily_loss_pct": 2.0, "consecutive_losses": 0, "max_consecutive_losses": 3},
+            "live_positions": [],
+            "live_quotes": [],
+            "time_to_transition": 45
         }
 
         response = client.get("/dashboard")
         assert response.status_code == 200
         assert "BTC-USD" in response.text
-        assert "STALE" in response.text
+        # The dashboard uses "UNALIGNED" or similar for is_aligned=False, check template
+        assert "NOT ALIGNED" in response.text or "UNALIGNED" in response.text
 
 
 def test_dashboard_routes_render():

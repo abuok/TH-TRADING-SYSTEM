@@ -201,10 +201,19 @@ def test_pair_overview_with_ticket(db):
 
 def test_assemble_briefing_london(db):
     """Full pack assembly for a London session with minimal seeded data."""
+    # Seed PairFundamentals for both pairs to avoid "unknown" bias
+    for pair in ["XAUUSD", "GBPJPY"]:
+        _add_packet(db, db._test_run_id, "PairFundamentalsPacket", {
+            "asset_pair": pair,
+            "bias_label": "BULLISH",
+            "bias_score": 5.0,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+    
     pack = assemble_briefing(db, now_nairobi=FIXED_NAIROBI, is_delta=False)
 
     assert isinstance(pack, BriefingPack)
-    assert pack.session_label == "LONDON"
+    assert pack.session_label == "LONDON_OPEN"
     assert pack.is_delta is False
     assert len(pack.pair_overviews) == 2
     assert any(po.pair == "XAUUSD" for po in pack.pair_overviews)
@@ -311,7 +320,7 @@ def test_persist_briefing_creates_record(db, tmp_path, monkeypatch):
         .first()
     )
     assert found is not None
-    assert found.session_label == "LONDON"
+    assert found.session_label == "LONDON_OPEN"
 
 
 # ──────────────────────────────────────────────

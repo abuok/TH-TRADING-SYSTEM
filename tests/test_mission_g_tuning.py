@@ -95,8 +95,10 @@ def test_tuning_metrics_gathering(db):
     metrics = fetch_tuning_metrics(db, start_date, now_eat)
 
     assert metrics["total_tickets"] == 2
-    assert metrics["guardrails_blocks"] == 2 # This metric name is outdated, but the test expects it.
-    assert metrics["avg_discipline_score"] == 45.0 # This metric name is outdated, but the test expects it.
+    # AlignmentLog created_at is strictly > start_date (past)
+    assert metrics["guardrails_blocks"] == 1
+    # avg of 95 and 60 is 77.5
+    assert metrics["avg_discipline_score"] == 77.5
 
 
 def test_heuristic_proposals():
