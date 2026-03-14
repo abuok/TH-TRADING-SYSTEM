@@ -18,6 +18,7 @@ from shared.logic.sessions import SessionEngine, get_nairobi_time
 class JITValidator:
     def __init__(self, lockout_config: Dict[str, Any]):
         self.lockout_engine = LockoutEngine(lockout_config)
+        self.alignment_engine = AlignmentEngine()
 
     def validate(self, db: Session, ticket: OrderTicket) -> Tuple[bool, str, str]:
         """
@@ -28,8 +29,6 @@ class JITValidator:
         now_nairobi = get_nairobi_time()
 
         # Step 1: Lockout Check
-        # We need account state for lockout engine. For now, we mock/pull recent daily loss.
-        # In a real system, this would be a fresh fetch from the Risk/Accounting service.
         account_state = {
             "daily_loss": 0.0,  # Placeholder
             "account_balance": 10000.0,  # Placeholder
@@ -49,7 +48,6 @@ class JITValidator:
             return False, "REJECTED_JIT: Market Out of Session", ""
 
         # Step 4: Alignment Check (Bias, Events, Direction)
-        # Fetch latest fundamentals and context
         pair_fund_db = db.query(Packet).filter(
             Packet.packet_type == "PairFundamentalsPacket",
             Packet.data["asset_pair"].as_string() == ticket.pair
@@ -72,11 +70,12 @@ class JITValidator:
             "take_profit": ticket.take_profit_1
         }
         
-        alignment_decision = AlignmentEngine.evaluate(
+        alignment_decision = self.alignment_engine.evaluate(
             setup_data, 
             pair_fund_db.data, 
             ctx_db.data, 
-            now_nairobi
+            db=db,
+            now_nairobi=now_nairobi
         )
         
         if not alignment_decision.is_aligned:

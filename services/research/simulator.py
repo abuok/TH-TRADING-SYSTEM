@@ -27,7 +27,7 @@ from shared.types.research import (
     ResearchVariant,
 )
 from shared.logic.fundamentals_engine import evaluate_fundamentals
-from shared.logic.guardrails import GuardrailsEngine, load_config
+from shared.logic.alignment import AlignmentEngine
 from shared.logic.policy_router import PolicyRouter
 from shared.logic.phx_detector import PHXDetector, PHXStage
 from shared.providers.proxy import MockProxyProvider

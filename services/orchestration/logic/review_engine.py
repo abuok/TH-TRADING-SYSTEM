@@ -12,7 +12,7 @@ except ModuleNotFoundError:
 from shared.database.models import (
     OrderTicket,
     HindsightOutcomeLog,
-    GuardrailsLog,
+    AlignmentLog,
     ActionItem,
     PolicySelectionLog,
 )
@@ -82,20 +82,24 @@ class ReviewEngine:
         missed_r = sum(h.realized_r for h in hindsight_logs if h.realized_r > 0)
 
         # 2. Discipline
-        violations = (
-            self.db.query(GuardrailsLog)
-            .filter(GuardrailsLog.created_at >= start_date, GuardrailsLog.hard_block)
+        blocked_setups = (
+            self.db.query(AlignmentLog)
+            .filter(AlignmentLog.created_at >= start_date, AlignmentLog.is_aligned == False)
             .count()
         )
-
+        total_alignment_checks = (
+            self.db.query(AlignmentLog)
+            .filter(AlignmentLog.created_at >= start_date)
+            .count()
+        )
         avg_score = 0.0
-        gr_logs = (
-            self.db.query(GuardrailsLog)
-            .filter(GuardrailsLog.created_at >= start_date)
+        alignment_logs = (
+            self.db.query(AlignmentLog)
+            .filter(AlignmentLog.created_at >= start_date)
             .all()
         )
-        if gr_logs:
-            avg_score = sum(log.discipline_score for log in gr_logs) / len(gr_logs)
+        if alignment_logs:
+            avg_score = sum(log.alignment_score for log in alignment_logs) / len(alignment_logs)
 
         # 3. Decision Quality
         skipped_winners = len([h for h in hindsight_logs if h.outcome_label == "WIN"])
@@ -172,7 +176,7 @@ class ReviewEngine:
             win_rate_pct=(wins / len(approved_tickets) * 100)
             if approved_tickets
             else 0.0,
-            rule_violations_count=violations,
+            rule_violations_count=blocked_setups,
             avg_guardrails_score=avg_score,
             skipped_winners=skipped_winners,
             skipped_losers=skipped_losers,
@@ -240,10 +244,10 @@ class ReviewEngine:
             return 0.0
 
         # Get avg score from guardrails logs for those setups
-        res = (
-            self.db.query(func.avg(GuardrailsLog.discipline_score))
-            .filter(GuardrailsLog.setup_packet_id.in_(setup_ids))
+        avg_discipline = (
+            self.db.query(func.avg(AlignmentLog.alignment_score))
+            .filter(AlignmentLog.setup_packet_id.in_(setup_ids))
             .scalar()
         )
 
-        return float(res) if res else 0.0
+        return float(avg_discipline) if avg_discipline else 0.0

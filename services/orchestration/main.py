@@ -17,7 +17,7 @@ import shared.database.session as db_session
 from shared.database.models import OrderTicket, Packet, SessionBriefing
 from shared.logic.trading_logic import generate_order_ticket
 from shared.logic.briefing import assemble_briefing, persist_briefing
-from shared.logic.guardrails import GuardrailsEngine
+from shared.logic.alignment import AlignmentEngine
 from shared.logic.fundamentals_engine import evaluate_fundamentals
 from shared.logic.sessions import get_nairobi_time, get_session_label, SessionEngine
 from shared.logic.notifications import NotificationService, ConsoleNotificationAdapter
@@ -41,7 +41,7 @@ logger = logging.getLogger("OrchestrationAPI")
 app = FastAPI(title="Orchestration Service API")
 notifier = NotificationService([ConsoleNotificationAdapter()])
 event_bus = EventBus()
-_guardrails_engine = GuardrailsEngine()
+_alignment_engine = AlignmentEngine()
 _policy_router = PolicyRouter()
 _task_supervisor = get_task_supervisor(timeout_seconds=30)
 _jit_validator = JITValidator(lockout_config={
@@ -532,23 +532,32 @@ async def generate_ticket(pair: str, db: Session = Depends(get_db)):
         )
     )
 
-    # Run guardrails before ticket generation
-    guardrails_result = _guardrails_engine.evaluate(
+    # Run alignment before ticket generation
+    alignment_result = _alignment_engine.evaluate(
         setup_data=setup_db.data,
+        pair_fundamentals=pair_fund_data,
         context_data=context_data,
         db=db,
         now_nairobi=get_nairobi_time(),
-        setup_packet_id=setup_db.id,
-        config_override=policy_decision.policy_config,
-        policy_hash=policy_decision.policy_hash,
     )
-    _guardrails_engine.persist(guardrails_result, db)
+    # Persist alignment result
+    from shared.database.models import AlignmentLog
+    log_record = AlignmentLog(
+        setup_packet_id=setup_db.id,
+        pair=pair,
+        alignment_score=100 if alignment_result.is_aligned else 0,
+        is_aligned=alignment_result.is_aligned,
+        primary_block_reason="; ".join(alignment_result.reason_codes) if not alignment_result.is_aligned else None,
+        result_json=alignment_result.model_dump(mode="json")
+    )
+    db.add(log_record)
+    db.commit()
 
     setup_packet = TechnicalSetupPacket(**setup_db.data)
     risk_packet = RiskApprovalPacket(**risk_db.data)
 
     ticket = generate_order_ticket(
-        setup_packet, risk_packet, db, guardrails=guardrails_result
+        setup_packet, risk_packet, db, alignment=alignment_result
     )
     metrics_registry.increment("tickets_generated_total")
     ticket.setup_packet_id = setup_db.id
@@ -574,31 +583,31 @@ async def generate_ticket(pair: str, db: Session = Depends(get_db)):
     return ticket
 
 
-@app.get("/guardrails/{setup_packet_id}")
-async def get_guardrails(
+@app.get("/alignment/{setup_packet_id}")
+async def get_alignment(
     setup_packet_id: int, db: Session = Depends(get_db)
 ) -> Dict[str, Any]:
-    """Look up the most recent guardrails result for a setup packet."""
-    from shared.database.models import GuardrailsLog
+    """Look up the most recent alignment result for a setup packet."""
+    from shared.database.models import AlignmentLog
 
     record = (
-        db.query(GuardrailsLog)
-        .filter(GuardrailsLog.setup_packet_id == setup_packet_id)
-        .order_by(GuardrailsLog.created_at.desc())
+        db.query(AlignmentLog)
+        .filter(AlignmentLog.setup_packet_id == setup_packet_id)
+        .order_by(AlignmentLog.created_at.desc())
         .first()
     )
     if not record:
         raise HTTPException(
-            status_code=404, detail="No guardrails log found for this setup"
+            status_code=404, detail="No alignment log found for this setup"
         )
     return record.result_json
 
 
-@app.post("/guardrails/evaluate")
-async def evaluate_guardrails(
+@app.post("/alignment/evaluate")
+async def evaluate_alignment(
     pair: str, db: Session = Depends(get_db)
 ) -> Dict[str, Any]:
-    """Evaluate guardrails for the latest setup of a pair without generating a ticket."""
+    """Evaluate alignment for the latest setup of a pair without generating a ticket."""
     setup_db = (
         db.query(Packet)
         .filter(
@@ -650,16 +659,25 @@ async def evaluate_guardrails(
         now_nairobi=get_nairobi_time(),
     )
 
-    result = _guardrails_engine.evaluate(
+    result = _alignment_engine.evaluate(
         setup_data=setup_db.data,
+        pair_fundamentals=pair_fund_data,
         context_data=context_data,
         db=db,
         now_nairobi=get_nairobi_time(),
-        setup_packet_id=setup_db.id,
-        config_override=policy_decision.policy_config,
-        policy_hash=policy_decision.policy_hash,
     )
-    _guardrails_engine.persist(result, db)
+    
+    from shared.database.models import AlignmentLog
+    log_record = AlignmentLog(
+        setup_packet_id=setup_db.id,
+        pair=pair,
+        alignment_score=100 if result.is_aligned else 0,
+        is_aligned=result.is_aligned,
+        primary_block_reason="; ".join(result.reason_codes) if not result.is_aligned else None,
+        result_json=result.model_dump(mode="json")
+    )
+    db.add(log_record)
+    db.commit()
     return result.model_dump(mode="json")
 
 

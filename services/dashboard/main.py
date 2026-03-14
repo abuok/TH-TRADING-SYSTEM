@@ -23,7 +23,7 @@ from shared.database.models import (
     Packet,
     IncidentLog,
     SessionBriefing,
-    GuardrailsLog,
+    AlignmentLog,
     PolicySelectionLog,
     ActionItem,
     OpsReportLog,
@@ -588,16 +588,16 @@ async def guardrails_detail(
     try:
         setup_packet_id = int(setup_id)
         record = (
-            db.query(GuardrailsLog)
-            .filter(GuardrailsLog.setup_packet_id == setup_packet_id)
-            .order_by(GuardrailsLog.created_at.desc())
+            db.query(AlignmentLog)
+            .filter(AlignmentLog.setup_packet_id == setup_packet_id)
+            .order_by(AlignmentLog.created_at.desc())
             .first()
         )
     except ValueError:
         record = (
-            db.query(GuardrailsLog)
-            .filter(GuardrailsLog.pair == setup_id)
-            .order_by(GuardrailsLog.created_at.desc())
+            db.query(AlignmentLog)
+            .filter(AlignmentLog.pair == setup_id)
+            .order_by(AlignmentLog.created_at.desc())
             .first()
         )
 

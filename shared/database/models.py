@@ -120,9 +120,9 @@ class OrderTicket(Base):
     manual_outcome_label = Column(String, nullable=True)  # WIN, LOSS, BE
     manual_screenshot_ref = Column(String, nullable=True)
 
-    guardrails_score = Column(Integer, nullable=True)  # 0–100
-    guardrails_hard_block = Column(Boolean, default=False)
-    guardrails_summary = Column(JSON, nullable=True)  # top issues list
+    alignment_score = Column(Integer, nullable=True)  # 0–100 quality metric
+    is_aligned = Column(Boolean, default=False)
+    alignment_summary = Column(JSON, nullable=True)  # top issues list
 
     hindsight_status = Column(String, default="PENDING")  # PENDING, DONE, UNAVAILABLE
     hindsight_outcome_label = Column(String, nullable=True)  # WIN, LOSS, BE, NONE
@@ -149,18 +149,18 @@ class SessionBriefing(Base):
     )
 
 
-class GuardrailsLog(Base):
-    __tablename__ = "guardrails_logs"
+class AlignmentLog(Base):
+    __tablename__ = "alignment_logs"
 
     id = Column(Integer, primary_key=True, index=True)
     setup_packet_id = Column(Integer, ForeignKey("packets.id"), nullable=True)
     ticket_id = Column(String, nullable=True)  # filled when ticket is created
     pair = Column(String, nullable=False)
-    discipline_score = Column(Integer, nullable=False)
-    hard_block = Column(Boolean, default=False)
+    alignment_score = Column(Integer, nullable=False)
+    is_aligned = Column(Boolean, default=False)
     primary_block_reason = Column(Text, nullable=True)
-    guardrails_version = Column(String, default="2.0.0")
-    result_json = Column(JSON, nullable=False)  # full GuardrailsResult JSON
+    alignment_version = Column(String, default="1.0.0")
+    result_json = Column(JSON, nullable=False)  # full AlignmentDecision JSON
     policy_name = Column(String, nullable=True)
     policy_hash = Column(String, nullable=True)
     created_at = Column(

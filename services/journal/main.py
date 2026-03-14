@@ -361,18 +361,19 @@ async def log_guardrails(payload: dict, db: Session = Depends(db_session.get_db)
     Persist a GuardrailsResult to the guardrails_logs table.
     Called by the Orchestrator after each evaluation.
     """
-    from shared.database.models import GuardrailsLog
+    from shared.database.models import AlignmentLog
 
-    record = GuardrailsLog(
-        setup_packet_id=payload.get("setup_packet_id"),
+    # In a real system, the bridge/orchestrator would send these values.
+    # We populate placeholders if they aren't provided in the event.
+    record = AlignmentLog(
+        setup_packet_id=payload.get("setup_id"),
         ticket_id=payload.get("ticket_id"),
-        pair=payload.get("pair", "UNKNOWN"),
-        discipline_score=payload.get("discipline_score", 0),
-        hard_block=payload.get("hard_block", False),
+        pair=payload.get("pair"),
+        alignment_score=payload.get("alignment_score", 100),
+        is_aligned=payload.get("is_aligned", True),
         primary_block_reason=payload.get("primary_block_reason"),
-        guardrails_version=payload.get("guardrails_version", "2.0.0"),
         result_json=payload,
     )
     db.add(record)
     db.commit()
-    return {"status": "logged", "pair": record.pair, "score": record.discipline_score}
+    return {"status": "logged", "pair": record.pair, "score": record.alignment_score}

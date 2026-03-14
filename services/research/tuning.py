@@ -7,7 +7,7 @@ from sqlalchemy import func
 
 from shared.database.models import (
     OrderTicket,
-    GuardrailsLog,
+    AlignmentLog,
     ExecutionPrepLog,
     ManagementSuggestionLog,
     PolicySelectionLog,
@@ -32,14 +32,14 @@ def fetch_tuning_metrics(
         .filter(OrderTicket.created_at.between(start_date, end_date))
         .count(),
         # Guardrails Data
-        "guardrails_blocks": db.query(GuardrailsLog)
+        "guardrails_blocks": db.query(AlignmentLog)
         .filter(
-            GuardrailsLog.created_at.between(start_date, end_date),
-            GuardrailsLog.hard_block,
+            AlignmentLog.created_at.between(start_date, end_date),
+            AlignmentLog.is_aligned == False,
         )
         .count(),
-        "avg_discipline_score": db.query(func.avg(GuardrailsLog.discipline_score))
-        .filter(GuardrailsLog.created_at.between(start_date, end_date))
+        "avg_discipline_score": db.query(func.avg(AlignmentLog.alignment_score))
+        .filter(AlignmentLog.created_at.between(start_date, end_date))
         .scalar()
         or 0.0,
         # Queue/Execution Data

@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from shared.database.models import (
     Base,
     OrderTicket,
-    GuardrailsLog,
+    AlignmentLog,
     ExecutionPrepLog,
     TuningProposalLog,
 )
@@ -70,20 +70,21 @@ def test_tuning_metrics_gathering(db):
     )
     db.add_all([t1, t2])
 
-    # 2 Guardrails Blocks
-    g1 = GuardrailsLog(
-        pair="EURUSD",
-        discipline_score=50,
-        hard_block=True,
+    # Create 2 aligned, 1 unaligned
+    # Pair fundamentals GBPCAD, GBPJPY
+    g1 = AlignmentLog(
+        pair="GBPCAD",
+        alignment_score=95,
+        is_aligned=True,
         result_json={},
-        created_at=past,
+        created_at=cutoff + timedelta(minutes=10),
     )
-    g2 = GuardrailsLog(
-        pair="GBPUSD",
-        discipline_score=40,
-        hard_block=True,
+    g2 = AlignmentLog(
+        pair="GBPJPY",
+        alignment_score=60,
+        is_aligned=False,
         result_json={},
-        created_at=past,
+        created_at=cutoff + timedelta(minutes=20),
     )
     db.add_all([g1, g2])
 
@@ -93,8 +94,8 @@ def test_tuning_metrics_gathering(db):
     metrics = fetch_tuning_metrics(db, start_date, now_eat)
 
     assert metrics["total_tickets"] == 2
-    assert metrics["guardrails_blocks"] == 2
-    assert metrics["avg_discipline_score"] == 45.0
+    assert metrics["guardrails_blocks"] == 2 # This metric name is outdated, but the test expects it.
+    assert metrics["avg_discipline_score"] == 45.0 # This metric name is outdated, but the test expects it.
 
 
 def test_heuristic_proposals():
@@ -145,19 +146,19 @@ def test_full_report_generation_integration(db):
     db.add(t1)
 
     db.add(
-        GuardrailsLog(
+        AlignmentLog(
             pair="EURUSD",
-            discipline_score=10,
-            hard_block=True,
+            alignment_score=10,
+            is_aligned=False,
             result_json={},
             created_at=past,
         )
     )
     db.add(
-        GuardrailsLog(
+        AlignmentLog(
             pair="GBPUSD",
-            discipline_score=20,
-            hard_block=True,
+            alignment_score=20,
+            is_aligned=False,
             result_json={},
             created_at=past,
         )

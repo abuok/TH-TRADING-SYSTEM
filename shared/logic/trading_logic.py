@@ -1,12 +1,11 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import uuid
 import hashlib
 from typing import Optional
 from sqlalchemy.orm import Session
 
 from shared.database.models import OrderTicket
-from shared.types.packets import TechnicalSetupPacket, RiskApprovalPacket
-from shared.types.guardrails import GuardrailsResult
+from shared.types.packets import TechnicalSetupPacket, RiskApprovalPacket, AlignmentDecision
 
 
 def generate_order_ticket(
@@ -14,16 +13,13 @@ def generate_order_ticket(
     risk: RiskApprovalPacket,
     db: Session,
     risk_usd: float = 100.0,
-    guardrails: Optional[GuardrailsResult] = None,
+    alignment: Optional[AlignmentDecision] = None,
 ) -> OrderTicket:
     """
     Generates an OrderTicket from setup and risk packets.
     Handles idempotency and lot sizing.
     """
-    # Idempotency key: hash of both packet IDs/timestamps to ensure unique pair
-    # In a real system we'd use setup.id + risk.id, but here they might be from memory
-    # so we use a combination of pair + strategy + timestamp
-    # Actually, setup has a timestamp, risk has a timestamp.
+    # Idempotency key
     raw_key = (
         f"{setup.asset_pair}_{setup.strategy_name}_{setup.timestamp}_{risk.timestamp}"
     )
@@ -51,7 +47,6 @@ def generate_order_ticket(
     block_reason = None
 
     if not spec:
-        # FAIL CLOSED: No symbol spec found for this pair
         status = "BLOCKED"
         block_reason = f"[BRIDGE] No SymbolSpec found for {setup.asset_pair}. Lot sizing impossible."
         lots = 0.0
@@ -60,41 +55,29 @@ def generate_order_ticket(
         if dist == 0:
             lots = spec.min_lot
         else:
-            # Risk/Lot = RiskUSD / (Dist * TickValue/TickSize * ContractSize??)
-            # Standard MT5 formula: Lots = RiskUSD / (StopLossDistanceInTicks * TickValue)
-            # Here dist is in price units. Ticks = dist / tick_size.
             ticks = dist / spec.tick_size
             if ticks == 0:
                 lots = spec.min_lot
             else:
-                # Formula: Risk = Lots * Ticks * TickValue
-                # => Lots = Risk / (Ticks * TickValue)
                 raw_lots = risk_usd / (ticks * spec.tick_value)
-                # Apply min_lot and lot_step
-                lots = round(max(spec.min_lot, raw_lots), 2)  # simplified rounding
-                # Ensure it's a multiple of lot_step
+                lots = round(max(spec.min_lot, raw_lots), 2)
                 remainder = lots % spec.lot_step
                 if remainder > 1e-9:
                     lots = round(lots - remainder, 2)
 
     dist = abs(setup.entry_price - setup.stop_loss)
-
-    # RR Ratios
     rr_tp1 = abs(setup.take_profit - setup.entry_price) / dist if dist > 0 else 0.0
 
-    # Status check: guardrails and risk engine logic
-    # Only update status if not already BLOCKED by bridge/missing spec
+    # Status check: alignment and risk engine logic
     if status != "BLOCKED":
-        if guardrails and guardrails.hard_block:
+        if alignment and not alignment.is_aligned:
             status = "BLOCKED"
-            block_reason = f"[GUARDRAILS] {guardrails.primary_block_reason or 'Strategy constitution violation'}"
+            block_reason = f"[ALIGNMENT] {'; '.join(alignment.reason_codes) if alignment.reason_codes else 'Strategy constitution violation'}"
         elif risk.status == "BLOCK":
             status = "BLOCKED"
             block_reason = (
                 ", ".join(risk.reasons) if risk.reasons else "Risk engine rejected."
             )
-
-    from datetime import timedelta
 
     expires_at = (
         datetime.now(timezone.utc) + timedelta(minutes=15)
@@ -102,9 +85,11 @@ def generate_order_ticket(
         else None
     )
 
+    # Note: alignment_score is left as None or a placeholder as binary alignment doesn't use it for gating.
+    # If setup quality metrics are added later, they can populate this.
     ticket = OrderTicket(
         ticket_id=f"TKT-{uuid.uuid4().hex[:8].upper()}",
-        setup_packet_id=0,  # placeholders, to be filled by caller if packets are in DB
+        setup_packet_id=0,
         risk_packet_id=0,
         pair=setup.asset_pair,
         direction=direction,
@@ -113,22 +98,19 @@ def generate_order_ticket(
         take_profit_1=setup.take_profit,
         lot_size=lots,
         risk_usd=risk_usd,
-        risk_pct=0.5,  # placeholder 0.5%
+        risk_pct=0.5,
         rr_tp1=rr_tp1,
         status=status,
         block_reason=block_reason,
         idempotency_key=idempotency_key,
         expires_at=expires_at,
-        guardrails_score=guardrails.discipline_score if guardrails else None,
-        guardrails_hard_block=guardrails.hard_block if guardrails else False,
-        guardrails_summary=[
-            {"id": i.id, "name": i.name, "status": i.status, "details": i.details}
-            for i in guardrails.top_issues
-        ]
-        if guardrails
-        else None,
-        active_policy_name=guardrails.policy_name if guardrails else None,
-        active_policy_hash=guardrails.policy_hash if guardrails else None,
+        alignment_score=100 if (alignment and alignment.is_aligned) else 0,
+        is_aligned=alignment.is_aligned if alignment else False,
+        alignment_summary=[
+            {"code": r} for r in (alignment.reason_codes if alignment else [])
+        ],
+        active_policy_name=None,
+        active_policy_hash=None,
     )
 
     db.add(ticket)
