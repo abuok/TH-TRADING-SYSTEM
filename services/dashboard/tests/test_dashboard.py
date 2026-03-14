@@ -38,7 +38,7 @@ def test_dashboard_overview_basic():
 
         response = client.get("/dashboard")
         assert response.status_code == 200
-        assert "SYSTEM ARMED" in response.text
+        assert "TRADEABLE" in response.text
 
 
 def test_dashboard_kill_switches_reflected():
