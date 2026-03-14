@@ -177,22 +177,18 @@ def run_replay(
     for variant_name, config_override in variants.items():
         variant_trades: List[SimulatedTrade] = []
 
-        # Build guardrails config (applied or overridden per variant)
-        gc = load_config()
+        # Build alignment config overrides
+        alignment_overrides = {}
         if config_override.min_setup_score is not None:
-            gc["min_setup_score"] = config_override.min_setup_score
-        if config_override.hard_block_displacement is not None:
-            gc["displacement_quality_hard_block"] = (
-                config_override.hard_block_displacement
-            )
-
+             alignment_overrides["min_setup_score"] = config_override.min_setup_score
+        
         # Policy router (if variant uses it, loads same config/policies dir as live)
         policy_router: Optional[PolicyRouter] = None
         if config_override.use_router:
             policy_router = PolicyRouter()
 
-        # Guardrails engine (same class used by live orchestration)
-        gr_engine = GuardrailsEngine()
+        # Alignment engine (same class used by live orchestration)
+        alignment_engine = AlignmentEngine()
 
         # PHX candle-by-candle state machine
         detector = PHXDetector(asset_pair=pair)
@@ -225,7 +221,7 @@ def run_replay(
             bias_score = bias_pkt.bias_score if bias_pkt else 0.0
 
             # Policy router (same loading mechanism as live)
-            policy_config = gc
+            policy_config = alignment_overrides
             policy_hash = None
             if policy_router is not None:
                 try:
@@ -240,16 +236,14 @@ def run_replay(
                 except RuntimeError as e:
                     logger.warning("PolicyRouter failed: %s — using base config.", e)
 
-            # Guardrails — same engine as live
-            gr_res = gr_engine.evaluate(
-                setup.model_dump(),
-                ctx,
-                None,
-                None,
-                current_time,
-                1,
-                config_override=policy_config if config_override.use_router else None,
-                policy_hash=policy_hash,
+            # Alignment — same engine as live
+            alignment_res = alignment_engine.evaluate(
+                setup_data=setup.model_dump(),
+                pair_fundamentals=bias_pkt.model_dump() if bias_pkt else {},
+                context_data=ctx,
+                db=None,
+                now_nairobi=current_time,
+                config_override=policy_config if config_override.use_router else alignment_overrides,
             )
 
             # Ticket sizing — same formula as generate_order_ticket() in trading_logic
@@ -277,8 +271,8 @@ def run_replay(
                 rr_tp1=rr,
                 idempotency_key=f"res_{candle.timestamp.isoformat()}_{variant_name}",
                 created_at=current_time,
-                status="BLOCKED" if gr_res.hard_block else "IN_REVIEW",
-                block_reason=gr_res.primary_block_reason,
+                status="BLOCKED" if not alignment_res.is_aligned else "IN_REVIEW",
+                block_reason="; ".join(alignment_res.reason_codes) if not alignment_res.is_aligned else None,
             )
 
             # Setup score from PHX detector (real stage-based score)
@@ -294,7 +288,7 @@ def run_replay(
                 status=ticket.status,
                 setup_score=float(setup_score),  # real PHX stage score, not hard-coded
                 bias_score=bias_score,
-                guardrails_status="FAIL" if gr_res.hard_block else "PASS",
+                guardrails_status="FAIL" if not alignment_res.is_aligned else "PASS",
                 stage=detector.stage.name,  # real PHX stage name
                 block_reason=ticket.block_reason,
             )
@@ -318,7 +312,7 @@ def run_replay(
     # Enriched reproducibility hash (includes all version components)
     result.generate_hash(
         git_commit=os.getenv("GIT_COMMIT", "HEAD"),
-        guardrails_version=gc.get("version", "unknown"),
+        guardrails_version="1.0.0-binary",
         dataset_path=csv_path,
     )
     return result
