@@ -1,89 +1,22 @@
 import pytest
 import redis
 import datetime
+import pytz
+from datetime import timezone, timedelta, time as time_
 from unittest.mock import patch
-
-from shared.messaging.event_bus import EventBus
-from shared.providers.calendar import ForexFactoryCalendarProvider
-from shared.logic.guardrails import _rule_quote_staleness
-from shared.database.models import IncidentLog, QuoteStaleLog
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
 
-
-@pytest.fixture
-def memory_db():
-    from shared.database.models import Base
-
-    engine = create_engine("sqlite:///:memory:")
-    Base.metadata.create_all(engine)
-    TestingSessionLocal = sessionmaker(bind=engine)
-    db = TestingSessionLocal()
-    yield db
-    db.close()
-
-
-def test_drill_redis_disconnect_graceful_degradation(memory_db):
-    """
-    DRILL: Redis Disconnects
-    Scenario: EventBus cannot reach Redis cluster.
-    Expected: publish() catches the ConnectionError, writes an IncidentLog, and fails gracefully without crashing the runner.
-    """
-    bus = EventBus()
-
-    # Mock the internal client to simulate total connection failure
-    with patch.object(
-        bus.client,
-        "xadd",
-        side_effect=redis.exceptions.ConnectionError("Connection refused"),
-    ):
-        # We also need to patch the sessionmaker to use our memory_db for the IncidentLog
-        with patch("shared.database.session.SessionLocal", return_value=memory_db):
-            result = bus.publish("test_stream", {"foo": "bar"}, retries=2)
-
-            # Should fail gracefully and return None
-            assert result is None
-
-            # Should have created a CRITICAL IncidentLog
-            incident = (
-                memory_db.query(IncidentLog).filter_by(component="EventBus").first()
-            )
-            assert incident is not None
-            assert incident.severity == "CRITICAL"
-            assert "Failed to publish" in incident.message
-
-
-def test_drill_mt5_bridge_latency_staleness_guardrail(memory_db):
-    """
-    DRILL: MT5 Bridge Latency
-    Scenario: MT5 is disconnected or lagging heavily, QuoteStaleLog shows > 15s latency.
-    Expected: Guardrails engine invokes the staleness rule and hard-blocks execution.
-    """
-    from datetime import timezone
-
-    pair = "XAUUSD"
-
-    # 1. Insert a simulated quote stall metric (20 seconds stale)
-    stale_log = QuoteStaleLog(
-        symbol=pair,
-import pytest
-import redis
-import datetime
-from unittest.mock import patch
-
 from shared.messaging.event_bus import EventBus
 from shared.providers.calendar import ForexFactoryCalendarProvider
-from shared.logic.guardrails import _rule_quote_staleness
 from shared.logic.alignment import AlignmentEngine
-from shared.database.models import IncidentLog, QuoteStaleLog
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from shared.database.models import IncidentLog, QuoteStaleLog, Base, ManagementSuggestionLog, OrderTicket, Run, Packet
+import uuid
 
+NAIROBI = pytz.timezone("Africa/Nairobi")
 
 @pytest.fixture
 def memory_db():
-    from shared.database.models import Base
-
     engine = create_engine("sqlite:///:memory:")
     Base.metadata.create_all(engine)
     TestingSessionLocal = sessionmaker(bind=engine)
@@ -96,7 +29,7 @@ def test_drill_redis_disconnect_graceful_degradation(memory_db):
     """
     DRILL: Redis Disconnects
     Scenario: EventBus cannot reach Redis cluster.
-    Expected: publish() catches the ConnectionError, writes an IncidentLog, and fails gracefully without crashing the runner.
+    Expected: publish() catches the ConnectionError, writes an IncidentLog, and fails gracefully.
     """
     bus = EventBus()
 
@@ -125,14 +58,12 @@ def test_drill_redis_disconnect_graceful_degradation(memory_db):
 def test_drill_mt5_bridge_latency_staleness_guardrail(memory_db):
     """
     DRILL: MT5 Bridge Latency
-    Scenario: MT5 is disconnected or lagging heavily, QuoteStaleLog shows > 15s latency.
-    Expected: Guardrails engine invokes the staleness rule and hard-blocks execution.
+    Scenario: QuoteStaleLog shows > 15s latency.
+    Expected: AlignmentEngine hard-blocks execution.
     """
-    from datetime import timezone
-
     pair = "XAUUSD"
 
-    # 1. Insert a simulated quote stall metric (20 seconds stale)
+    # 1. Insert a simulated quote stall metric (22.5 seconds stale)
     stale_log = QuoteStaleLog(
         symbol=pair,
         stale_duration_seconds=22.5,
@@ -142,9 +73,8 @@ def test_drill_mt5_bridge_latency_staleness_guardrail(memory_db):
     memory_db.commit()
 
     # 2. Evaluate the staleness rule directly
-    setup_data = {"asset_pair": pair}
-    cfg = {"quote_staleness_limit_seconds": 15.0}  # 15s limit
-    now_utc = datetime.datetime.now(datetime.timezone.utc)
+    cfg = {"quote_staleness_limit_seconds": 15.0}
+    now_utc = datetime.datetime.now(timezone.utc)
 
     engine = AlignmentEngine()
     is_ok = engine._check_quote_staleness(pair, memory_db, now_utc, cfg)
@@ -156,8 +86,7 @@ def test_drill_mt5_bridge_latency_staleness_guardrail(memory_db):
 def test_drill_missing_calendar_feed_fail_closed():
     """
     DRILL: Missing Calendar Feed
-    Scenario: The ForexFactory RSS XML stream is offline or returning 500.
-    Expected: fetch_events throws a RuntimeError instead of returning [], causing ingestion to halt and fail-closed over time due to staleness.
+    Expected: fetch_events throws a RuntimeError.
     """
     provider = ForexFactoryCalendarProvider()
 
@@ -171,26 +100,9 @@ def test_drill_missing_calendar_feed_fail_closed():
 def test_drill_db_concurrent_lock_handling(memory_db):
     """
     DRILL: DB Concurrent Locks
-    Scenario: Two inserts race on a UniqueConstraint column.
-    Expected: IntegrityError is raised and caught, no ghost row is committed.
+    Expected: IntegrityError is raised and caught.
     """
     from sqlalchemy.exc import IntegrityError
-    from shared.database.models import QuoteStaleLog
-    import datetime
-    from datetime import timezone
-
-    # Insert a QuoteStaleLog row first
-    row1 = QuoteStaleLog(
-        symbol="GBPJPY",
-        stale_duration_seconds=5.0,
-        created_at=datetime.datetime.now(timezone.utc),
-    )
-    memory_db.add(row1)
-    memory_db.commit()
-
-    # Attempt a duplicate via ManagementSuggestionLog UniqueConstraint
-    from shared.database.models import ManagementSuggestionLog, OrderTicket, Run, Packet
-    import uuid
 
     # Set up the minimum required FK chain
     run = Run(run_id=str(uuid.uuid4()), status="running")
@@ -251,42 +163,26 @@ def test_drill_db_concurrent_lock_handling(memory_db):
     with pytest.raises(IntegrityError):
         memory_db.commit()
 
-    memory_db.rollback()  # clean up for test isolation
-
 
 def test_drill_bridge_offline_no_logs_fail_closed(memory_db):
     """
     DRILL: Bridge Offline — No QuoteStaleLog records.
-    Scenario: MT5 bridge has never logged any staleness data for a pair.
-    Expected: GR-Q01 must FAIL (fail-closed), NOT pass with 0.0s staleness.
-    This is the regression test for the false-pass bug fixed in guardrails.py.
+    Expected: Must FAIL (fail-closed).
     """
-    from shared.logic.guardrails import _rule_quote_staleness
-
     pair = "GBPJPY"
-    setup_data = {"asset_pair": pair}
-    cfg = {"quote_staleness_limit_seconds": 15.0, "score_deduction_fail": 20}
-    now_utc = datetime.datetime.now(datetime.timezone.utc)
+    cfg = {"quote_staleness_limit_seconds": 15.0}
+    now_utc = datetime.datetime.now(timezone.utc)
 
-    # No QuoteStaleLog rows inserted — simulates bridge never having connected
     engine = AlignmentEngine()
     is_ok = engine._check_quote_staleness(pair, memory_db, now_utc, cfg)
 
-    assert is_ok is False, (
-        f"Alignment staleness check must FAIL when bridge is offline (no log records)."
-    )
+    assert is_ok is False
 
 
 def test_rule_news_window_midnight_crossover():
     """
     DRILL: News event at 00:30 EAT detected when current time is 23:50 EAT.
-    This is the regression test for the midnight date-boundary bug fixed in guardrails.py.
     """
-    import pytz
-    from shared.logic.alignment import AlignmentEngine
-
-    NAIROBI = pytz.timezone("Africa/Nairobi")
-
     # Simulate: current time is 23:50 EAT on Wednesday
     now = NAIROBI.localize(
         datetime.datetime(2026, 3, 4, 23, 50, 0)
@@ -300,7 +196,6 @@ def test_rule_news_window_midnight_crossover():
     }
     
     engine = AlignmentEngine()
-    # Check proximity - 40 minutes away is within [-15, +45] window
     is_ok = engine._check_event_proximity(context_data, now, engine.cfg)
     assert is_ok is False, "Should block 40m before midnight-crossing event"
 
