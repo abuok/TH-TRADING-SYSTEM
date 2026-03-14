@@ -1,11 +1,12 @@
 import logging
-from typing import List, Optional
 from datetime import datetime, timezone
+
 from sqlalchemy.orm import Session
-from shared.database.models import OrderTicket, HindsightOutcomeLog
+
+from shared.database.models import HindsightOutcomeLog, OrderTicket
+from shared.messaging.event_bus import EventBus
 from shared.types.hindsight import HindsightOutcome
 from shared.types.packets import Candle
-from shared.messaging.event_bus import EventBus
 
 logger = logging.getLogger("HindsightEngine")
 event_bus = EventBus()
@@ -33,7 +34,7 @@ def _log_hindsight_event(ticket_id: str, outcome_label: str, realized_r: float):
 
 
 def walk_forward(
-    ticket: OrderTicket, future_candles: List[Candle], max_candles: int = 1440
+    ticket: OrderTicket, future_candles: list[Candle], max_candles: int = 1440
 ) -> HindsightOutcome:
     """
     Simulates a skipped/expired ticket. If the target is not hit within max_candles (e.g. 1 day of 1m candles),
@@ -173,8 +174,8 @@ def walk_forward(
 
 
 def process_ticket_hindsight(
-    db: Session, ticket_id: str, candles: List[Candle]
-) -> Optional[HindsightOutcome]:
+    db: Session, ticket_id: str, candles: list[Candle]
+) -> HindsightOutcome | None:
     """Wraps walk_forward, persisting to DB and triggering Journal."""
     ticket = db.query(OrderTicket).filter(OrderTicket.ticket_id == ticket_id).first()
     if not ticket or ticket.hindsight_status != "PENDING":

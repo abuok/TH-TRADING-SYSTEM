@@ -1,22 +1,24 @@
+from datetime import date, datetime, timedelta, timezone
+from typing import Any
+
 import yaml
-from datetime import datetime, timedelta, date, timezone
 from sqlalchemy.orm import Session
-from typing import List, Dict, Any, Tuple
+
 from shared.database.models import (
-    OrderTicket,
     ExecutionPrepLog,
-    PilotSessionLog,
+    OrderTicket,
     PilotScorecardLog,
-    TuningProposalLog,
+    PilotSessionLog,
     QuoteStaleLog,
+    TuningProposalLog,
 )
-from shared.types.pilot import PilotSessionRecord, PilotScorecard, PairStats
+from shared.types.pilot import PairStats, PilotScorecard, PilotSessionRecord
 from shared.utils.metadata import get_system_metadata
 
 
-def load_pilot_config(path: str = "config/pilot_gate.yaml") -> Dict[str, Any]:
-    with open(path, "r") as f:
-        return yaml.safe_load(f)
+def load_pilot_config(path: str = "config/pilot_gate.yaml") -> dict[str, Any]:
+    with open(path) as f:
+        return dict(yaml.safe_load(f))
 
 
 def fetch_session_metrics(db: Session, target_date: date) -> PilotSessionRecord:
@@ -183,8 +185,8 @@ def fetch_session_metrics(db: Session, target_date: date) -> PilotSessionRecord:
 
 
 def evaluate_gate(
-    session: PilotSessionRecord, config: Dict[str, Any]
-) -> Tuple[str, List[str]]:
+    session: PilotSessionRecord, config: dict[str, Any]
+) -> tuple[str, list[str]]:
     fail_reasons = []
 
     if session.reliability_metrics.get("max_quote_stale_seconds", 0) > config.get(
@@ -261,7 +263,7 @@ def evaluate_gate(
     return "FAIL", fail_reasons
 
 
-def generate_next_week_plan(db: Session, start_date: date, end_date: date) -> List[str]:
+def generate_next_week_plan(db: Session, start_date: date, end_date: date) -> list[str]:
     plan = []
 
     # 1. Fetch relevant Tuning proposals generated in this window

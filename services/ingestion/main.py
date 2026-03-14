@@ -10,14 +10,14 @@ Provider selection:
 import asyncio
 import logging
 
-from fastapi import FastAPI, BackgroundTasks
+from fastapi import BackgroundTasks, FastAPI
 
-from shared.providers.proxy import get_proxy_provider
-from shared.providers.calendar import get_calendar_provider
-from shared.messaging.event_bus import EventBus
-from shared.types.packets import MarketContextPacket
-from shared.database.models import IncidentLog
 import shared.database.session as db_session
+from shared.database.models import IncidentLog
+from shared.messaging.event_bus import EventBus
+from shared.providers.calendar import get_calendar_provider
+from shared.providers.proxy import get_proxy_provider
+from shared.types.packets import MarketContextPacket
 
 logger = logging.getLogger("IngestionService")
 

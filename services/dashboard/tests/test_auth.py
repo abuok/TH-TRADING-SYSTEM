@@ -1,6 +1,8 @@
-from fastapi.testclient import TestClient
-from services.dashboard.main import app
 import os
+
+from fastapi.testclient import TestClient
+
+from services.dashboard.main import app
 
 client = TestClient(app)
 

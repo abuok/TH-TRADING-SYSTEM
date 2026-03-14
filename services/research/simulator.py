@@ -12,28 +12,26 @@ Pipeline parity checklist:
 """
 
 import csv
-import os
 import logging
+import os
 import uuid
 from datetime import datetime, timezone
-from typing import List, Dict, Optional
 
+from services.research.analytics import calculate_metrics
+from services.research.outcome import simulate_outcome
+from shared.logic.alignment import AlignmentEngine
+from shared.logic.fundamentals_engine import evaluate_fundamentals
+from shared.logic.phx_detector import PHXDetector, PHXStage
+from shared.logic.policy_router import PolicyRouter
+from shared.providers.proxy import MockProxyProvider
 from shared.types.packets import Candle, TechnicalSetupPacket
-from shared.types.trading import OrderTicketSchema
 from shared.types.research import (
-    SimulatedTrade,
     CounterfactualConfig,
     ResearchRunResult,
     ResearchVariant,
+    SimulatedTrade,
 )
-from shared.logic.fundamentals_engine import evaluate_fundamentals
-from shared.logic.alignment import AlignmentEngine
-from shared.logic.policy_router import PolicyRouter
-from shared.logic.phx_detector import PHXDetector, PHXStage
-from shared.providers.proxy import MockProxyProvider
-
-from services.research.outcome import simulate_outcome
-from services.research.analytics import calculate_metrics
+from shared.types.trading import OrderTicketSchema
 
 logger = logging.getLogger("ResearchSimulator")
 
@@ -41,9 +39,9 @@ logger = logging.getLogger("ResearchSimulator")
 # ── CSV Parser ────────────────────────────────────────────────────────────────
 
 
-def _parse_csv(filepath: str) -> List[Candle]:
+def _parse_csv(filepath: str) -> list[Candle]:
     candles = []
-    with open(filepath, "r") as f:
+    with open(filepath) as f:
         reader = csv.DictReader(f)
         for row in reader:
             dt = datetime.fromisoformat(row["timestamp"].replace("Z", "+00:00"))
@@ -87,7 +85,7 @@ def _emit_setup_from_detector(
     detector: PHXDetector,
     candle: Candle,
     timeframe: str,
-) -> Optional[TechnicalSetupPacket]:
+) -> TechnicalSetupPacket | None:
     """
     Convert a PHXDetector in TRIGGER state into a TechnicalSetupPacket,
     exactly mirroring how the live technical service builds setups.
@@ -145,7 +143,7 @@ def run_replay(
     timeframe: str,
     start_date: datetime,
     end_date: datetime,
-    variants: Dict[str, CounterfactualConfig],
+    variants: dict[str, CounterfactualConfig],
     risk_usd: float = 100.0,
 ) -> ResearchRunResult:
     """
@@ -175,15 +173,15 @@ def run_replay(
     ctx = _get_research_context()
 
     for variant_name, config_override in variants.items():
-        variant_trades: List[SimulatedTrade] = []
+        variant_trades: list[SimulatedTrade] = []
 
         # Build alignment config overrides
         alignment_overrides = {}
         if config_override.min_setup_score is not None:
-             alignment_overrides["min_setup_score"] = config_override.min_setup_score
-        
+            alignment_overrides["min_setup_score"] = config_override.min_setup_score
+
         # Policy router (if variant uses it, loads same config/policies dir as live)
-        policy_router: Optional[PolicyRouter] = None
+        policy_router: PolicyRouter | None = None
         if config_override.use_router:
             policy_router = PolicyRouter()
 
@@ -193,7 +191,7 @@ def run_replay(
         # PHX candle-by-candle state machine
         detector = PHXDetector(asset_pair=pair)
 
-        last_signal_time: Optional[datetime] = None
+        last_signal_time: datetime | None = None
 
         for i, candle in enumerate(valid_candles):
             detector.update(candle)
@@ -241,7 +239,9 @@ def run_replay(
                 context_data=ctx,
                 db=None,
                 now_nairobi=current_time,
-                config_override=policy_config if config_override.use_router else alignment_overrides,
+                config_override=policy_config
+                if config_override.use_router
+                else alignment_overrides,
             )
 
             # Ticket sizing — same formula as generate_order_ticket() in trading_logic
@@ -270,7 +270,9 @@ def run_replay(
                 idempotency_key=f"res_{candle.timestamp.isoformat()}_{variant_name}",
                 created_at=current_time,
                 status="BLOCKED" if not alignment_res.is_aligned else "IN_REVIEW",
-                block_reason="; ".join(alignment_res.reason_codes) if not alignment_res.is_aligned else None,
+                block_reason="; ".join(alignment_res.reason_codes)
+                if not alignment_res.is_aligned
+                else None,
             )
 
             # Setup score from PHX detector (real stage-based score)

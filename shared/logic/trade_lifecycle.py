@@ -1,16 +1,16 @@
-from sqlalchemy.orm import Session
 from sqlalchemy import and_
+from sqlalchemy.orm import Session
 
-from shared.database.models import (
-    OrderTicket,
-    TradeFillLog,
-    TicketTradeLink,
-    JournalLog,
-    IncidentLog,
-)
-from shared.types.trade_capture import TradeFillEvent
 from services.bridge.logic.matching import match_fill_to_ticket
+from shared.database.models import (
+    IncidentLog,
+    JournalLog,
+    OrderTicket,
+    TicketTradeLink,
+    TradeFillLog,
+)
 from shared.providers.symbol_spec import get_symbol_spec_provider
+from shared.types.trade_capture import TradeFillEvent
 
 
 def process_trade_fill(db: Session, fill: TradeFillEvent):

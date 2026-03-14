@@ -1,23 +1,23 @@
 import os
 import sys
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 
 os.environ["DATABASE_URL"] = "sqlite:///trading_db.sqlite"
 
 # Ensure shared is importable
 sys.path.append(os.getcwd())
 
-from shared.database.session import SessionLocal, init_db
 from shared.database.models import (
-    LiveQuote,
-    SymbolSpec,
-    Packet,
-    Run,
-    IncidentLog,
-    OrderTicket,
     HindsightOutcomeLog,
+    IncidentLog,
+    LiveQuote,
+    OrderTicket,
+    Packet,
     PolicySelectionLog,
+    Run,
+    SymbolSpec,
 )
+from shared.database.session import SessionLocal, init_db
 
 
 def seed():

@@ -4,7 +4,8 @@ Pydantic schema for the /incidents/log endpoint request body.
 Mirrors the IncidentLog database model fields.
 """
 
-from typing import Optional, Dict, Any
+from typing import Any
+
 from pydantic import BaseModel
 
 
@@ -13,6 +14,6 @@ class IncidentSchema(BaseModel):
 
     severity: str  # INFO, WARNING, ERROR, CRITICAL
     component: str
-    error_code: Optional[str] = None
+    error_code: str | None = None
     message: str
-    context: Optional[Dict[str, Any]] = None
+    context: dict[str, Any] | None = None

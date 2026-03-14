@@ -8,20 +8,20 @@ News-window check (check #5):
 """
 
 import logging
-import yaml
 from datetime import datetime
-from typing import List, Optional
 
-from shared.database.models import KillSwitch, OrderTicket, Packet, IncidentLog
-from shared.types.execution_prep import PreflightCheck
+import yaml
+
+from shared.database.models import IncidentLog, KillSwitch, OrderTicket, Packet
 from shared.logic.sessions import get_nairobi_time
+from shared.types.execution_prep import PreflightCheck
 
 logger = logging.getLogger("PreflightEngine")
 
 
 def load_exec_config() -> dict:
     try:
-        with open("config/execution_prep.yaml", "r") as f:
+        with open("config/execution_prep.yaml") as f:
             return yaml.safe_load(f) or {}
     except FileNotFoundError:
         logger.warning("execution_prep.yaml not found — using defaults.")
@@ -56,10 +56,10 @@ class PreflightEngine:
     def run_checks(
         self,
         ticket: OrderTicket,
-        current_price: Optional[float] = None,
-        current_spread: Optional[float] = None,
-    ) -> List[PreflightCheck]:
-        checks: List[PreflightCheck] = []
+        current_price: float | None = None,
+        current_spread: float | None = None,
+    ) -> list[PreflightCheck]:
+        checks: list[PreflightCheck] = []
         now = get_nairobi_time()
 
         # Fetch live data if not provided

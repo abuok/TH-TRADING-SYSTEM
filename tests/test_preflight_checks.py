@@ -1,10 +1,12 @@
-import pytest
 from datetime import timedelta
-from shared.database.models import OrderTicket, KillSwitch
+
+import pytest
+from sqlalchemy.orm import Session
+
+from shared.database.models import KillSwitch, OrderTicket
+from shared.database.session import get_db
 from shared.logic.execution_logic import PreflightEngine
 from shared.logic.sessions import get_nairobi_time
-from sqlalchemy.orm import Session
-from shared.database.session import get_db
 
 
 @pytest.fixture

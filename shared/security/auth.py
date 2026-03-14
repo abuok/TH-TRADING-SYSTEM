@@ -4,13 +4,13 @@ JWT-based API authentication for service-to-service communication.
 Provides token generation, validation, and FastAPI dependency injection.
 """
 
-import jwt
 from datetime import datetime, timedelta, timezone
-from typing import Optional, Dict, Any
 from functools import lru_cache
+from typing import Any
 
+import jwt
 from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthCredentials
+from fastapi.security import HTTPAuthCredentials, HTTPBearer
 
 from .secrets_manager import get_secrets_manager
 
@@ -18,7 +18,7 @@ from .secrets_manager import get_secrets_manager
 class JWTAuthenticator:
     """JWT token generation and validation."""
 
-    def __init__(self, secret_key: Optional[str] = None, algorithm: str = "HS256"):
+    def __init__(self, secret_key: str | None = None, algorithm: str = "HS256"):
         """Initialize JWT authenticator.
 
         Args:
@@ -39,7 +39,7 @@ class JWTAuthenticator:
         subject: str,
         service: str,
         expires_in_minutes: int = 60,
-        additional_claims: Optional[Dict[str, Any]] = None,
+        additional_claims: dict[str, Any] | None = None,
     ) -> str:
         """Create a JWT token.
 
@@ -64,9 +64,9 @@ class JWTAuthenticator:
             to_encode.update(additional_claims)
 
         encoded_jwt = jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
-        return encoded_jwt
+        return str(encoded_jwt)
 
-    def verify_token(self, token: str) -> Dict[str, Any]:
+    def verify_token(self, token: str) -> dict[str, Any]:
         """Verify and decode a JWT token.
 
         Args:
@@ -80,15 +80,15 @@ class JWTAuthenticator:
         """
         try:
             payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
-            return payload
-        except jwt.ExpiredSignatureError:
-            raise ValueError("Token has expired")
+            return dict(payload)
+        except jwt.ExpiredSignatureError as e:
+            raise ValueError("Token has expired") from e
         except jwt.InvalidTokenError as e:
-            raise ValueError(f"Invalid token: {e}")
+            raise ValueError(f"Invalid token: {e}") from e
 
     def verify_service_token(
-        self, token: str, allowed_services: Optional[list] = None
-    ) -> Dict[str, Any]:
+        self, token: str, allowed_services: list | None = None
+    ) -> dict[str, Any]:
         """Verify token and optionally check service authorization.
 
         Args:
@@ -115,7 +115,7 @@ security = HTTPBearer()
 
 async def verify_api_token(
     credentials: HTTPAuthCredentials = Depends(security),
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """FastAPI dependency to verify JWT token in Authorization header.
 
     Usage:
@@ -138,7 +138,7 @@ async def verify_api_token(
 async def verify_service_token(
     service_name: str,
     credentials: HTTPAuthCredentials = Depends(security),
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """FastAPI dependency to verify token from specific service.
 
     Usage:

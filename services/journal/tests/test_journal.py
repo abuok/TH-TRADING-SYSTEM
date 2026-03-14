@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+
 from services.journal.main import app
 
 # The conftest.py already handles engine/SessionLocal/Base.metadata.create_all

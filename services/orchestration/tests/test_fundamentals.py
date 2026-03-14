@@ -1,8 +1,9 @@
 from datetime import datetime
+
 from shared.logic.fundamentals_engine import (
     evaluate_fundamentals,
-    evaluate_xauusd,
     evaluate_gbpjpy,
+    evaluate_xauusd,
 )
 from shared.types.fundamentals import ProxySnapshot
 

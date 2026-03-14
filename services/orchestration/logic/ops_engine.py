@@ -1,7 +1,8 @@
 import os
 from datetime import datetime, timedelta
-from sqlalchemy.orm import Session
+
 from sqlalchemy import func
+from sqlalchemy.orm import Session
 
 try:
     import jinja2
@@ -9,14 +10,14 @@ except ModuleNotFoundError:
     jinja2 = None
 
 from shared.database.models import (
+    HindsightOutcomeLog,
     IncidentLog,
     OrderTicket,
-    PolicySelectionLog,
-    HindsightOutcomeLog,
     Packet,
+    PolicySelectionLog,
 )
-from shared.types.ops import DailyOpsReport, HindsightSummary
 from shared.logic.sessions import get_nairobi_time
+from shared.types.ops import DailyOpsReport, HindsightSummary
 
 TEMPLATE_DIR = "services/dashboard/templates"
 OUTPUT_DIR = "artifacts/ops/daily"

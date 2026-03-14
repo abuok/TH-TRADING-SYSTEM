@@ -4,34 +4,33 @@ Session Briefing Pack assembly, HTML rendering, and artifact persistence.
 All times use Africa/Nairobi (UTC+3).
 """
 
+import logging
 import os
 import uuid
-import logging
 from datetime import datetime, timezone
-from typing import List, Optional, Dict
 
 import pytz
 from sqlalchemy.orm import Session
 
 from shared.database.models import (
-    Packet,
-    KillSwitch,
     IncidentLog,
+    KillSwitch,
     OrderTicket,
+    Packet,
     SessionBriefing,
 )
 from shared.logic.sessions import get_session_label
 from shared.types.briefing import (
     BriefingPack,
-    SystemStatus,
+    DeltaSection,
     MarketContextSummary,
+    OperatorAction,
     PairOverview,
     RiskBudget,
-    OperatorAction,
-    DeltaSection,
     SetupSummary,
-    TicketSummary,
     StaleWarning,
+    SystemStatus,
+    TicketSummary,
     nairobi_now,
 )
 
@@ -128,7 +127,7 @@ def _build_market_context(db: Session) -> MarketContextSummary:
 
 def _build_pair_overview(pair: str, db: Session) -> PairOverview:
     """Build per-pair overview: bias, levels, setups, latest ticket."""
-    warnings: List[StaleWarning] = []
+    warnings: list[StaleWarning] = []
     has_stale = False
 
     # ── Bias (from Fundamentals) ──────────────────────────────────────
@@ -165,7 +164,7 @@ def _build_pair_overview(pair: str, db: Session) -> PairOverview:
         )
 
     # ── Key levels (from latest market context or setup levels) ───────
-    key_levels: Dict[str, float] = {}
+    key_levels: dict[str, float] = {}
     ctx_packet = (
         db.query(Packet)
         .filter(
@@ -201,8 +200,8 @@ def _build_pair_overview(pair: str, db: Session) -> PairOverview:
         .all()
     )
 
-    stage_counts: Dict[str, int] = {}
-    top_setups: List[SetupSummary] = []
+    stage_counts: dict[str, int] = {}
+    top_setups: list[SetupSummary] = []
     for sp in setup_packets:
         stage = sp.data.get("stage", sp.data.get("strategy_name", "UNKNOWN"))
         stage_counts[stage] = stage_counts.get(stage, 0) + 1
@@ -261,9 +260,9 @@ def _build_pair_overview(pair: str, db: Session) -> PairOverview:
 def _build_operator_actions(
     system: SystemStatus,
     market: MarketContextSummary,
-    pairs: List[PairOverview],
-) -> List[OperatorAction]:
-    actions: List[OperatorAction] = []
+    pairs: list[PairOverview],
+) -> list[OperatorAction]:
+    actions: list[OperatorAction] = []
 
     if system.active_kill_switches:
         actions.append(
@@ -343,7 +342,7 @@ def _build_operator_actions(
 
 def _build_delta(
     db: Session, now_nairobi: datetime, session_label: str
-) -> Optional[DeltaSection]:
+) -> DeltaSection | None:
     """Compare with the most recent previous briefing for the same session."""
     today = now_nairobi.date()
     prev = (
@@ -408,7 +407,7 @@ def _build_delta(
 
 def assemble_briefing(
     db: Session,
-    now_nairobi: Optional[datetime] = None,
+    now_nairobi: datetime | None = None,
     is_delta: bool = False,
 ) -> BriefingPack:
     """
@@ -429,7 +428,7 @@ def assemble_briefing(
     delta = _build_delta(db, now_nairobi, session_label) if is_delta else None
 
     # Global warnings
-    global_warnings: List[str] = []
+    global_warnings: list[str] = []
     if system.active_kill_switches:
         global_warnings.append(
             f"⚠ KILL SWITCHES ACTIVE: {', '.join(system.active_kill_switches)}"

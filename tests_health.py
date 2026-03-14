@@ -1,6 +1,7 @@
-from fastapi.testclient import TestClient
-import sys
 import os
+import sys
+
+from fastapi.testclient import TestClient
 
 
 # Add service directory to path for testing

@@ -1,6 +1,8 @@
 from datetime import datetime
-from typing import List, Dict, Any
+from typing import Any
+
 from pydantic import BaseModel, Field
+
 from shared.types.research import SystemMetadata
 
 
@@ -18,7 +20,7 @@ class Recommendation(BaseModel):
 class CalibrationReport(BaseModel):
     report_id: str
     created_at: datetime
-    run_ids: List[str]
+    run_ids: list[str]
     pair: str
     timeframe: str
     date_range: str
@@ -27,11 +29,11 @@ class CalibrationReport(BaseModel):
     baseline_policy_hash: str
 
     # Selected recommendations logic outputs
-    recommendations: List[Recommendation] = Field(default_factory=list)
+    recommendations: list[Recommendation] = Field(default_factory=list)
 
     # Data tables to back up the recommendations
     # Format: dict of dicts e.g., {"Metrics": {"Baseline": ..., "Variant_A": ...}}
-    evidence_tables: Dict[str, Any] = Field(default_factory=dict)
+    evidence_tables: dict[str, Any] = Field(default_factory=dict)
     reproducibility: SystemMetadata = Field(
         ..., description="Version and commit information"
     )

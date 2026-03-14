@@ -1,7 +1,9 @@
 from datetime import datetime, timedelta
+
 import pytz
-from shared.types.packets import Candle
+
 from shared.logic.phx_detector import PHXDetector, PHXStage
+from shared.types.packets import Candle
 
 
 def create_candle(
@@ -37,7 +39,7 @@ def test_phx_bullish_progression():
     # Use a fixed time in LONDON_OPEN (11:00 EAT) to ensure session gating doesn't block transitions
     nairobi_tz = pytz.timezone("Africa/Nairobi")
     start_time = datetime(2026, 3, 3, 11, 0, tzinfo=nairobi_tz)
-    
+
     # 1. Initialization + Bias (3 higher highs)
     # We need at least 10 candles for sweep lookback
     prices = [95, 96, 97, 98, 99, 100, 101, 102, 103, 104]

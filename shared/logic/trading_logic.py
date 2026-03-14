@@ -1,11 +1,15 @@
-from datetime import datetime, timezone, timedelta
-import uuid
 import hashlib
-from typing import Optional
+import uuid
+from datetime import datetime, timedelta, timezone
+
 from sqlalchemy.orm import Session
 
 from shared.database.models import OrderTicket
-from shared.types.packets import TechnicalSetupPacket, RiskApprovalPacket, AlignmentDecision
+from shared.types.packets import (
+    AlignmentDecision,
+    RiskApprovalPacket,
+    TechnicalSetupPacket,
+)
 
 
 def generate_order_ticket(
@@ -13,7 +17,7 @@ def generate_order_ticket(
     risk: RiskApprovalPacket,
     db: Session,
     risk_usd: float = 100.0,
-    alignment: Optional[AlignmentDecision] = None,
+    alignment: AlignmentDecision | None = None,
 ) -> OrderTicket:
     """
     Generates an OrderTicket from setup and risk packets.

@@ -1,12 +1,13 @@
 """Health check utilities for services."""
 
-from typing import Dict, Any
 from datetime import datetime
-from sqlalchemy.orm import Session
+from typing import Any
+
 from sqlalchemy import text
+from sqlalchemy.orm import Session
 
 
-async def health_check(db: Session = None) -> Dict[str, Any]:
+async def health_check(db: Session = None) -> dict[str, Any]:
     """Get comprehensive health status of the service.
 
     Args:

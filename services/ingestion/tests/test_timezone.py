@@ -1,5 +1,7 @@
-import pytz
 from datetime import datetime, timedelta
+
+import pytz
+
 from services.ingestion.calendar import EconomicCalendar
 
 

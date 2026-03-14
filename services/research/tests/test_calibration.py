@@ -1,11 +1,12 @@
 from datetime import datetime
-from shared.types.research import (
-    ResearchMetrics,
-    CounterfactualConfig,
-    ResearchVariant,
-    ResearchRunResult,
-)
+
 from services.research.calibration import analyze_variant, generate_calibration_report
+from shared.types.research import (
+    CounterfactualConfig,
+    ResearchMetrics,
+    ResearchRunResult,
+    ResearchVariant,
+)
 
 
 def test_analyze_variant_high_conviction():

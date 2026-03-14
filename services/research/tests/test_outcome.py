@@ -1,8 +1,10 @@
-import pytest
 from datetime import datetime
-from shared.types.research import SimulatedTrade
-from shared.types.packets import Candle
+
+import pytest
+
 from services.research.outcome import simulate_outcome
+from shared.types.packets import Candle
+from shared.types.research import SimulatedTrade
 
 
 @pytest.fixture

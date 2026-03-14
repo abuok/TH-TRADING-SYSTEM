@@ -1,10 +1,9 @@
-from typing import List
 from shared.types.packets import Candle
 from shared.types.research import SimulatedTrade
 
 
 def simulate_outcome(
-    trade: SimulatedTrade, future_candles: List[Candle], be_trigger_r: float = 1.0
+    trade: SimulatedTrade, future_candles: list[Candle], be_trigger_r: float = 1.0
 ) -> SimulatedTrade:
     """
     Deterministically walk forward candle by candle to resolve the trade outcome.

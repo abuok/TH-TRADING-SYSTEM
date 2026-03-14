@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class SessionState(str, Enum):
     PRE_SESSION = "PRE_SESSION"
     LONDON_OPEN = "LONDON_OPEN"
@@ -9,6 +10,7 @@ class SessionState(str, Enum):
     ASIA_SESSION = "ASIA_SESSION"
     OUT_OF_SESSION = "OUT_OF_SESSION"
 
+
 class BiasState(str, Enum):
     ACTIVE = "ACTIVE"
     STALE = "STALE"
@@ -16,14 +18,17 @@ class BiasState(str, Enum):
     EXPIRED = "EXPIRED"
     INVALIDATED = "INVALIDATED"
 
+
 class AlignmentState(str, Enum):
     ALIGNED = "ALIGNED"
     UNALIGNED = "UNALIGNED"
+
 
 class LockoutState(str, Enum):
     TRADEABLE = "TRADEABLE"
     SOFT_LOCK = "SOFT_LOCK"
     HARD_LOCK = "HARD_LOCK"
+
 
 class TicketState(str, Enum):
     PENDING = "PENDING"
@@ -32,6 +37,7 @@ class TicketState(str, Enum):
     REJECTED_BROKER = "REJECTED_BROKER"
     REJECTED_JIT = "REJECTED_JIT"
     EXPIRED = "EXPIRED"
+
 
 class PHXStage(str, Enum):
     IDLE = "IDLE"

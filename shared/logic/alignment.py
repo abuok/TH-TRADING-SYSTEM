@@ -1,19 +1,21 @@
-import os
-import yaml
 import logging
-from datetime import datetime, timedelta, timezone, time as time_
-from typing import Dict, Any, Optional
+import os
+from datetime import datetime, timedelta, timezone
+from datetime import time as time_
+from typing import Any
 
 import pytz
-from sqlalchemy.orm import Session
+import yaml
 from sqlalchemy import func
+from sqlalchemy.orm import Session
 
+from shared.logic.sessions import SessionEngine, get_nairobi_time
 from shared.types.enums import SessionState
 from shared.types.packets import AlignmentDecision
-from shared.logic.sessions import SessionEngine, get_nairobi_time
 
 NAIROBI = pytz.timezone("Africa/Nairobi")
 logger = logging.getLogger("AlignmentEngine")
+
 
 class AlignmentEngine:
     """
@@ -22,24 +24,26 @@ class AlignmentEngine:
     Incorporate key safety rules formerly in Guardrails.
     """
 
-    def __init__(self, config_path: str = os.path.join("config", "alignment_config.yaml")):
+    def __init__(
+        self, config_path: str = os.path.join("config", "alignment_config.yaml")
+    ):
         self.cfg = self._load_config(config_path)
         logger.info("AlignmentEngine initialized with binary constitutional rules.")
 
-    def _load_config(self, path: str) -> Dict[str, Any]:
-        cfg: Dict[str, Any] = {}
+    def _load_config(self, path: str) -> dict[str, Any]:
+        cfg: dict[str, Any] = {}
         if os.path.exists(path):
             try:
                 with open(path, encoding="utf-8") as f:
                     cfg = yaml.safe_load(f) or {}
             except Exception as e:
                 logger.error(f"Failed to load alignment config: {e}")
-        
+
         # Defaults
         cfg.setdefault("news_window", [-15.0, 45.0])
         cfg.setdefault("bias_expiry_minutes", 120)
         cfg.setdefault("quote_staleness_limit_seconds", 15.0)
-        cfg.setdefault("eod_gap_minutes", [-5, 10]) # 23:55 to 00:10
+        cfg.setdefault("eod_gap_minutes", [-5, 10])  # 23:55 to 00:10
         return cfg
 
     @staticmethod
@@ -50,20 +54,24 @@ class AlignmentEngine:
             return True
         return False
 
-    def _check_bias_state(self, pair_fundamentals: Dict[str, Any], cfg: Dict[str, Any], now_utc: datetime) -> bool:
+    def _check_bias_state(
+        self, pair_fundamentals: dict[str, Any], cfg: dict[str, Any], now_utc: datetime
+    ) -> bool:
         if pair_fundamentals.get("is_invalidated", False):
             return False
-            
+
         created_at_val = pair_fundamentals.get("created_at")
         if not created_at_val:
             return False
-            
+
         try:
             if isinstance(created_at_val, str):
-                created_at = datetime.fromisoformat(created_at_val.replace('Z', '+00:00'))
+                created_at = datetime.fromisoformat(
+                    created_at_val.replace("Z", "+00:00")
+                )
             else:
                 created_at = created_at_val
-                
+
             expiry = cfg.get("bias_expiry_minutes", 120)
             if (now_utc - created_at).total_seconds() / 60.0 > expiry:
                 return False
@@ -71,10 +79,12 @@ class AlignmentEngine:
             return False
         return True
 
-    def _check_event_proximity(self, context_data: Dict[str, Any], now_nairobi: datetime, cfg: Dict[str, Any]) -> bool:
+    def _check_event_proximity(
+        self, context_data: dict[str, Any], now_nairobi: datetime, cfg: dict[str, Any]
+    ) -> bool:
         events = context_data.get("high_impact_events", [])
         window = cfg.get("news_window", [-15.0, 45.0])
-        
+
         for ev in events:
             time_str = ev.get("time")
             if not time_str:
@@ -83,9 +93,13 @@ class AlignmentEngine:
                 candidates = [now_nairobi.date()]
                 if int(time_str.split(":")[0]) < 6:
                     candidates.append(now_nairobi.date() + timedelta(days=1))
-                
+
                 for d in candidates:
-                    ev_dt = NAIROBI.localize(datetime.strptime(f"{d.isoformat()} {time_str}", "%Y-%m-%d %H:%M"))
+                    ev_dt = NAIROBI.localize(
+                        datetime.strptime(
+                            f"{d.isoformat()} {time_str}", "%Y-%m-%d %H:%M"
+                        )
+                    )
                     diff = (ev_dt - now_nairobi).total_seconds() / 60.0
                     if window[0] <= diff <= window[1]:
                         return False
@@ -93,69 +107,82 @@ class AlignmentEngine:
                 continue
         return True
 
-    def _check_eod_gap(self, now_nairobi: datetime, cfg: Dict[str, Any]) -> bool:
+    def _check_eod_gap(self, now_nairobi: datetime, cfg: dict[str, Any]) -> bool:
         t = now_nairobi.time()
         # Block 23:55 - 00:10
         if t >= time_(23, 55) or t <= time_(0, 10):
             return False
         return True
 
-    def _check_quote_staleness(self, asset_pair: str, db: Session, now_utc: datetime, cfg: Dict[str, Any]) -> bool:
+    def _check_quote_staleness(
+        self, asset_pair: str, db: Session, now_utc: datetime, cfg: dict[str, Any]
+    ) -> bool:
         from shared.database.models import QuoteStaleLog
+
         limit = cfg.get("quote_staleness_limit_seconds", 15.0)
         cutoff = now_utc - timedelta(minutes=2)
-        
+
         # Max staleness in last 2 mins
-        max_stale = db.query(func.max(QuoteStaleLog.stale_duration_seconds)).filter(
-            QuoteStaleLog.symbol == asset_pair,
-            QuoteStaleLog.created_at >= cutoff
-        ).scalar()
-        
+        max_stale = (
+            db.query(func.max(QuoteStaleLog.stale_duration_seconds))
+            .filter(
+                QuoteStaleLog.symbol == asset_pair, QuoteStaleLog.created_at >= cutoff
+            )
+            .scalar()
+        )
+
         if max_stale is None:
             return False
-        return float(max_stale) <= limit
+        return bool(float(max_stale) <= limit)
 
     def evaluate(
         self,
-        setup_data: Dict[str, Any],
-        pair_fundamentals: Dict[str, Any],
-        context_data: Dict[str, Any],
-        db: Optional[Session] = None,
-        now_nairobi: Optional[datetime] = None,
-        config_override: Optional[Dict[str, Any]] = None
+        setup_data: dict[str, Any],
+        pair_fundamentals: dict[str, Any],
+        context_data: dict[str, Any],
+        db: Session | None = None,
+        now_nairobi: datetime | None = None,
+        config_override: dict[str, Any] | None = None,
     ) -> AlignmentDecision:
         now_nairobi = now_nairobi or get_nairobi_time()
         now_utc = now_nairobi.astimezone(timezone.utc)
         asset_pair = setup_data.get("asset_pair", "UNKNOWN")
-        
+
         # Merge config
         effective_cfg = self.cfg.copy()
         if config_override:
             effective_cfg.update(config_override)
-        
+
         tp = float(setup_data.get("take_profit", 0))
         ep = float(setup_data.get("entry_price", 1))
         setup_dir = "BUY" if tp > ep else "SELL"
         bias_score = float(pair_fundamentals.get("bias_score", 0))
-        
+
         results = {
             "Direction": self._check_bias_direction(setup_dir, bias_score),
-            "BiasState": self._check_bias_state(pair_fundamentals, effective_cfg, now_utc),
-            "Events": self._check_event_proximity(context_data, now_nairobi, effective_cfg),
-            "Session": SessionState(SessionEngine.get_session_state(now_nairobi, asset_pair)) != SessionState.OUT_OF_SESSION,
-            "EOD_Gap": self._check_eod_gap(now_nairobi, effective_cfg)
+            "BiasState": self._check_bias_state(
+                pair_fundamentals, effective_cfg, now_utc
+            ),
+            "Events": self._check_event_proximity(
+                context_data, now_nairobi, effective_cfg
+            ),
+            "Session": SessionState(
+                SessionEngine.get_session_state(now_nairobi, asset_pair)
+            )
+            != SessionState.OUT_OF_SESSION,
+            "EOD_Gap": self._check_eod_gap(now_nairobi, effective_cfg),
         }
-        
+
         if db:
-            results["Staleness"] = self._check_quote_staleness(asset_pair, db, now_utc, effective_cfg)
-        
+            results["Staleness"] = self._check_quote_staleness(
+                asset_pair, db, now_utc, effective_cfg
+            )
+
         is_aligned = all(results.values())
         reasons = [f"FAILED: {k}" for k, v in results.items() if not v]
         if is_aligned:
             reasons = ["All binary alignment checks passed."]
-        
+
         return AlignmentDecision(
-            asset_pair=asset_pair,
-            is_aligned=is_aligned,
-            reason_codes=reasons
+            asset_pair=asset_pair, is_aligned=is_aligned, reason_codes=reasons
         )

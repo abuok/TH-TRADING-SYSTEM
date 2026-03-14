@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, List, Optional
+
 from pydantic import BaseModel, Field
 
 # ──────────────────────────────────────────────
@@ -16,8 +16,8 @@ class BulletItem(BaseModel):
 class ProxySnapshot(BaseModel):
     symbol: str
     current_value: float
-    previous_value: Optional[float] = None
-    delta_pct: Optional[float] = None
+    previous_value: float | None = None
+    delta_pct: float | None = None
 
 
 # ──────────────────────────────────────────────
@@ -32,13 +32,13 @@ class MarketMoversPacket(BaseModel):
     ttl_seconds: int = 1800  # Default 30 minutes
 
     # Core proxy data that drives models
-    proxies: Dict[str, ProxySnapshot] = Field(default_factory=dict)
+    proxies: dict[str, ProxySnapshot] = Field(default_factory=dict)
 
     # Qualitative / event-driven context
-    sentiment_flags: List[str] = Field(
+    sentiment_flags: list[str] = Field(
         default_factory=list
     )  # e.g. ["RISK_OFF", "HAWKISH_FED"]
-    sources: List[str] = Field(
+    sources: list[str] = Field(
         default_factory=list
     )  # "MockProxyProvider", "EconomicCalendar"
 
@@ -53,10 +53,10 @@ class PairFundamentalsPacket(BaseModel):
     bias_score: float  # -5.0 to +5.0 scale
     bias_label: str  # "BULLISH", "BEARISH", "NEUTRAL"
     is_invalidated: bool = False
-    invalidated_at: Optional[datetime] = None
+    invalidated_at: datetime | None = None
 
     # Explainable drivers for dashboard and briefings
-    drivers: List[BulletItem] = Field(default_factory=list)
+    drivers: list[BulletItem] = Field(default_factory=list)
     invalidation_criteria: str  # What proxy movement would flip the bias
 
-    sources: List[str] = Field(default_factory=list)  # "DeterministicModel_V1"
+    sources: list[str] = Field(default_factory=list)  # "DeterministicModel_V1"

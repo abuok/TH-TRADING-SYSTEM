@@ -4,16 +4,16 @@ CLI for running research simulations and comparing policies.
 """
 
 import argparse
-import sys
 import os
+import sys
 from datetime import datetime, timedelta
 
 # Ensure root is in path
 sys.path.append(os.getcwd())
 
-from shared.types.research import CounterfactualConfig
-from services.research.simulator import run_replay
 from services.research.reporting import generate_research_report
+from services.research.simulator import run_replay
+from shared.types.research import CounterfactualConfig
 
 
 def compare_router(csv_path: str, pair: str, start_days: int):

@@ -5,35 +5,35 @@ Orchestration Service API — tickets + briefings.
 
 # ruff: noqa: E402  # delayed imports/path setup required in this module
 import asyncio
-import os
 import logging
-from fastapi import FastAPI, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
-from sqlalchemy import and_
-from typing import List, Optional, Dict, Any
+import os
 from datetime import datetime
+from typing import Any
+
+from fastapi import Depends, FastAPI, HTTPException, Query
+from sqlalchemy import and_
+from sqlalchemy.orm import Session
 
 import shared.database.session as db_session
-from shared.database.models import OrderTicket, Packet, SessionBriefing
-from shared.logic.trading_logic import generate_order_ticket
-from shared.logic.briefing import assemble_briefing, persist_briefing
-from shared.logic.alignment import AlignmentEngine
-from shared.logic.fundamentals_engine import evaluate_fundamentals
-from shared.logic.sessions import get_nairobi_time, get_session_label, SessionEngine
-from shared.logic.notifications import NotificationService, ConsoleNotificationAdapter
-from shared.types.packets import TechnicalSetupPacket, RiskApprovalPacket
-from shared.types.trading import OrderTicketSchema
-from shared.logic.policy_router import PolicyRouter
+from services.orchestration.logic.jit_validator import JITValidator
 from services.orchestration.logic.ops_engine import OpsEngine
 from services.orchestration.logic.review_engine import ReviewEngine
-from shared.database.models import OpsReportLog
+from shared.database.models import OpsReportLog, OrderTicket, Packet, SessionBriefing
+from shared.logic.alignment import AlignmentEngine
+from shared.logic.briefing import assemble_briefing, persist_briefing
+from shared.logic.fundamentals_engine import evaluate_fundamentals
 from shared.logic.logging import setup_production_logging
 from shared.logic.metrics import metrics_registry
+from shared.logic.notifications import ConsoleNotificationAdapter, NotificationService
+from shared.logic.policy_router import PolicyRouter
+from shared.logic.sessions import SessionEngine, get_nairobi_time, get_session_label
 from shared.logic.trade_management_engine import run_management_cycle
+from shared.logic.trading_logic import generate_order_ticket
 from shared.messaging.event_bus import EventBus
 from shared.task_management import get_task_supervisor
-from services.orchestration.logic.jit_validator import JITValidator
 from shared.types.enums import TicketState
+from shared.types.packets import RiskApprovalPacket, TechnicalSetupPacket
+from shared.types.trading import OrderTicketSchema
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("OrchestrationAPI")
@@ -44,10 +44,9 @@ event_bus = EventBus()
 _alignment_engine = AlignmentEngine()
 _policy_router = PolicyRouter()
 _task_supervisor = get_task_supervisor(timeout_seconds=30)
-_jit_validator = JITValidator(lockout_config={
-    "max_daily_loss_pct": 2.0,
-    "max_consecutive_losses": 3
-})
+_jit_validator = JITValidator(
+    lockout_config={"max_daily_loss_pct": 2.0, "max_consecutive_losses": 3}
+)
 
 
 # ──────────────────────────────────────────────
@@ -134,7 +133,7 @@ async def fundamentals_scheduler(interval_minutes: int = 30):
                 return
 
 
-def _run_fundamentals_generation(db: Session, now: Optional[datetime] = None):
+def _run_fundamentals_generation(db: Session, now: datetime | None = None):
     now = now or get_nairobi_time()
 
     # 1. Fetch latest market context to get proxies and events
@@ -252,6 +251,7 @@ def health(db: Session = Depends(get_db)):
 
     # Check database connectivity
     from sqlalchemy import text
+
     try:
         db.execute(text("SELECT 1"))
     except Exception as e:
@@ -275,7 +275,7 @@ def metrics():
 @app.post("/briefings/generate")
 async def generate_briefing_now(
     is_delta: bool = False, db: Session = Depends(get_db)
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Manually trigger a briefing generation."""
     _run_fundamentals_generation(db)  # Ensure valid fundamentals before briefing
     now = get_nairobi_time()
@@ -284,8 +284,8 @@ async def generate_briefing_now(
     return {"briefing_id": record.briefing_id, "html_path": record.html_path}
 
 
-from shared.logic.alerting import check_incident_alerts
 from shared.database.models import IncidentLog
+from shared.logic.alerting import check_incident_alerts
 from shared.types.incident import IncidentSchema
 
 
@@ -312,7 +312,7 @@ async def generate_fundamentals_now(db: Session = Depends(get_db)):
 
 
 @app.get("/briefings/latest")
-async def get_latest_briefing(db: Session = Depends(get_db)) -> Dict[str, Any]:
+async def get_latest_briefing(db: Session = Depends(get_db)) -> dict[str, Any]:
     record = (
         db.query(SessionBriefing).order_by(SessionBriefing.created_at.desc()).first()
     )
@@ -331,7 +331,7 @@ async def get_latest_briefing(db: Session = Depends(get_db)) -> Dict[str, Any]:
 @app.get("/briefings")
 async def list_briefings(
     limit: int = 20, db: Session = Depends(get_db)
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     records = (
         db.query(SessionBriefing)
         .order_by(SessionBriefing.created_at.desc())
@@ -354,7 +354,7 @@ async def list_briefings(
 @app.get("/briefings/{briefing_id}")
 async def get_briefing(
     briefing_id: str, db: Session = Depends(get_db)
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     record = (
         db.query(SessionBriefing)
         .filter(SessionBriefing.briefing_id == briefing_id)
@@ -542,13 +542,16 @@ async def generate_ticket(pair: str, db: Session = Depends(get_db)):
     )
     # Persist alignment result
     from shared.database.models import AlignmentLog
+
     log_record = AlignmentLog(
         setup_packet_id=setup_db.id,
         pair=pair,
         alignment_score=100 if alignment_result.is_aligned else 0,
         is_aligned=alignment_result.is_aligned,
-        primary_block_reason="; ".join(alignment_result.reason_codes) if not alignment_result.is_aligned else None,
-        result_json=alignment_result.model_dump(mode="json")
+        primary_block_reason="; ".join(alignment_result.reason_codes)
+        if not alignment_result.is_aligned
+        else None,
+        result_json=alignment_result.model_dump(mode="json"),
     )
     db.add(log_record)
     db.commit()
@@ -586,7 +589,7 @@ async def generate_ticket(pair: str, db: Session = Depends(get_db)):
 @app.get("/alignment/{setup_packet_id}")
 async def get_alignment(
     setup_packet_id: int, db: Session = Depends(get_db)
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Look up the most recent alignment result for a setup packet."""
     from shared.database.models import AlignmentLog
 
@@ -606,7 +609,7 @@ async def get_alignment(
 @app.post("/alignment/evaluate")
 async def evaluate_alignment(
     pair: str, db: Session = Depends(get_db)
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Evaluate alignment for the latest setup of a pair without generating a ticket."""
     setup_db = (
         db.query(Packet)
@@ -666,15 +669,18 @@ async def evaluate_alignment(
         db=db,
         now_nairobi=get_nairobi_time(),
     )
-    
+
     from shared.database.models import AlignmentLog
+
     log_record = AlignmentLog(
         setup_packet_id=setup_db.id,
         pair=pair,
         alignment_score=100 if result.is_aligned else 0,
         is_aligned=result.is_aligned,
-        primary_block_reason="; ".join(result.reason_codes) if not result.is_aligned else None,
-        result_json=result.model_dump(mode="json")
+        primary_block_reason="; ".join(result.reason_codes)
+        if not result.is_aligned
+        else None,
+        result_json=result.model_dump(mode="json"),
     )
     db.add(log_record)
     db.commit()
@@ -694,9 +700,9 @@ async def get_latest_ticket(pair: str, db: Session = Depends(get_db)):
     return ticket
 
 
-@app.get("/tickets", response_model=List[OrderTicketSchema])
+@app.get("/tickets", response_model=list[OrderTicketSchema])
 async def list_tickets(
-    date_str: Optional[str] = Query(None, alias="date"),
+    date_str: str | None = Query(None, alias="date"),
     db: Session = Depends(get_db),
 ):
     query = db.query(OrderTicket)
@@ -743,7 +749,7 @@ async def update_ticket_status(
 @app.post("/tickets/{ticket_id}/confirm", response_model=OrderTicketSchema)
 async def confirm_ticket(ticket_id: str, db: Session = Depends(get_db)):
     """
-    Operator confirms a PENDING ticket. 
+    Operator confirms a PENDING ticket.
     Performs synchronous JIT validation before emission to bridge.
     """
     ticket = db.query(OrderTicket).filter(OrderTicket.ticket_id == ticket_id).first()
@@ -752,8 +758,8 @@ async def confirm_ticket(ticket_id: str, db: Session = Depends(get_db)):
 
     if ticket.status != TicketState.PENDING:
         raise HTTPException(
-            status_code=400, 
-            detail=f"Only PENDING tickets can be confirmed. Current status: {ticket.status}"
+            status_code=400,
+            detail=f"Only PENDING tickets can be confirmed. Current status: {ticket.status}",
         )
 
     # 5-Step JIT Validation
@@ -765,14 +771,17 @@ async def confirm_ticket(ticket_id: str, db: Session = Depends(get_db)):
         ticket.block_reason = reason
         ticket.reviewed_at = datetime.utcnow()
         db.commit()
-        
+
         # Log to Journal
-        event_bus.publish("journal_events", {
-            "event_type": "ticket_rejection",
-            "ticket_id": ticket.ticket_id,
-            "reason": reason
-        })
-        
+        event_bus.publish(
+            "journal_events",
+            {
+                "event_type": "ticket_rejection",
+                "ticket_id": ticket.ticket_id,
+                "reason": reason,
+            },
+        )
+
         raise HTTPException(status_code=403, detail=reason)
 
     # All gates PASS -> CONFIRM
@@ -782,14 +791,16 @@ async def confirm_ticket(ticket_id: str, db: Session = Depends(get_db)):
     db.commit()
 
     # Emit to Bridge/Journal
-    event_bus.publish("journal_events", {
-        "event_type": "ticket_confirmation",
-        "ticket_id": ticket.ticket_id,
-        "jit_hash": state_hash
-    })
-    
+    event_bus.publish(
+        "journal_events",
+        {
+            "event_type": "ticket_confirmation",
+            "ticket_id": ticket.ticket_id,
+            "jit_hash": state_hash,
+        },
+    )
+
     # In a real system, the ExecutionBridge would listen to this or we'd call it directly
     logger.info(f"Ticket {ticket.ticket_id} CONFIRMED and JIT-validated.")
-    
-    return ticket
 
+    return ticket

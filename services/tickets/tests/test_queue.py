@@ -1,16 +1,17 @@
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
+
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from shared.database.models import Base, OrderTicket
-from shared.types.trading import SkipReasonEnum, TicketOutcomeEnum
 from services.tickets.queue_logic import (
     approve_ticket,
-    skip_ticket,
-    close_ticket,
     auto_expire_tickets,
+    close_ticket,
+    skip_ticket,
 )
+from shared.database.models import Base, OrderTicket
+from shared.types.trading import SkipReasonEnum, TicketOutcomeEnum
 
 # --- In-Memory DB Setup ---
 engine = create_engine("sqlite:///:memory:")

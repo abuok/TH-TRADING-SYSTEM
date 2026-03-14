@@ -1,10 +1,12 @@
+from datetime import timedelta
+
 import pytest
 from fastapi.testclient import TestClient
+
 from services.dashboard.main import app
+from shared.database.models import ExecutionPrepLog, OrderTicket
 from shared.database.session import get_db
-from shared.database.models import OrderTicket, ExecutionPrepLog
 from shared.logic.sessions import get_nairobi_time
-from datetime import timedelta
 
 client = TestClient(app)
 

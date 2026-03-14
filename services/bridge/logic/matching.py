@@ -1,16 +1,16 @@
 import re
 from datetime import timedelta
-from typing import Optional, Tuple
-from sqlalchemy.orm import Session
-from sqlalchemy import and_
 
-from shared.database.models import OrderTicket, ExecutionPrepLog
+from sqlalchemy import and_
+from sqlalchemy.orm import Session
+
+from shared.database.models import ExecutionPrepLog, OrderTicket
 from shared.types.trade_capture import TradeFillEvent
 
 
 def match_fill_to_ticket(
     db: Session, fill: TradeFillEvent
-) -> Tuple[Optional[str], str, float]:
+) -> tuple[str | None, str, float]:
     """
     Attempts to match a trade fill to a ticket.
     Returns: (ticket_id, method, match_score)

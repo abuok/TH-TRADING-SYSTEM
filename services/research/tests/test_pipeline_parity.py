@@ -9,36 +9,38 @@ Tests:
   3. Calibration sanity — recommendations respond correctly to metric changes
 """
 
-import os
 import csv
+import os
 import tempfile
-import pytest
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 
-from shared.types.packets import Candle
-from shared.types.research import (
-    SimulatedTrade,
-    CounterfactualConfig,
-    ResearchRunResult,
-    ResearchMetrics,
-)
-from shared.logic.phx_detector import PHXDetector, PHXStage
+import pytest
+
+from services.research.calibration import analyze_variant, generate_calibration_report
+from services.research.outcome import simulate_outcome
 from services.research.simulator import (
     _calc_lot_size,
     _emit_setup_from_detector,
     _get_research_context,
     run_replay,
 )
-from services.research.outcome import simulate_outcome
-from services.research.calibration import analyze_variant, generate_calibration_report
-
+from shared.logic.phx_detector import PHXDetector, PHXStage
+from shared.types.packets import Candle
+from shared.types.research import (
+    CounterfactualConfig,
+    ResearchMetrics,
+    ResearchRunResult,
+    SimulatedTrade,
+)
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 
 def _ts(offset_hours: float = 0.0) -> datetime:
     # 08:00 UTC = 11:00 EAT (LONDON_OPEN)
-    return datetime(2025, 1, 1, 8, 0, tzinfo=timezone.utc) + timedelta(minutes=15 * offset_hours)
+    return datetime(2025, 1, 1, 8, 0, tzinfo=timezone.utc) + timedelta(
+        minutes=15 * offset_hours
+    )
 
 
 def _candle(open_, close, h=None, low_val=None, t=None, vol=1000.0) -> Candle:
@@ -552,6 +554,7 @@ class TestRunReplayIntegration:
     def test_run_replay_uses_phx_not_mock(self):
         """run_replay must NOT reference _mock_detector; setup stage must be PHX stage name."""
         import inspect
+
         import services.research.simulator as sim_mod
 
         src = inspect.getsource(sim_mod)

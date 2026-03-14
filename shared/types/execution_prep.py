@@ -1,5 +1,6 @@
 from datetime import datetime
-from typing import List, Optional, Dict, Any
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
@@ -13,7 +14,7 @@ class PreflightCheck(BaseModel):
 class PlatformFormats(BaseModel):
     mt5_text: str
     ctrader_text: str
-    json_data: Dict[str, Any]
+    json_data: dict[str, Any]
 
 
 class ExecutionPrepSchema(BaseModel):
@@ -22,8 +23,8 @@ class ExecutionPrepSchema(BaseModel):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     expires_at: datetime
     platform_formats: PlatformFormats
-    preflight_checks: List[PreflightCheck]
+    preflight_checks: list[PreflightCheck]
     price_tolerance_pct: float
     override_required: bool = False
-    override_reason: Optional[str] = None
+    override_reason: str | None = None
     status: str = "ACTIVE"  # ACTIVE, EXPIRED, OVERRIDDEN, EXECUTED

@@ -1,8 +1,7 @@
-from typing import List
-from shared.types.research import SimulatedTrade, ResearchMetrics
+from shared.types.research import ResearchMetrics, SimulatedTrade
 
 
-def calculate_metrics(trades: List[SimulatedTrade]) -> ResearchMetrics:
+def calculate_metrics(trades: list[SimulatedTrade]) -> ResearchMetrics:
     total = len(trades)
     if total == 0:
         return ResearchMetrics()

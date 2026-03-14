@@ -4,15 +4,15 @@ Deterministic scoring engine for generating bias logic based on proxy snapshots 
 No external calls, explainable mapping to specific rules for XAUUSD and GBPJPY.
 """
 
+import logging
 from datetime import datetime
-from typing import Dict, List, Tuple
+
 from shared.types.fundamentals import (
+    BulletItem,
     MarketMoversPacket,
     PairFundamentalsPacket,
-    BulletItem,
     ProxySnapshot,
 )
-import logging
 
 logger = logging.getLogger("FundamentalsEngine")
 
@@ -25,8 +25,6 @@ def _determine_label(score: float) -> str:
     return "NEUTRAL"
 
 
-
-
 # ── XAUUSD (Gold) Logic ──────────────────────────────────────────────────
 # Rules:
 # DXY Up -> Bearish XAU
@@ -35,7 +33,7 @@ def _determine_label(score: float) -> str:
 
 
 def evaluate_xauusd(
-    proxies: Dict[str, ProxySnapshot], events: List[Dict], created_at: datetime
+    proxies: dict[str, ProxySnapshot], events: list[dict], created_at: datetime
 ) -> PairFundamentalsPacket:
     score = 0.0
     drivers = []
@@ -149,7 +147,7 @@ def evaluate_xauusd(
 
 
 def evaluate_gbpjpy(
-    proxies: Dict[str, ProxySnapshot], events: List[Dict], created_at: datetime
+    proxies: dict[str, ProxySnapshot], events: list[dict], created_at: datetime
 ) -> PairFundamentalsPacket:
     score = 0.0
     drivers = []
@@ -245,7 +243,7 @@ def evaluate_gbpjpy(
 
 def evaluate_fundamentals(
     context_packet_data: dict, created_at: datetime
-) -> Tuple[MarketMoversPacket, List[PairFundamentalsPacket]]:
+) -> tuple[MarketMoversPacket, list[PairFundamentalsPacket]]:
     """
     Given an ingestion context packet (with populated proxies and events),
     run the deterministic engines. We assume proxies in context_packet_data
@@ -255,7 +253,7 @@ def evaluate_fundamentals(
     events = context_packet_data.get("high_impact_events", [])
 
     # Translate raw dicts to ProxySnapshots
-    proxies: Dict[str, ProxySnapshot] = {}
+    proxies: dict[str, ProxySnapshot] = {}
     for sym, pd in raw_proxies.items():
         if isinstance(pd, dict):
             proxies[sym] = ProxySnapshot(**pd)

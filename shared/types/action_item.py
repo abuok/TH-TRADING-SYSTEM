@@ -1,17 +1,17 @@
 from datetime import datetime
-from typing import List, Optional
+
 from pydantic import BaseModel
 
 
 class ActionItemSchema(BaseModel):
-    id: Optional[int] = None
-    created_at: Optional[datetime] = None
+    id: int | None = None
+    created_at: datetime | None = None
     title: str
     severity: str
     source: str
-    evidence_links: List[str] = []
+    evidence_links: list[str] = []
     status: str = "OPEN"
-    notes: Optional[str] = None
+    notes: str | None = None
 
     class Config:
         from_attributes = True

@@ -1,19 +1,29 @@
-import pytest
-import redis
 import datetime
-import pytz
+import uuid
 from datetime import timezone
 from unittest.mock import patch
+
+import pytest
+import pytz
+import redis
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from shared.database.models import (
+    Base,
+    IncidentLog,
+    ManagementSuggestionLog,
+    OrderTicket,
+    Packet,
+    QuoteStaleLog,
+    Run,
+)
+from shared.logic.alignment import AlignmentEngine
 from shared.messaging.event_bus import EventBus
 from shared.providers.calendar import ForexFactoryCalendarProvider
-from shared.logic.alignment import AlignmentEngine
-from shared.database.models import IncidentLog, QuoteStaleLog, Base, ManagementSuggestionLog, OrderTicket, Run, Packet
-import uuid
 
 NAIROBI = pytz.timezone("Africa/Nairobi")
+
 
 @pytest.fixture
 def memory_db():
@@ -184,26 +194,20 @@ def test_rule_news_window_midnight_crossover():
     DRILL: News event at 00:30 EAT detected when current time is 23:50 EAT.
     """
     # Simulate: current time is 23:50 EAT on Wednesday
-    now = NAIROBI.localize(
-        datetime.datetime(2026, 3, 4, 23, 50, 0)
-    )
+    now = NAIROBI.localize(datetime.datetime(2026, 3, 4, 23, 50, 0))
 
     # Event is at 00:30 (early morning — 40 min away, on the next calendar day)
     context_data = {
-        "high_impact_events": [
-            {"time": "00:30", "event": "FOMC", "impact": "HIGH"}
-        ]
+        "high_impact_events": [{"time": "00:30", "event": "FOMC", "impact": "HIGH"}]
     }
-    
+
     engine = AlignmentEngine()
     is_ok = engine._check_event_proximity(context_data, now, engine.cfg)
     assert is_ok is False, "Should block 40m before midnight-crossing event"
 
     # Event is 1 hour away (00:55) - 65 minutes total
     context_data_safe = {
-        "high_impact_events": [
-            {"time": "00:55", "event": "FOMC", "impact": "HIGH"}
-        ]
+        "high_impact_events": [{"time": "00:55", "event": "FOMC", "impact": "HIGH"}]
     }
     is_ok_safe = engine._check_event_proximity(context_data_safe, now, engine.cfg)
     assert is_ok_safe is True, "Should allow 65m before midnight-crossing event"

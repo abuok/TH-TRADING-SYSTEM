@@ -1,15 +1,13 @@
+import asyncio
 import json
+import logging
 import os
 
 from fastapi import FastAPI
+
+import shared.database.session as db_session
 from shared.logic.risk import RiskEngine
 from shared.messaging.event_bus import EventBus
-import shared.database.session as db_session
-import asyncio
-
-import logging
-from typing import Dict
-
 from shared.types.packets import (
     MarketContextPacket,
     RiskApprovalPacket,
@@ -22,7 +20,7 @@ app = FastAPI(title="Risk Service")
 event_bus = EventBus()
 
 # Global state for context and account
-current_context: Dict = {}
+current_context: dict = {}
 account_state = {"daily_loss": 0.0, "total_loss": 0.0, "consecutive_losses": 0}
 
 risk_engine = RiskEngine(

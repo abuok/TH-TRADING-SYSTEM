@@ -1,16 +1,17 @@
+from datetime import date, datetime, timedelta, timezone
+
 import pytest
-from datetime import date, timedelta, datetime, timezone
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+from services.research.pilot import build_pilot_scorecard, fetch_session_metrics
 from shared.database.models import (
-    OrderTicket,
+    Base,
     ExecutionPrepLog,
+    OrderTicket,
     PilotScorecardLog,
     QuoteStaleLog,
 )
-from services.research.pilot import build_pilot_scorecard, fetch_session_metrics
-
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from shared.database.models import Base
 
 # Setup in-memory SQLite for testing
 engine = create_engine("sqlite:///:memory:")
@@ -178,8 +179,8 @@ def test_graduation_gate_failure(db):
 
     # Run evaluation
     from services.research.pilot import (
-        fetch_session_metrics,
         evaluate_gate,
+        fetch_session_metrics,
         load_pilot_config,
     )
 
@@ -203,8 +204,8 @@ def test_gate_staleness_failure(db):
     db.commit()
 
     from services.research.pilot import (
-        fetch_session_metrics,
         evaluate_gate,
+        fetch_session_metrics,
         load_pilot_config,
     )
 
@@ -231,8 +232,8 @@ def test_gate_operator_response_failure(db):
     db.commit()
 
     from services.research.pilot import (
-        fetch_session_metrics,
         evaluate_gate,
+        fetch_session_metrics,
         load_pilot_config,
     )
 
@@ -270,8 +271,8 @@ def test_gate_session_drawdown_failure(db):
     db.commit()
 
     from services.research.pilot import (
-        fetch_session_metrics,
         evaluate_gate,
+        fetch_session_metrics,
         load_pilot_config,
     )
 

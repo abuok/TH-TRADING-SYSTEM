@@ -1,11 +1,12 @@
 from datetime import datetime
-from typing import List, Dict, Any
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
 class SkipStats(BaseModel):
     count: int = 0
-    top_reasons: List[str] = Field(default_factory=list)
+    top_reasons: list[str] = Field(default_factory=list)
 
 
 class HindsightSummary(BaseModel):
@@ -24,25 +25,25 @@ class DailyOpsReport(BaseModel):
     incident_count: int = 0
 
     # Policies
-    active_policies: Dict[str, str] = Field(default_factory=dict)  # Pair -> PolicyName
+    active_policies: dict[str, str] = Field(default_factory=dict)  # Pair -> PolicyName
     policy_switches_24h: int = 0
 
     # Market Context
-    high_impact_events: List[Dict[str, Any]] = Field(default_factory=list)
-    no_trade_windows: List[Dict[str, Any]] = Field(default_factory=list)
+    high_impact_events: list[dict[str, Any]] = Field(default_factory=list)
+    no_trade_windows: list[dict[str, Any]] = Field(default_factory=list)
 
     # Queue Stats
     queue_approvals: int = 0
     queue_skips: int = 0
     queue_expires: int = 0
-    top_skip_reasons: List[str] = Field(default_factory=list)
+    top_skip_reasons: list[str] = Field(default_factory=list)
 
     # Hindsight
     hindsight_yesterday: HindsightSummary = Field(default_factory=HindsightSummary)
 
     # Checklist
-    checklist_do: List[str] = Field(default_factory=list)
-    checklist_dont: List[str] = Field(default_factory=list)
+    checklist_do: list[str] = Field(default_factory=list)
+    checklist_dont: list[str] = Field(default_factory=list)
 
 
 class WeeklyReviewReport(BaseModel):
@@ -66,13 +67,13 @@ class WeeklyReviewReport(BaseModel):
     approved_losers: int = 0
 
     # Regimes
-    performance_by_policy: Dict[str, float] = Field(default_factory=dict)
-    performance_by_sentiment: Dict[str, float] = Field(default_factory=dict)
+    performance_by_policy: dict[str, float] = Field(default_factory=dict)
+    performance_by_sentiment: dict[str, float] = Field(default_factory=dict)
 
     # Insights
-    top_insights: List[str] = Field(default_factory=list)
-    top_mistakes: List[str] = Field(default_factory=list)
-    recommended_tweaks: List[str] = Field(default_factory=list)
+    top_insights: list[str] = Field(default_factory=list)
+    top_mistakes: list[str] = Field(default_factory=list)
+    recommended_tweaks: list[str] = Field(default_factory=list)
 
     # Action Items
-    created_action_items: List[str] = Field(default_factory=list)
+    created_action_items: list[str] = Field(default_factory=list)

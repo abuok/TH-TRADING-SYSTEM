@@ -3,12 +3,13 @@ shared/logic/policy_router.py
 Regime-Adaptive Policy Router for selecting guardrails profiles based on market conditions.
 """
 
-import os
-import yaml
 import hashlib
 import logging
+import os
 from datetime import datetime
-from typing import Dict, List, Any
+from typing import Any
+
+import yaml
 from pydantic import BaseModel
 
 from shared.logic.sessions import get_session_label
@@ -19,16 +20,16 @@ logger = logging.getLogger("PolicyRouter")
 class PolicyDecision(BaseModel):
     policy_name: str
     policy_hash: str
-    policy_config: Dict[str, Any]
-    reasons: List[str]
-    regime_signals: Dict[str, Any]
+    policy_config: dict[str, Any]
+    reasons: list[str]
+    regime_signals: dict[str, Any]
 
 
 class PolicyRouter:
     def __init__(self, policies_dir: str = "config/policies"):
         self.policies_dir = policies_dir
-        self.policies: Dict[str, Dict[str, Any]] = {}
-        self.policy_hashes: Dict[str, str] = {}
+        self.policies: dict[str, dict[str, Any]] = {}
+        self.policy_hashes: dict[str, str] = {}
         self._load_policies()
 
     def _load_policies(self):
@@ -40,7 +41,7 @@ class PolicyRouter:
         for filename in os.listdir(self.policies_dir):
             if filename.endswith(".yaml"):
                 path = os.path.join(self.policies_dir, filename)
-                with open(path, "r", encoding="utf-8") as f:
+                with open(path, encoding="utf-8") as f:
                     content = f.read()
                     config = yaml.safe_load(content)
                     if config and "policy_name" in config:
@@ -106,10 +107,7 @@ class PolicyRouter:
 
         # C. BEST CONDITIONS
         # Strong bias and in core sessions
-        if (
-            session in ["LONDON", "NEW YORK"]
-            and abs(bias_score) >= 4.0
-        ):
+        if session in ["LONDON", "NEW YORK"] and abs(bias_score) >= 4.0:
             reasons.append(
                 f"Strong confluence: {session} session + High conviction bias ({bias_score})."
             )
@@ -120,7 +118,7 @@ class PolicyRouter:
         return self._build_decision("Default", reasons, signals)
 
     def _build_decision(
-        self, name: str, reasons: List[str], signals: Dict[str, Any]
+        self, name: str, reasons: list[str], signals: dict[str, Any]
     ) -> PolicyDecision:
         if name not in self.policies:
             logger.error(

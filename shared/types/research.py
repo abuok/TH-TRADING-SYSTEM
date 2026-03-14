@@ -1,9 +1,9 @@
-from datetime import datetime
-from typing import Dict, List, Optional
-from pydantic import BaseModel, Field
 import hashlib
 import json
 import os
+from datetime import datetime
+
+from pydantic import BaseModel, Field
 
 
 class SystemMetadata(BaseModel):
@@ -13,7 +13,7 @@ class SystemMetadata(BaseModel):
         ..., description="Version of the guardrails policy used"
     )
     policy_hash: str = Field(..., description="Hash of the active policy configuration")
-    dataset_hash: Optional[str] = Field(
+    dataset_hash: str | None = Field(
         None, description="Hash of the input dataset if applicable"
     )
 
@@ -25,26 +25,26 @@ class SimulatedTrade(BaseModel):
     entry_price: float
     stop_loss: float
     take_profit_1: float
-    take_profit_2: Optional[float] = None
+    take_profit_2: float | None = None
 
     # Outcomes
     status: str = "PENDING"  # PENDING, WIN_TP1, WIN_TP2, LOSS, BE, BLOCKED
     realized_r: float = 0.0
-    exit_price: Optional[float] = None
-    exit_time: Optional[datetime] = None
+    exit_price: float | None = None
+    exit_time: datetime | None = None
 
     # Meta
     setup_score: float = 0.0
     bias_score: float = 0.0
     guardrails_status: str = "PASS"
     stage: str = "UNKNOWN"
-    block_reason: Optional[str] = None
+    block_reason: str | None = None
 
 
 class CounterfactualConfig(BaseModel):
-    min_setup_score: Optional[float] = None
-    hard_block_displacement: Optional[bool] = None
-    duplicate_suppression_minutes: Optional[int] = None
+    min_setup_score: float | None = None
+    hard_block_displacement: bool | None = None
+    duplicate_suppression_minutes: int | None = None
     use_router: bool = False
 
 
@@ -64,7 +64,7 @@ class ResearchVariant(BaseModel):
     name: str
     config: CounterfactualConfig
     metrics: ResearchMetrics = Field(default_factory=ResearchMetrics)
-    trades: List[SimulatedTrade] = Field(default_factory=list)
+    trades: list[SimulatedTrade] = Field(default_factory=list)
 
 
 class ResearchRunResult(BaseModel):
@@ -72,12 +72,12 @@ class ResearchRunResult(BaseModel):
     pair: str
     start_date: datetime
     end_date: datetime
-    timeframes: List[str]
+    timeframes: list[str]
     created_at: datetime = Field(default_factory=datetime.utcnow)
     reproducibility_hash: str = ""
     guardrails_version: str = ""
     dataset_hash: str = ""
-    variants: Dict[str, ResearchVariant] = Field(default_factory=dict)
+    variants: dict[str, ResearchVariant] = Field(default_factory=dict)
 
     def generate_hash(
         self,

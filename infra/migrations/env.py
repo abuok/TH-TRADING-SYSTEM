@@ -5,10 +5,8 @@ from logging.config import fileConfig
 # Add the project root to sys.path to allow importing shared
 sys.path.append(os.getcwd())
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
-
 from alembic import context
+from sqlalchemy import engine_from_config, pool
 
 # Import our models for autogenerate support
 from shared.database.models import Base

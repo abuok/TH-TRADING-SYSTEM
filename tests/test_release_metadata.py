@@ -1,12 +1,13 @@
-import pytest
 from datetime import datetime, timezone
+
+import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from shared.database.models import Base
-from services.research.tuning import generate_tuning_report
 from services.research.pilot import build_pilot_scorecard
-from shared.utils.metadata import get_version, get_git_commit
+from services.research.tuning import generate_tuning_report
+from shared.database.models import Base
+from shared.utils.metadata import get_git_commit, get_version
 
 
 @pytest.fixture

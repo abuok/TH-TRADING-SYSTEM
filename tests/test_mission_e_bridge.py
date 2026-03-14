@@ -1,18 +1,20 @@
-import pytest
 import uuid
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
+
+import pytest
+
 import shared.database.session as db_session
 from shared.database.models import (
+    ExecutionPrepLog,
     OrderTicket,
-    TradeFillLog,
-    TicketTradeLink,
+    Packet,
     PositionSnapshot,
     Run,
-    Packet,
-    ExecutionPrepLog,
+    TicketTradeLink,
+    TradeFillLog,
 )
-from shared.types.trade_capture import TradeFillEvent
 from shared.logic.trade_lifecycle import process_trade_fill
+from shared.types.trade_capture import TradeFillEvent
 
 # NOTE: conftest.py handles SQLite engine setup via setup_db autouse fixture
 

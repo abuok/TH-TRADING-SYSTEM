@@ -8,6 +8,7 @@ os.environ.setdefault("PRICE_PROVIDER", "mock")
 
 import pytest
 from sqlalchemy.orm import sessionmaker
+
 import shared.database.session as session
 from shared.database.models import Base
 

@@ -8,11 +8,11 @@ Supports loading secrets from:
 4. Local .env file (development only)
 """
 
-import os
 import json
-from typing import Optional, Dict, Any
+import os
 from functools import lru_cache
 from pathlib import Path
+from typing import Any
 
 
 class SecretsManager:
@@ -33,7 +33,7 @@ class SecretsManager:
             environment: deployment environment (development/staging/production)
         """
         self.environment = environment
-        self._secrets: Dict[str, Any] = {}
+        self._secrets: dict[str, Any] = {}
         self._load_secrets()
 
     def _load_secrets(self) -> None:
@@ -95,7 +95,7 @@ class SecretsManager:
 
     def _load_from_env(self) -> None:
         """Load secrets from environment variables."""
-        for category, secret_names in self.REQUIRED_SECRETS.items():
+        for _category, secret_names in self.REQUIRED_SECRETS.items():
             for secret_name in secret_names:
                 value = os.getenv(secret_name)
                 if value:
@@ -112,7 +112,7 @@ class SecretsManager:
                         key, _, value = line.partition("=")
                         self._secrets[key.strip()] = value.strip().strip("\"'")
 
-    def get(self, key: str, default: Optional[str] = None) -> Optional[str]:
+    def get(self, key: str, default: str | None = None) -> str | None:
         """Get a secret value."""
         return self._secrets.get(key, default)
 
@@ -120,7 +120,7 @@ class SecretsManager:
         """Get a required secret, raise error if missing."""
         if key not in self._secrets:
             raise ValueError(f"Required secret '{key}' not found")
-        return self._secrets[key]
+        return str(self._secrets[key])
 
     def validate_production_secrets(self) -> bool:
         """Validate all required secrets are present for production."""
@@ -128,7 +128,7 @@ class SecretsManager:
             return True
 
         missing = []
-        for category, secret_names in self.REQUIRED_SECRETS.items():
+        for _category, secret_names in self.REQUIRED_SECRETS.items():
             for secret_name in secret_names:
                 if secret_name not in self._secrets:
                     missing.append(f"{category}/{secret_name}")

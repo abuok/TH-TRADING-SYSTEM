@@ -200,7 +200,7 @@ for root, _, files in os.walk(target_dir):
     for filename in files:
         if filename.endswith(".html"):
             path = os.path.join(root, filename)
-            with open(path, "r", encoding="utf-8") as f:
+            with open(path, encoding="utf-8") as f:
                 content = f.read()
 
             new_content = re.sub(

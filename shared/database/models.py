@@ -1,18 +1,19 @@
+from datetime import datetime, timezone
+
 from sqlalchemy import (
+    JSON,
+    Boolean,
     Column,
+    Date,
+    DateTime,
+    Float,
+    ForeignKey,
     Integer,
     String,
-    JSON,
-    DateTime,
-    ForeignKey,
-    Float,
-    Boolean,
-    Date,
     Text,
     UniqueConstraint,
 )
 from sqlalchemy.orm import declarative_base, relationship
-from datetime import datetime, timezone
 
 Base = declarative_base()
 
@@ -438,6 +439,7 @@ class QuoteStaleLog(Base):
     created_at = Column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
+
 
 class DisciplineLockout(Base):
     __tablename__ = "discipline_lockouts"

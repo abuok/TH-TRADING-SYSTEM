@@ -1,6 +1,8 @@
-from typing import List, Dict, Any
-from pydantic import BaseModel, Field
 from datetime import datetime
+from typing import Any
+
+from pydantic import BaseModel, Field
+
 from shared.types.research import SystemMetadata
 
 
@@ -28,7 +30,7 @@ class Proposal(BaseModel):
         ...,
         description="Actionable plan for reverting the change if the impact is negative",
     )
-    evidence_refs: List[str] = Field(
+    evidence_refs: list[str] = Field(
         default_factory=list,
         description="List of references or metric numbers pointing to evidence",
     )
@@ -42,13 +44,13 @@ class TuningProposalReport(BaseModel):
     date_range: str = Field(
         ..., description="The time window evaluated for this tuning run"
     )
-    proposals: List[Proposal] = Field(
+    proposals: list[Proposal] = Field(
         default_factory=list, description="A list of generated tuning proposals"
     )
-    supporting_metrics: Dict[str, Any] = Field(
+    supporting_metrics: dict[str, Any] = Field(
         default_factory=dict, description="Raw supporting metric KPIs"
     )
-    simulation_links: List[str] = Field(
+    simulation_links: list[str] = Field(
         default_factory=list, description="Links/commands to re-run simulations"
     )
     reproducibility: SystemMetadata = Field(

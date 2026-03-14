@@ -1,7 +1,7 @@
+from datetime import datetime, timedelta
+
 import feedparser
 import pytz
-from datetime import datetime, timedelta
-from typing import List, Dict
 
 
 class EconomicCalendar:
@@ -10,7 +10,7 @@ class EconomicCalendar:
     TARGET_TZ = pytz.timezone("Africa/Nairobi")
 
     @classmethod
-    def fetch_events(cls) -> List[Dict]:
+    def fetch_events(cls) -> list[dict]:
         """Fetch economic events from the RSS feed."""
         feed = feedparser.parse(cls.RSS_URL)
         events = []
@@ -49,7 +49,7 @@ class EconomicCalendar:
         return events
 
     @classmethod
-    def get_no_trade_windows(cls, events: List[Dict]) -> List[Dict]:
+    def get_no_trade_windows(cls, events: list[dict]) -> list[dict]:
         """Calculate no-trade windows around high-impact events."""
         windows = []
         now = datetime.now(cls.TARGET_TZ)

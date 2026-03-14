@@ -1,16 +1,17 @@
-from typing import Dict
+from datetime import datetime, timezone
+
+from sqlalchemy.orm import Session
+
+from shared.database.models import IncidentLog
 from shared.types.packets import (
-    TechnicalSetupPacket,
     MarketContextPacket,
     RiskApprovalPacket,
+    TechnicalSetupPacket,
 )
-from datetime import datetime, timezone
-from shared.database.models import IncidentLog
-from sqlalchemy.orm import Session
 
 
 class RiskEngine:
-    def __init__(self, config: Dict):
+    def __init__(self, config: dict):
         """
         config example:
         {
@@ -35,7 +36,7 @@ class RiskEngine:
         self,
         setup: TechnicalSetupPacket,
         context: MarketContextPacket,
-        account_state: Dict,
+        account_state: dict,
         db: Session = None,
     ) -> RiskApprovalPacket:
         """

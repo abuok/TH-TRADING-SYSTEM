@@ -1,12 +1,12 @@
-import uuid
 import json
+import uuid
 from datetime import datetime
-from typing import List, Dict, Any, Optional
+from typing import Any
 
 import pytz
 
-from shared.types.research import ResearchRunResult, ResearchMetrics
 from shared.types.calibration import CalibrationReport, Recommendation
+from shared.types.research import ResearchMetrics, ResearchRunResult
 from shared.utils.metadata import get_system_metadata
 
 NAIROBI = pytz.timezone("Africa/Nairobi")
@@ -17,7 +17,7 @@ def analyze_variant(
     variant_metrics: ResearchMetrics,
     baseline_metrics: ResearchMetrics,
     min_volume_retention: float = 0.70,
-) -> Optional[Recommendation]:
+) -> Recommendation | None:
     """
     Compares a variant's metrics against the baseline and returns a Recommendation
     if the variant provides a statistically meaningful improvement according to heuristics.
@@ -84,7 +84,7 @@ def analyze_variant(
 
 
 def generate_calibration_report(
-    run_results: List[ResearchRunResult],
+    run_results: list[ResearchRunResult],
     baseline_name: str = "baseline",
     min_volume_retention: float = 0.70,
 ) -> CalibrationReport:
@@ -126,8 +126,8 @@ def generate_calibration_report(
             f"Baseline variant '{baseline_name}' not found in any of the provided run results."
         )
 
-    recommendations: List[Recommendation] = []
-    evidence_tables: Dict[str, Any] = {
+    recommendations: list[Recommendation] = []
+    evidence_tables: dict[str, Any] = {
         "Metrics": {baseline_name: baseline_metrics.model_dump()}
     }
 

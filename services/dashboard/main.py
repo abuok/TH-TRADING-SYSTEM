@@ -1,51 +1,56 @@
 # ruff: noqa: E402  # delayed imports/path setup required in this module
-import os
 import json
-import sys
 import logging
-from fastapi import FastAPI, Request, Depends, HTTPException
-from fastapi.templating import Jinja2Templates
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse
-from datetime import datetime, timezone, timedelta
+import os
+import sys
+from datetime import datetime, timedelta, timezone
+
 from dotenv import load_dotenv
+from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 
 # Load environment variables
 load_dotenv()
+
 from sqlalchemy.orm import Session
-from typing import Optional
 
 # Ensure the root directory is in the sys.path for importing shared
 sys.path.append(os.getcwd())
 
+import secrets
+
+from fastapi.security import HTTPBasic
+from sqlalchemy import and_, func
+
 import shared.database.session as db_session
+from services.dashboard.logic import (
+    get_briefings,
+    get_dashboard_data,
+    get_latest_briefing,
+    get_service_health,
+    get_tickets,
+)
 from shared.database.models import (
-    Packet,
-    IncidentLog,
-    SessionBriefing,
-    AlignmentLog,
-    PolicySelectionLog,
     ActionItem,
+    AlignmentLog,
+    IncidentLog,
     OpsReportLog,
     OrderTicket,
-    TradeFillLog,
-    PositionSnapshot as PositionSnapshotModel,
-    TicketTradeLink,
-    TuningProposalLog,
-    PilotSessionLog,
+    Packet,
     PilotScorecardLog,
+    PilotSessionLog,
+    PolicySelectionLog,
+    SessionBriefing,
+    TicketTradeLink,
+    TradeFillLog,
+    TuningProposalLog,
 )
-from services.dashboard.logic import (
-    get_service_health,
-    get_dashboard_data,
-    get_tickets,
-    get_briefings,
-    get_latest_briefing,
+from shared.database.models import (
+    PositionSnapshot as PositionSnapshotModel,
 )
 from shared.logic.sessions import get_nairobi_time
-from sqlalchemy import func, and_
-from fastapi.security import HTTPBasic
-import secrets
 
 security = HTTPBasic()
 
@@ -173,7 +178,7 @@ async def dashboard_theme(request: Request):
 @app.get("/dashboard/incidents", response_class=HTMLResponse)
 async def dashboard_incidents(
     request: Request,
-    severity: Optional[str] = None,
+    severity: str | None = None,
     db: Session = Depends(db_session.get_db),
 ):
     query = db.query(IncidentLog).order_by(IncidentLog.created_at.desc())
@@ -264,7 +269,7 @@ async def dashboard_research(request: Request):
         ]
         for f in sorted(files, reverse=True):
             try:
-                with open(os.path.join("artifacts/research", f), "r") as rfile:
+                with open(os.path.join("artifacts/research", f)) as rfile:
                     data = json.load(rfile)
                     runs.append(data)
             except Exception as e:
@@ -297,7 +302,7 @@ async def dashboard_calibration(request: Request):
         ]
         for f in sorted(files, reverse=True):
             try:
-                with open(os.path.join("artifacts/research", f), "r") as rfile:
+                with open(os.path.join("artifacts/research", f)) as rfile:
                     data = json.load(rfile)
                     reports.append(data)
             except Exception as e:
@@ -461,7 +466,7 @@ async def dashboard_management(
 
 
 @app.get("/dashboard/tickets", response_class=HTMLResponse)
-async def tickets(request: Request, pair: Optional[str] = None):
+async def tickets(request: Request, pair: str | None = None):
     ticket_list = await get_tickets(pair)
     return render_template(
         "tickets.html",
@@ -629,28 +634,29 @@ async def dashboard_queue(request: Request):
 
 # --- Manual Review Queue Endpoints ---
 from pydantic import BaseModel
-from shared.types.trading import SkipReasonEnum, TicketOutcomeEnum
+
+from services.orchestration.logic.execution_prep_generator import ExecutionPrepGenerator
 from services.tickets.queue_logic import (
     approve_ticket,
-    skip_ticket,
-    close_ticket,
     auto_expire_tickets,
+    close_ticket,
+    skip_ticket,
 )
-from shared.types.execution_prep import ExecutionPrepSchema
-from services.orchestration.logic.execution_prep_generator import ExecutionPrepGenerator
 from shared.database.models import ExecutionPrepLog
+from shared.types.execution_prep import ExecutionPrepSchema
+from shared.types.trading import SkipReasonEnum, TicketOutcomeEnum
 
 
 class SkipPayload(BaseModel):
     reason: SkipReasonEnum
-    notes: Optional[str] = None
+    notes: str | None = None
 
 
 class ClosePayload(BaseModel):
     outcome: TicketOutcomeEnum
-    exit_price: Optional[float] = None
-    realized_r: Optional[float] = None
-    screenshot_ref: Optional[str] = None
+    exit_price: float | None = None
+    realized_r: float | None = None
+    screenshot_ref: str | None = None
 
 
 @app.get("/api/tickets/queue")
@@ -667,7 +673,7 @@ async def get_review_queue(db: Session = Depends(db_session.get_db)):
 
 @app.get("/api/tickets/stats")
 async def get_queue_stats(
-    date_str: Optional[str] = None, db: Session = Depends(db_session.get_db)
+    date_str: str | None = None, db: Session = Depends(db_session.get_db)
 ):
     d = (
         datetime.strptime(date_str, "%Y-%m-%d").date()
@@ -800,9 +806,9 @@ async def api_close_ticket(
 
 # --- Hindsight Evaluation Endpoints ---
 from services.research.hindsight import (
-    run_hindsight_for_date,
-    get_hindsight_summary,
     generate_hindsight_report,
+    get_hindsight_summary,
+    run_hindsight_for_date,
 )
 
 
@@ -832,7 +838,7 @@ async def api_hindsight_summary(
 @app.get("/dashboard/hindsight", response_class=HTMLResponse)
 async def dashboard_hindsight(
     request: Request,
-    date_str: Optional[str] = None,
+    date_str: str | None = None,
     db: Session = Depends(db_session.get_db),
 ):
     date_val = date_str or datetime.now(timezone.utc).strftime("%Y-%m-%d")

@@ -1,15 +1,17 @@
 # ruff: noqa: E402  # delayed imports/path setup required in this module
-import typer
 import os
 import sys
+
+import typer
 
 # Ensure the root directory is in the sys.path for importing shared
 sys.path.append(os.getcwd())
 
-import shared.database.session as db_session
-from shared.database.models import Packet, Run, KillSwitch
 from rich.console import Console
 from rich.table import Table
+
+import shared.database.session as db_session
+from shared.database.models import KillSwitch, Packet, Run
 
 app = typer.Typer()
 console = Console()
@@ -136,6 +138,7 @@ def list_kill_switches():
 
 import json
 from datetime import datetime
+
 import yaml
 
 
@@ -146,8 +149,9 @@ def save_json(result):
 
 
 def generate_html_report(result):
-    from jinja2 import Environment, FileSystemLoader
     import os
+
+    from jinja2 import Environment, FileSystemLoader
 
     env = Environment(
         loader=FileSystemLoader(os.path.join("services", "dashboard", "templates"))
@@ -183,8 +187,8 @@ def research_run(
     ),
 ):
     """Run a historical replay and generate reports."""
-    from shared.types.research import CounterfactualConfig
     from services.research.simulator import run_replay
+    from shared.types.research import CounterfactualConfig
 
     try:
         dt_from = datetime.fromisoformat(date_from)
@@ -195,7 +199,7 @@ def research_run(
 
     variants = {"baseline": CounterfactualConfig()}
     if variants_file and os.path.exists(variants_file):
-        with open(variants_file, "r") as f:
+        with open(variants_file) as f:
             raw = yaml.safe_load(f)
             for k, v in raw.items():
                 variants[k] = CounterfactualConfig(**v)
@@ -276,7 +280,7 @@ def research_list():
     table.add_column("Variants")
 
     for fname in sorted(files, reverse=True)[:10]:
-        with open(os.path.join("artifacts/research", fname), "r") as f:
+        with open(os.path.join("artifacts/research", fname)) as f:
             data = json.load(f)
             run_id = data.get("run_id", "Unknown")
             pair = data.get("pair", "Unknown")
@@ -297,7 +301,7 @@ def research_show(run_id: str):
         console.print(f"[red]Run {run_id} not found at {filepath}[/red]")
         raise typer.Exit(1)
 
-    with open(filepath, "r") as f:
+    with open(filepath) as f:
         data = json.load(f)
 
     console.print(f"\n[bold cyan]Run Summary: {run_id}[/bold cyan]")
@@ -330,8 +334,8 @@ def validate_proposals(
     timeframe: str = "15m",
 ):
     """Validate a tuning proposal by running research simulations over a historical window."""
-    from shared.types.research import CounterfactualConfig
     from services.research.simulator import run_replay
+    from shared.types.research import CounterfactualConfig
 
     try:
         dt_from = datetime.fromisoformat(date_from)
@@ -440,8 +444,9 @@ def build_scorecard(
     Build a Pilot Scorecard for a specified rolling window, computing graduation gates.
     """
     from datetime import datetime
-    from shared.database.session import get_db
+
     from services.research.pilot import build_pilot_scorecard
+    from shared.database.session import get_db
 
     start_dt = datetime.strptime(from_date, "%Y-%m-%d").date()
     end_dt = datetime.strptime(to_date, "%Y-%m-%d").date()
@@ -465,8 +470,8 @@ def get_latest_scorecard():
     """
     Fetch the latest pilot scorecard aggregates from the database.
     """
-    from shared.database.session import get_db
     from shared.database.models import PilotScorecardLog
+    from shared.database.session import get_db
 
     db = next(get_db())
     latest = (
@@ -492,11 +497,12 @@ def integrations_status():
     """
     Print status of all external integrations and environment variables.
     """
-    from shared.providers.calendar import get_calendar_provider
-    from shared.providers.proxy import get_proxy_provider
-    from shared.providers.price_quote import get_price_quote_provider
-    from shared.providers.symbol_spec import get_symbol_spec_provider
     import redis
+
+    from shared.providers.calendar import get_calendar_provider
+    from shared.providers.price_quote import get_price_quote_provider
+    from shared.providers.proxy import get_proxy_provider
+    from shared.providers.symbol_spec import get_symbol_spec_provider
 
     table = Table(title="Integration Status")
     table.add_column("Provider Type", style="cyan")

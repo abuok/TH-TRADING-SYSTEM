@@ -1,7 +1,9 @@
+from datetime import datetime, timedelta, timezone
+
 import pytest
-from datetime import datetime, timezone, timedelta
+
 from shared.logic.risk import RiskEngine
-from shared.types.packets import TechnicalSetupPacket, MarketContextPacket
+from shared.types.packets import MarketContextPacket, TechnicalSetupPacket
 
 
 @pytest.fixture

@@ -3,17 +3,17 @@ import subprocess
 from functools import lru_cache
 
 
-@lru_cache()
+@lru_cache
 def get_version() -> str:
     try:
         version_path = os.path.join(os.path.dirname(__file__), "..", "..", "VERSION")
-        with open(version_path, "r") as f:
+        with open(version_path) as f:
             return f.read().strip()
     except Exception:
         return "unknown"
 
 
-@lru_cache()
+@lru_cache
 def get_git_commit() -> str:
     try:
         # Try to get short hash

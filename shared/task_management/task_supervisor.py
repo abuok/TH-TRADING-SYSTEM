@@ -10,9 +10,10 @@ Handles background task lifecycle including:
 
 import asyncio
 import logging
-from typing import Callable, Optional, Any, Dict
+from collections.abc import Callable
 from contextlib import asynccontextmanager
 from datetime import datetime
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -27,15 +28,15 @@ class TaskSupervision:
             timeout_seconds: Default timeout for tasks (can be overridden per task)
         """
         self.timeout_seconds = timeout_seconds
-        self.tasks: Dict[str, asyncio.Task] = {}
-        self.task_metadata: Dict[str, Dict[str, Any]] = {}
+        self.tasks: dict[str, asyncio.Task] = {}
+        self.task_metadata: dict[str, dict[str, Any]] = {}
         self._shutdown = False
 
     async def create_task(
         self,
         name: str,
         coro: Callable,
-        timeout_seconds: Optional[int] = None,
+        timeout_seconds: int | None = None,
         max_retries: int = 3,
         retry_delay_seconds: int = 5,
     ) -> asyncio.Task:
@@ -155,7 +156,7 @@ class TaskSupervision:
         self.tasks.clear()
         logger.info("All background tasks shutdown complete")
 
-    def get_task_status(self, name: str) -> Optional[Dict[str, Any]]:
+    def get_task_status(self, name: str) -> dict[str, Any] | None:
         """Get metadata about a task.
 
         Args:
@@ -166,7 +167,7 @@ class TaskSupervision:
         """
         return self.task_metadata.get(name)
 
-    def get_all_tasks_status(self) -> Dict[str, Dict[str, Any]]:
+    def get_all_tasks_status(self) -> dict[str, dict[str, Any]]:
         """Get status of all tasks.
 
         Returns:
@@ -185,7 +186,7 @@ class TaskSupervision:
 
 
 # Global task supervisor instance
-_task_supervisor: Optional[TaskSupervision] = None
+_task_supervisor: TaskSupervision | None = None
 
 
 def get_task_supervisor(timeout_seconds: int = 30) -> TaskSupervision:

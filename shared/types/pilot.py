@@ -1,5 +1,7 @@
-from typing import List, Dict, Any
+from typing import Any
+
 from pydantic import BaseModel, Field
+
 from shared.types.research import SystemMetadata
 
 
@@ -20,24 +22,24 @@ class PilotSessionRecord(BaseModel):
     session_label: str = Field(..., description="e.g., Session 1 of 10")
 
     # Granular details
-    pair_stats: List[PairStats] = Field(default_factory=list)
+    pair_stats: list[PairStats] = Field(default_factory=list)
 
     # Gateway metrics
-    process_metrics: Dict[str, Any] = Field(
+    process_metrics: dict[str, Any] = Field(
         default_factory=dict, description="Ticket approvals, expirations, overrides"
     )
-    performance_metrics: Dict[str, Any] = Field(
+    performance_metrics: dict[str, Any] = Field(
         default_factory=dict, description="R, WR, Drawdown"
     )
-    reliability_metrics: Dict[str, Any] = Field(
+    reliability_metrics: dict[str, Any] = Field(
         default_factory=dict, description="Quote freshness, staleness"
     )
-    policy_metrics: Dict[str, Any] = Field(
+    policy_metrics: dict[str, Any] = Field(
         default_factory=dict, description="Policy routing stats"
     )
 
     pass_fail: str = Field(..., description="PASS or FAIL based on gateway thresholds")
-    notes: List[str] = Field(
+    notes: list[str] = Field(
         default_factory=list, description="Reasons for failure or interesting notes"
     )
 
@@ -48,15 +50,15 @@ class PilotScorecard(BaseModel):
         ..., description="Evaluated window (e.g., 2026-02-14 to 2026-02-28)"
     )
 
-    sessions: List[PilotSessionRecord] = Field(default_factory=list)
+    sessions: list[PilotSessionRecord] = Field(default_factory=list)
 
-    aggregates: Dict[str, Any] = Field(
+    aggregates: dict[str, Any] = Field(
         default_factory=dict,
         description="Aggregated metric values across the rolling window",
     )
     pass_fail_summary: str = Field(..., description="Overall Pilot PASS/FAIL")
 
-    next_week_plan: List[str] = Field(
+    next_week_plan: list[str] = Field(
         default_factory=list,
         description="Advisory action items and tuning recommendations",
     )

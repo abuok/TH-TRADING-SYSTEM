@@ -1,20 +1,21 @@
-import uuid
 import logging
-from datetime import datetime, timezone, timedelta
-from typing import List, Dict, Any
-from sqlalchemy.orm import Session
+import uuid
+from datetime import datetime, timedelta, timezone
+from typing import Any
+
 from sqlalchemy import func
+from sqlalchemy.orm import Session
 
 from shared.database.models import (
-    OrderTicket,
     AlignmentLog,
     ExecutionPrepLog,
     ManagementSuggestionLog,
+    OrderTicket,
     PolicySelectionLog,
     TuningProposalLog,
 )
-from shared.types.tuning import Proposal, TuningProposalReport
 from shared.logic.sessions import get_nairobi_time
+from shared.types.tuning import Proposal, TuningProposalReport
 from shared.utils.metadata import get_system_metadata
 
 logger = logging.getLogger("TuningAssistant")
@@ -22,7 +23,7 @@ logger = logging.getLogger("TuningAssistant")
 
 def fetch_tuning_metrics(
     db: Session, start_date: datetime, end_date: datetime
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Gather metrics needed for generating tuning proposals."""
 
     metrics = {
@@ -81,7 +82,7 @@ def fetch_tuning_metrics(
     return metrics
 
 
-def generate_proposals(metrics: Dict[str, Any]) -> List[Proposal]:
+def generate_proposals(metrics: dict[str, Any]) -> list[Proposal]:
     """Generate proposals based on deterministic heuristics and gathered metrics."""
     proposals = []
 

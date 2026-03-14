@@ -1,15 +1,17 @@
+from datetime import datetime, timezone
+
 from sqlalchemy import (
-    Column,
-    Integer,
-    String,
-    Float,
-    DateTime,
-    ForeignKey,
     JSON,
     Boolean,
+    Column,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
 )
+
 from shared.database.models import Base
-from datetime import datetime, timezone
 
 
 class JournalSetup(Base):

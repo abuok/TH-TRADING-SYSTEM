@@ -4,11 +4,13 @@ Provides contract details (min_lot, tick_size, etc.) for a symbol.
 Used for lot sizing and risk calculations.
 """
 
-import os
 import logging
+import os
 from abc import ABC, abstractmethod
-from typing import Optional, NamedTuple
+from typing import NamedTuple
+
 from sqlalchemy.orm import Session
+
 import shared.database.session as db_session
 from shared.database.models import SymbolSpec as SymbolSpecModel
 
@@ -27,7 +29,7 @@ class SymbolSpec(NamedTuple):
 
 class SymbolSpecProvider(ABC):
     @abstractmethod
-    def get_spec(self, symbol: str) -> Optional[SymbolSpec]:
+    def get_spec(self, symbol: str) -> SymbolSpec | None:
         """Return SymbolSpec for symbol, or None if not found."""
 
 
@@ -37,10 +39,10 @@ class DBSymbolSpecProvider(SymbolSpecProvider):
     Specs are populated via the /bridge/spec endpoint from MT5.
     """
 
-    def __init__(self, db: Optional[Session] = None):
+    def __init__(self, db: Session | None = None):
         self._db = db
 
-    def get_spec(self, symbol: str) -> Optional[SymbolSpec]:
+    def get_spec(self, symbol: str) -> SymbolSpec | None:
         db = self._db or db_session.SessionLocal()
         try:
             model = (
@@ -74,7 +76,7 @@ class MockSymbolSpecProvider(SymbolSpecProvider):
             "EURUSD": SymbolSpec("EURUSD", 100000.0, 0.00001, 1.0, 0.0001, 0.01, 0.01),
         }
 
-    def get_spec(self, symbol: str) -> Optional[SymbolSpec]:
+    def get_spec(self, symbol: str) -> SymbolSpec | None:
         return self._specs.get(symbol)
 
 

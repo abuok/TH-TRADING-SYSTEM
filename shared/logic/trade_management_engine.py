@@ -1,20 +1,20 @@
 # ruff: noqa: E402  # delayed imports/path setup required in this module
 import logging
-from datetime import datetime, timezone, timedelta
-from typing import List
+from datetime import datetime, timedelta, timezone
+
 from sqlalchemy.orm import Session
 
 from shared.database.models import (
+    KillSwitch,
+    ManagementSuggestionLog,
     OrderTicket,
+    PolicySelectionLog,
     PositionSnapshot,
     TicketTradeLink,
-    ManagementSuggestionLog,
-    KillSwitch,
-    PolicySelectionLog,
 )
-from shared.types.trade_management import PositionManagementSuggestion, SuggestionType
-from shared.providers.price_quote import PriceQuoteProvider, get_price_quote_provider
 from shared.logic.sessions import get_nairobi_time
+from shared.providers.price_quote import PriceQuoteProvider, get_price_quote_provider
+from shared.types.trade_management import PositionManagementSuggestion, SuggestionType
 
 logger = logging.getLogger("TradeManagementEngine")
 
@@ -43,7 +43,7 @@ def generate_suggestions_for_position(
     snapshot: PositionSnapshot,
     quote_provider: PriceQuoteProvider,
     now_eat: datetime,
-) -> List[PositionManagementSuggestion]:
+) -> list[PositionManagementSuggestion]:
     """Generate rule-based suggestions for a single position snapshot."""
     # 1. Find the linked ticket
     link = (

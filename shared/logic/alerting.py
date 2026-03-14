@@ -5,12 +5,12 @@ Logic for sending notifications on critical service events.
 
 import logging
 from datetime import datetime
-from typing import Dict, Any
+from typing import Any
 
 logger = logging.getLogger("Alerting")
 
 
-async def send_critical_alert(service: str, event_type: str, details: Dict[str, Any]):
+async def send_critical_alert(service: str, event_type: str, details: dict[str, Any]):
     """
     Sends a critical alert to the configured output (Console and Telegram).
     """
@@ -35,7 +35,7 @@ async def send_critical_alert(service: str, event_type: str, details: Dict[str, 
         logger.error(f"Alerting: Telegram send failed - {e}")
 
 
-async def check_incident_alerts(incident_data: Dict[str, Any]):
+async def check_incident_alerts(incident_data: dict[str, Any]):
     """
     Evaluates an incident for alert triggering.
     """

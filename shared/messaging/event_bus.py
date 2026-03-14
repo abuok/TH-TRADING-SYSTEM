@@ -1,7 +1,8 @@
-import os
 import json
-import redis
+import os
 from datetime import datetime
+
+import redis
 
 
 class EventBus:
@@ -11,10 +12,11 @@ class EventBus:
 
     def publish(self, stream_name: str, data: dict, retries: int = 3):
         """Publish a packet to a Redis stream with retries and incident logging."""
-        import time
         import logging
-        from shared.database.models import IncidentLog
+        import time
+
         import shared.database.session as db_session
+        from shared.database.models import IncidentLog
 
         logger = logging.getLogger("EventBus")
 

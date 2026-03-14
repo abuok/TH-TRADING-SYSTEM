@@ -1,15 +1,17 @@
-import typer
 import os
 import sys
+
+import typer
 
 # Add project root to sys.path
 sys.path.append(os.getcwd())
 
-from shared.adapters.price_feed import CSVPriceFeedAdapter
-from shared.logic.sessions import SessionEngine
-from shared.logic.phx_detector import PHXDetector, PHXStage
 from rich.console import Console
 from rich.table import Table
+
+from shared.adapters.price_feed import CSVPriceFeedAdapter
+from shared.logic.phx_detector import PHXDetector, PHXStage
+from shared.logic.sessions import SessionEngine
 
 app = typer.Typer()
 console = Console()

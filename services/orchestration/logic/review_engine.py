@@ -1,8 +1,8 @@
 import os
-from typing import List
 from datetime import timedelta
-from sqlalchemy.orm import Session
+
 from sqlalchemy import func
+from sqlalchemy.orm import Session
 
 try:
     import jinja2
@@ -10,14 +10,14 @@ except ModuleNotFoundError:
     jinja2 = None
 
 from shared.database.models import (
-    OrderTicket,
-    HindsightOutcomeLog,
-    AlignmentLog,
     ActionItem,
+    AlignmentLog,
+    HindsightOutcomeLog,
+    OrderTicket,
     PolicySelectionLog,
 )
-from shared.types.ops import WeeklyReviewReport
 from shared.logic.sessions import get_nairobi_time
+from shared.types.ops import WeeklyReviewReport
 
 TEMPLATE_DIR = "services/dashboard/templates"
 OUTPUT_DIR = "artifacts/ops/weekly"
@@ -84,7 +84,10 @@ class ReviewEngine:
         # 2. Discipline
         blocked_setups = (
             self.db.query(AlignmentLog)
-            .filter(AlignmentLog.created_at >= start_date, AlignmentLog.is_aligned.is_(False))
+            .filter(
+                AlignmentLog.created_at >= start_date,
+                AlignmentLog.is_aligned.is_(False),
+            )
             .count()
         )
         avg_score = 0.0
@@ -94,7 +97,9 @@ class ReviewEngine:
             .all()
         )
         if alignment_logs:
-            avg_score = sum(log.alignment_score for log in alignment_logs) / len(alignment_logs)
+            avg_score = sum(log.alignment_score for log in alignment_logs) / len(
+                alignment_logs
+            )
 
         # 3. Decision Quality
         skipped_winners = len([h for h in hindsight_logs if h.outcome_label == "WIN"])
@@ -219,7 +224,7 @@ class ReviewEngine:
             .count()
         )
 
-    def _avg_winner_score(self, start, hindsight_logs: List[HindsightOutcomeLog]):
+    def _avg_winner_score(self, start, hindsight_logs: list[HindsightOutcomeLog]):
         # Get ticket_ids of winners from hindsight logs
         winning_ticket_ids = [
             h.ticket_id for h in hindsight_logs if h.outcome_label == "WIN"

@@ -6,10 +6,10 @@ Safe degradation: if PROXY_PROVIDER=real but no real implementation is wired,
 raise a ConfigurationError so the caller can fail-closed.
 """
 
-import os
 import logging
+import os
 from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional
+from typing import Any
 
 logger = logging.getLogger("ProxyProvider")
 
@@ -18,7 +18,7 @@ class ProxyProvider(ABC):
     """Abstract base for all proxy data providers."""
 
     @abstractmethod
-    def get_snapshots(self) -> Dict[str, Any]:
+    def get_snapshots(self) -> dict[str, Any]:
         """
         Return a dict of market proxy snapshots.
         Keys: symbol name (e.g. "DXY")
@@ -33,7 +33,7 @@ class MockProxyProvider(ProxyProvider):
     Returns stable, fixed deltas — NO random walk.
     """
 
-    SNAPSHOTS: Dict[str, Dict[str, Any]] = {
+    SNAPSHOTS: dict[str, dict[str, Any]] = {
         "DXY": {
             "symbol": "DXY",
             "current_value": 103.50,
@@ -54,7 +54,7 @@ class MockProxyProvider(ProxyProvider):
         },
     }
 
-    def get_snapshots(self) -> Dict[str, Any]:
+    def get_snapshots(self) -> dict[str, Any]:
         return {k: dict(v) for k, v in self.SNAPSHOTS.items()}
 
 
@@ -64,10 +64,10 @@ class RealProxyProvider(ProxyProvider):
     Required env var: TWELVE_DATA_API_KEY
     """
 
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, api_key: str | None = None):
         self.api_key = api_key or os.getenv("TWELVE_DATA_API_KEY")
 
-    def get_snapshots(self) -> Dict[str, Any]:
+    def get_snapshots(self) -> dict[str, Any]:
         if not self.api_key:
             logger.error("RealProxyProvider: TWELVE_DATA_API_KEY is missing.")
             return {}

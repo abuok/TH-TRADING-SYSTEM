@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
-from typing import Optional
 from enum import Enum
+
 from pydantic import BaseModel, Field
 
 
@@ -31,33 +31,33 @@ class OrderTicketSchema(BaseModel):
     entry_price: float
     stop_loss: float
     take_profit_1: float
-    take_profit_2: Optional[float] = None
+    take_profit_2: float | None = None
     lot_size: float
     risk_usd: float
     risk_pct: float
     rr_tp1: float
-    rr_tp2: Optional[float] = None
+    rr_tp2: float | None = None
     status: str = "PENDING"
-    block_reason: Optional[str] = None
+    block_reason: str | None = None
     idempotency_key: str
-    jit_validation_hash: Optional[str] = None
+    jit_validation_hash: str | None = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    expires_at: Optional[datetime] = None
-    reviewed_at: Optional[datetime] = None
-    closed_at: Optional[datetime] = None
-    review_decision: Optional[str] = None
-    skip_reason: Optional[SkipReasonEnum] = None
-    notes: Optional[str] = None
-    manual_entry_price: Optional[float] = None
-    manual_exit_price: Optional[float] = None
-    manual_outcome_r: Optional[float] = None
-    manual_outcome_label: Optional[TicketOutcomeEnum] = None
-    manual_screenshot_ref: Optional[str] = None
+    expires_at: datetime | None = None
+    reviewed_at: datetime | None = None
+    closed_at: datetime | None = None
+    review_decision: str | None = None
+    skip_reason: SkipReasonEnum | None = None
+    notes: str | None = None
+    manual_entry_price: float | None = None
+    manual_exit_price: float | None = None
+    manual_outcome_r: float | None = None
+    manual_outcome_label: TicketOutcomeEnum | None = None
+    manual_screenshot_ref: str | None = None
 
     # Mission E: Bridge Data
-    executed_at: Optional[datetime] = None
-    broker_trade_id: Optional[str] = None
-    realized_r: Optional[float] = None
+    executed_at: datetime | None = None
+    broker_trade_id: str | None = None
+    realized_r: float | None = None
 
     def to_mt5_note(self) -> str:
         """Formats the ticket as a plain text note for MT5."""

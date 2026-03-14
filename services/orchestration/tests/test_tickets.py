@@ -1,10 +1,12 @@
-import pytest
 from datetime import datetime, timezone
+
+import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
 from shared.database.models import Base, OrderTicket
-from shared.types.packets import TechnicalSetupPacket, RiskApprovalPacket
 from shared.logic.trading_logic import generate_order_ticket
+from shared.types.packets import RiskApprovalPacket, TechnicalSetupPacket
 
 # In-memory DB for testing
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
@@ -49,6 +51,7 @@ def test_generate_ticket_success(db):
     )
 
     from shared.types.packets import AlignmentDecision
+
     alignment = AlignmentDecision(asset_pair="XAUUSD", is_aligned=True, reason_codes=[])
     ticket = generate_order_ticket(setup, risk, db, risk_usd=100.0, alignment=alignment)
 

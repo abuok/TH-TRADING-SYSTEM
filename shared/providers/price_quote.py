@@ -6,10 +6,11 @@ Safe degradation: if no real provider is configured, FAIL CLOSED — return None
 so the caller can reject the preflight check rather than silently pass with stale data.
 """
 
-import os
 import logging
+import os
 from abc import ABC, abstractmethod
-from typing import Optional, NamedTuple
+from typing import NamedTuple
+
 from sqlalchemy.orm import Session
 
 logger = logging.getLogger("PriceQuoteProvider")
@@ -39,7 +40,7 @@ class PriceQuoteProvider(ABC):
     """Abstract base for live price data."""
 
     @abstractmethod
-    def get_quote(self, symbol: str) -> Optional[PriceQuote]:
+    def get_quote(self, symbol: str) -> PriceQuote | None:
         """
         Return a PriceQuote for *symbol*, or None on failure.
         Must never raise — return None and log on failure.
@@ -54,11 +55,11 @@ class MockPriceQuoteProvider(PriceQuoteProvider):
     Tests can construct MockPriceQuoteProvider with custom quotes.
     """
 
-    def __init__(self, quotes: Optional[dict] = None):
+    def __init__(self, quotes: dict | None = None):
         # symbol -> (bid, ask)
         self._quotes: dict = quotes or {}
 
-    def get_quote(self, symbol: str) -> Optional[PriceQuote]:
+    def get_quote(self, symbol: str) -> PriceQuote | None:
         if symbol in self._quotes:
             bid, ask = self._quotes[symbol]
             return PriceQuote(symbol=symbol, bid=bid, ask=ask)
@@ -78,12 +79,12 @@ class DBPriceQuoteProvider(PriceQuoteProvider):
     Quotes are updated via the /bridge/quote endpoint.
     """
 
-    def __init__(self, db: Optional[Session] = None):
+    def __init__(self, db: Session | None = None):
         self._db = db
 
-    def get_quote(self, symbol: str) -> Optional[PriceQuote]:
-        from shared.database.models import LiveQuote
+    def get_quote(self, symbol: str) -> PriceQuote | None:
         import shared.database.session as db_session
+        from shared.database.models import LiveQuote
 
         db = self._db or db_session.SessionLocal()
         try:
@@ -99,11 +100,11 @@ class DBPriceQuoteProvider(PriceQuoteProvider):
 class RealPriceQuoteProvider(PriceQuoteProvider):
     """Stub for future direct broker integration."""
 
-    def get_quote(self, symbol: str) -> Optional[PriceQuote]:
+    def get_quote(self, symbol: str) -> PriceQuote | None:
         raise NotImplementedError("RealPriceQuoteProvider is a stub.")
 
 
-_global_provider: Optional[PriceQuoteProvider] = None
+_global_provider: PriceQuoteProvider | None = None
 
 
 def get_price_quote_provider() -> PriceQuoteProvider:

@@ -1,7 +1,8 @@
-from datetime import time, datetime
-from typing import List, Dict, Tuple
-from shared.types.packets import Candle
+from datetime import datetime, time
+
 import pytz
+
+from shared.types.packets import Candle
 
 
 class SessionEngine:
@@ -19,8 +20,8 @@ class SessionEngine:
 
     @classmethod
     def get_session_candles(
-        cls, candles: List[Candle], session_range: Tuple[time, time]
-    ) -> List[Candle]:
+        cls, candles: list[Candle], session_range: tuple[time, time]
+    ) -> list[Candle]:
         start, end = session_range
         session_candles = []
         nairobi_tz = pytz.timezone("Africa/Nairobi")
@@ -36,7 +37,7 @@ class SessionEngine:
         return session_candles
 
     @classmethod
-    def get_high_low(cls, candles: List[Candle]) -> Dict[str, float]:
+    def get_high_low(cls, candles: list[Candle]) -> dict[str, float]:
         if not candles:
             return {}
         return {
@@ -45,7 +46,7 @@ class SessionEngine:
         }
 
     @classmethod
-    def compute_all_levels(cls, candles: List[Candle]) -> Dict[str, float]:
+    def compute_all_levels(cls, candles: list[Candle]) -> dict[str, float]:
         asia_candles = cls.get_session_candles(candles, cls.ASIA_RANGE)
         london_candles = cls.get_session_candles(candles, cls.LONDON_RANGE)
 
@@ -84,13 +85,15 @@ class SessionEngine:
                 return "ASIA_SESSION"
             # For XAUUSD and others, Asia is effectively OUT_OF_SESSION
             return "OUT_OF_SESSION"
-        
+
         # Catch-all
         return "OUT_OF_SESSION"
+
 
 def get_nairobi_time() -> datetime:
     """Returns the current time in Africa/Nairobi."""
     return datetime.now(pytz.timezone("Africa/Nairobi"))
+
 
 def get_session_label(now_nairobi: datetime, asset_pair: str = "UNKNOWN") -> str:
     """Wrapper mapping to SessionEngine.get_session_state."""

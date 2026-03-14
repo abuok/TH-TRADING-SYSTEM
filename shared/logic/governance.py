@@ -1,8 +1,9 @@
 import logging
-from datetime import datetime, timezone, timedelta
-from typing import Optional, Dict
+from datetime import datetime, timedelta, timezone
+
 from sqlalchemy.orm import Session
-from shared.database.models import KillSwitch, IncidentLog
+
+from shared.database.models import IncidentLog, KillSwitch
 
 logger = logging.getLogger("Governance")
 
@@ -11,7 +12,7 @@ class GovernanceEngine:
     def __init__(self, db: Session):
         self.db = db
 
-    def is_halted(self, target_type: str, target_name: Optional[str] = None) -> bool:
+    def is_halted(self, target_type: str, target_name: str | None = None) -> bool:
         """
         Check if a specific target or the entire system is halted.
         target_type: HALT_ALL, HALT_PAIR, HALT_SERVICE, HALT_EXECUTION
@@ -44,8 +45,8 @@ class GovernanceEngine:
         severity: str,
         component: str,
         message: str,
-        error_code: Optional[str] = None,
-        context: Optional[dict] = None,
+        error_code: str | None = None,
+        context: dict | None = None,
     ):
         """Log a structured incident to the database."""
         incident = IncidentLog(
@@ -69,7 +70,7 @@ class GovernanceEngine:
         return now - timestamp > timedelta(seconds=ttl_seconds)
 
     def validate_packet_freshness(
-        self, packet_type: str, timestamp: datetime, ttl_map: Dict[str, int]
+        self, packet_type: str, timestamp: datetime, ttl_map: dict[str, int]
     ) -> bool:
         """Validate packet freshness and log incident if stale."""
         ttl = ttl_map.get(packet_type, 60)  # Default 60s

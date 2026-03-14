@@ -1,11 +1,12 @@
-import pytest
 from datetime import datetime, timezone
+
+import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from services.research.hindsight import process_ticket_hindsight
 from shared.database.models import Base, OrderTicket
 from shared.types.packets import Candle
-from services.research.hindsight import process_ticket_hindsight
 
 engine = create_engine("sqlite:///:memory:")
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

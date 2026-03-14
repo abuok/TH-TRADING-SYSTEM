@@ -1,8 +1,10 @@
-import pytest
 import csv
 from datetime import datetime, timedelta
-from shared.types.research import CounterfactualConfig
+
+import pytest
+
 from services.research.simulator import run_replay
+from shared.types.research import CounterfactualConfig
 
 
 # Make a temporary CSV file fixture
@@ -140,10 +142,11 @@ def synthetic_csv(tmp_path):
 
 def test_run_replay_integration(synthetic_csv, monkeypatch):
     from shared.providers.proxy import MockProxyProvider
+
     # Force Bullish Gold: SPX drop + DXY drop
     monkeypatch.setitem(MockProxyProvider.SNAPSHOTS["SPX"], "delta_pct", -0.6)
     monkeypatch.setitem(MockProxyProvider.SNAPSHOTS["DXY"], "delta_pct", -0.2)
-    
+
     start_date = datetime(2026, 1, 1)
     end_date = datetime(2026, 1, 2)
 

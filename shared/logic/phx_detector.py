@@ -1,9 +1,10 @@
-from enum import Enum, auto
-from typing import List, Dict
-from shared.types.packets import Candle
 from datetime import datetime
+from enum import Enum, auto
+
 import pytz
+
 from shared.logic.sessions import SessionEngine
+from shared.types.packets import Candle
 
 
 class PHXStage(Enum):
@@ -27,9 +28,9 @@ class PHXDetector:
         self.sweep_level = None
         self.sweep_high_low = None  # High of bullish sweep or Low of bearish sweep
         self.choch_level = None
-        self.history: List[Candle] = []
-        self.stage_timestamps: Dict[PHXStage, datetime] = {}
-        self.reason_codes: List[str] = []
+        self.history: list[Candle] = []
+        self.stage_timestamps: dict[PHXStage, datetime] = {}
+        self.reason_codes: list[str] = []
         self.current_session_label = None
         self.is_invalidated = False
 
@@ -69,49 +70,59 @@ class PHXDetector:
             return
 
         # Phase 3: Session State Awareness
-        ts = candle.timestamp if candle.timestamp.tzinfo else candle.timestamp.replace(tzinfo=pytz.UTC)
+        ts = (
+            candle.timestamp
+            if candle.timestamp.tzinfo
+            else candle.timestamp.replace(tzinfo=pytz.UTC)
+        )
         nairobi_tz = pytz.timezone("Africa/Nairobi")
         now_nairobi = ts.astimezone(nairobi_tz)
-        
+
         session_label = SessionEngine.get_session_state(now_nairobi, self.asset_pair)
-        
+
         # 1. Handle Session Transitions
         if self.current_session_label and session_label != self.current_session_label:
             self._handle_session_transition(session_label, ts)
-            
+
         self.current_session_label = session_label
 
         # 2. Apply Constitutional Session Rules
         if session_label == "OUT_OF_SESSION":
             # FREEZE: Ignore ticks, no transitions.
             return
-            
+
         # 3. Staleness Checks
         if self.stage == PHXStage.RETEST:
             retest_ts = self.stage_timestamps.get(PHXStage.RETEST)
             if retest_ts:
                 # Ensure retest_ts is aware for comparison
-                retest_ts_aware = retest_ts if retest_ts.tzinfo else retest_ts.replace(tzinfo=pytz.UTC)
+                retest_ts_aware = (
+                    retest_ts
+                    if retest_ts.tzinfo
+                    else retest_ts.replace(tzinfo=pytz.UTC)
+                )
                 if (ts - retest_ts_aware).total_seconds() > 6 * 3600:
                     self.reset()
                     self.reason_codes.append("Reset: RETEST stale (>6h)")
                     return
 
         self.history.append(candle)
-        
+
         # 4. OBSERVE-only mode check
         next_stage_func = getattr(self, f"_process_{self.stage.name.lower()}")
-        
+
         # Capture stage before process to detect if we are trying to enter TRIGGER
         current_stage = self.stage
         next_stage_func(candle)
-        
+
         if self.stage == PHXStage.TRIGGER and current_stage != PHXStage.TRIGGER:
             # Check if TRIGGER is allowed in current session
             if session_label in ["PRE_SESSION", "ASIA_SESSION", "POST_SESSION"]:
                 # SUPPRESS: Revert to RETEST
                 self.stage = PHXStage.RETEST
-                self.reason_codes.append(f"TRIGGER suppressed: OBSERVE-only in {session_label}")
+                self.reason_codes.append(
+                    f"TRIGGER suppressed: OBSERVE-only in {session_label}"
+                )
 
     def _handle_session_transition(self, new_label: str, ts: datetime):
         """Implements Constitutional Step 7.1: Boundary cleanup."""
@@ -125,11 +136,17 @@ class PHXDetector:
         if self.stage == PHXStage.RETEST:
             retest_ts = self.stage_timestamps.get(PHXStage.RETEST)
             if retest_ts:
-                retest_ts_aware = retest_ts if retest_ts.tzinfo else retest_ts.replace(tzinfo=pytz.UTC)
+                retest_ts_aware = (
+                    retest_ts
+                    if retest_ts.tzinfo
+                    else retest_ts.replace(tzinfo=pytz.UTC)
+                )
                 age_seconds = (ts - retest_ts_aware).total_seconds()
                 if age_seconds > 3 * 3600:
                     self.reset()
-                    self.reason_codes.append(f"Reset: RETEST too old at session boundary ({age_seconds/3600:.1f}h)")
+                    self.reason_codes.append(
+                        f"Reset: RETEST too old at session boundary ({age_seconds / 3600:.1f}h)"
+                    )
 
     def invalidate(self):
         """Immediately resets and blocks the detector until a fresh bias packet arrives."""

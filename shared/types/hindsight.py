@@ -1,6 +1,6 @@
-from pydantic import BaseModel, Field
-from typing import Optional
 from datetime import datetime
+
+from pydantic import BaseModel, Field
 
 
 class HindsightOutcome(BaseModel):
@@ -9,6 +9,6 @@ class HindsightOutcome(BaseModel):
     outcome_label: str = Field(..., description="WIN, LOSS, BE, or NONE")
     realized_r: float
     first_hit: str = Field(..., description="SL, TP1, TP2, or NONE")
-    time_to_hit_min: Optional[int] = None
-    notes: Optional[str] = None
-    policy_hash: Optional[str] = None
+    time_to_hit_min: int | None = None
+    notes: str | None = None
+    policy_hash: str | None = None

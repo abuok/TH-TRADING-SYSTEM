@@ -1,8 +1,9 @@
+import os
+import sys
+from unittest.mock import MagicMock, patch
+
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import patch, MagicMock
-import sys
-import os
 
 # Ensure root is in path
 sys.path.append(os.getcwd())
@@ -37,10 +38,15 @@ def test_dashboard_overview_basic():
             "permission_state": "TRADEABLE",
             "permission_msg": "SYSTEM READY",
             "bias_states": {},
-            "risk_budget": {"daily_loss_pct": 0, "max_daily_loss_pct": 2, "max_consecutive_losses": 3, "consecutive_losses": 0},
+            "risk_budget": {
+                "daily_loss_pct": 0,
+                "max_daily_loss_pct": 2,
+                "max_consecutive_losses": 3,
+                "consecutive_losses": 0,
+            },
             "live_positions": [],
             "live_quotes": [],
-            "time_to_transition": 60
+            "time_to_transition": 60,
         }
 
         response = client.get("/dashboard")
@@ -67,10 +73,15 @@ def test_dashboard_kill_switches_reflected():
             "permission_state": "HARD_LOCK",
             "permission_msg": "HALT_ALL ACTIVE",
             "bias_states": {},
-            "risk_budget": {"daily_loss_pct": 0, "max_daily_loss_pct": 2, "max_consecutive_losses": 3, "consecutive_losses": 0},
+            "risk_budget": {
+                "daily_loss_pct": 0,
+                "max_daily_loss_pct": 2,
+                "max_consecutive_losses": 3,
+                "consecutive_losses": 0,
+            },
             "live_positions": [],
             "live_quotes": [],
-            "time_to_transition": 60
+            "time_to_transition": 60,
         }
 
         response = client.get("/dashboard")
@@ -99,18 +110,25 @@ def test_dashboard_stale_packets_reflected():
                     "stage": "A",
                     "is_aligned": False,
                     "age_str": "1m",
-                    "is_fresh": False
+                    "is_fresh": False,
                 }
             ],
             "latest_decisions": [],
             "latest_incidents": [],
             "permission_state": "TRADEABLE",
             "permission_msg": "SYSTEM READY",
-            "bias_states": {"BTC-USD": {"bias": "BULLISH", "age_m": 5, "is_invalidated": False}},
-            "risk_budget": {"daily_loss_pct": 0.5, "max_daily_loss_pct": 2.0, "consecutive_losses": 0, "max_consecutive_losses": 3},
+            "bias_states": {
+                "BTC-USD": {"bias": "BULLISH", "age_m": 5, "is_invalidated": False}
+            },
+            "risk_budget": {
+                "daily_loss_pct": 0.5,
+                "max_daily_loss_pct": 2.0,
+                "consecutive_losses": 0,
+                "max_consecutive_losses": 3,
+            },
             "live_positions": [],
             "live_quotes": [],
-            "time_to_transition": 45
+            "time_to_transition": 45,
         }
 
         response = client.get("/dashboard")

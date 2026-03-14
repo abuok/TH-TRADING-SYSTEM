@@ -6,7 +6,7 @@ Prevents injection attacks, XSS, and invalid data types.
 
 import html
 import re
-from typing import Pattern
+from re import Pattern
 
 
 class SecurityValidators:

@@ -4,14 +4,16 @@ Enforces systemic discipline lockouts and daily/consecutive loss limits.
 Replaces fragmented checks in generic guardrails.
 """
 
-from typing import Dict, Any, Tuple
+from typing import Any
+
 from sqlalchemy.orm import Session
 
-from shared.database.models import KillSwitch, DisciplineLockout
+from shared.database.models import DisciplineLockout, KillSwitch
 from shared.types.enums import LockoutState
 
+
 class LockoutEngine:
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: dict[str, Any]):
         """
         config example:
         {
@@ -22,7 +24,9 @@ class LockoutEngine:
         """
         self.config = config
 
-    def evaluate(self, account_state: Dict[str, Any], db: Session = None) -> Tuple[LockoutState, str]:
+    def evaluate(
+        self, account_state: dict[str, Any], db: Session = None
+    ) -> tuple[LockoutState, str]:
         """
         account_state example:
         {
@@ -34,19 +38,37 @@ class LockoutEngine:
         # 1. Check Kill Switches if DB available
         if db:
             try:
-                active_switch = db.query(KillSwitch).filter(KillSwitch.is_active == 1).first()
+                active_switch = (
+                    db.query(KillSwitch).filter(KillSwitch.is_active == 1).first()
+                )
                 if active_switch:
-                    return LockoutState.HARD_LOCK, f"Kill switch active: {active_switch.switch_type}"
-                
+                    return (
+                        LockoutState.HARD_LOCK,
+                        f"Kill switch active: {active_switch.switch_type}",
+                    )
+
                 # Also check if there's an active DisciplineLockout
-                active_lockout = db.query(DisciplineLockout).filter(DisciplineLockout.is_resolved.is_(False)).first()
+                active_lockout = (
+                    db.query(DisciplineLockout)
+                    .filter(DisciplineLockout.is_resolved.is_(False))
+                    .first()
+                )
                 if active_lockout:
-                    return LockoutState.HARD_LOCK, f"Discipline Lockout active: {active_lockout.reason}"
+                    return (
+                        LockoutState.HARD_LOCK,
+                        f"Discipline Lockout active: {active_lockout.reason}",
+                    )
             except Exception:
                 # Fail-closed
-                return LockoutState.HARD_LOCK, "Database unreachable for kill switch check"
+                return (
+                    LockoutState.HARD_LOCK,
+                    "Database unreachable for kill switch check",
+                )
         else:
-            return LockoutState.HARD_LOCK, "No database connection provided for LockoutEngine"
+            return (
+                LockoutState.HARD_LOCK,
+                "No database connection provided for LockoutEngine",
+            )
 
         # 2. Daily Loss Limit
         max_daily_pct = float(self.config.get("max_daily_loss_pct", 2.0))
@@ -55,20 +77,32 @@ class LockoutEngine:
         daily_loss_pct = (daily_loss_amount / balance * 100.0) if balance > 0 else 0.0
 
         if daily_loss_pct >= max_daily_pct:
-            return LockoutState.HARD_LOCK, f"Daily loss {daily_loss_pct:.1f}% >= limit {max_daily_pct}%"
+            return (
+                LockoutState.HARD_LOCK,
+                f"Daily loss {daily_loss_pct:.1f}% >= limit {max_daily_pct}%",
+            )
 
         # 3. Consecutive Loss Limit
         max_consecutive = int(self.config.get("max_consecutive_losses", 3))
         consecutive = account_state.get("consecutive_losses", 0)
-        
+
         if consecutive >= max_consecutive:
-            return LockoutState.HARD_LOCK, f"Consecutive losses {consecutive} >= limit {max_consecutive}"
+            return (
+                LockoutState.HARD_LOCK,
+                f"Consecutive losses {consecutive} >= limit {max_consecutive}",
+            )
 
         # 4. Soft Locks (Approaching limits - e.g. within 0.5% or 1 loss away)
         if daily_loss_pct >= max_daily_pct - 0.5:
-            return LockoutState.SOFT_LOCK, f"Daily loss {daily_loss_pct:.1f}% approaching limit {max_daily_pct}%"
-            
+            return (
+                LockoutState.SOFT_LOCK,
+                f"Daily loss {daily_loss_pct:.1f}% approaching limit {max_daily_pct}%",
+            )
+
         if consecutive >= max_consecutive - 1 and max_consecutive > 1:
-            return LockoutState.SOFT_LOCK, f"Consecutive losses {consecutive} approaching limit {max_consecutive}"
+            return (
+                LockoutState.SOFT_LOCK,
+                f"Consecutive losses {consecutive} approaching limit {max_consecutive}",
+            )
 
         return LockoutState.TRADEABLE, "Budget and Kill Switches OK"

@@ -1,6 +1,7 @@
-import os
-import httpx
 import logging
+import os
+
+import httpx
 
 logger = logging.getLogger("TelegramProvider")
 

@@ -1,8 +1,10 @@
-from datetime import datetime, timedelta
-from shared.types.research import CounterfactualConfig
-from services.research.simulator import run_replay
 import csv
+from datetime import datetime, timedelta
+
 import pytest
+
+from services.research.simulator import run_replay
+from shared.types.research import CounterfactualConfig
 
 
 @pytest.fixture

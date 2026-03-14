@@ -11,14 +11,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from shared.database.models import Base, OrderTicket, Packet
-from shared.providers.proxy import (
-    MockProxyProvider,
-    RealProxyProvider,
-    get_proxy_provider,
-)
+from shared.logic.execution_logic import PreflightEngine
 from shared.providers.calendar import (
-    MockCalendarProvider,
     ForexFactoryCalendarProvider,
+    MockCalendarProvider,
     get_calendar_provider,
 )
 from shared.providers.price_quote import (
@@ -26,7 +22,11 @@ from shared.providers.price_quote import (
     RealPriceQuoteProvider,
     get_price_quote_provider,
 )
-from shared.logic.execution_logic import PreflightEngine
+from shared.providers.proxy import (
+    MockProxyProvider,
+    RealProxyProvider,
+    get_proxy_provider,
+)
 
 # ── In-memory DB ──────────────────────────────────────────────────────────────
 
@@ -161,8 +161,9 @@ class TestRealProviderSafeBehaviour:
 
 class TestPreflightFailClosed:
     def _make_ticket(self, db):
-        from shared.database.models import Run
         import uuid
+
+        from shared.database.models import Run
 
         run = Run(run_id=f"run_{uuid.uuid4().hex[:8]}", status="completed")
         db.add(run)
@@ -204,8 +205,9 @@ class TestPreflightFailClosed:
 
     def test_news_window_passes_with_no_active_window(self, db):
         """When context exists with no active window, check should PASS."""
-        from shared.database.models import Run
         import uuid
+
+        from shared.database.models import Run
 
         ticket = self._make_ticket(db)
 

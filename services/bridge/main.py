@@ -3,23 +3,25 @@ services/bridge/main.py
 Live Data Bridge Service — Ingests real-time quotes and symbol specs from MT5.
 """
 
-import os
 import logging
+import os
 from datetime import datetime, timezone
-from typing import Optional
-from fastapi import FastAPI, Header, HTTPException, Depends
+
+from fastapi import Depends, FastAPI, Header, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+import shared.database.session as db_session
 from shared.database.models import (
     LiveQuote,
-    SymbolSpec,
-    PositionSnapshot as PositionSnapshotModel,
     QuoteStaleLog,
+    SymbolSpec,
 )
-import shared.database.session as db_session
-from shared.types.trade_capture import TradeFillBatch, PositionSnapshotBatch
+from shared.database.models import (
+    PositionSnapshot as PositionSnapshotModel,
+)
 from shared.logic.trade_lifecycle import process_trade_fill
+from shared.types.trade_capture import PositionSnapshotBatch, TradeFillBatch
 
 logger = logging.getLogger("BridgeService")
 
@@ -33,7 +35,7 @@ class QuotePayload(BaseModel):
     symbol: str
     bid: float
     ask: float
-    ts_utc: Optional[str] = None
+    ts_utc: str | None = None
 
 
 class SpecPayload(BaseModel):

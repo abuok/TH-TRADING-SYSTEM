@@ -1,28 +1,28 @@
-from contextlib import asynccontextmanager
+import asyncio
+import json
 import logging
 import os
-
-from fastapi import FastAPI, Depends, status
-from fastapi.responses import HTMLResponse, JSONResponse
-from sqlalchemy.orm import Session
-from sqlalchemy import text
-import shared.database.session as db_session
-from .models import (
-    JournalSetup,
-    JournalRiskDecision,
-    JournalTradeOutcome,
-    JournalTicket,
-    JournalTicketTransition,
-)
-from shared.types.packets import TechnicalSetupPacket, RiskApprovalPacket
-from shared.types.trading import OrderTicketSchema
-from typing import Optional
+from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 
-import asyncio
-from shared.logic.notifications import NotificationService, ConsoleNotificationAdapter
+from fastapi import Depends, FastAPI, status
+from fastapi.responses import HTMLResponse, JSONResponse
+from sqlalchemy import text
+from sqlalchemy.orm import Session
+
+import shared.database.session as db_session
+from shared.logic.notifications import ConsoleNotificationAdapter, NotificationService
 from shared.messaging.event_bus import EventBus
-import json
+from shared.types.packets import RiskApprovalPacket, TechnicalSetupPacket
+from shared.types.trading import OrderTicketSchema
+
+from .models import (
+    JournalRiskDecision,
+    JournalSetup,
+    JournalTicket,
+    JournalTicketTransition,
+    JournalTradeOutcome,
+)
 
 notifier = NotificationService([ConsoleNotificationAdapter()])
 event_bus = EventBus()
@@ -110,7 +110,7 @@ def log_setup(
 @app.post("/log/risk_decision")
 def log_risk_decision(
     decision: RiskApprovalPacket,
-    setup_id: Optional[int] = None,
+    setup_id: int | None = None,
     db: Session = Depends(db_session.get_db),
 ):
     db_decision = JournalRiskDecision(
@@ -132,7 +132,7 @@ def log_outcome(
     is_win: bool,
     r_multiple: float,
     pnl: float,
-    notes: Optional[str] = None,
+    notes: str | None = None,
     db: Session = Depends(db_session.get_db),
 ):
     db_outcome = JournalTradeOutcome(
@@ -152,8 +152,8 @@ def log_outcome(
 @app.post("/log/ticket")
 def log_ticket(
     ticket: OrderTicketSchema,
-    setup_id: Optional[int] = None,
-    risk_decision_id: Optional[int] = None,
+    setup_id: int | None = None,
+    risk_decision_id: int | None = None,
     db: Session = Depends(db_session.get_db),
 ):
     db_ticket = JournalTicket(

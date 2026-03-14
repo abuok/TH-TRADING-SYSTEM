@@ -4,8 +4,8 @@ from datetime import datetime
 
 from jinja2 import Environment, FileSystemLoader
 
-from shared.types.research import ResearchRunResult
 from shared.types.calibration import CalibrationReport
+from shared.types.research import ResearchRunResult
 
 _ARTIFACT_DIR = os.path.join("artifacts", "research")
 _TEMPLATE_DIR = os.path.join("services", "dashboard", "templates")
@@ -25,7 +25,7 @@ def load_research_run(run_id: str) -> ResearchRunResult:
     filepath = os.path.join(_ARTIFACT_DIR, f"{run_id}.json")
     if not os.path.exists(filepath):
         raise FileNotFoundError(f"Research run artifact '{run_id}' not found.")
-    with open(filepath, "r") as f:
+    with open(filepath) as f:
         data = json.load(f)
     return ResearchRunResult(**data)
 

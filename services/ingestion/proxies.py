@@ -1,11 +1,11 @@
-from abc import ABC, abstractmethod
-from typing import Dict, Any
 import random
+from abc import ABC, abstractmethod
+from typing import Any
 
 
 class ProxyProvider(ABC):
     @abstractmethod
-    def get_snapshots(self) -> Dict[str, Any]:
+    def get_snapshots(self) -> dict[str, Any]:
         """Return a dictionary of market proxy snapshots with historical context."""
         pass
 
@@ -15,7 +15,7 @@ class MockProxyProvider(ProxyProvider):
         # Initialize some baseline values
         self.history = {"DXY": 103.50, "US10Y": 4.10, "SPX": 5100.0}
 
-    def get_snapshots(self) -> Dict[str, Any]:
+    def get_snapshots(self) -> dict[str, Any]:
         """Generate mock data testing deltas for DXY, US10Y, and SPX."""
         result = {}
         for sym, prev in self.history.items():

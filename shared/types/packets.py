@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
-from typing import Dict, List, Optional, Any
+from typing import Any
+
 from pydantic import BaseModel, Field, field_validator
 
 
@@ -29,11 +30,11 @@ class MarketContextPacket(BasePacket):
     asset_pair: str
     price: float
     volume_24h: float
-    proxies: Dict[str, Any] = Field(default_factory=dict)
-    metrics: Dict[str, Any] = Field(default_factory=dict)
+    proxies: dict[str, Any] = Field(default_factory=dict)
+    metrics: dict[str, Any] = Field(default_factory=dict)
     # First-class event fields (not buried in metrics)
-    high_impact_events: List[Dict[str, Any]] = Field(default_factory=list)
-    no_trade_windows: List[Dict[str, Any]] = Field(default_factory=list)
+    high_impact_events: list[dict[str, Any]] = Field(default_factory=list)
+    no_trade_windows: list[dict[str, Any]] = Field(default_factory=list)
 
 
 class PairBiasPacket(BasePacket):
@@ -41,7 +42,7 @@ class PairBiasPacket(BasePacket):
     bias_score: float = Field(
         ..., ge=-1.0, le=1.0, description="Bullish (+1) to Bearish (-1)"
     )
-    signals: List[str]
+    signals: list[str]
 
 
 class TechnicalSetupPacket(BasePacket):
@@ -51,7 +52,7 @@ class TechnicalSetupPacket(BasePacket):
     stop_loss: float
     take_profit: float
     timeframe: str
-    session_levels: Dict[str, float] = Field(default_factory=dict)
+    session_levels: dict[str, float] = Field(default_factory=dict)
 
 
 class RiskApprovalPacket(BasePacket):
@@ -62,8 +63,8 @@ class RiskApprovalPacket(BasePacket):
     max_position_size: float
     rr_ratio: float
     approver: str
-    reasons: List[str] = Field(default_factory=list)
-    notes: Optional[str] = None
+    reasons: list[str] = Field(default_factory=list)
+    notes: str | None = None
 
 
 class DecisionPacket(BasePacket):
@@ -73,7 +74,7 @@ class DecisionPacket(BasePacket):
     bias_score: float
     rr_ratio: float
     risk_status: str
-    risk_reasons: List[str]
+    risk_reasons: list[str]
     entry_price: float
     stop_loss: float
     take_profit: float
@@ -85,7 +86,7 @@ class JournalEntryPacket(BasePacket):
     event_type: str
     service_name: str
     message: str
-    metadata: Dict[str, str] = Field(default_factory=dict)
+    metadata: dict[str, str] = Field(default_factory=dict)
     level: str = "INFO"
 
 
@@ -93,5 +94,5 @@ class AlignmentDecision(BasePacket):
     schema_version: str = "1.0.0"
     asset_pair: str
     is_aligned: bool
-    reason_codes: List[str] = Field(default_factory=list)
+    reason_codes: list[str] = Field(default_factory=list)
     eval_timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

@@ -1,10 +1,11 @@
 import logging
 from datetime import datetime, timezone
-from typing import Optional
+
 from sqlalchemy.orm import Session
+
 from shared.database.models import OrderTicket
-from shared.types.trading import SkipReasonEnum, TicketOutcomeEnum
 from shared.messaging.event_bus import EventBus
+from shared.types.trading import SkipReasonEnum, TicketOutcomeEnum
 
 logger = logging.getLogger("TicketQueueLogic")
 event_bus = EventBus()
@@ -53,7 +54,7 @@ def approve_ticket(db: Session, ticket_id: str) -> OrderTicket:
 
 
 def skip_ticket(
-    db: Session, ticket_id: str, reason: SkipReasonEnum, notes: Optional[str] = None
+    db: Session, ticket_id: str, reason: SkipReasonEnum, notes: str | None = None
 ) -> OrderTicket:
     """Marks a ticket as SKIPPED with a reason."""
     ticket = db.query(OrderTicket).filter(OrderTicket.ticket_id == ticket_id).first()
@@ -90,9 +91,9 @@ def close_ticket(
     db: Session,
     ticket_id: str,
     outcome: TicketOutcomeEnum,
-    exit_price: Optional[float] = None,
-    realized_r: Optional[float] = None,
-    screenshot_ref: Optional[str] = None,
+    exit_price: float | None = None,
+    realized_r: float | None = None,
+    screenshot_ref: str | None = None,
 ) -> OrderTicket:
     """Marks an APPROVED ticket as CLOSED with final outcome attributes."""
     ticket = db.query(OrderTicket).filter(OrderTicket.ticket_id == ticket_id).first()

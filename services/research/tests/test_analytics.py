@@ -1,6 +1,7 @@
 import pytest
-from shared.types.research import SimulatedTrade
+
 from services.research.analytics import calculate_metrics
+from shared.types.research import SimulatedTrade
 
 
 @pytest.fixture

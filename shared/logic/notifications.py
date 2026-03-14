@@ -1,6 +1,5 @@
-from abc import ABC, abstractmethod
 import logging
-from typing import List
+from abc import ABC, abstractmethod
 
 logger = logging.getLogger("Notifications")
 
@@ -28,7 +27,7 @@ class ConsoleNotificationAdapter(NotificationAdapter):
 
 
 class NotificationService:
-    def __init__(self, adapters: List[NotificationAdapter]):
+    def __init__(self, adapters: list[NotificationAdapter]):
         self.adapters = adapters
 
     def notify(self, message: str, level: str = "INFO"):

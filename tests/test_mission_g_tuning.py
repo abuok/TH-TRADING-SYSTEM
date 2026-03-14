@@ -1,19 +1,20 @@
-import pytest
 from datetime import timedelta
+
+import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from shared.database.models import (
-    Base,
-    OrderTicket,
-    AlignmentLog,
-    ExecutionPrepLog,
-    TuningProposalLog,
-)
 from services.research.tuning import (
     fetch_tuning_metrics,
     generate_proposals,
     generate_tuning_report,
+)
+from shared.database.models import (
+    AlignmentLog,
+    Base,
+    ExecutionPrepLog,
+    OrderTicket,
+    TuningProposalLog,
 )
 from shared.logic.sessions import get_nairobi_time
 

@@ -4,31 +4,32 @@ Unit + integration tests for Session Briefing Pack assembly, delta computation,
 and Dashboard rendering.  Uses in-memory SQLite + mocked Nairobi time.
 """
 
-import pytest
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
+
+import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from shared.database.models import (
     Base,
+    IncidentLog,
+    KillSwitch,
+    OrderTicket,
     Packet,
     Run,
-    KillSwitch,
-    IncidentLog,
-    OrderTicket,
     SessionBriefing,
 )
-from shared.types.briefing import BriefingPack
 from shared.logic.briefing import (
+    _build_delta,
+    _build_market_context,
+    _build_pair_overview,
+    _build_system_status,
     assemble_briefing,
     persist_briefing,
     render_briefing_html,
-    _build_system_status,
-    _build_market_context,
-    _build_pair_overview,
-    _build_delta,
 )
+from shared.types.briefing import BriefingPack
 
 # ──────────────────────────────────────────────
 # In-memory DB fixture
@@ -203,13 +204,18 @@ def test_assemble_briefing_london(db):
     """Full pack assembly for a London session with minimal seeded data."""
     # Seed PairFundamentals for both pairs to avoid "unknown" bias
     for pair in ["XAUUSD", "GBPJPY"]:
-        _add_packet(db, db._test_run_id, "PairFundamentalsPacket", {
-            "asset_pair": pair,
-            "bias_label": "BULLISH",
-            "bias_score": 5.0,
-            "created_at": datetime.now(timezone.utc).isoformat()
-        })
-    
+        _add_packet(
+            db,
+            db._test_run_id,
+            "PairFundamentalsPacket",
+            {
+                "asset_pair": pair,
+                "bias_label": "BULLISH",
+                "bias_score": 5.0,
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            },
+        )
+
     pack = assemble_briefing(db, now_nairobi=FIXED_NAIROBI, is_delta=False)
 
     assert isinstance(pack, BriefingPack)
@@ -330,8 +336,10 @@ def test_persist_briefing_creates_record(db, tmp_path, monkeypatch):
 
 def test_dashboard_briefings_route(db, tmp_path, monkeypatch):
     """Verify the FastAPI dashboard route returns 200 with briefings page."""
-    from fastapi.testclient import TestClient
     from unittest.mock import AsyncMock
+
+    from fastapi.testclient import TestClient
+
     import shared.database.session as db_session
 
     # Override DB dependency to use our in-memory DB

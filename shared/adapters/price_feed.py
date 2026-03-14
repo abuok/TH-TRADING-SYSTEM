@@ -1,7 +1,8 @@
-import pandas as pd
-from typing import List, Optional
-from shared.types.packets import Candle
 import os
+
+import pandas as pd
+
+from shared.types.packets import Candle
 
 
 class CSVPriceFeedAdapter:
@@ -40,7 +41,7 @@ class CSVPriceFeedAdapter:
         )
         return resampled
 
-    def get_candles(self, timeframe: Optional[str] = None) -> List[Candle]:
+    def get_candles(self, timeframe: str | None = None) -> list[Candle]:
         """Get a list of standardized Candle objects."""
         df = self.resample(timeframe) if timeframe else self.data
         candles = []
@@ -57,9 +58,7 @@ class CSVPriceFeedAdapter:
             )
         return candles
 
-    def get_last_n_days(
-        self, days: int, timeframe: Optional[str] = None
-    ) -> List[Candle]:
+    def get_last_n_days(self, days: int, timeframe: str | None = None) -> list[Candle]:
         """Filter data for the last N days."""
         if self.data.empty:
             return []

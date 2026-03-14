@@ -6,14 +6,14 @@ help:
 	@echo "  run-all   : Start all services using Docker Compose"
 	@echo "  stop      : Stop all services"
 	@echo "  clean     : Remove temporary files and containers"
-	@echo "  lint              : Run ruff lint + format check"
+	@echo "  lint              : Run ruff (lint+format) + mypy check"
+	@echo "  fix               : Auto-fix safe issues (ruff fix + format)"
+	@echo "  verify            : Comprehensive merge-gate (fix + lint + test)"
 	@echo "  precommit-install : Install pre-commit hooks"
 	@echo "  precommit-run     : Run pre-commit on all files"
-	@echo "  test      : Run tests"
-	@echo "  test-cov  : Run tests with coverage report"
-	@echo "  demo      : Run E2E demo (requires Docker)"
-	@echo "  dashboard : Run dashboard locally (port 8005)"
-	@echo "  release-check : Run all pre-release validations"
+	@echo "  test              : Run tests"
+	@echo "  test-cov          : Run tests with coverage report"
+	@echo "  release-check     : Run all pre-release validations (deprecated by verify)"
 	@echo "  git-stage : Stage all modified files (prevents 'unstaged' issues)"
 	@echo "  git-commit MSG=<msg> : Stage all changes and commit with message"
 
@@ -45,8 +45,16 @@ clean:
 	find . -type f -name "*.pyc" -delete
 
 lint:
-	ruff check .
-	ruff format --check .
+	python -m ruff check .
+	python -m ruff format --check .
+	python -m mypy .
+
+fix:
+	python -m ruff check --fix .
+	python -m ruff format .
+
+verify: fix lint test
+	@echo "Verification COMPLETE. All hygiene gates PASSED."
 
 precommit-install:
 	pip install pre-commit

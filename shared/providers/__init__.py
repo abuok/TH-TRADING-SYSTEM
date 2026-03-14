@@ -1,20 +1,20 @@
 """shared/providers/__init__.py — Provider registry."""
 
-from .proxy import ProxyProvider, MockProxyProvider, get_proxy_provider
 from .calendar import (
     CalendarProvider,
-    MockCalendarProvider,
     ForexFactoryCalendarProvider,
+    MockCalendarProvider,
     get_calendar_provider,
 )
 from .price_quote import (
-    PriceQuoteProvider,
     MockPriceQuoteProvider,
+    PriceQuoteProvider,
     get_price_quote_provider,
 )
+from .proxy import MockProxyProvider, ProxyProvider, get_proxy_provider
 from .symbol_spec import (
-    SymbolSpecProvider,
     MockSymbolSpecProvider,
+    SymbolSpecProvider,
     get_symbol_spec_provider,
 )
 
