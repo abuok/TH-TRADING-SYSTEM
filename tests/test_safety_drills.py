@@ -2,9 +2,9 @@ import pytest
 import redis
 import datetime
 import pytz
-from datetime import timezone, timedelta, time as time_
+from datetime import timezone
 from unittest.mock import patch
-from sqlalchemy import create_engine, func
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from shared.messaging.event_bus import EventBus

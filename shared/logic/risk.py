@@ -31,7 +31,6 @@ class RiskEngine:
             return 0.0
         return round(reward / risk, 2)
 
-        return False
     def evaluate(
         self,
         setup: TechnicalSetupPacket,
@@ -70,7 +69,21 @@ class RiskEngine:
                 f"RR Ratio {rr} below threshold {self.config['min_rr_threshold']}"
             )
 
-        # Event Window and Daily Loss are now handled by AlignmentEngine and LockoutEngine
+        # 2. Daily Loss Check
+        daily_loss = account_state.get("daily_loss", 0.0)
+        if daily_loss >= self.config["max_daily_loss"]:
+            reasons.append(
+                f"Daily loss limit reached ({daily_loss} >= {self.config['max_daily_loss']})"
+            )
+
+        # 3. No-Trade Window Check
+        no_trade_windows = context.no_trade_windows or []
+        for window in no_trade_windows:
+            win_start = datetime.fromisoformat(window["start"])
+            win_end = datetime.fromisoformat(window["end"])
+            if win_start <= setup.timestamp <= win_end:
+                reasons.append(f"Setup falls within economic event window: {window}")
+                break
 
         # Result calculation: If no reasons for blocking, then we ALLOW
         if not reasons:

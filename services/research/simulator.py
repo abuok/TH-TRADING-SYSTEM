@@ -222,7 +222,6 @@ def run_replay(
 
             # Policy router (same loading mechanism as live)
             policy_config = alignment_overrides
-            policy_hash = None
             if policy_router is not None:
                 try:
                     decision = policy_router.select_policy(
@@ -232,7 +231,6 @@ def run_replay(
                         now_nairobi=current_time,
                     )
                     policy_config = decision.policy_config
-                    policy_hash = decision.policy_hash
                 except RuntimeError as e:
                     logger.warning("PolicyRouter failed: %s — using base config.", e)
 

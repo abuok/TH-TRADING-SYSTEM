@@ -652,7 +652,7 @@ async def evaluate_alignment(
     movers_data = movers_db.data if movers_db else {}
     pair_fund_data = pair_fund_db.data if pair_fund_db else {}
 
-    policy_decision = _policy_router.select_policy(
+    _policy_router.select_policy(
         movers_data=movers_data,
         context_data=context_data,
         pair_fundamentals=pair_fund_data,

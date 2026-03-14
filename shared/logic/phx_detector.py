@@ -162,7 +162,8 @@ class PHXDetector:
         if len(self.history) < 10:
             return
         # Look for Sweep: Price takes out a recent (5-10 candle) High/Low and reverses
-        lookback = self.history[-10:-1]
+        # Use a slice that doesn't skip the first candle when len is 11
+        lookback = self.history[-11:-1]
         if self.bias_direction == 1:
             min_low = min(c.low for c in lookback)
             if candle.low < min_low and candle.close > min_low:

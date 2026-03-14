@@ -681,7 +681,7 @@ It shows:
 
 ### Calibration & Tuning Proposals
 
-**URL**: `http://localhost:8005/dashboard/calibration` · 
+**URL**: `http://localhost:8005/dashboard/calibration` ·
 `http://localhost:8005/dashboard/tuning`
 
 The **Calibration** dashboard shows research runs that simulate how the
@@ -705,7 +705,7 @@ recommendations like "raise the minimum setup score from 70 to 75."
 
 ### Pilot Gate
 
-**URL**: `http://localhost:8005/dashboard/pilot` · 
+**URL**: `http://localhost:8005/dashboard/pilot` ·
 `http://localhost:8005/dashboard/pilot/gate`
 
 The **Pilot Gate** is the graduation system. Before you can increase your
@@ -734,7 +734,7 @@ investigate.
 
 | Term | Plain English Meaning |
 | :--- | :--- |
-| **Pair** | A currency combination (e.g., GBPJPY = British Pound vs. Japanese Yen). |
+| **Pair** | A currency combination (e.g., GBPJPY = Pound vs. Yen). |
 | **Spread** | The gap between buy and sell price. Wide spread = more cost. |
 | **Lot Size** | Trade volume. 0.01 is a micro lot, 1.0 is a standard lot. |
 | **SL** | Stop Loss: price where trade closes to limit loss. Non-negotiable. |
@@ -827,7 +827,8 @@ investigate.
 
 ## Reality Check
 
-> This section lists features that require real external configuration and will not function in a plain development environment without the corresponding credentials.
+> This section lists features that require real external configuration and
+> will not function in a development environment without credentials.
 
 | Feature | Status Without Config | How to Enable |
 | :--- | :--- | :--- |
@@ -838,7 +839,7 @@ investigate.
 | Redis wiring | No stream communication | Start Redis: `docker run -p 6379:6379` |
 | Prod forcing | Mocks allowed in dev | Set `ENV=prod` |
 
-### Files referenced to verify this guide
+### Files Referenced for Verification
 
 - `services/dashboard/main.py` — all routes confirmed
 - `docs/OPERATOR_MANUAL.md` — Pilot Gate thresholds
@@ -853,6 +854,6 @@ investigate.
 
 ---
 
-### Guide Status
+#### Guide Status
 
-Guide prepared: 2026-03-03 | Version: v1.0.0 | System: TH Trading System
+*Guide prepared: 2026-03-03 | Version: v1.0.0 | System: TH Trading System*

@@ -35,7 +35,7 @@ def fetch_tuning_metrics(
         "guardrails_blocks": db.query(AlignmentLog)
         .filter(
             AlignmentLog.created_at.between(start_date, end_date),
-            AlignmentLog.is_aligned == False,
+            AlignmentLog.is_aligned.is_(False),
         )
         .count(),
         "avg_discipline_score": db.query(func.avg(AlignmentLog.alignment_score))

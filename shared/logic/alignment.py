@@ -2,7 +2,7 @@ import os
 import yaml
 import logging
 from datetime import datetime, timedelta, timezone, time as time_
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, Optional
 
 import pytz
 from sqlalchemy.orm import Session
@@ -74,7 +74,8 @@ class AlignmentEngine:
         
         for ev in events:
             time_str = ev.get("time")
-            if not time_str: continue
+            if not time_str:
+                continue
             try:
                 candidates = [now_nairobi.date()]
                 if int(time_str.split(":")[0]) < 6:
@@ -85,7 +86,8 @@ class AlignmentEngine:
                     diff = (ev_dt - now_nairobi).total_seconds() / 60.0
                     if window[0] <= diff <= window[1]:
                         return False
-            except ValueError: continue
+            except ValueError:
+                continue
         return True
 
     def _check_eod_gap(self, now_nairobi: datetime, cfg: Dict[str, Any]) -> bool:
@@ -106,7 +108,8 @@ class AlignmentEngine:
             QuoteStaleLog.created_at >= cutoff
         ).scalar()
         
-        if max_stale is None: return False 
+        if max_stale is None:
+            return False
         return float(max_stale) <= limit
 
     def evaluate(
@@ -145,7 +148,8 @@ class AlignmentEngine:
         
         is_aligned = all(results.values())
         reasons = [f"FAILED: {k}" for k, v in results.items() if not v]
-        if is_aligned: reasons = ["All binary alignment checks passed."]
+        if is_aligned:
+            reasons = ["All binary alignment checks passed."]
         
         return AlignmentDecision(
             asset_pair=asset_pair,
