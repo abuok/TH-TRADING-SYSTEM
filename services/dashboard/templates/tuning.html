@@ -91,11 +91,8 @@
                         <div>
                             <div class="mb-1 text-muted text-bold text-xxs">
                                 SUPPORTING EVIDENCE</div>
-                            <ul class="m-0 text-muted text-xs pl-3">
-                                {% for ref in prop.evidence_refs %}
-                                <li class="mb-1">{{ ref }}</li>
-                                {% endfor %}
-                            </ul>
+                            <ul class="m-0 text-muted text-xs pl-3">{% for ref in prop.evidence_refs %}
+                                <li class="mb-1">{{ ref }}</li>{% endfor %}</ul>
 
                             <div class="text-bold mt-2 text-xxs text-pink mb-1">
                                 RISKS & ROLLBACK</div>

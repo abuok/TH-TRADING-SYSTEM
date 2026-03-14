@@ -115,7 +115,7 @@
                             <span class="text-xxs text-mono">{{ "%.2f" | format(risk_budget.daily_loss_pct) }}% / {{ risk_budget.max_daily_loss_pct }}%</span>
                         </div>
                         <div class="h-2 bg-dark-overlay rounded overflow-hidden">
-                            <div class="h-full bg-sell shadow-sell" style="width: {{ (risk_budget.daily_loss_pct / risk_budget.max_daily_loss_pct * 100)|round }}%"></div>
+                            <div class="risk-bar-fill" style="--risk-usage: {{ (risk_budget.daily_loss_pct / risk_budget.max_daily_loss_pct * 100)|round }}%"></div>
                         </div>
                     </div>
                     <div class="justify-between align-center flex border-t border-theme-soft pt-3">
