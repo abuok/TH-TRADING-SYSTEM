@@ -2,17 +2,17 @@
 
 This map outlines the internal interfaces and their available implementations.
 
-| Interface | Implementation | Env Var Setting | Selection Logic |
+| Interface | Impl | Env Var | Logic |
 | :--- | :--- | :--- | :--- |
-| CalProvider | Mock | CALENDAR_PROVIDER=mock | **Default.** Demo data. |
-| | ForexFactory | CP=forexfactory | Live JSON feed. |
-| ProxyProvider | Mock | PROXY_PROVIDER=mock | **Default.** No prod use. |
-| | Real | PROXY_PROVIDER=real | 12Data US10Y/DXY. |
-| `PriceQuote` | `Mock` | `PRICE_PROVIDER=mock` | **Default.** No prod use. |
-| | `DB` | `PRICE_PROVIDER=db` | PostgreSQL history. |
-| | `Real` | `PRICE_PROVIDER=real` | (Stub) MT5 connection. |
-| `SymbolSpec` | `Mock` | `SPEC_PROVIDER=mock` | **Default.** No prod use. |
-| | `DB` | `SPEC_PROVIDER=db` | PostgreSQL static specs. |
+| Calendar | Mock | `CP=mock` | **Default.** Demo. |
+| | FF | `CP=ff` | Live JSON feed. |
+| Proxy | Mock | `PP=mock` | **Default.** |
+| | Real | `PP=real` | 12Data US10Y. |
+| Price | Mock | `PQ=mock` | **Default.** |
+| | DB | `PQ=db` | PostgreSQL history. |
+| | Real | `PQ=real` | (Stub) MT5. |
+| Symbol | Mock | `SS=mock` | **Default.** |
+| | DB | `SS=db` | PostgreSQL specs. |
 
 ## Production Defaults (ENV=prod)
 
