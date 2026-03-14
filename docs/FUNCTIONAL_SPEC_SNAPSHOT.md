@@ -1,6 +1,6 @@
 # Functional Spec Snapshot (v1.0.0 Baseline)
 
-This document serves as the canonical reference for the v1.0.0 functionality, 
+This document serves as the canonical reference for the v1.0.0 functionality,
 extracted from original documentation and walkthroughs.
 
 ## 1. Subsystem Requirements

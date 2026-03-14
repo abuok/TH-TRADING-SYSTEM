@@ -1,6 +1,8 @@
 # PHX Live Bridge EA v2.0
 
-A **read-only** MetaTrader 5 Expert Advisor that streams live market data and trade events to the TH Trading System bridge service. It **never places or modifies orders**.
+A **read-only** MetaTrader 5 Expert Advisor that streams live market data
+and trade events to the TH Trading System bridge service. It **never places
+or modifies orders**.
 
 ## What It Does
 

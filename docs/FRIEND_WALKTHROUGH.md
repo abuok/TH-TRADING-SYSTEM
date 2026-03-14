@@ -832,12 +832,12 @@ investigate.
 
 | Feature | Status Without Config | How to Enable |
 | :--- | :--- | :--- |
-| Calendar | Uses `MockCalendarProvider` | Set `CALENDAR_PROVIDER=forexfactory` |
-| Macro data | Uses `MockProxyProvider` | Set `PROXY_PROVIDER=real` |
-| Price quotes | Uses `MockPriceQuoteProvider` | Set `PRICE_PROVIDER=db` + Bridge |
-| Telegram | Disabled — no alerts | Set `TELEGRAM_TOKEN` |
-| Redis wiring | No stream communication | Start Redis: `docker run -p 6379:6379` |
-| Prod forcing | Mocks allowed in dev | Set `ENV=prod` |
+| Calendar | Uses `MockCalendar` | `CALENDAR_PROVIDER=forexfactory` |
+| Macro data | Uses `MockProxy` | `PROXY_PROVIDER=real` |
+| Price quotes | Uses `MockPrice` | `PRICE_PROVIDER=db` + Bridge |
+| Telegram | Disabled | Set `TELEGRAM_TOKEN` |
+| Redis wiring | No streaming | `docker run -p 6379:6379` |
+| Prod forcing | Mocks allowed | Set `ENV=prod` |
 
 ### Files Referenced for Verification
 

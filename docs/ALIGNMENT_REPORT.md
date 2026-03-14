@@ -49,14 +49,15 @@ enforced.
 
 ## 4. Safety Risks (P0)
 
-- **NONE**: No safety-critical regressions were identified. The "No Execution" invariant is held.
+- **NONE**: No safety-critical regressions were identified. The "No
+  Execution" invariant is held.
 
 ---
 
 ## 5. Non-Safety Drift (P1/P2)
 
 - **P2: CLI Documentation Drift**: The `integrations status` command documented
-  in `INTEGRATIONS.md` is actually `infra status`. 
+  in `INTEGRATIONS.md` is actually `infra status`.
   - **Recommendation**: Update `INTEGRATIONS.md` to match the current CLI
     implementation.
 

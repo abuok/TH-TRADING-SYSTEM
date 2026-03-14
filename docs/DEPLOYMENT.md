@@ -19,6 +19,7 @@ cp .env.prod.example .env.prod
 ```
 
 ## Step 2: Configure Environment
+
 Edit `.env.prod` with your secure credentials:
 
 - Set `DB_PASSWORD`

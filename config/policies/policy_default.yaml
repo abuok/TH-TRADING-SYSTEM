@@ -1,8 +1,7 @@
 # policy_default.yaml
 # Standard PHX v2 Baseline Policy
 policy_name: "Default"
-terms:
-- "PHX_V2_STANDARD"
+terms: [PHX_V2_STANDARD]
 guardrails_version: "2.0.0"
 
 news_buffer_minutes: 30

@@ -1,62 +1,40 @@
-# Operator Manual (v1.0.0)
+# Operator Manual: TH Trading System
 
-This manual provides instructions for the daily operation and management of the Trading System.
+This manual provides instructions for human-in-the-loop operators to manage,
+monitor, and tune the trading system.
 
-## Daily Workflow (EAT Times)
+## 1. Core Workflow
 
-- **07:30 - Session Briefing**: Review the `SessionBriefing` on the **Ops** dashboard. Check for upcoming high-impact news and current market regime signals.
-- **08:00 - Queue Review**: Access the **Queue** dashboard. Verify that expected setups for the session are appearing. Check if any `Guardrails` blocks are active.
-- **08:15 - Execution Prep**: For each `Approved` ticket, monitor the **Execution Prep** state. Ensure the system is ready to hit the broker entry prices.
-- **Throughout Session - Trade Management**: Watch the **Management** dashboard for real-time suggestions (Move SL to BE, TP1, etc.).
-- **17:00 - End-of-Day Checks**: Review the **Hindsight** dashboard to see realized vs. missed R. Archive the daily session data.
-- **Weekly (Friday Close)**: Generate and review the **Tuning** proposal report.
+The system follows a non-executing, data-only pipeline that requires manual
+approval for all trades.
 
-## Dashboard Overview
+1. **Ingestion**: Market data and events are consumed continuously.
+2. **Screening**: Technical (PHX) and Fundamental (Bias) models trigger setups.
+3. **Risk Audit**: The Risk Engine and Guardrails evaluate setups for safety.
+4. **Review Queue**: Approved tickets appear in the Dashboard for human 
+   decision.
 
-- **Ops**: High-level system health, session briefs, and active alerts.
-- **Tickets**: Full history of generated order tickets and their current lifecycle status.
-- **Queue**: Active tickets waiting for execution or undergoing guardrail checks.
-- **Hindsight**: Analysis of what the system *should* have done vs. what it actually did.
-- **Calibration**: Tools for adjusting risk-reward and entry/exit parameters based on backtests.
-- **Tuning**: Weekly parameter suggestions grounded in historical outcome data.
-- **Pilot**: Rolling 10-session scorecard for system graduation status.
-- **Policies**: Active regime-based logic maps and session alignment rules.
-- **Live Data**: Real-time quote bridge status and provider latency checks.
-- **Trades**: Live positions and fills captured directly from the broker (MT5).
-- **Management**: Rule-based trade adjustment suggestions.
+## 2. Daily Workflow (EAT Times)
 
-## How to Approve/Skip/Override
+- **07:30 - Session Briefing**: Review the `SessionBriefing` on the **Ops** 
+  dashboard. Check for upcoming news and current market regime signals.
+- **08:00 - Queue Review**: Access the **Queue** dashboard. Verify that 
+  expected setups are appearing. Check if any `Guardrails` blocks are active.
+- **08:15 - Execution Prep**: For each `Approved` ticket, monitor the 
+  **Execution Prep** state. Ensure the system is ready for manual entry.
+- **Throughout Session - Trade Management**: Watch the **Management** 
+  dashboard for real-time suggestions (Move SL, TP1, etc.).
+- **17:00 - End-of-Day Checks**: Review the **Hindsight** dashboard to see 
+  realized vs. missed R. Archive the daily session data.
 
-- **Approve**: Only approve tickets that align with the current session's regime policy.
-- **Skip**: Use the `SKIP` button if a ticket is generated during high-impact news (within [-15, +45] mins) or if spread is > 3x average.
-- **Override**: Manual overrides in Execution Prep should be rare and documented with a reason (e.g., "Broker connection unstable"). **Never override SL/TP to increase risk.**
+## 3. Handling Blocks
 
-## Interpreting Key Metrics
+- **Risk Block**: The setup failed the Risk Engine audit (e.g., RR < 1:2 or 
+  Drawdown limit hit). Investigation required.
+- **Guardrails Block**: A hard safety limit was hit (e.g., maximum daily 
+  losses). The system will not process further setups for the session.
 
-- **Expectancy (R)**: The average return per trade. Graduation requires > 0.05R.
-- **Max Drawdown (R)**: The deepest peak-to-valley loss. Stop trading if it exceeds -5.0R.
-- **Missed R**: Potential profit from skipped tickets that hit TP. High missed R suggests overly restrictive policies.
-- **Override Rate**: The % of manual interventions. High rates (> 10%) indicate the automation rules need tuning.
+---
 
-## Safe Tuning Procedures
-
-1. Review the **Tuning Proposal** on the dashboard.
-2. Run `python -m infra.cli tuning validate-proposals --id <ID>` to see counterfactual simulation results.
-3. If results show improvement, apply the YAML patch provided in the dashboard.
-4. **Rollback**: To revert, restore the previous `config/*.yaml` file from the `backups/` directory or your version control system.
-
-## Pilot Graduation Gate Thresholds
-
-The following thresholds must be maintained to successfully "Graduate" the system to higher capital limits:
-
-| Metric | Threshold | Failure Meaning |
-| --- | --- | --- |
-| **Quote Staleness** | < 30s | Data feed reliability issues. Check Quote Bridge ISP or MT5 connectivity. |
-| **Max Overrides** | 1 / session | Over-reliance on human intuition over system alignment rules. |
-| **Median Review Time** | < 300s | Operator bottleneck. Tickets are expiring before review. |
-| **Min Approved Trades** | 8 trades | Insufficient data to validate current policy expectancy. |
-| **Expectancy Delta** | > 0.03R | The active policy is not significantly outperforming skipped setups. |
-| **Session Drawdown** | > -2.0R | Risk management failure in a single session. |
-| **Win Rate** | > 40% | Psychological comfort limit for sustainability. |
-
-Failure to meet these thresholds should trigger a **Hindsight Audit** to determine if the issue is market-based or logic-based.
+*Note: This system does NOT trade on your behalf. All broker actions must be 
+taken manually after reviewing system output.*
