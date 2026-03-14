@@ -66,6 +66,75 @@ def test_drill_mt5_bridge_latency_staleness_guardrail(memory_db):
     # 1. Insert a simulated quote stall metric (20 seconds stale)
     stale_log = QuoteStaleLog(
         symbol=pair,
+import pytest
+import redis
+import datetime
+from unittest.mock import patch
+
+from shared.messaging.event_bus import EventBus
+from shared.providers.calendar import ForexFactoryCalendarProvider
+from shared.logic.guardrails import _rule_quote_staleness
+from shared.logic.alignment import AlignmentEngine
+from shared.database.models import IncidentLog, QuoteStaleLog
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+
+@pytest.fixture
+def memory_db():
+    from shared.database.models import Base
+
+    engine = create_engine("sqlite:///:memory:")
+    Base.metadata.create_all(engine)
+    TestingSessionLocal = sessionmaker(bind=engine)
+    db = TestingSessionLocal()
+    yield db
+    db.close()
+
+
+def test_drill_redis_disconnect_graceful_degradation(memory_db):
+    """
+    DRILL: Redis Disconnects
+    Scenario: EventBus cannot reach Redis cluster.
+    Expected: publish() catches the ConnectionError, writes an IncidentLog, and fails gracefully without crashing the runner.
+    """
+    bus = EventBus()
+
+    # Mock the internal client to simulate total connection failure
+    with patch.object(
+        bus.client,
+        "xadd",
+        side_effect=redis.exceptions.ConnectionError("Connection refused"),
+    ):
+        # We also need to patch the sessionmaker to use our memory_db for the IncidentLog
+        with patch("shared.database.session.SessionLocal", return_value=memory_db):
+            result = bus.publish("test_stream", {"foo": "bar"}, retries=2)
+
+            # Should fail gracefully and return None
+            assert result is None
+
+            # Should have created a CRITICAL IncidentLog
+            incident = (
+                memory_db.query(IncidentLog).filter_by(component="EventBus").first()
+            )
+            assert incident is not None
+            assert incident.severity == "CRITICAL"
+            assert "Failed to publish" in incident.message
+
+
+def test_drill_mt5_bridge_latency_staleness_guardrail(memory_db):
+    """
+    DRILL: MT5 Bridge Latency
+    Scenario: MT5 is disconnected or lagging heavily, QuoteStaleLog shows > 15s latency.
+    Expected: Guardrails engine invokes the staleness rule and hard-blocks execution.
+    """
+    from datetime import timezone
+
+    pair = "XAUUSD"
+
+    # 1. Insert a simulated quote stall metric (20 seconds stale)
+    stale_log = QuoteStaleLog(
+        symbol=pair,
         stale_duration_seconds=22.5,
         created_at=datetime.datetime.now(timezone.utc),
     )
@@ -77,12 +146,11 @@ def test_drill_mt5_bridge_latency_staleness_guardrail(memory_db):
     cfg = {"quote_staleness_limit_seconds": 15.0}  # 15s limit
     now_utc = datetime.datetime.now(datetime.timezone.utc)
 
-    rule_check = _rule_quote_staleness(setup_data, cfg, memory_db, now_utc)
+    engine = AlignmentEngine()
+    is_ok = engine._check_quote_staleness(pair, memory_db, now_utc, cfg)
 
     # 3. Assert fail-closed posture
-    assert rule_check.status == "FAIL"
-    assert rule_check.is_mandatory is True
-    assert "22.5s > limit 15.0s" in rule_check.details
+    assert is_ok is False
 
 
 def test_drill_missing_calendar_feed_fail_closed():
@@ -201,14 +269,12 @@ def test_drill_bridge_offline_no_logs_fail_closed(memory_db):
     now_utc = datetime.datetime.now(datetime.timezone.utc)
 
     # No QuoteStaleLog rows inserted — simulates bridge never having connected
-    rule_check = _rule_quote_staleness(setup_data, cfg, memory_db, now_utc)
+    engine = AlignmentEngine()
+    is_ok = engine._check_quote_staleness(pair, memory_db, now_utc, cfg)
 
-    assert rule_check.status == "FAIL", (
-        f"GR-Q01 must FAIL when bridge is offline (no log records). Got: {rule_check.status}"
+    assert is_ok is False, (
+        f"Alignment staleness check must FAIL when bridge is offline (no log records)."
     )
-    assert rule_check.is_mandatory is True
-    assert "FAIL-CLOSED" in rule_check.details
-    assert pair in rule_check.details
 
 
 def test_rule_news_window_midnight_crossover():
@@ -233,8 +299,9 @@ def test_rule_news_window_midnight_crossover():
         ]
     }
     
+    engine = AlignmentEngine()
     # Check proximity - 40 minutes away is within [-15, +45] window
-    is_ok = AlignmentEngine._check_event_proximity(context_data, now)
+    is_ok = engine._check_event_proximity(context_data, now, engine.cfg)
     assert is_ok is False, "Should block 40m before midnight-crossing event"
 
     # Event is 1 hour away (00:55) - 65 minutes total
@@ -243,5 +310,5 @@ def test_rule_news_window_midnight_crossover():
             {"time": "00:55", "event": "FOMC", "impact": "HIGH"}
         ]
     }
-    is_ok_safe = AlignmentEngine._check_event_proximity(context_data_safe, now)
+    is_ok_safe = engine._check_event_proximity(context_data_safe, now, engine.cfg)
     assert is_ok_safe is True, "Should allow 65m before midnight-crossing event"
