@@ -5,9 +5,9 @@ This map outlines the internal interfaces and their available implementations.
 | Interface | Implementation | Env Var Setting | Selection Logic |
 | :--- | :--- | :--- | :--- |
 | CalProvider | Mock | CALENDAR_PROVIDER=mock | **Default.** Demo data. |
-| | `ForexFactory` | `CALENDAR_PROVIDER=forexfactory` | Live JSON feed. |
-| `ProxyProvider` | `Mock` | `PROXY_PROVIDER=mock` | **Default.** No prod use. |
-| | `Real` | `PROXY_PROVIDER=real` | Twelve Data US10Y/DXY. |
+| | ForexFactory | CP=forexfactory | Live JSON feed. |
+| ProxyProvider | Mock | PROXY_PROVIDER=mock | **Default.** No prod use. |
+| | Real | PROXY_PROVIDER=real | 12Data US10Y/DXY. |
 | `PriceQuote` | `Mock` | `PRICE_PROVIDER=mock` | **Default.** No prod use. |
 | | `DB` | `PRICE_PROVIDER=db` | PostgreSQL history. |
 | | `Real` | `PRICE_PROVIDER=real` | (Stub) MT5 connection. |
