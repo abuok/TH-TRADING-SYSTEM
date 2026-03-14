@@ -80,11 +80,25 @@ class RiskEngine:
         # 3. No-Trade Window Check
         no_trade_windows = context.no_trade_windows or []
         for window in no_trade_windows:
-            win_start = datetime.fromisoformat(window["start"])
-            win_end = datetime.fromisoformat(window["end"])
-            if win_start <= setup.timestamp <= win_end:
-                reasons.append(f"Setup falls within economic event window: {window}")
-                break
+            try:
+                win_start = datetime.fromisoformat(
+                    window["start"].replace("Z", "+00:00")
+                )
+                win_end = datetime.fromisoformat(window["end"].replace("Z", "+00:00"))
+
+                # Ensure win_start/win_end are aware for comparison with setup.timestamp
+                if win_start.tzinfo is None:
+                    win_start = win_start.replace(tzinfo=timezone.utc)
+                if win_end.tzinfo is None:
+                    win_end = win_end.replace(tzinfo=timezone.utc)
+
+                if win_start <= setup.timestamp <= win_end:
+                    reasons.append(
+                        f"Setup falls within economic event window: {window}"
+                    )
+                    break
+            except (ValueError, KeyError, TypeError):
+                continue
 
         # Result calculation: If no reasons for blocking, then we ALLOW
         if not reasons:
@@ -109,7 +123,7 @@ class RiskEngine:
 
         return RiskApprovalPacket(
             schema_version="1.0.0",
-            request_id=f"risk_{datetime.now().timestamp()}",
+            request_id=f"risk_{datetime.now(timezone.utc).timestamp()}",
             status=status,
             is_approved=is_approved,
             risk_score=100.0 if is_approved else 0.0,

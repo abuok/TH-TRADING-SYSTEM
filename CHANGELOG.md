@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-03-14
+
+### 🔒 Constitutional Hardening (CRITICAL)
+
+#### Added
+
+- **AlignmentEngine** (`shared/logic/alignment.py`)
+  - Deterministic binary rule-matching (ALIGNED/UNALIGNED).
+  - Explicit multi-variant support for counterfactual simulation.
+  - Staleness thresholding for market context and price quotes.
+- **LockoutEngine** (`shared/logic/lockout_engine.py`)
+  - Centralized systemic discipline and frequency lockout control.
+  - Daily loss and consecutive loss hard/soft limits.
+- **SessionEngine Hardening** (`shared/logic/sessions.py`)
+  - Strict boundary transition logic and out-of-session freezing.
+
+#### Changed
+
+- **RiskEngine**: Eradicated "fuzzy" confidence logic; implemented
+  fail-closed staleness checks (< 300s).
+- **Execution Logic**: Hardened JIT ticket confirmation; treats
+  absent market data as an immediate block.
+- **Dashboard**: Resolved all HTML5 semantic validation issues;
+  decoupled control permissions from visibility.
+
+#### Fixed
+
+- Standardized UTC usage across all temporal engines
+  (`datetime.now(timezone.utc)`).
+- Resolved MDN semantic warnings in Jinja2 templates.
+
 ## [1.1.0] - 2026-03-06
 
 ### 🔒 Security Improvements (CRITICAL)
