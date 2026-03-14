@@ -1,19 +1,12 @@
 import os
 import re
-import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from shared.database.models import Base, TicketTradeLink
+from shared.database.models import TicketTradeLink
 from shared.types.calibration import Recommendation
 from shared.types.tuning import Proposal
 
 def test_terminology_purity():
     """Ensure 'confidence' is eradicated from active source files."""
     forbidden = ["confidence_score"] # we allow 'confidence' in strings/comments if unavoidable, but let's check vars
-    
-    # Check for 'confidence' as a variable/property in key files
-    # specifically looking for .confidence or confidence=
-    pattern = re.compile(r"\bconfidence\b")
     
     ignore_dirs = [".git", "__pycache__", "venv", ".pytest_cache", "scripts/v1_demo"]
     
@@ -35,7 +28,8 @@ def test_terminology_purity():
                             
     # Known allowed: shared/logic/alignment.py (comment only)
     # We'll assert hits is empty or only contains permitted files
-    filtered_hits = [h for h in hits if "alignment.py" not in h]
+    # We also exclude THIS file as it contains the forbidden strings for testing
+    filtered_hits = [h for h in hits if "alignment.py" not in h and "test_final_compliance.py" not in h]
     assert not filtered_hits, f"Stale terminology found in: {filtered_hits}"
 
 def test_match_score_standardization():

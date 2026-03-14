@@ -13,6 +13,9 @@ from shared.database.models import LiveQuote, SymbolSpec, OrderTicket
 from shared.logic.trading_logic import generate_order_ticket
 from shared.logic.execution_logic import PreflightEngine
 
+import services.bridge.main as bridge_module
+bridge_module.BRIDGE_SECRET = "TH_BRIDGE_SECRET_2026"
+
 client = TestClient(bridge_app)
 
 
@@ -36,7 +39,7 @@ def test_bridge_quote_ingestion(db):
         "ts_utc": "2026-02-28 12:00:00",
     }
     response = client.post(
-        "/bridge/quote", json=payload, headers={"X-Bridge-Secret": "change-me-in-prod"}
+        "/bridge/quote", json=payload, headers={"X-Bridge-Secret": "TH_BRIDGE_SECRET_2026"}
     )
     assert response.status_code == 200
     assert response.json()["status"] == "success"
@@ -44,7 +47,7 @@ def test_bridge_quote_ingestion(db):
 
     # Idempotency check
     response = client.post(
-        "/bridge/quote", json=payload, headers={"X-Bridge-Secret": "change-me-in-prod"}
+        "/bridge/quote", json=payload, headers={"X-Bridge-Secret": "TH_BRIDGE_SECRET_2026"}
     )
     assert response.json()["status"] == "ignored"
 
@@ -60,7 +63,7 @@ def test_bridge_spec_ingestion(db):
         "lot_step": 0.01,
     }
     response = client.post(
-        "/bridge/spec", json=payload, headers={"X-Bridge-Secret": "change-me-in-prod"}
+        "/bridge/spec", json=payload, headers={"X-Bridge-Secret": "TH_BRIDGE_SECRET_2026"}
     )
     assert response.status_code == 200
     assert response.json()["status"] == "success"

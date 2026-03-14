@@ -1,5 +1,5 @@
 import pytest
-from datetime import datetime, timedelta, time
+from datetime import datetime, timedelta
 import pytz
 from shared.logic.phx_detector import PHXDetector, PHXStage
 from shared.types.packets import Candle
@@ -37,7 +37,7 @@ def test_retest_staleness_6h(detector):
 def test_session_freeze_out_of_session(detector):
     # OUT_OF_SESSION for XAUUSD is 22:00 - 06:59
     oos_time = datetime(2026, 3, 12, 23, 0, tzinfo=pytz.timezone("Africa/Nairobi"))
-    candle = create_candle(oos_time, price=2000.0)
+    create_candle(oos_time, price=2000.0)
     
     # Try to establish bias (3 higher highs)
     for i in range(5):

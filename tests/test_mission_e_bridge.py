@@ -202,7 +202,7 @@ def test_pnl_calculation_on_close(db):
         ticket_id=ticket_id,
         broker_trade_id="BT-PNL",
         match_method="DIRECT",
-        confidence=1.0,
+        match_score=1.0,
     )
     db.add(link)
     db.commit()

@@ -10,7 +10,7 @@ from typing import Tuple, Dict, Any
 
 from sqlalchemy.orm import Session
 from shared.database.models import OrderTicket, Packet
-from shared.types.enums import TicketState, LockoutState, SessionState, BiasState
+from shared.types.enums import LockoutState, SessionState
 from shared.logic.lockout_engine import LockoutEngine
 from shared.logic.alignment import AlignmentEngine
 from shared.logic.sessions import SessionEngine, get_nairobi_time

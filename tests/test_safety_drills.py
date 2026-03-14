@@ -217,31 +217,31 @@ def test_rule_news_window_midnight_crossover():
     This is the regression test for the midnight date-boundary bug fixed in guardrails.py.
     """
     import pytz
-    from shared.logic.guardrails import _rule_news_window
+    from shared.logic.alignment import AlignmentEngine
 
     NAIROBI = pytz.timezone("Africa/Nairobi")
 
-    # Simulate: current time is 23:50 EAT
+    # Simulate: current time is 23:50 EAT on Wednesday
     now = NAIROBI.localize(
-        datetime.datetime(2026, 3, 4, 23, 50, 0)  # 23:50 EAT
+        datetime.datetime(2026, 3, 4, 23, 50, 0)
     )
 
     # Event is at 00:30 (early morning — 40 min away, on the next calendar day)
-    cfg = {
-        "news_buffer_minutes": 60,  # 60-min buffer — should catch 40-min-away event
-        "news_window_hard_block": True,
-        "score_deduction_fail": 20,
-    }
     context_data = {
         "high_impact_events": [
-            {"time": "00:30", "event": "FOMC Minutes", "currency": "USD"}
+            {"time": "00:30", "event": "FOMC", "impact": "HIGH"}
         ]
     }
+    
+    # Check proximity - 40 minutes away is within [-15, +45] window
+    is_ok = AlignmentEngine._check_event_proximity(context_data, now)
+    assert is_ok is False, "Should block 40m before midnight-crossing event"
 
-    result = _rule_news_window(now, cfg, context_data)
-
-    assert result.status == "FAIL", (
-        f"GR-N01 must FAIL: event at 00:30 is only 40 min away from 23:50. Got: {result.status}. "
-        f"Details: {result.details}"
-    )
-    assert "FOMC Minutes" in result.details
+    # Event is 1 hour away (00:55) - 65 minutes total
+    context_data_safe = {
+        "high_impact_events": [
+            {"time": "00:55", "event": "FOMC", "impact": "HIGH"}
+        ]
+    }
+    is_ok_safe = AlignmentEngine._check_event_proximity(context_data_safe, now)
+    assert is_ok_safe is True, "Should allow 65m before midnight-crossing event"

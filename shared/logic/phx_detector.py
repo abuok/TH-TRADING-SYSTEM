@@ -1,7 +1,7 @@
 from enum import Enum, auto
 from typing import List, Dict
 from shared.types.packets import Candle
-from datetime import datetime, timezone
+from datetime import datetime
 import pytz
 from shared.logic.sessions import SessionEngine
 

@@ -1,11 +1,9 @@
 import pytest
 from datetime import datetime, timedelta, timezone
-import pytz
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from shared.database.models import Base, OrderTicket, Packet
-from shared.types.enums import TicketState, LockoutState, SessionState
-from shared.logic.sessions import get_nairobi_time
+from shared.types.enums import TicketState
 from services.orchestration.logic.jit_validator import JITValidator
 
 @pytest.fixture

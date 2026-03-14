@@ -26,7 +26,7 @@ logger = logging.getLogger("BridgeService")
 app = FastAPI(title="Live Data Bridge")
 
 # Security key from env
-BRIDGE_SECRET = os.getenv("BRIDGE_SECRET", "change-me-in-prod")
+BRIDGE_SECRET = os.getenv("BRIDGE_SECRET", "TH_BRIDGE_SECRET_2026")
 
 
 class QuotePayload(BaseModel):

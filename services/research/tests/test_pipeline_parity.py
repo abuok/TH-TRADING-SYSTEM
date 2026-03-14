@@ -439,21 +439,21 @@ class TestCalibrationSanity:
             max_drawdown_r=dd,
         )
 
-    def test_high_confidence_recommendation_when_er_up(self):
-        """If ER improves by > 0.05R and DD stable, expect HIGH confidence rec."""
+    def test_high_conviction_recommendation_when_er_up(self):
+        """If ER improves by > 0.05R and DD stable, expect HIGH conviction rec."""
         baseline = self._metrics(er=0.20, dd=2.0, win=50.0, n=100)
         variant = self._metrics(er=0.30, dd=1.5, win=55.0, n=95)
         rec = analyze_variant("tighter_score", variant, baseline)
         assert rec is not None
-        assert rec.confidence == "HIGH"
+        assert rec.conviction == "HIGH"
 
-    def test_medium_confidence_when_win_rate_up_volume_drops(self):
+    def test_medium_conviction_when_win_rate_up_volume_drops(self):
         """Win rate up significantly + volume cut → MEDIUM recommendation."""
         baseline = self._metrics(er=0.20, dd=2.0, win=45.0, n=100)
         variant = self._metrics(er=0.18, dd=2.0, win=55.0, n=55)  # 55% retention
         rec = analyze_variant("strict_filter", variant, baseline)
         assert rec is not None
-        assert rec.confidence == "MEDIUM"
+        assert rec.conviction == "MEDIUM"
 
     def test_no_recommendation_when_metrics_flat(self):
         """No recommendation when variant produces no meaningful change."""
@@ -468,7 +468,7 @@ class TestCalibrationSanity:
         variant = self._metrics(er=0.22, dd=2.0, win=52.0, n=80)  # dd_delta 3.0 > 1.0
         rec = analyze_variant("risk_dampener", variant, baseline)
         assert rec is not None
-        assert rec.confidence == "MEDIUM"
+        assert rec.conviction == "MEDIUM"
 
     def test_no_recommendation_when_baseline_empty(self):
         """analyze_variant returns None when baseline has zero executed trades."""
@@ -478,7 +478,7 @@ class TestCalibrationSanity:
         assert rec is None
 
     def test_calibration_report_sorts_high_before_medium(self):
-        """HIGH confidence recommendations must appear before MEDIUM ones."""
+        """HIGH conviction recommendations must appear before MEDIUM ones."""
         # Build two run results
         from shared.types.research import ResearchVariant
 
@@ -520,10 +520,10 @@ class TestCalibrationSanity:
 
         report = generate_calibration_report([result], baseline_name="baseline")
         assert len(report.recommendations) >= 1
-        confidences = [r.confidence for r in report.recommendations]
+        convictions = [r.conviction for r in report.recommendations]
         # HIGH must come before MEDIUM
-        if "HIGH" in confidences and "MEDIUM" in confidences:
-            assert confidences.index("HIGH") < confidences.index("MEDIUM")
+        if "HIGH" in convictions and "MEDIUM" in convictions:
+            assert convictions.index("HIGH") < convictions.index("MEDIUM")
 
 
 # ── Small end-to-end integration: run_replay on synthetic CSV ─────────────────

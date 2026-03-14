@@ -9,17 +9,16 @@ from sqlalchemy.orm import Session
 import shared.database.session as db_session
 from shared.database.models import (
     Packet,
-    KillSwitch,
     IncidentLog,
     OrderTicket,
     SessionBriefing,
     LiveQuote,
-    SymbolSpec,
     TicketTradeLink,
     TradeFillLog,
     JournalLog,
     PositionSnapshot as PositionSnapshotModel,
 )
+from shared.logic.lockout_engine import LockoutEngine
 from shared.logic.sessions import get_nairobi_time, get_session_label
 from shared.types.trading import OrderTicketSchema
 
@@ -71,9 +70,7 @@ async def check_health(client, name, url):
         return name, "unhealthy", elapsed
 
 
-from shared.logic.lockout_engine import LockoutEngine
-from shared.logic.sessions import get_nairobi_time, get_session_label, SessionEngine
-from shared.types.enums import LockoutState
+
 
 def get_dashboard_data(db: Session, asset_pairs: List[str] = ["XAUUSD", "GBPJPY"]):
     # Nairobi Time

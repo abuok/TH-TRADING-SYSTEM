@@ -3,7 +3,7 @@ shared/logic/alignment.py
 Enforces the strictly binary Alignment Gate evaluated exclusively at TRIGGER.
 """
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, Any
 
 import pytz
@@ -69,7 +69,7 @@ class AlignmentEngine:
                 candidates = [now_nairobi.date()]
                 ev_hour = int(ev_time_str.split(":")[0])
                 if ev_hour < 6:
-                    candidates.append(now_nairobi.date() + pytz.timedelta(days=1))
+                    candidates.append(now_nairobi.date() + timedelta(days=1))
                 
                 for candidate_date in candidates:
                     ev_dt = datetime.strptime(

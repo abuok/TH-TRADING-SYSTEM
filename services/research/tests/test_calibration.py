@@ -8,7 +8,7 @@ from shared.types.research import (
 from services.research.calibration import analyze_variant, generate_calibration_report
 
 
-def test_analyze_variant_high_confidence():
+def test_analyze_variant_high_conviction():
     """HIGH: Expectancy >+0.05R, Drawdown <=0, Volume Retention >= 70%"""
     base = ResearchMetrics(
         executed_trades=100, expectancy_r=0.5, max_drawdown_r=2.0, win_rate_pct=50.0
@@ -19,11 +19,11 @@ def test_analyze_variant_high_confidence():
 
     recco = analyze_variant("var1", var, base)
     assert recco is not None
-    assert recco.confidence == "HIGH"
+    assert recco.conviction == "HIGH"
     assert "var1" in recco.proposed_change
 
 
-def test_analyze_variant_medium_confidence_strict_mode():
+def test_analyze_variant_medium_conviction_strict_mode():
     """MEDIUM: Win Rate > +5.0%, Expectancy Flat/Up, Volume significantly dropped (but > 30%)"""
     base = ResearchMetrics(
         executed_trades=100, expectancy_r=0.5, max_drawdown_r=2.0, win_rate_pct=50.0
@@ -34,11 +34,11 @@ def test_analyze_variant_medium_confidence_strict_mode():
 
     recco = analyze_variant("strict_var", var, base)
     assert recco is not None
-    assert recco.confidence == "MEDIUM"
+    assert recco.conviction == "MEDIUM"
     assert "strict mode" in recco.title.lower()
 
 
-def test_analyze_variant_medium_confidence_risk_dampener():
+def test_analyze_variant_medium_conviction_risk_dampener():
     """MEDIUM: Drawdown drop > 1.0R, Expectancy Flat/Slight down, Retention > 50%"""
     base = ResearchMetrics(
         executed_trades=100, expectancy_r=0.5, max_drawdown_r=4.0, win_rate_pct=50.0
@@ -49,7 +49,7 @@ def test_analyze_variant_medium_confidence_risk_dampener():
 
     recco = analyze_variant("safe_var", var, base)
     assert recco is not None
-    assert recco.confidence == "MEDIUM"
+    assert recco.conviction == "MEDIUM"
     assert "dampener" in recco.title.lower()
 
 
@@ -95,7 +95,7 @@ def test_generate_calibration_report():
     report = generate_calibration_report([run], baseline_name="baseline")
     assert report.pair == "XAUUSD"
     assert len(report.recommendations) == 1
-    assert report.recommendations[0].confidence == "HIGH"
+    assert report.recommendations[0].conviction == "HIGH"
 
     # Check evidence tables were built
     assert "opt_var" in report.evidence_tables["Metrics"]

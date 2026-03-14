@@ -97,7 +97,7 @@ def generate_proposals(metrics: Dict[str, Any]) -> List[Proposal]:
                     target="guardrails",
                     proposed_change="Lower 'min_setup_score' from current value to allow more setups.",
                     expected_impact="Increase trade frequency by reducing hard blocks.",
-                    confidence="MEDIUM",
+                    conviction="MEDIUM",
                     risks="May introduce lower quality setups into the execution queue.",
                     rollback_plan="Revert 'min_setup_score' back in guardrails.yaml.",
                     evidence_refs=[
@@ -118,7 +118,7 @@ def generate_proposals(metrics: Dict[str, Any]) -> List[Proposal]:
                     target="queue",
                     proposed_change="Increase `ticket_ttl_minutes` (e.g., from 60 to 120 minutes).",
                     expected_impact="Reduce the rate of missed executions due to fast expirations.",
-                    confidence="HIGH",
+                    conviction="HIGH",
                     risks="Market conditions might invalidate the setup if left open for too long.",
                     rollback_plan="Revert `ticket_ttl_minutes` in execution_prep config.",
                     evidence_refs=[
@@ -136,7 +136,7 @@ def generate_proposals(metrics: Dict[str, Any]) -> List[Proposal]:
                 target="management",
                 proposed_change="Adjust MOVE_SL_TO_BE threshold down from 1.0R to 0.8R.",
                 expected_impact="Lock in zero risk earlier in volatile regimes.",
-                confidence="MEDIUM",
+                conviction="MEDIUM",
                 risks="Stops might be hunted more easily before the full move completes.",
                 rollback_plan="Revert management R-threshold to 1.0R.",
                 evidence_refs=[
@@ -154,7 +154,7 @@ def generate_proposals(metrics: Dict[str, Any]) -> List[Proposal]:
                 target="policy",
                 proposed_change="Decrease sensitivity of the VIX/Volatility regime check that triggers RISK_OFF.",
                 expected_impact="Return to normal risk levels on more pairs instead of heavily capping R.",
-                confidence="LOW",
+                conviction="LOW",
                 risks="Higher drawdowns if the macro regime remains actually hostile.",
                 rollback_plan="Revert policy regime mapping to stricter thresholds.",
                 evidence_refs=[
@@ -172,7 +172,7 @@ def generate_proposals(metrics: Dict[str, Any]) -> List[Proposal]:
                 target="notifications",
                 proposed_change="Increase severity threshold or throttle CRITICAL alerts limit to 1 per 2 hours.",
                 expected_impact="Reduce alert fatigue for operators.",
-                confidence="HIGH",
+                conviction="HIGH",
                 risks="Operators might miss genuinely urgent, back-to-back manual interventions.",
                 rollback_plan="Revert rate limit cache timeout.",
                 evidence_refs=[
