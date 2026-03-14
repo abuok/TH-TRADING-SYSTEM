@@ -6,8 +6,6 @@ from shared.types.tuning import Proposal
 
 def test_terminology_purity():
     """Ensure 'confidence' is eradicated from active source files."""
-    forbidden = ["confidence_score"] # we allow 'confidence' in strings/comments if unavoidable, but let's check vars
-    
     ignore_dirs = [".git", "__pycache__", "venv", ".pytest_cache", "scripts/v1_demo"]
     
     hits = []

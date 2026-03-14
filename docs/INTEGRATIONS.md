@@ -3,7 +3,7 @@
 This document provides instructions for connecting the TH Trading System to external data sources and alerting services.
 
 ## 1. Calendar Integration (High-Impact Events)
-- **What it powers**: News-gating in `RiskEngine`. Blocks trades during high-impact economic news.
+- **What it powers**: News-gating in `AlignmentEngine` (evaluated at JIT). Blocks trades during high-impact economic news.
 - **Provider**: Forex Factory (via `ForexFactoryCalendarProvider`).
 - **Required Env Vars**:
   - `CALENDAR_PROVIDER=forexfactory`

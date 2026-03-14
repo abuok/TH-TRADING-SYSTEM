@@ -20,7 +20,7 @@ This manual provides instructions for the daily operation and management of the 
 - **Calibration**: Tools for adjusting risk-reward and entry/exit parameters based on backtests.
 - **Tuning**: Weekly parameter suggestions grounded in historical outcome data.
 - **Pilot**: Rolling 10-session scorecard for system graduation status.
-- **Policies**: Active regime-based logic maps and signal scoring weights.
+- **Policies**: Active regime-based logic maps and session alignment rules.
 - **Live Data**: Real-time quote bridge status and provider latency checks.
 - **Trades**: Live positions and fills captured directly from the broker (MT5).
 - **Management**: Rule-based trade adjustment suggestions.
@@ -28,7 +28,7 @@ This manual provides instructions for the daily operation and management of the 
 ## How to Approve/Skip/Override
 
 - **Approve**: Only approve tickets that align with the current session's regime policy.
-- **Skip**: Use the `SKIP` button if a ticket is generated during high-impact news (within +/- 30 mins) or if spread is > 3x average.
+- **Skip**: Use the `SKIP` button if a ticket is generated during high-impact news (within [-15, +45] mins) or if spread is > 3x average.
 - **Override**: Manual overrides in Execution Prep should be rare and documented with a reason (e.g., "Broker connection unstable"). **Never override SL/TP to increase risk.**
 
 ## Interpreting Key Metrics
@@ -52,7 +52,7 @@ The following thresholds must be maintained to successfully "Graduate" the syste
 | Metric | Threshold | Failure Meaning |
 |---|---|---|
 | **Quote Staleness** | < 30s | Data feed reliability issues. Check Quote Bridge ISP or MT5 connectivity. |
-| **Max Overrides** | 1 / session | Over-reliance on human intuition over system guardrails. |
+| **Max Overrides** | 1 / session | Over-reliance on human intuition over system alignment rules. |
 | **Median Review Time** | < 300s | Operator bottleneck. Tickets are expiring before review. |
 | **Min Approved Trades** | 8 trades | Insufficient data to validate current policy expectancy. |
 | **Expectancy Delta** | > 0.03R | The active policy is not significantly outperforming skipped setups. |

@@ -62,13 +62,13 @@ The hooks run automatically on every `git commit` and will auto-fix safe issues;
 
 The system uses a hierarchical configuration approach:
 
-1. **Environment Variables**: Override any setting (e.g., `GUARDRAILS_NEWS_BUFFER_MINUTES=60`)
-2. **YAML Config Files**: Located in `config/` directory for guardrails, policies, etc.
+1. **Environment Variables**: Override any setting (e.g., `ALIGNMENT_NEWS_WINDOW=[-15, 45]`)
+2. **YAML Config Files**: Located in `config/` directory for sessions, policies, etc.
 3. **Default Values**: Hardcoded fallbacks in code
 
 Key config files:
 
-- `config/guardrails_config.yaml`: Risk management rules and thresholds
+- `config/session_config.yaml`: Session window definitions
 - `config/execution_prep.yaml`: Trade execution parameters
 - `config/policies/`: Trading policy definitions
 - `.env`: Environment-specific overrides
