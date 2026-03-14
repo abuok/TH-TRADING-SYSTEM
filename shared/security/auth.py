@@ -132,7 +132,7 @@ async def verify_api_token(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=str(e),
             headers={"WWW-Authenticate": "Bearer"},
-        )
+        ) from e
 
 
 async def verify_service_token(
@@ -158,7 +158,7 @@ async def verify_service_token(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=str(e),
             headers={"WWW-Authenticate": "Bearer"},
-        )
+        ) from e
 
 
 @lru_cache(maxsize=1)

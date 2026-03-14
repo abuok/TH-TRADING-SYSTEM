@@ -131,7 +131,7 @@ class SecretsManager:
         for _category, secret_names in self.REQUIRED_SECRETS.items():
             for secret_name in secret_names:
                 if secret_name not in self._secrets:
-                    missing.append(f"{category}/{secret_name}")
+                    missing.append(f"{_category}/{secret_name}")
 
         if missing:
             raise ValueError(f"Missing production secrets: {', '.join(missing)}")

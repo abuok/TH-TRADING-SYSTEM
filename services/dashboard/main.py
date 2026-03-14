@@ -730,7 +730,7 @@ async def api_approve_ticket(ticket_id: str, db: Session = Depends(db_session.ge
         import traceback
 
         traceback.print_exc()
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
 
 @app.get("/api/execution-prep/{ticket_id}", response_model=ExecutionPrepSchema)

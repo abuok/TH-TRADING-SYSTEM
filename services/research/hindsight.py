@@ -355,9 +355,9 @@ def generate_hindsight_report(db: Session, target_date: str) -> str:
     <body>
         <h2>Hindsight Decision Quality Report - {target_date}</h2>
         <p>Total Evaluated: {summary["total"]}</p>
-        
+
         {costliest_html}
-        
+
         <h3>Skip Reasons Breakdown</h3>
         <table>
             <tr><th>Reason</th><th>Count</th><th>Win Rate</th><th>Avg Output (R)</th></tr>

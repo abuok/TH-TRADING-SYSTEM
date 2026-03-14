@@ -711,7 +711,7 @@ async def list_tickets(
             d = datetime.strptime(date_str, "%Y-%m-%d").date()
             query = query.filter(db.func.date(OrderTicket.created_at) == d)
         except ValueError:
-            raise HTTPException(status_code=400, detail="Use YYYY-MM-DD")
+            raise HTTPException(status_code=400, detail="Use YYYY-MM-DD") from None
     return query.order_by(OrderTicket.created_at.desc()).all()
 
 

@@ -105,7 +105,7 @@ async def post_quote(
     except Exception as e:
         logger.error(f"Error posting quote: {e}")
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @app.post("/bridge/spec")
@@ -146,7 +146,7 @@ async def post_spec(
     except Exception as e:
         logger.error(f"Error posting spec: {e}")
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @app.post("/bridge/trades/fill")
@@ -202,7 +202,7 @@ async def post_trades_positions(
     except Exception as e:
         logger.error(f"Error updating position snapshots: {e}")
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @app.get("/health")

@@ -74,8 +74,10 @@ async def check_health(client, name, url):
         return name, "unhealthy", elapsed
 
 
-def get_dashboard_data(db: Session, asset_pairs: list[str] = ["XAUUSD", "GBPJPY"]):
+def get_dashboard_data(db: Session, asset_pairs: list[str] = None):
     # Nairobi Time
+    if asset_pairs is None:
+        asset_pairs = ["XAUUSD", "GBPJPY"]
     now_nairobi = get_nairobi_time()
     now_utc = datetime.now(timezone.utc)
 
@@ -117,7 +119,7 @@ def get_dashboard_data(db: Session, asset_pairs: list[str] = ["XAUUSD", "GBPJPY"
         (dt_time(22, 0), "OUT_OF_SESSION"),
     ]
     next_boundary = None
-    for b_time, b_label in boundaries:
+    for b_time, _b_label in boundaries:
         if b_time > current_time:
             next_boundary = b_time
             break

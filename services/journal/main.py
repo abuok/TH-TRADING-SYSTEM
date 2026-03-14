@@ -251,7 +251,7 @@ def daily_report(db: Session = Depends(db_session.get_db)):
         </head>
         <body>
             <h1>Daily Performance Report - {today.strftime("%Y-%m-%d")}</h1>
-            
+
             <div class="stats">
                 <div class="stat-card"><h3>Total Setups</h3><p>{total_setups}</p></div>
                 <div class="stat-card"><h3>Missed A+</h3><p class="alert">{missed_aplus}</p></div>
@@ -259,7 +259,7 @@ def daily_report(db: Session = Depends(db_session.get_db)):
                 <div class="stat-card"><h3>Potential Profit Missed</h3><p class="alert">${violation_cost:.2f}</p></div>
                 <div class="stat-card"><h3>Actual PnL</h3><p style="color: {"green" if total_pnl >= 0 else "red"}">${total_pnl:.2f}</p></div>
             </div>
-            
+
             <h2>Journal Log</h2>
             <table>
                 <tr><th>Timestamp</th><th>Pair</th><th>Label</th><th>Status</th><th>Score</th></tr>
@@ -301,7 +301,7 @@ async def journal_worker():
                 "journal_events", "journal_group", consumer_id, count=10
             )
             for _, message_list in msgs:
-                for msg_id, payload in message_list:
+                for _msg_id, payload in message_list:
                     data = json.loads(payload["payload"])
                     event_type = data.get("event_type")
                     db = db_session.SessionLocal()

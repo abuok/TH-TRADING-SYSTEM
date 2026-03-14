@@ -141,7 +141,7 @@ def fetch_session_metrics(db: Session, target_date: date) -> PilotSessionRecord:
 
     # 4. Hindsight
     # Group by Pair
-    pairs = set(t.pair for t in tickets)
+    pairs = {t.pair for t in tickets}
     pair_stats = []
     for p in pairs:
         p_tickets = [t for t in approved if t.pair == p]

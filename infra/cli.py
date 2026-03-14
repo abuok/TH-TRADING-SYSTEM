@@ -510,7 +510,9 @@ def integrations_status():
     table.add_column("Env Var", style="green")
     table.add_column("Status", style="white")
 
-    def check_provider(name, env_var, factory_func, required_vars=[]):
+    def check_provider(name, env_var, factory_func, required_vars=None):
+        if required_vars is None:
+            required_vars = []
         try:
             impl = factory_func()
             impl_name = type(impl).__name__
