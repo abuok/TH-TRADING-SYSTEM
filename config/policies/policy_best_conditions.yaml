@@ -1,7 +1,8 @@
 # policy_best_conditions.yaml
 # Aggressive policy for high-confluence/clean market regimes
 policy_name: "BestConditions"
-terms: ["PHX_V2_PREMIUM"]
+terms:
+- "PHX_V2_PREMIUM"
 guardrails_version: "2.0.0"
 
 news_buffer_minutes: 20           # more aggressive
