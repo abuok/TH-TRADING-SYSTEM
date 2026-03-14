@@ -57,7 +57,11 @@
             </div>
         </div>
         <div class="sub-header mt-1">Top Skip Reasons</div>
-        <ul class="list-unstyled">{% for reason in report.top_skip_reasons %}<li class="event-item border-left-orange">{{ reason }}</li>{% endfor %}</ul>
+        <div class="list-unstyled">
+            {%- for reason in report.top_skip_reasons -%}
+            <div class="event-item border-left-orange">{{ reason }}</div>
+            {%- endfor -%}
+        </div>
     </div>
 </div>
 
@@ -87,11 +91,19 @@
         <div class="sub-grid">
             <div>
                 <div class="sub-header text-green">Do (Best Execution)</div>
-                <ul class="list-unstyled">{% for item in report.checklist_do %}<li class="event-item border-left-green">{{ item }}</li>{% endfor %}</ul>
+                <div class="list-unstyled">
+                    {%- for item in report.checklist_do -%}
+                    <div class="event-item border-left-green">{{ item }}</div>
+                    {%- endfor -%}
+                </div>
             </div>
             <div>
                 <div class="sub-header text-red">Don't (Risk Management)</div>
-                <ul class="list-unstyled">{% for item in report.checklist_dont %}<li class="event-item border-left-red">{{ item }}</li>{% endfor %}</ul>
+                <div class="list-unstyled">
+                    {%- for item in report.checklist_dont -%}
+                    <div class="event-item border-left-red">{{ item }}</div>
+                    {%- endfor -%}
+                </div>
             </div>
         </div>
     </div>

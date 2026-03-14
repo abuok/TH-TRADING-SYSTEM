@@ -3,7 +3,7 @@
 This map outlines the internal interfaces and their available implementations.
 
 | Interface | Impl | Env Var | Logic |
-| :--- | :--- | :--- | :--- |
+| --- | --- | --- | --- |
 | Calendar | Mock | `CP=mock` | **Default.** Demo. |
 | | FF | `CP=ff` | Live JSON feed. |
 | Proxy | Mock | `PP=mock` | **Default.** |
