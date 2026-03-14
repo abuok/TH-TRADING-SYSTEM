@@ -70,7 +70,8 @@ def test_alignment_fails_on_stale_bias():
     }
     
     # This should return UNALIGNED because of Bias Age > 120mins
-    decision = AlignmentEngine.evaluate(setup_data, pair_fundamentals, context_data, now_nairobi)
+    engine = AlignmentEngine()
+    decision = engine.evaluate(setup_data, pair_fundamentals, context_data, now_nairobi=now_nairobi)
     
     assert decision.is_aligned is False
-    assert any("Bias state EXPIRED or INVALIDATED" in reason for reason in decision.reason_codes)
+    assert any("FAILED: BiasState" in reason for reason in decision.reason_codes)

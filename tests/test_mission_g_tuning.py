@@ -72,6 +72,7 @@ def test_tuning_metrics_gathering(db):
 
     # Create 2 aligned, 1 unaligned
     # Pair fundamentals GBPCAD, GBPJPY
+    cutoff = now_eat - timedelta(hours=1)
     g1 = AlignmentLog(
         pair="GBPCAD",
         alignment_score=95,

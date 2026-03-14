@@ -45,6 +45,16 @@ def create_mock_packets(db, pair="XAUUSD"):
         }
     )
     db.add(fund)
+    
+    # 3. Create QuoteStaleLog
+    from shared.database.models import QuoteStaleLog
+    stale = QuoteStaleLog(
+        symbol=pair,
+        stale_duration_seconds=1.0, # Fresh
+        created_at=datetime.now(timezone.utc)
+    )
+    db.add(stale)
+    
     db.commit()
     return ctx, fund
 
