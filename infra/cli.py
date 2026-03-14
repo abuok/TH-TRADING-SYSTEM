@@ -195,7 +195,7 @@ def research_run(
         dt_to = datetime.fromisoformat(date_to)
     except ValueError:
         console.print("[red]Invalid date format. Use YYYY-MM-DD or ISO 8601[/red]")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
     variants = {"baseline": CounterfactualConfig()}
     if variants_file and os.path.exists(variants_file):
@@ -211,7 +211,7 @@ def research_run(
             result = run_replay(csv_path, pair, timeframe, dt_from, dt_to, variants)
         except Exception as e:
             console.print(f"[red]Replay failed: {e}[/red]")
-            raise typer.Exit(1)
+            raise typer.Exit(1) from e
 
     json_path = save_json(result)
     html_path = generate_html_report(result)
@@ -253,10 +253,10 @@ def research_calibrate(
         console.print(
             f"[red]Could not find run_id '{run_id}'. Run 'python infra/cli.py research list' to see available runs.[/red]"
         )
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
     except Exception as e:
         console.print(f"[red]Calibration failed: {e}[/red]")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 @research_app.command("list")
@@ -342,7 +342,7 @@ def validate_proposals(
         dt_to = datetime.fromisoformat(date_to)
     except ValueError:
         console.print("[red]Invalid date format. Use YYYY-MM-DD or ISO 8601[/red]")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
     db = db_session.SessionLocal()
     try:
@@ -389,7 +389,7 @@ def validate_proposals(
             result = run_replay(csv_path, pair, timeframe, dt_from, dt_to, variants)
         except Exception as e:
             console.print(f"[red]Replay failed: {e}[/red]")
-            raise typer.Exit(1)
+            raise typer.Exit(1) from e
 
     _ = save_json(result)
 

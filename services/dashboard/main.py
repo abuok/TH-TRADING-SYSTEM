@@ -123,7 +123,7 @@ def verify_auth(request: Request):
         decoded = base64.b64decode(credentials).decode("ascii")
         username, _, password = decoded.partition(":")
     except Exception:
-        raise HTTPException(status_code=401, detail="Invalid auth header")
+        raise HTTPException(status_code=401, detail="Invalid auth header") from None
 
     correct_username = os.getenv("DASHBOARD_USERNAME", "admin")
     correct_password = os.getenv("DASHBOARD_PASSWORD")
@@ -783,7 +783,7 @@ async def api_skip_ticket(
         t = skip_ticket(db, ticket_id, payload.reason, payload.notes)
         return {"status": "success", "ticket": t.ticket_id}
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
 
 @app.post("/api/tickets/{ticket_id}/close")
@@ -801,7 +801,7 @@ async def api_close_ticket(
         )
         return {"status": "success", "ticket": t.ticket_id}
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
 
 # --- Hindsight Evaluation Endpoints ---
