@@ -8,9 +8,9 @@ services:
     container_name: trading-postgres-prod
     restart: always
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:?Error: POSTGRES_USER not set}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Error: POSTGRES_PASSWORD not set}
-      POSTGRES_DB: ${POSTGRES_DB:-trading_prod}
+      POSTGRES_USER: "${POSTGRES_USER:?Error: POSTGRES_USER not set}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?Error: POSTGRES_PASSWORD not set}"
+      POSTGRES_DB: "${POSTGRES_DB:-trading_prod}"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -39,7 +39,7 @@ services:
     image: redis:7-alpine
     container_name: trading-redis-prod
     restart: always
-    command: redis-server --requirepass ${REDIS_PASSWORD:?Error: REDIS_PASSWORD not set}
+    command: "redis-server --requirepass ${REDIS_PASSWORD:?Error: REDIS_PASSWORD not set}"
     healthcheck:
       test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
       interval: 10s

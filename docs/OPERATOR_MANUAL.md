@@ -50,7 +50,7 @@ This manual provides instructions for the daily operation and management of the 
 The following thresholds must be maintained to successfully "Graduate" the system to higher capital limits:
 
 | Metric | Threshold | Failure Meaning |
-|---|---|---|
+| --- | --- | --- |
 | **Quote Staleness** | < 30s | Data feed reliability issues. Check Quote Bridge ISP or MT5 connectivity. |
 | **Max Overrides** | 1 / session | Over-reliance on human intuition over system alignment rules. |
 | **Median Review Time** | < 300s | Operator bottleneck. Tickets are expiring before review. |

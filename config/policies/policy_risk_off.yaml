@@ -1,7 +1,7 @@
 # policy_risk_off.yaml
 # Strict defensive policy for high-volatility or risky sentiment
 policy_name: "RiskOff"
-terms: "PHX_V2_DEFENSIVE"
+terms: ["PHX_V2_DEFENSIVE"]
 guardrails_version: "2.0.0"
 
 news_buffer_minutes: 45           # increased buffer

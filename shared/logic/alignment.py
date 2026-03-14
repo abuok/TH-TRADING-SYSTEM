@@ -50,7 +50,7 @@ class AlignmentEngine:
             return True
         return False
 
-    def _check_bias_state(self, pair_fundamentals: Dict[str, Any], cfg: Dict[str, Any]) -> bool:
+    def _check_bias_state(self, pair_fundamentals: Dict[str, Any], cfg: Dict[str, Any], now_utc: datetime) -> bool:
         if pair_fundamentals.get("is_invalidated", False):
             return False
             
@@ -64,7 +64,6 @@ class AlignmentEngine:
             else:
                 created_at = created_at_val
                 
-            now_utc = datetime.now(timezone.utc)
             expiry = cfg.get("bias_expiry_minutes", 120)
             if (now_utc - created_at).total_seconds() / 60.0 > expiry:
                 return False
@@ -126,6 +125,7 @@ class AlignmentEngine:
         config_override: Optional[Dict[str, Any]] = None
     ) -> AlignmentDecision:
         now_nairobi = now_nairobi or get_nairobi_time()
+        now_utc = now_nairobi.astimezone(timezone.utc)
         asset_pair = setup_data.get("asset_pair", "UNKNOWN")
         
         # Merge config
@@ -140,14 +140,13 @@ class AlignmentEngine:
         
         results = {
             "Direction": self._check_bias_direction(setup_dir, bias_score),
-            "BiasState": self._check_bias_state(pair_fundamentals, effective_cfg),
+            "BiasState": self._check_bias_state(pair_fundamentals, effective_cfg, now_utc),
             "Events": self._check_event_proximity(context_data, now_nairobi, effective_cfg),
             "Session": SessionState(SessionEngine.get_session_state(now_nairobi, asset_pair)) != SessionState.OUT_OF_SESSION,
             "EOD_Gap": self._check_eod_gap(now_nairobi, effective_cfg)
         }
         
         if db:
-            now_utc = now_nairobi.astimezone(timezone.utc)
             results["Staleness"] = self._check_quote_staleness(asset_pair, db, now_utc, effective_cfg)
         
         is_aligned = all(results.values())

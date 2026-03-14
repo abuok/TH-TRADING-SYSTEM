@@ -166,7 +166,6 @@ class PHXDetector:
         lookback = self.history[-11:-1]
         if self.bias_direction == 1:
             min_low = min(c.low for c in lookback)
-            # print(f"DEBUG: candle.low={candle.low}, min_low={min_low}, close={candle.close}")
             if candle.low < min_low and candle.close > min_low:
                 self.stage = PHXStage.SWEEP
                 self.sweep_level = min_low
