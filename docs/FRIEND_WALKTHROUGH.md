@@ -705,7 +705,7 @@ investigate.
 
 ## SECTION G — Quickstart Cheat Sheet
 
-```
+```text
 ╔══════════════════════════════════════════════════════════╗
 ║          TH TRADING SYSTEM — DAILY CHEAT SHEET          ║
 ╠══════════════════════════════════════════════════════════╣
@@ -803,6 +803,8 @@ investigate.
 
 ---
 
-#### Guide Status
+### Guide Status
+
+### Guide Status
 
 *Guide prepared: 2026-03-03 | Version: v1.0.0 | System: TH Trading System*
