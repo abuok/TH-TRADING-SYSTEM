@@ -1,0 +1,76 @@
+# Docker Build Ignore File
+# Excludes unnecessary files from Docker build context
+
+# Version Control
+.git
+.gitignore
+.gitattributes
+.github
+
+# Documentation
+*.md
+README.md
+CHANGELOG.md
+docs/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.Python
+*.egg
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+venv/
+env/
+ENV/
+
+# Testing
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.tox/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+
+# Data
+*.db
+*.sqlite
+*.sqlite3
+
+# Build artifacts
+artifacts/
+backups/
+
+# CI/CD
+.gitlab-ci.yml
+.travis.yml
+azure-pipelines.yml
+
+# Misc
+.pre-commit-config.yaml
+.markdownlint.json
+Makefile
+conftest.py

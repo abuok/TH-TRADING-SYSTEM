@@ -1,12 +1,15 @@
+# Development Docker Compose - With Hot Reload & Watch Mode
 version: '3.8'
 
 services:
+  # Database
   postgres:
     image: postgres:15-alpine
+    container_name: trading-postgres-dev
     environment:
-      - POSTGRES_USER=${POSTGRES_USER:-postgres}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
-      - POSTGRES_DB=${POSTGRES_DB:-trading_journal}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-trading_journal}
     ports:
       - "5432:5432"
     volumes:
@@ -16,123 +19,220 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - trading-network
 
+  # Cache
   redis:
     image: redis:7-alpine
+    container_name: trading-redis-dev
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - trading-network
 
+  # Ingestion Service
   ingestion:
     build:
       context: .
-      dockerfile: infra/Dockerfile.service
+      dockerfile: Dockerfile
+    container_name: trading-ingestion-dev
     ports:
       - "8001:8000"
     volumes:
-      - ./services/ingestion:/app
+      - ./services/ingestion:/app/services/ingestion
       - ./shared:/app/shared
+      - ./config:/app/config
+      - ./artifacts:/app/artifacts
+    environment:
+      - SERVICE_NAME=ingestion
     env_file: .env
     depends_on:
-      - postgres
-      - redis
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: uvicorn services.ingestion.main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - trading-network
+    develop:
+      watch:
+        - action: sync
+          path: ./services/ingestion
+          target: /app/services/ingestion
+        - action: sync
+          path: ./shared
+          target: /app/shared
 
+  # Technical Service
   technical:
     build:
       context: .
-      dockerfile: infra/Dockerfile.service
+      dockerfile: Dockerfile
+    container_name: trading-technical-dev
     ports:
       - "8002:8000"
     volumes:
-      - ./services/technical:/app
+      - ./services/technical:/app/services/technical
       - ./shared:/app/shared
+      - ./config:/app/config
+    environment:
+      - SERVICE_NAME=technical
     env_file: .env
     depends_on:
-      - postgres
-      - redis
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: uvicorn services.technical.main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - trading-network
+    develop:
+      watch:
+        - action: sync
+          path: ./services/technical
+          target: /app/services/technical
+        - action: sync
+          path: ./shared
+          target: /app/shared
 
+  # Risk Service
   risk:
     build:
       context: .
-      dockerfile: infra/Dockerfile.service
+      dockerfile: Dockerfile
+    container_name: trading-risk-dev
     ports:
       - "8003:8000"
     volumes:
-      - ./services/risk:/app
+      - ./services/risk:/app/services/risk
       - ./shared:/app/shared
+      - ./config:/app/config
+    environment:
+      - SERVICE_NAME=risk
     env_file: .env
     depends_on:
-      - postgres
-      - redis
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: uvicorn services.risk.main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - trading-network
+    develop:
+      watch:
+        - action: sync
+          path: ./services/risk
+          target: /app/services/risk
+        - action: sync
+          path: ./shared
+          target: /app/shared
 
+  # Journal Service
   journal:
     build:
       context: .
-      dockerfile: infra/Dockerfile.service
+      dockerfile: Dockerfile
+    container_name: trading-journal-dev
     ports:
       - "8004:8000"
     volumes:
-      - ./services/journal:/app
+      - ./services/journal:/app/services/journal
       - ./shared:/app/shared
+      - ./config:/app/config
+    environment:
+      - SERVICE_NAME=journal
     env_file: .env
     depends_on:
-      - postgres
-      - redis
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: uvicorn services.journal.main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - trading-network
+    develop:
+      watch:
+        - action: sync
+          path: ./services/journal
+          target: /app/services/journal
+        - action: sync
+          path: ./shared
+          target: /app/shared
 
+  # Dashboard Service
   dashboard:
     build:
       context: .
-      dockerfile: infra/Dockerfile.service
+      dockerfile: Dockerfile
+    container_name: trading-dashboard-dev
     ports:
       - "8005:8000"
     volumes:
-      - ./services/dashboard:/app
+      - ./services/dashboard:/app/services/dashboard
       - ./shared:/app/shared
+      - ./config:/app/config
       - ./artifacts:/app/artifacts
+    environment:
+      - SERVICE_NAME=dashboard
     env_file: .env
     depends_on:
-      - postgres
-      - redis
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: uvicorn services.dashboard.main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - trading-network
+    develop:
+      watch:
+        - action: sync
+          path: ./services/dashboard
+          target: /app/services/dashboard
+        - action: sync
+          path: ./shared
+          target: /app/shared
 
+  # Orchestration Service
   orchestration:
     build:
       context: .
-      dockerfile: infra/Dockerfile.service
+      dockerfile: Dockerfile
+    container_name: trading-orchestration-dev
     ports:
       - "8006:8000"
     volumes:
-      - ./services/orchestration:/app
+      - ./services/orchestration:/app/services/orchestration
       - ./shared:/app/shared
+      - ./config:/app/config
+    environment:
+      - SERVICE_NAME=orchestration
     env_file: .env
     depends_on:
-      - postgres
-      - redis
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-
-  # ── Bridge Service (MT5 EA telemetry + execution) ────────────────────────
-  # The bridge is NOT included in the default local stack because it requires
-  # a live MT5 instance. Uncomment and configure when running with a real broker.
-  #
-  # bridge:
-  #   build:
-  #     context: .
-  #     dockerfile: infra/Dockerfile.service
-  #   ports:
-  #     - "8007:8000"
-  #   volumes:
-  #     - ./services/bridge:/app
-  #     - ./shared:/app/shared
-  #   env_file: .env
-  #   depends_on:
-  #     - postgres
-  #     - redis
-  #   command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-  #   environment:
-  #     - BRIDGE_SECRET=${BRIDGE_SECRET}
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: uvicorn services.orchestration.main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - trading-network
+    develop:
+      watch:
+        - action: sync
+          path: ./services/orchestration
+          target: /app/services/orchestration
+        - action: sync
+          path: ./shared
+          target: /app/shared
 
 volumes:
   postgres_data:
+
+networks:
+  trading-network:
+    driver: bridge

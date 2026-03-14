@@ -1,0 +1,64 @@
+# Production Dockerfile - Security Hardened
+# Multi-stage build with minimal attack surface
+FROM python:3.11.8-slim as builder
+
+WORKDIR /build
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create virtualenv
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir --no-warn-script-location \
+    --index-url https://pypi.org/simple/ \
+    -r requirements.txt
+
+
+# Stage 2: Runtime - Hardened
+FROM python:3.11.8-slim
+
+# Security: Install minimal runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Security: Create non-root user
+RUN groupadd -r trader && useradd -r -g trader trader
+
+WORKDIR /app
+
+# Copy virtualenv from builder
+COPY --from=builder --chown=trader:trader /opt/venv /opt/venv
+
+# Set environment variables
+ENV PATH="/opt/venv/bin:$PATH" \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PYTHONFAULTHANDLER=1
+
+# Copy application code
+COPY --chown=trader:trader . .
+
+# Security: Run as non-root user
+USER trader
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Expose only necessary ports (override in compose as needed)
+EXPOSE 8000
+
+# Default command
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

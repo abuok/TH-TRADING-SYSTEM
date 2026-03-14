@@ -1,76 +1,272 @@
-# docker-compose.prod.yml
-# PHX v2 Production Stack for VPS deployment
+# Production Docker Compose - Security Hardened, Resource Limited
+version: '3.8'
 
 services:
-  db:
+  # Database - Production Configuration
+  postgres:
     image: postgres:15-alpine
-    container_name: phx-db-prod
+    container_name: trading-postgres-prod
     restart: always
     environment:
-      POSTGRES_USER: ${DB_USER:-phx_prod_user}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME:-phx_trading_prod}
+      POSTGRES_USER: ${POSTGRES_USER:?Error: POSTGRES_USER not set}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Error: POSTGRES_PASSWORD not set}
+      POSTGRES_DB: ${POSTGRES_DB:-trading_prod}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     deploy:
       resources:
         limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
           memory: 512M
     networks:
-      - phx-internal
+      - trading-internal
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
+  # Cache - Production Configuration
   redis:
     image: redis:7-alpine
-    container_name: phx-redis-prod
+    container_name: trading-redis-prod
     restart: always
+    command: redis-server --requirepass ${REDIS_PASSWORD:?Error: REDIS_PASSWORD not set}
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     deploy:
       resources:
         limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
           memory: 256M
     networks:
-      - phx-internal
+      - trading-internal
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
-  orchestration:
-    build: .
-    container_name: phx-orchestration-prod
+  # Ingestion Service - Production
+  ingestion:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: trading-ingestion-prod
     restart: always
-    command: uvicorn services.orchestration.main:app --host 0.0.0.0 --port 8003
+    environment:
+      - SERVICE_NAME=ingestion
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
     env_file: .env.prod
     depends_on:
-      - db
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: uvicorn services.ingestion.main:app --host 0.0.0.0 --port 8000 --workers 2
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
     networks:
-      - phx-internal
+      - trading-internal
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
-  dashboard:
-    build: .
-    container_name: phx-dashboard-prod
+  # Technical Service - Production
+  technical:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: trading-technical-prod
     restart: always
-    command: uvicorn services.dashboard.main:app --host 0.0.0.0 --port 8005
+    environment:
+      - SERVICE_NAME=technical
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
     env_file: .env.prod
-    ports:
-      - "80:8005" # Expose only dashboard to public
-    volumes:
-      - ./artifacts:/app/artifacts
     depends_on:
-      - orchestration
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: uvicorn services.technical.main:app --host 0.0.0.0 --port 8000 --workers 2
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
     networks:
-      - phx-internal
+      - trading-internal
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
+  # Risk Service - Production
+  risk:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: trading-risk-prod
+    restart: always
+    environment:
+      - SERVICE_NAME=risk
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    env_file: .env.prod
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: uvicorn services.risk.main:app --host 0.0.0.0 --port 8000 --workers 2
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+    networks:
+      - trading-internal
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Journal Service - Production
   journal:
-    build: .
-    container_name: phx-journal-prod
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: trading-journal-prod
     restart: always
-    command: uvicorn services.journal.main:app --host 0.0.0.0 --port 8004
+    environment:
+      - SERVICE_NAME=journal
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
     env_file: .env.prod
     depends_on:
-      - db
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: uvicorn services.journal.main:app --host 0.0.0.0 --port 8000 --workers 2
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
     networks:
-      - phx-internal
+      - trading-internal
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
-networks:
-  phx-internal:
-    driver: bridge
+  # Dashboard Service - Production (Public Facing)
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: trading-dashboard-prod
+    restart: always
+    ports:
+      - "8005:8000"
+    environment:
+      - SERVICE_NAME=dashboard
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    env_file: .env.prod
+    volumes:
+      - ./artifacts:/app/artifacts:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: uvicorn services.dashboard.main:app --host 0.0.0.0 --port 8000 --workers 2
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+    networks:
+      - trading-internal
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Orchestration Service - Production
+  orchestration:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: trading-orchestration-prod
+    restart: always
+    environment:
+      - SERVICE_NAME=orchestration
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    env_file: .env.prod
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: uvicorn services.orchestration.main:app --host 0.0.0.0 --port 8000 --workers 2
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+    networks:
+      - trading-internal
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   postgres_data:
+    driver: local
+
+networks:
+  trading-internal:
+    driver: bridge
