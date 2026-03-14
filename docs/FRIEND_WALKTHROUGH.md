@@ -1,8 +1,13 @@
-# Friend Walkthrough: The TH Trading System
+# Pilot's Friend Walkthrough
 
-## A calm, complete guide for someone who has never traded before
+Welcome, Operator. This document is your "friend" — a plain-English guide to
+the system's internals, workflows, and safety mechanics. If you're looking at
+this, you're likely preparing for your first live session or performing a
+readiness check.
 
-> **Tone**: Think of this system as a luxury control room for a financial analyst. Everything is tracked, everything is logged, nothing happens by accident. You are the pilot; the system is the cockpit.
+> **Tone**: Think of this system as a luxury control room for a financial
+> analyst. Everything is tracked, everything is logged, nothing happens by
+> accident. You are the pilot; the system is the cockpit.
 
 ---
 
@@ -171,7 +176,7 @@ not a reckless trade.
 
 ### Data Flow Diagram
 
-```
+```text
    ┌────────────────────────────────────────────────────────────────────────┐
    │                        MARKET DATA (EXTERNAL)                         │
    │    Calendar Events · Macro Proxies (DXY, US10Y) · MT5 Price Bridge    │
@@ -299,7 +304,17 @@ not a reckless trade.
   your explicit approval.
 - **Safety boundary**: All decisions are logged with timestamps and reasons.
 
-#### 8. Execution Prep
+#### 8. Execution Prep Gate
+
+The final gate before you place an order.
+
+```text
+Checks performed:
+- [PASS] SESSION_ACTIVE
+- [PASS] PERMISSION_LEVEL >= REQUIRED
+- [PASS] DRAWDOWN_SAFE
+- [PASS] SYMBOL_VAR_CHECK
+```
 
 - **Input**: Approved `OrderTicket`.
 - **Output**: `ExecutionPrepSchema` — a checklist of PASS/WARN/FAIL for
@@ -390,46 +405,46 @@ python services/dashboard/main.py
 ```
 
 For production (Docker Compose):
+
 ```bash
 docker-compose up --build -d
 ```
 
 ---
 
-### How to Verify Health & Integration Readiness
+### How to Verify Health & Integration
 
 ```bash
-python -m infra.cli infra status
+# Verify all services are healthy
+python -m infra.cli health-check
 ```
 
 **What "healthy" looks like:**
 
-```text
-+-----------------------------------------------------------+
-| Provider Type | Active Implementation  | Env Var | Status |
-|---------------+------------------------+---------+--------|
-| Calendar      | ForexFactoryCalendar   | set     | OK     |
-| Proxy         | RealProxyProvider      | set     | OK     |
-| Price Quote   | DBPriceQuoteProvider   | set     | OK     |
-| Symbol Spec   | DBSymbolSpecProvider   | set     | OK     |
-+-----------------------------------------------------------+
-Redis:  Connected
-```
+| Provider Type | Active Implementation | Env Var | Status |
+| :--- | :--- | :--- | :--- |
+| Calendar | ForexFactoryCalendar | set | OK |
+| Proxy | RealProxyProvider | set | OK |
+| Price Quote | DBPriceQuoteProvider | set | OK |
+| Symbol Spec | DBSymbolSpecProvider | set | OK |
 
-> ⚠️ **In development**, all providers will show `MOCK` — this is normal and safe. `MOCK` providers are **forbidden** in `ENV=prod`.
+Redis: **Connected**
+
+> ⚠️ **In development**, all providers will show `MOCK` — this is normal and
+> safe. `MOCK` providers are **forbidden** in `ENV=prod`.
 
 ---
 
 ### What To Do If Something Is Stale or Broken
 
 | Symptom | Likely Cause | Action |
-|---|---|---|
-| All providers show `MOCK` | Env vars not set | Set `CALENDAR_PROVIDER`, `PROXY_PROVIDER`, etc. in `.env` |
-| Redis: NOT CONNECTED | Redis server is down | Start Redis: `redis-server` |
-| `DATABASE_URL: MISSING` | `.env` not loaded | Verify `.env` file exists with correct values |
-| Quote staleness warning in dashboard | MT5 Bridge offline | Restart the Bridge service or check MT5 connection |
-| Tickets not appearing in queue | Technical Service down | Check `python -m infra.cli infra status` for wiring health |
-| Daily report missing | Report not generated yet | Run orchestration service or check `artifacts/ops/` directory |
+| :--- | :--- | :--- |
+| All providers show `MOCK` | Env vars not set | Set `CALENDAR_PROVIDER`, etc. |
+| Redis: NOT CONNECTED | Redis server down | Start Redis: `redis-server` |
+| `DATABASE_URL: MISSING` | `.env` not loaded | Verify `.env` file exists |
+| Quote staleness warning | Bridge offline | Restart Bridge or check MT5 |
+| Tickets not appearing | Tech Service down | Check wiring health via CLI |
+| Daily report missing | Not generated yet | Run orchestration or check dir |
 
 ---
 
@@ -440,9 +455,11 @@ Redis:  Connected
 ---
 
 ### Step 1 — Open the Dashboard: Read the Status Bar
+
 **URL**: `http://localhost:8005/dashboard`
 
-*Screenshot: Dashboard overview — top status bar with session indicator, live quote freshness, kill switches.*
+*Screenshot: Dashboard overview — top status bar with session indicator, live
+quote freshness, kill switches.*
 
 The very first thing you do is look at the top of the overview page:
 
@@ -459,14 +476,20 @@ The very first thing you do is look at the top of the overview page:
 ---
 
 ### Step 2 — Read the Daily Ops Report & Session Briefing
+
 **URL**: `http://localhost:8005/dashboard/ops/daily`
 **URL**: `http://localhost:8005/dashboard/briefings`
 
 *Screenshot: Daily Ops report with session summary.*
 
-The **Ops Report** shows you a structured summary of everything that happened since the last session: how many tickets were generated, how many were approved, approved vs. skipped outcomes, any incidents, and whether the system is healthy.
+The **Ops Report** shows you a structured summary of everything that happened
+since the last session: how many tickets were generated, how many were
+approved, approved vs. skipped outcomes, any incidents, and whether the
+system is healthy.
 
-The **Session Briefing** is a narrative generated before the session begins — it includes macro context (is USD strong today?), the active policy (RISK_ON vs. RISK_OFF), and relevant events to watch out for.
+The **Session Briefing** is a narrative generated before the session begins —
+it includes macro context (is USD strong today?), the active policy
+(RISK_ON vs. RISK_OFF), and relevant events to watch out for.
 
 **What to pay attention to:**
 
@@ -478,15 +501,20 @@ The **Session Briefing** is a narrative generated before the session begins — 
 ---
 
 ### Step 3 — Work the Queue
+
 **URL**: `http://localhost:8005/dashboard/queue`
 
-*Screenshot: Queue page with IN_REVIEW tickets, guardrails score, and action buttons.*
+*Screenshot: Queue page with IN_REVIEW tickets, guardrails score, and
+action buttons.*
 
-The **Queue** is the heart of your daily workflow. This is where tickets waiting for your review appear.
+The **Queue** is the heart of your daily workflow. This is where tickets
+waiting for your review appear.
 
-**What "IN_REVIEW" means**: The system has found a setup that passed all automated checks and is now asking for your human judgment.
+**What "IN_REVIEW" means**: The system has found a setup that passed all
+automated checks and is now asking for your human judgment.
 
 **What you see for each ticket:**
+
 - Pair (e.g., GBPJPY)
 - Direction (BUY or SELL)
 - Entry price, Stop Loss, Take Profit 1, Take Profit 2
@@ -494,9 +522,12 @@ The **Queue** is the heart of your daily workflow. This is where tickets waiting
 - Expiry time — the ticket is time-limited. If it expires, it's gone.
 
 **How to Approve:**
-Click `APPROVE`. The ticket will move to `APPROVED` status, and an **Execution Prep** packet will be generated automatically.
 
-> ✅ Approve when: the setup aligns with your session bias, no recent news, guardrails score is high, and the RR is clean.
+Click `APPROVE`. The ticket will move to `APPROVED` status, and an **Execution
+Prep** packet will be generated automatically.
+
+> ✅ Approve when: the setup aligns with your session bias, no recent news,
+> guardrails score is high, and the RR is clean.
 
 **How to Skip:**
 
@@ -504,7 +535,7 @@ Click `SKIP` and select a reason:
 
 - `NEWS_PROXIMITY` — news event within 30 mins
 - `SPREAD_WIDE` — the spread is too wide to trade safely
-- `OPERATOR_DISCRETION` — you simply don't like the setup
+- `OPERATOR_DISCRETION` — you don't like the setup
 
 > ⏩ Skip when: your gut says the context doesn't feel right, or conditions
 > don't meet your personal criteria beyond the automated checks.
@@ -518,37 +549,43 @@ tickets and logs them for Hindsight analysis.
 ---
 
 ### Step 4 — Check Execution Prep
-**URL**: Accessible from the approved ticket in the queue, or via `GET /api/execution-prep/{ticket_id}`
+
+**URL**: Accessible from the approved ticket in the queue, or via
+`GET /api/execution-prep/{ticket_id}`
 
 *Screenshot: Execution Prep panel with PASS/WARN/FAIL checks.*
 
-Once you approve a ticket, the system runs a final pre-flight check called **Execution Prep**. It verifies:
+Once you approve a ticket, the system runs a final pre-flight check called
+**Execution Prep**. It verifies:
 
 | Check | PASS | WARN | FAIL |
-|---|---|---|---|
+| :--- | :--- | :--- | :--- |
 | Ticket Expiry | Active | — | Expired |
 | Kill Switch | None active | — | Active |
 | Price Tolerance | Entry price still valid | — | Price moved too far |
 | Spread | Within max (3 pips) | Slightly wide | Unavailable data |
 | News Window | No event nearby | — | Within buffer window |
 
-**What FAIL CLOSED means here:**
-If the live price cannot be retrieved (e.g., the bridge is down), the system marks `FAIL` — it does **not** assume the price is still valid. No green light on bad data.
+If the live price cannot be retrieved (e.g., the bridge is down), the system
+marks `FAIL` — it does **not** assume the price is still valid.
+No green light on bad data.
 
 **When is an override allowed?**
 
 In exceptional circumstances (e.g., a confirmed connectivity blip that is
 already resolved), you can override an Execution Prep check by providing a
 written reason. This reason is **logged permanently**. The Operator Manual
-states: "Manual overrides should be rare. Never override SL/TP to increase
-risk."
+states: "Manual overrides should be rare. Never override SL/TP."
 
 ---
 
 ### Step 5 — Execute Manually in MT5
+
 *This step happens entirely outside the system.*
 
-The system provides you with all the parameters: Entry, Stop Loss, Take Profit 1, Take Profit 2, and lot size. You open MT5, navigate to your symbol, and place the order manually.
+The system provides you with all the parameters: Entry, Stop Loss, Take
+Profit 1, Take Profit 2, and lot size. You open MT5, navigate to your symbol,
+and place the order manually.
 
 **Critical step — use the comment field:**
 
@@ -563,11 +600,14 @@ system.
 ---
 
 ### Step 6 — Verify Trade Capture
+
 **URL**: `http://localhost:8005/dashboard/trades`
 
 *Screenshot: Trades page showing fills and matched ticket links.*
 
-After you execute in MT5, the Bridge service picks up the fill and writes it to the database. You should see your trade appear in the Trades dashboard within 1–2 minutes.
+After you execute in MT5, the Bridge service picks up the fill and writes it to
+the database. You should see your trade appear in the Trades dashboard within
+1–2 minutes.
 
 **What to check:**
 
@@ -580,11 +620,13 @@ After you execute in MT5, the Bridge service picks up the fill and writes it to 
 ---
 
 ### Step 7 — Monitor Trade Management Suggestions
+
 **URL**: `http://localhost:8005/dashboard/management`
 
 *Screenshot: Management page with active suggestions.*
 
-While a trade is running, the Trade Management Assistant monitors it and generates suggestions:
+While a trade is running, the Trade Management Assistant monitors it and
+generates suggestions:
 
 - **"Move SL to BE"** (Move Stop Loss to Break-Even): When the trade has moved
   1R in your favour, the system suggests moving your stop loss to your original
@@ -602,6 +644,7 @@ While a trade is running, the Trade Management Assistant monitors it and generat
 ---
 
 ### Step 8 — End of Day Review
+
 **URL**: `http://localhost:8005/dashboard/hindsight`
 
 *Screenshot: Hindsight page showing missed vs. realized R.*
@@ -624,9 +667,12 @@ At the end of your session:
 Every Friday after the session closes, you run the Weekly Cycle.
 
 ### Weekly Review Pack
+
 **URL**: `http://localhost:8005/dashboard/ops/weekly`
 
-The **Weekly Report** is a narrative summary of the last 5 trading sessions. It shows:
+The **Weekly Report** is a narrative summary of the last 5 trading sessions.
+It shows:
+
 - Total tickets generated vs. approved vs. skipped
 - Overall expectancy (the average R per trade)
 - Override rate (how often did you override the system's recommendation?)
@@ -634,7 +680,9 @@ The **Weekly Report** is a narrative summary of the last 5 trading sessions. It 
 - Worst single session (to investigate)
 
 ### Calibration & Tuning Proposals
-**URL**: `http://localhost:8005/dashboard/calibration` · `http://localhost:8005/dashboard/tuning`
+
+**URL**: `http://localhost:8005/dashboard/calibration` · 
+`http://localhost:8005/dashboard/tuning`
 
 The **Calibration** dashboard shows research runs that simulate how the
 strategy has performed under different parameter settings. The **Tuning**
@@ -656,7 +704,9 @@ recommendations like "raise the minimum setup score from 70 to 75."
 ---
 
 ### Pilot Gate
-**URL**: `http://localhost:8005/dashboard/pilot` · `http://localhost:8005/dashboard/pilot/gate`
+
+**URL**: `http://localhost:8005/dashboard/pilot` · 
+`http://localhost:8005/dashboard/pilot/gate`
 
 The **Pilot Gate** is the graduation system. Before you can increase your
 position sizes or move from a pilot to a live account, the system requires you
@@ -665,7 +715,7 @@ to prove consistent performance across a rolling window of sessions.
 **Graduation thresholds (from `OPERATOR_MANUAL.md`):**
 
 | Metric | Required Value | Plain English Meaning |
-|---|---|---|
+| :--- | :--- | :--- |
 | Quote Staleness | < 30 seconds | Your data feed is reliable |
 | Max Overrides | 1 per session | You trust the system, not just yourself |
 | Median Review Time | < 300 seconds | You're not leaving tickets to expire |
@@ -684,22 +734,22 @@ investigate.
 
 | Term | Plain English Meaning |
 | :--- | :--- |
-| **Pair** | A currency combination (e.g., GBPJPY = British Pound vs. Japanese Yen). The price tells you how much of one currency buys the other. |
-| **Spread** | The gap between the buy price and sell price. The broker's fee. Wider spread = more cost to you. |
-| **Lot Size** | The volume of a trade. 0.01 lots is a "micro lot" — a very small position. 1.0 lot is a "standard lot" — much larger. |
-| **SL (Stop Loss)** | A price level where the trade automatically closes to limit your loss. Non-negotiable — always set before entering. |
-| **TP (Take Profit)** | A price level where the trade automatically closes to lock in a gain. TP1 = first target, TP2 = final target. |
-| **R-multiple** | Your risk unit. If you risk $100 to make $200, that's 2R. It's a universal way to measure trade quality regardless of account size. |
-| **Expectancy** | Your average R per trade over a sample. If it's positive (>0), your strategy has edge. Below 0.05R and you're barely breaking even. |
-| **Drawdown** | The depth of a losing streak. If your account went from $1000 to $900, that's a 10% drawdown or -1R. |
-| **Risk-Off / Risk-On** | Regime labels. Risk-ON = market is calm, take full setups. Risk-OFF = market is volatile, be more selective, take profits earlier. |
-| **Ticket** | The system's trade proposal — a data document containing all the parameters for a potential trade. Not an order. |
-| **Queue** | The list of tickets waiting for your human review and approval. |
-| **Preflight** | The final safety check before you manually execute a ticket in MT5. Similar to a pilot's pre-takeoff checklist. |
-| **Trade Capture** | The process of reading MT5 fills into the system — completely passive and read-only. |
-| **Idempotency** | If the same event fires twice (e.g., a duplicate webhook), the system does not create a duplicate ticket or journal entry. Safe by design. |
-| **Staleness** | The age of data. A live price that is 60 seconds old is "stale." A market context that is 3 hours old is stale. Stale data triggers warnings or blocks. |
-| **Fail Closed** | If a safety check cannot be completed due to missing data, the system rejects the action (rather than guessing and proceeding). |
+| **Pair** | A currency combination (e.g., GBPJPY = British Pound vs. Japanese Yen). |
+| **Spread** | The gap between buy and sell price. Wide spread = more cost. |
+| **Lot Size** | Trade volume. 0.01 is a micro lot, 1.0 is a standard lot. |
+| **SL** | Stop Loss: price where trade closes to limit loss. Non-negotiable. |
+| **TP** | Take Profit: price where trade closes to lock in gain. |
+| **R** | Risk unit. Risking $100 to make $200 is 2R. Universal measure. |
+| **Expectancy** | Average R per trade. Positive (>0) means edge. |
+| **Drawdown** | Depth of a losing streak (e.g., -1R or 10%). |
+| **Risk Regime** | ON (calm, full setups) or OFF (volatile, selective). |
+| **Ticket** | System trade proposal — data only. Not an order. |
+| **Queue** | The list of tickets waiting for human review. |
+| **Preflight** | Final safety check before manual execution. |
+| **Capture** | Reading MT5 fills into the system — read-only. |
+| **Idempotency** | Safety: duplicate events don't create duplicate entries. |
+| **Staleness** | Age of data. Old data triggers warnings or blocks. |
+| **Fail Closed** | Safety policy: if check fails, block the action. |
 
 ---
 
@@ -781,28 +831,28 @@ investigate.
 
 | Feature | Status Without Config | How to Enable |
 | :--- | :--- | :--- |
-| Calendar events (news gating) | Uses `MockCalendarProvider` — deterministic fake events | Set `CALENDAR_PROVIDER=forexfactory` and `FOREX_FACTORY_API_KEY` in `.env` |
-| Macro proxy data (DXY, US10Y) | Uses `MockProxyProvider` — static fake data | Set `PROXY_PROVIDER=real` and `TWELVE_DATA_API_KEY` |
-| Live price quotes | Uses `MockPriceQuoteProvider` | Set `PRICE_PROVIDER=db` and run the MT5 Bridge service |
-| Telegram notifications | Disabled — no alerts sent | Set `TELEGRAM_TOKEN` and `TELEGRAM_CHAT_ID` |
-| Redis stream wiring | Services cannot communicate via streams | Start a Redis instance: `docker run -p 6379:6379 redis` |
-| Production provider enforcement | In `ENV=development`, mocks are silently allowed | Set `ENV=prod` to enforce fail-closed provider validation |
+| Calendar | Uses `MockCalendarProvider` | Set `CALENDAR_PROVIDER=forexfactory` |
+| Macro data | Uses `MockProxyProvider` | Set `PROXY_PROVIDER=real` |
+| Price quotes | Uses `MockPriceQuoteProvider` | Set `PRICE_PROVIDER=db` + Bridge |
+| Telegram | Disabled — no alerts | Set `TELEGRAM_TOKEN` |
+| Redis wiring | No stream communication | Start Redis: `docker run -p 6379:6379` |
+| Prod forcing | Mocks allowed in dev | Set `ENV=prod` |
 
-**Files referenced to verify this guide:**
+### Files referenced to verify this guide
 
 - `services/dashboard/main.py` — all routes confirmed
 - `docs/OPERATOR_MANUAL.md` — Pilot Gate thresholds
 - `docs/PROVIDER_MAP.md` — provider configurations
 - `docs/INTEGRATIONS.md` — integration setup
 - `docs/RELEASE_CHECKLIST.md` — verification commands
-- `shared/logic/guardrails.py` — 7 rules (GR-S01 to GR-Q01)
-- `shared/logic/risk.py` — RR, drawdown, event window checks
-- `shared/logic/execution_logic.py` — Execution Prep fail-closed logic
-- `shared/logic/trade_management_engine.py` — suggestion rules
+- `shared/logic/guardrails.py` — guardrails rules
+- `shared/logic/risk.py` — risk checks
+- `shared/logic/execution_logic.py` — fail-closed
+- `shared/logic/trade_management_engine.py` — suggestions
 - `infra/cli.py` — CLI commands
 
 ---
 
 ### Guide Status
 
-*Guide prepared: 2026-03-03 | Version: v1.0.0 | System: TH Trading System*
+Guide prepared: 2026-03-03 | Version: v1.0.0 | System: TH Trading System
