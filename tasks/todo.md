@@ -6,7 +6,7 @@
 - [ ] Step 1: Architecture compliance
 - [ ] Step 2: Fail-closed philosophy
 - [ ] Step 3: Event bus resiliency
-- [ ] Step 4: Known bug checks (MT5 phantom, Alerting loop, Calendar HH:MM, Stale data 4h)
+- [ ] Step 4: Known bug checks (MT5 phantom, Alerting, Calendar, Stale data)
 - [ ] Step 5: Testing coverage checklist
 - [ ] Step 6: Security audit checklist
 - [ ] Issue P0 Fixes
