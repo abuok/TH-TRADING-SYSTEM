@@ -6,11 +6,11 @@ def check_db(db_path):
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-        tables = cursor.fetchall()
-        print(f"Tables in {db_path}: {[t[0] for t in tables]}")
+        tables = [t[0] for t in cursor.fetchall()]
+        print(f"Tables: {tables}")
+        print(f"Has 'discipline_lockouts': {'discipline_lockouts' in tables}")
         conn.close()
     except Exception as e:
-        print(f"Error checking {db_path}: {e}")
+        print(f"Error: {e}")
 
 check_db("trading.db")
-check_db("trading_db.sqlite")
