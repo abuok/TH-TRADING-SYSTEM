@@ -1,0 +1,32 @@
+{
+  "pythonVersion": "3.13",
+  "pythonPlatform": "Windows",
+  "pythonPath": "C:/Python313/python.exe",
+  "venvPath": "C:/Python313",
+  "extraPaths": [
+    ".",
+    "./shared",
+    "./services",
+    "./infra"
+  ],
+  "exclude": [
+    "**/__pycache__",
+    ".git",
+    ".mypy_cache",
+    ".ruff_cache",
+    ".pytest_cache"
+  ],
+  "reportMissingImports": "none",
+  "reportMissingModuleSource": "none",
+  "typeCheckingMode": "basic",
+  "useLibraryCodeForTypes": true,
+  "reportGeneralTypeIssues": "warning",
+  "reportOptionalSubscript": "none",
+  "reportOptionalMemberAccess": "none",
+  "reportAttributeAccessIssue": "none",
+  "reportIndexIssue": "none",
+  "reportCallIssue": "none",
+  "reportOperatorIssue": "none",
+  "reportReturnType": "warning",
+  "reportArgumentType": "warning"
+}
