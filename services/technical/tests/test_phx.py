@@ -7,7 +7,7 @@ from shared.types.packets import Candle
 
 
 def create_candle(
-    price: float, is_bullish: bool = True, timestamp: datetime = None
+    price: float, is_bullish: bool = True, timestamp: datetime | None = None
 ) -> Candle:
     if timestamp is None:
         timestamp = datetime.now()

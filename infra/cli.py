@@ -78,7 +78,7 @@ def list_runs(limit: int = 5):
 
 
 @app.command()
-def set_kill_switch(switch_type: str, target: str = None):
+def set_kill_switch(switch_type: str, target: str | None = None):
     """Set a kill switch. Types: HALT_ALL, HALT_PAIR, HALT_SERVICE, HALT_EXECUTION"""
     db = db_session.SessionLocal()
     try:

@@ -39,7 +39,7 @@ SERVICES = {
 }
 
 
-async def get_service_health() -> dict[str, Any]:
+async def get_service_health() -> tuple[dict[str, str], dict[str, int]]:
     health_results = {}
     response_times = {}
 
@@ -74,7 +74,7 @@ async def check_health(client, name, url):
         return name, "unhealthy", elapsed
 
 
-def get_dashboard_data(db: Session, asset_pairs: list[str] = None):
+def get_dashboard_data(db: Session, asset_pairs: list[str] | None = None):
     # Nairobi Time
     if asset_pairs is None:
         asset_pairs = ["XAUUSD", "GBPJPY"]
@@ -128,6 +128,7 @@ def get_dashboard_data(db: Session, asset_pairs: list[str] = None):
 
     # Calculate minutes until next boundary
     today = now_nairobi.date()
+    assert next_boundary is not None  # guaranteed: fallback on line 127 always sets it
     boundary_dt = datetime.combine(today, next_boundary)
     if next_boundary <= current_time:
         from datetime import timedelta
