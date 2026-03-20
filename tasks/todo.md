@@ -1,17 +1,14 @@
-# Code Style Guide Work Tasks
+# PHX v2 Execution Engine Dashboard Work Tasks
 
-## Audit Plan
-
-- [ ] Read master PRD to understand constraints
-- [ ] Step 1: Architecture compliance
-- [ ] Step 2: Fail-closed philosophy
-- [ ] Step 3: Event bus resiliency
-- [ ] Step 4: Known bug checks (MT5 phantom, Alerting, Calendar, Stale data)
-- [ ] Step 5: Testing coverage checklist
-- [ ] Step 6: Security audit checklist
-- [ ] Issue P0 Fixes
-- [ ] Create Review/Deliverables Scorecard
+## Implementation Plan
+- [/] Create `dashboard/index.html` with Elite Dashboard HTML structure
+- [/] Create `dashboard/styles.css` with Elite Dark UI styles 
+- [/] Create `dashboard/script.js` with Intelligence Engine logic
+- [/] Update `services/dashboard/main.py` to add `/status` API endpoint returning the required mock data
+- [/] Update `services/dashboard/main.py` to mount the new `dashboard/` directory so the new dashboard is served
+- [ ] Verify the dashboard renders correctly and fetches data from `/status`
 
 ## Review
-
-- [ ] Verify P0 fixes resolve the targeted bugs using pytest or code logic review.
+- [ ] Check if the decision engine logic correctly calculates the VALID/NO TRADE status
+- [ ] Verify UI state machine highlights update correctly
+- [ ] Manually test to ensure "NO TRADE" and "VALID TRADE" logic executes correctly

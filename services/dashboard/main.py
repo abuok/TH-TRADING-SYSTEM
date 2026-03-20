@@ -100,6 +100,11 @@ if os.path.exists("services/dashboard/static"):
         "/static", StaticFiles(directory="services/dashboard/static"), name="static"
     )
 
+if os.path.exists("dashboard"):
+    app.mount(
+        "/phx", StaticFiles(directory="dashboard", html=True), name="phx_dashboard"
+    )
+
 
 def verify_auth(request: Request):
     if not os.getenv("DASHBOARD_AUTH_ENABLED", "false").lower() == "true":
@@ -544,6 +549,20 @@ async def briefing_print_view(
 @app.get("/health")
 async def health_check():
     return {"status": "healthy", "service": "dashboard"}
+
+
+@app.get("/status")
+def status():
+    return {
+        "bias": "Bullish",
+        "sweep": "Confirmed",
+        "displacement": "Strong",
+        "structure": "CHOCH",
+        "retest": "Valid",
+        "loss": 12,
+        "trades": 1,
+        "session": "London"
+    }
 
 
 @app.get("/dashboard/fundamentals", response_class=HTMLResponse)
