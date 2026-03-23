@@ -73,12 +73,7 @@ def render_template(template_name: str, context: dict):
     # Fallback generic rendering for test environments missing templates
     body = f"<h1>{template_name}</h1>"
 
-    if template_name == "theme_preview.html":
-        accents = context.get("accents", {})
-        neutrals = context.get("neutrals", {})
-        swatches = " ".join([*accents.values(), *neutrals.values()])
-        body = f"<h1>Dashboard Theme Palette</h1> {swatches}"
-    elif template_name == "briefings.html":
+    if template_name == "briefings.html":
         body = "<h1>Briefings</h1>"
     else:
         safe_context = {k: v for k, v in context.items() if k != "request"}
@@ -98,11 +93,6 @@ if os.path.exists("artifacts"):
 if os.path.exists("services/dashboard/static"):
     app.mount(
         "/static", StaticFiles(directory="services/dashboard/static"), name="static"
-    )
-
-if os.path.exists("dashboard"):
-    app.mount(
-        "/phx", StaticFiles(directory="dashboard", html=True), name="phx_dashboard"
     )
 
 
@@ -169,15 +159,6 @@ async def dashboard_overview(
     )
 
 
-@app.get("/dashboard/theme", response_class=HTMLResponse)
-async def dashboard_theme(request: Request):
-    context = {
-        "request": request,
-        "accents": ACCENTS,
-        "neutrals": NEUTRALS,
-        "active_page": "theme",
-    }
-    return render_template("theme_preview.html", context)
 
 
 @app.get("/dashboard/incidents", response_class=HTMLResponse)
@@ -549,20 +530,6 @@ async def briefing_print_view(
 @app.get("/health")
 async def health_check():
     return {"status": "healthy", "service": "dashboard"}
-
-
-@app.get("/status")
-def status():
-    return {
-        "bias": "Bullish",
-        "sweep": "Confirmed",
-        "displacement": "Strong",
-        "structure": "CHOCH",
-        "retest": "Valid",
-        "loss": 12,
-        "trades": 1,
-        "session": "London"
-    }
 
 
 @app.get("/dashboard/fundamentals", response_class=HTMLResponse)

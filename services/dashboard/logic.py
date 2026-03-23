@@ -213,6 +213,70 @@ def get_dashboard_data(db: Session, asset_pairs: list[str] | None = None):
         db.query(IncidentLog).order_by(IncidentLog.created_at.desc()).limit(10).all()
     )
 
+    # 8. JARVIS INTELLIGENCE MODEL
+    # Synthesize the raw states into the decision engine model
+    jarvis_status = "NO TRADE"
+    jarvis_reasoning = "System is IDLE. No setup forming."
+    jarvis_stage = "IDLE"
+    jarvis_aligned = False
+    
+    # Analyze the most recent setup packet
+    if setup_packets:
+        latest = setup_packets[0]
+        jarvis_stage = latest.data.get("stage", "IDLE")
+        jarvis_aligned = latest.data.get("is_aligned", False)
+        
+        # Extract reasons if they exist
+        reasons = latest.data.get("reason_codes", [])
+        last_reason = reasons[-1] if reasons else None
+        
+        if permission_state.value == "HARD_LOCK":
+            jarvis_reasoning = f"Execution physically sealed. {permission_msg}"
+        elif session_label == "OUT_OF_SESSION":
+            jarvis_reasoning = "No trade. System frozen outside of allowed sessions."
+        elif jarvis_stage == "TRIGGER" and jarvis_aligned:
+            jarvis_status = "VALID TRADE"
+            jarvis_reasoning = "All conditions met. Setup aligned and triggered."
+        elif jarvis_stage == "TRIGGER" and not jarvis_aligned:
+            jarvis_reasoning = "Trade triggered but blocked by alignment guardrails."
+        elif jarvis_stage in ["BIAS", "SWEEP", "DISPLACE"]:
+            jarvis_reasoning = last_reason or f"Valid setup forming. Currently at {jarvis_stage} stage."
+        elif jarvis_stage == "RETEST":
+            jarvis_reasoning = last_reason or "Displacement confirmed. Awaiting retest/trigger."
+        elif jarvis_stage == "CHOCH_BOS":
+            jarvis_reasoning = last_reason or "Structure shift confirmed. Monitoring for retest."
+            
+    # Create the unified thought stream (combining setups and incidents)
+    thought_stream = []
+    
+    for inc in reversed(latest_incidents[:5]):
+        thought_stream.append({
+            "time": inc.created_at.strftime("%H:%M:%S"),
+            "msg": f"[{inc.component}] {inc.message}",
+            "type": "incident"
+        })
+        
+    for p in reversed(setup_packets[:3]):
+        reasons = p.data.get("reason_codes", [])
+        stage = p.data.get("stage", "UNKNOWN")
+        if reasons:
+            thought_stream.append({
+                "time": p.created_at.strftime("%H:%M:%S"),
+                "msg": f"[{stage}] {reasons[-1]}",
+                "type": "event"
+            })
+            
+    # Sort chronological
+    thought_stream = sorted(thought_stream, key=lambda x: x["time"], reverse=True)
+
+    jarvis_model = {
+        "status": jarvis_status,
+        "reasoning": jarvis_reasoning,
+        "stage": jarvis_stage,
+        "is_aligned": jarvis_aligned,
+        "thought_stream": thought_stream[:8]
+    }
+
     # Bridge Data for the bottom strip
     live_quotes = (
         db.query(LiveQuote).order_by(LiveQuote.captured_at.desc()).limit(5).all()
@@ -230,6 +294,7 @@ def get_dashboard_data(db: Session, asset_pairs: list[str] | None = None):
         "latest_incidents": latest_incidents,
         "live_quotes": live_quotes,
         "now_nairobi_str": now_nairobi.strftime("%H:%M:%S"),
+        "jarvis_model": jarvis_model,
     }
 
 

@@ -58,11 +58,14 @@ class LockoutEngine:
                         LockoutState.HARD_LOCK,
                         f"Discipline Lockout active: {active_lockout.reason}",
                     )
-            except Exception:
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                db.rollback()
                 # Fail-closed
                 return (
                     LockoutState.HARD_LOCK,
-                    "Database unreachable for kill switch check",
+                    f"Database unreachable for kill switch check: {e}",
                 )
         else:
             return (
