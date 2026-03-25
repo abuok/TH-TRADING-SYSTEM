@@ -1,458 +1,590 @@
 {% extends "base.html" %}
 
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', path='jarvis.css') }}">
+{% endblock %}
+
 {% block content %}
-<style>
-/* Jarvis Specific Dashboard Styles */
-.jarvis-container {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-.jarvis-decision-engine {
-    background: rgba(10, 15, 25, 0.95);
-    border: 2px solid #00f0ff;
-    box-shadow: 0 0 20px rgba(0, 240, 255, 0.2), inset 0 0 40px rgba(0, 240, 255, 0.05);
-    border-radius: 8px;
-    padding: 2rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
-}
-.jarvis-decision-engine.status-VALID {
-    border-color: #00ff88;
-    box-shadow: 0 0 30px rgba(0, 255, 136, 0.4), inset 0 0 50px rgba(0, 255, 136, 0.1);
-}
-.jarvis-decision-engine.status-NO {
-    border-color: #ff3366;
-    box-shadow: 0 0 20px rgba(255, 51, 102, 0.2), inset 0 0 30px rgba(255, 51, 102, 0.05);
-}
-.decision-status-text {
-    font-size: 5rem;
-    font-weight: 800;
-    line-height: 1;
-    letter-spacing: -2px;
-    text-transform: uppercase;
-}
-.status-VALID .decision-status-text { color: #00ff88; text-shadow: 0 0 20px rgba(0,255,136,0.5); }
-.status-NO .decision-status-text { color: #ff3366; text-shadow: 0 0 20px rgba(255,51,102,0.5); }
+<div class="jarvis-root">
 
-.jarvis-reasoning {
-    font-family: 'Inter', sans-serif;
-    font-size: 1.25rem;
-    color: #a0aab5;
-    margin-top: 1rem;
-    border-top: 1px solid rgba(255,255,255,0.1);
-    padding-top: 1rem;
-}
-.state-machine-track {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 2rem;
-    position: relative;
-}
-.state-machine-track::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: rgba(255,255,255,0.1);
-    z-index: 1;
-}
-.state-node {
-    background: #0f172a;
-    border: 2px solid #334155;
-    color: #64748b;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    z-index: 2;
-    transition: all 0.3s;
-}
-.state-node.active {
-    border-color: #00f0ff;
-    color: #ffffff;
-    box-shadow: 0 0 15px rgba(0,240,255,0.4);
-    background: rgba(0,240,255,0.1);
-}
-.state-node.completed {
-    border-color: #00ff88;
-    color: #00ff88;
-    background: rgba(0,255,136,0.05);
-}
-.jarvis-side-panel {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-.thought-stream-box {
-    flex: 1;
-    background: rgba(15, 23, 42, 0.8);
-    border: 1px solid #334155;
-    border-radius: 8px;
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-}
-.thought-log {
-    font-family: 'Courier New', monospace;
-    font-size: 0.8rem;
-    color: #94a3b8;
-    margin-bottom: 0.5rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-.thought-log:last-child { border-bottom: none; }
-.thought-time { color: #00f0ff; margin-right: 0.5rem; }
-.chart-container-widget {
-    height: 350px;
-    background: #000;
-    border: 1px solid #334155;
-    border-radius: 8px;
-    overflow: hidden;
-}
-.legacy-toggle-wrapper {
-    text-align: center;
-    margin: 2rem 0;
-}
-.legacy-toggle-btn {
-    background: transparent;
-    color: #64748b;
-    border: 1px dashed #334155;
-    padding: 0.5rem 2rem;
-    font-family: 'Outfit', sans-serif;
-    font-weight: 600;
-    cursor: pointer;
-    font-size: 0.85rem;
-    letter-spacing: 2px;
-}
-.legacy-toggle-btn:hover {
-    color: #fff;
-    border-color: #64748b;
-}
-.tv-widget-box {
-    height: 100%;
-    width: 100%;
-}
-.thought-stream-scroll {
-    max-height: 450px;
-}
-.legacy-hud-wrap {
-    display: none;
-}
-</style>
+  <!-- ═══════════════════════════════════════════════════════════
+       DECISION ENGINE — Primary Directive
+  ═══════════════════════════════════════════════════════════ -->
+  <div id="j-decision" class="j-decision status-MONITORING">
+    <div class="j-decision-left">
+      <div class="j-directive-label">
+        <span class="j-live-dot"></span>INTELLIGENCE CONSOLE // PRIMARY DIRECTIVE
+      </div>
+      <div id="j-verdict" class="j-verdict">INITIALIZING...</div>
+      <div id="j-reasoning" class="j-reasoning">Connecting to intelligence feed. Please wait.</div>
+    </div>
+    <div class="j-decision-meta">
+      <div id="j-ts" class="j-ts">--:--:--</div>
+      <div id="j-pair-badge" class="j-pair-badge">XAUUSD</div>
+      <div id="j-session-label" class="j-session-badge inactive">
+        OUT_OF_SESSION
+      </div>
+    </div>
+  </div>
 
-<div class="hud-vertical-flow">
-    <!-- JARVIS INTELLIGENCE OVERLAY -->
-    <div class="jarvis-container">
-        <!-- Main Decision / State Flow -->
-        <div class="flex-col flex gap-4">
-            
-            <!-- Trade Decision Engine -->
-            <div class="jarvis-decision-engine {% if jarvis_model.status == 'VALID TRADE' %}status-VALID{% else %}status-NO{% endif %}">
-                <div class="text-mini text-upper text-cyan letter-spacing-2 mb-2">INTELLIGENCE CONSOLE // PRIMARY DIRECTIVE</div>
-                <div class="decision-status-text">{{ jarvis_model.status }}</div>
-                <div class="jarvis-reasoning">
-                    > {{ jarvis_model.reasoning }}
-                </div>
-                
-                <!-- State Machine Visualization -->
-                <div class="text-mini text-upper text-muted mt-6 mb-2">SYSTEM PHASE PROGRESSION</div>
-                <div class="state-machine-track">
-                    {% set stages = ['BIAS', 'SWEEP', 'DISPLACE', 'CHOCH_BOS', 'RETEST', 'TRIGGER'] %}
-                    {% set ns = namespace(found=false) %}
-                    {% for s in stages %}
-                        <div class="state-node {% if jarvis_model.stage == s %}active{% set ns.found = true %}{% elif not ns.found and jarvis_model.stage != 'IDLE' %}completed{% endif %}">
-                            {{ s }}
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-            
-            <!-- Chart Integration & Context Panel -->
-            <div class="chart-container-widget relative">
-                <!-- TradingView Widget -->
-                <div class="tradingview-widget-container tv-widget-box">
-                  <div id="tradingview_chart" class="tv-widget-box"></div>
-                  <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
-                  <script type="text/javascript">
-                  new TradingView.widget({
-                    "autosize": true,
-                    "symbol": "OANDA:XAUUSD",
-                    "interval": "15",
-                    "timezone": "Etc/UTC",
-                    "theme": "dark",
-                    "style": "1",
-                    "locale": "en",
-                    "enable_publishing": false,
-                    "backgroundColor": "#0f172a",
-                    "gridColor": "rgba(255, 255, 255, 0.05)",
-                    "hide_top_toolbar": true,
-                    "hide_legend": true,
-                    "save_image": false,
-                    "container_id": "tradingview_chart"
-                  });
-                  </script>
-                </div>
-            </div>
-            
+  <!-- ═══════════════════════════════════════════════════════════
+       MAIN 3-COLUMN GRID
+  ═══════════════════════════════════════════════════════════ -->
+  <div class="j-main-grid">
+
+    <!-- ── LEFT: State Machine + Bias ─────────────────────── -->
+    <div style="display:flex;flex-direction:column;gap:0.75rem;">
+
+      <!-- PHX State Machine -->
+      <div class="j-panel">
+        <div class="j-panel-header">
+          <span class="j-panel-title">PHX ENGINE // STAGE PROGRESSION</span>
         </div>
-        
-        <!-- Side Panel: Thought Stream & Risk Constraints -->
-        <div class="jarvis-side-panel">
-            
-            <!-- Risk & Liquidity Context Panel -->
-            <div class="bg-dark-overlay border-theme p-4 rounded text-sm">
-                <div class="text-mini text-cyan mb-3 letter-spacing-1">RISK & SESSION CONSTRAINTS</div>
-                <div class="justify-between flex mb-2">
-                    <span class="text-muted">SESSION ALIGNMENT</span>
-                    <span class="{% if session_label == 'OUT_OF_SESSION' %}text-sell{% else %}text-buy{% endif %} text-bold">
-                        {{ session_label }}
-                    </span>
-                </div>
-                <div class="justify-between flex mb-2">
-                    <span class="text-muted">SYSTEM STATUS</span>
-                    <span class="{% if permission_state == 'HARD_LOCK' %}text-sell{% else %}text-buy{% endif %} text-bold">
-                        {{ permission_state }}
-                    </span>
-                </div>
-                <div class="justify-between flex">
-                    <span class="text-muted">DRAWDOWN USAGE</span>
-                    <span class="text-mono text-white">{{ "%.2f" | format(risk_budget.daily_loss_pct) }}% / {{ risk_budget.max_daily_loss_pct }}%</span>
-                </div>
-            </div>
-            
-            <!-- Live Thought Stream -->
-            <div class="thought-stream-box">
-                <div class="text-mini text-cyan mb-3 letter-spacing-1">LIVE THOUGHT STREAM</div>
-                <div class="overflow-y-auto thought-stream-scroll">
-                    {% for thought in jarvis_model.thought_stream %}
-                    <div class="thought-log">
-                        <span class="thought-time">[{{ thought.time }}]</span>
-                        <span>{{ thought.msg }}</span>
-                    </div>
-                    {% else %}
-                    <div class="thought-log text-center opacity-50">Monitoring market data... No immediate signals.</div>
-                    {% endfor %}
-                </div>
-            </div>
-            
+        <div class="j-state-machine" id="j-stage-machine">
+          <!-- populated by JS -->
         </div>
+      </div>
+
+      <!-- Bias States -->
+      <div class="j-panel">
+        <div class="j-panel-header">
+          <span class="j-panel-title">BIAS // DIRECTIONAL CONTEXT</span>
+        </div>
+        <div id="j-bias-section">
+          <!-- populated by JS -->
+        </div>
+      </div>
+
     </div>
 
-    <!-- Legacy Toggle -->
-    <div class="legacy-toggle-wrapper">
-        <button class="legacy-toggle-btn" onclick="const e=document.getElementById('legacy-hud'); e.classList.contains('legacy-hud-wrap') ? e.classList.remove('legacy-hud-wrap') : e.classList.add('legacy-hud-wrap');">
-            SHOW / HIDE LEGACY PANELS
-        </button>
+    <!-- ── CENTER: Chart ───────────────────────────────────── -->
+    <div class="j-chart-section">
+      <div class="j-pair-tabs">
+        <button class="j-tab active" onclick="switchPair('XAUUSD', this)">XAUUSD</button>
+        <button class="j-tab" onclick="switchPair('GBPJPY', this)">GBPJPY</button>
+        <div style="flex:1;"></div>
+        <span id="j-setup-count" style="font-family:var(--j-mono);font-size:0.62rem;color:var(--j-muted);align-self:center;"></span>
+      </div>
+      <div class="j-chart-frame">
+        <div id="j-tv-chart" style="width:100%;height:100%;"></div>
+      </div>
     </div>
 
-    <!-- WRAP EXISTING IN LEGACY HUD -->
-    <div id="legacy-hud" class="legacy-hud-wrap">
+    <!-- ── RIGHT: Thought Stream ───────────────────────────── -->
+    <div class="j-panel" style="height:fit-content;">
+      <div class="j-panel-header">
+        <span class="j-panel-title">LIVE THOUGHT STREAM</span>
+        <span id="j-stream-count" style="font-family:var(--j-mono);font-size:0.58rem;color:var(--j-dim);">0 EVENTS</span>
+      </div>
+      <div class="j-thought-scroll">
+        <div id="j-thought-list" class="j-thought-stream">
+          <div class="j-empty">AWAITING SIGNAL FEED...</div>
+        </div>
+      </div>
+    </div>
 
-    <!-- PANEL 1: PERMISSION STATE (Priority 1) -->
+  </div><!-- end main grid -->
+
+  <!-- ═══════════════════════════════════════════════════════════
+       BOTTOM 3-COLUMN: Risk + Alignment + Quotes
+  ═══════════════════════════════════════════════════════════ -->
+  <div class="j-bottom-grid">
+
+    <!-- Risk Control Panel -->
+    <div class="j-panel">
+      <div class="j-panel-header">
+        <span class="j-panel-title">RISK CONTROL PANEL</span>
+        <span id="j-lock-state-badge" style="font-family:var(--j-mono);font-size:0.6rem;letter-spacing:1px;color:var(--j-muted);">--</span>
+      </div>
+      <div id="j-lock-banner-wrap"></div>
+      <div class="j-risk-rows" id="j-risk-rows">
+        <div class="j-risk-row">
+          <span class="j-risk-label">PERMISSION STATE</span>
+          <span id="j-perm-state" class="j-risk-val">--</span>
+        </div>
+        <div class="j-risk-row">
+          <span class="j-risk-label">SESSION</span>
+          <span id="j-session-val" class="j-risk-val">--</span>
+        </div>
+        <div class="j-drawdown-bar-wrap">
+          <div class="j-drawdown-label">
+            <span>DAILY DRAWDOWN</span>
+            <span id="j-dd-num">0.00% / 2.00%</span>
+          </div>
+          <div class="j-drawdown-track">
+            <div id="j-dd-fill" class="j-drawdown-fill" style="width:0%;"></div>
+          </div>
+        </div>
+        <div class="j-risk-row">
+          <span class="j-risk-label">CONSECUTIVE LOSSES</span>
+          <div id="j-loss-pips" class="j-loss-pips"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alignment Matrix -->
+    <div class="j-panel">
+      <div class="j-panel-header">
+        <span class="j-panel-title">ALIGNMENT MATRIX // GUARDRAILS</span>
+        <span id="j-align-status" style="font-family:var(--j-mono);font-size:0.6rem;"> </span>
+      </div>
+      <div id="j-align-checks" class="j-align-checks">
+        <!-- populated by JS -->
+      </div>
+    </div>
+
+    <!-- Live Quotes -->
+    <div class="j-panel">
+      <div class="j-panel-header">
+        <span class="j-panel-title">BRIDGE // LIVE QUOTES</span>
+      </div>
+      <div id="j-quotes" class="j-quotes">
+        <div class="j-empty">NO BRIDGE DATA</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       LEGACY PANEL TOGGLE
+  ═══════════════════════════════════════════════════════════ -->
+  <div style="text-align:center;margin:1.5rem 0 0.5rem;">
+    <button class="legacy-toggle-btn"
+      onclick="const e=document.getElementById('legacy-hud');e.style.display=e.style.display==='none'?'block':'none';">
+      SHOW / HIDE LEGACY PANELS
+    </button>
+  </div>
+
+  <div id="legacy-hud" style="display:none;">
+    <!-- PANEL 1: PERMISSION STATE -->
     <section class="hud-hero-panel {% if permission_state == 'HARD_LOCK' %}bg-sell-dim border-sell{% elif permission_state == 'SOFT_LOCK' %}bg-warn-dim border-warn{% else %}bg-buy-dim border-buy{% endif %}">
-        <div class="hud-hero-content">
-            <div class="justify-between align-center flex">
-                <div class="flex-col flex">
-                    <span class="text-mini text-upper text-bold letter-spacing-1">PERMISSION STATE // SIGNAL</span>
-                    <h1 class="text-6xl text-bold letter-spacing-wide {% if permission_state == 'HARD_LOCK' %}text-sell{% elif permission_state == 'SOFT_LOCK' %}text-warn{% else %}text-buy{% endif %}">
-                        {{ permission_state }}
-                    </h1>
-                </div>
-                <div class="text-right flex-col flex">
-                    <div class="text-xxs text-muted mb-1">SYSTEM MESSAGE</div>
-                    <div class="text-sm text-mono letter-spacing-1">{{ permission_msg }}</div>
-                </div>
-            </div>
+      <div class="hud-hero-content">
+        <div class="justify-between align-center flex">
+          <div class="flex-col flex">
+            <span class="text-mini text-upper text-bold letter-spacing-1">PERMISSION STATE // SIGNAL</span>
+            <h1 class="text-6xl text-bold letter-spacing-wide {% if permission_state == 'HARD_LOCK' %}text-sell{% elif permission_state == 'SOFT_LOCK' %}text-warn{% else %}text-buy{% endif %}">
+              {{ permission_state }}
+            </h1>
+          </div>
+          <div class="text-right flex-col flex">
+            <div class="text-xxs text-muted mb-1">SYSTEM MESSAGE</div>
+            <div class="text-sm text-mono letter-spacing-1">{{ permission_msg }}</div>
+          </div>
         </div>
+      </div>
     </section>
 
     {% if permission_state != 'HARD_LOCK' %}
     <div class="hud-main-grid mt-4">
-        <!-- LEFT COLUMN: LIVE STATE & SELECTION -->
-        <div class="col-span-8 flex-col flex gap-4">
-            
-            <!-- PANEL 2: SESSION STATE -->
-            <section class="hud-panel glass-panel">
-                <header class="hud-panel-header">
-                    <h2 class="hud-panel-title">02 // SESSION STATE // BOUNDARY NAVIGATOR</h2>
-                </header>
-                <div class="p-4 grid-cols-2 grid gap-4">
-                    <div class="bg-dark-overlay rounded p-3 border-theme">
-                        <div class="text-xxs text-muted text-upper mb-1">CURRENT CANONICAL STATE</div>
-                        <div class="text-2xl text-cyan text-bold text-mono">{{ session_label }}</div>
-                    </div>
-                    <div class="bg-dark-overlay rounded p-3 border-theme">
-                        <div class="text-xxs text-muted text-upper mb-1">BOUNDARY TRANSITION</div>
-                        <div class="text-2xl text-yellow text-bold text-mono">T-MINUS {{ time_to_transition }} MIN</div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- PANEL 3: BIAS STATE (Per Pair) -->
-            <section class="hud-panel glass-panel">
-                <header class="hud-panel-header">
-                    <h2 class="hud-panel-title">03 // BIAS STATE // STRATEGIC DIRECTION</h2>
-                </header>
-                <div class="p-4 flex gap-4">
-                    {% for pair, data in bias_states.items() %}
-                    <div class="flex-1 rounded p-3 border-2 {% if data.is_invalidated %}bg-sell-dim border-sell animate-flash{% else %}bg-dark-overlay border-theme{% endif %}">
-                        <div class="justify-between flex align-baseline mb-2">
-                            <span class="text-lg text-bold">{{ pair }}</span>
-                            <span class="text-mini text-muted text-mono">{{ data.age_m }}m OLD</span>
-                        </div>
-                        <div class="text-3xl text-bold {% if data.bias == 'BULLISH' %}text-buy{% elif data.bias == 'BEARISH' %}text-sell{% else %}text-muted{% endif %}">
-                            {{ data.bias }}
-                        </div>
-                        {% if data.is_invalidated %}
-                        <div class="mt-2 text-mini text-sell text-bold text-upper letter-spacing-1">[!!!] BIAS INVALIDATED [!!!]</div>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
-                </div>
-            </section>
-
-            <!-- PANEL 4: SETUP PROGRESSION -->
-            <section class="hud-panel glass-panel">
-                <header class="hud-panel-header">
-                    <h2 class="hud-panel-title">04 // SETUP PROGRESSION // PHX ENGINE</h2>
-                </header>
-                <div class="p-2">
-                    <table class="hud-compact-table">
-                        <thead>
-                            <tr>
-                                <th>SYMBOL</th>
-                                <th>STAGE</th>
-                                <th class="text-center">ALIGNMENT</th>
-                                <th class="text-right">AGE</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for setup in latest_setups %}
-                            <tr>
-                                <td class="text-bold text-cyan">{{ setup.asset_pair }}</td>
-                                <td><span class="badge badge-cyan-dim">{{ setup.stage }}</span></td>
-                                <td class="text-center">
-                                    {% if setup.is_aligned %}
-                                    <span class="badge bg-buy-dim text-buy border-buy">ALIGNED</span>
-                                    {% else %}
-                                    <span class="badge bg-dark-overlay text-muted border-theme">UNALIGNED</span>
-                                    {% endif %}
-                                </td>
-                                <td class="text-right text-muted text-xxs text-mono">{{ setup.age_str }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-        </div>
-
-        <!-- RIGHT COLUMN: RISK & MANAGEMENT -->
-        <div class="col-span-4 flex-col flex gap-4">
-            <!-- PANEL 5: RISK BUDGET -->
-            <section class="hud-panel glass-panel">
-                <header class="hud-panel-header">
-                    <h2 class="hud-panel-title">05 // RISK BUDGET // BUDGET USAGE</h2>
-                </header>
-                <div class="p-4 flex-col flex gap-4">
-                    <div>
-                        <div class="justify-between flex mb-1">
-                            <span class="text-xxs text-muted">DAILY DRAWDOWN (%)</span>
-                            <span class="text-xxs text-mono">{{ "%.2f" | format(risk_budget.daily_loss_pct) }}% / {{ risk_budget.max_daily_loss_pct }}%</span>
-                        </div>
-                        <div class="h-2 bg-dark-overlay rounded overflow-hidden">
-                            <div class="risk-bar-fill" data-usage="{{ (risk_budget.daily_loss_pct / risk_budget.max_daily_loss_pct * 100)|round }}%"></div>
-                        </div>
-                    </div>
-                    <div class="justify-between align-center flex border-t border-theme-soft pt-3">
-                        <span class="text-xxs text-muted">CONSECUTIVE LOSSES</span>
-                        <div class="flex gap-1">
-                            {% for i in range(risk_budget.max_consecutive_losses) %}
-                            <div class="w-4 h-4 rounded-sm {% if i < risk_budget.consecutive_losses %}bg-sell shadow-sell{% else %}bg-dark-overlay border border-theme{% endif %}"></div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- PANEL 6: ACTIVE POSITIONS -->
-            <section class="hud-panel glass-panel">
-                <header class="hud-panel-header">
-                    <h2 class="hud-panel-title">06 // ACTIVE POSITIONS // MANAGEMENT</h2>
-                </header>
-                <div class="p-2 flex-col flex gap-2">
-                    {% if live_positions %}
-                        {% for pos in live_positions %}
-                        <div class="rounded p-2 bg-dark-overlay border-l-2 {% if pos.floating_pnl >= 0 %}border-buy{% else %}border-sell{% endif %}">
-                            <div class="justify-between flex mb-1">
-                                <span class="text-xs text-bold">{{ pos.symbol }}</span>
-                                <span class="text-xs text-mono {% if pos.floating_pnl >= 0 %}text-buy{% else %}text-sell{% endif %}">
-                                    {{ "%.2f" | format(pos.floating_pnl) }}
-                                </span>
-                            </div>
-                            <div class="text-micro text-muted">LOT: {{ pos.lots }} | {{ pos.side }}</div>
-                        </div>
-                        {% endfor %}
+      <div class="col-span-8 flex-col flex gap-4">
+        <section class="hud-panel glass-panel">
+          <header class="hud-panel-header">
+            <h2 class="hud-panel-title">04 // SETUP PROGRESSION // PHX ENGINE</h2>
+          </header>
+          <div class="p-2">
+            <table class="hud-compact-table">
+              <thead><tr><th>SYMBOL</th><th>STAGE</th><th class="text-center">ALIGNMENT</th><th class="text-right">AGE</th></tr></thead>
+              <tbody>
+                {% for setup in latest_setups %}
+                <tr>
+                  <td class="text-bold text-cyan">{{ setup.asset_pair }}</td>
+                  <td><span class="badge badge-cyan-dim">{{ setup.stage }}</span></td>
+                  <td class="text-center">
+                    {% if setup.is_aligned %}
+                    <span class="badge bg-buy-dim text-buy border-buy">ALIGNED</span>
                     {% else %}
-                        <div class="p-4 text-center text-muted text-xs italic">NO ACTIVE EXPOSURE</div>
+                    <span class="badge bg-dark-overlay text-muted border-theme">UNALIGNED</span>
                     {% endif %}
+                  </td>
+                  <td class="text-right text-muted text-xxs text-mono">{{ setup.age_str }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+      <div class="col-span-4 flex-col flex gap-4">
+        <section class="hud-panel glass-panel">
+          <header class="hud-panel-header">
+            <h2 class="hud-panel-title">06 // ACTIVE POSITIONS</h2>
+          </header>
+          <div class="p-2 flex-col flex gap-2">
+            {% if live_positions %}
+              {% for pos in live_positions %}
+              <div class="rounded p-2 bg-dark-overlay border-l-2 {% if pos.floating_pnl >= 0 %}border-buy{% else %}border-sell{% endif %}">
+                <div class="justify-between flex mb-1">
+                  <span class="text-xs text-bold">{{ pos.symbol }}</span>
+                  <span class="text-xs text-mono {% if pos.floating_pnl >= 0 %}text-buy{% else %}text-sell{% endif %}">{{ "%.2f" | format(pos.floating_pnl) }}</span>
                 </div>
-            </section>
-        </div>
-    </div>
-    {% else %}
-    <!-- HARD LOCKOUT ESCALATION VIEW -->
-    <div class="mt-8 p-12 bg-sell-dim border-2 border-sell rounded-lg text-center animate-pulse">
-        <h2 class="text-4xl text-sell text-bold mb-4">[!] EXECUTION PATH UNCONDITIONALLY SEALED [!]</h2>
-        <p class="text-xl text-white opacity-80 mb-8">Daily loss limit or system intervention has blocked all new enterprise entries.</p>
-        <div class="p-6 bg-black-dim rounded border border-sell-soft inline-block">
-            <span class="text-sell text-bold letter-spacing-2">REDUCE_ONLY MODE ACTIVE FOR OPEN POSITIONS</span>
-        </div>
+                <div class="text-micro text-muted">LOT: {{ pos.lots }} | {{ pos.side }}</div>
+              </div>
+              {% endfor %}
+            {% else %}
+              <div class="p-4 text-center text-muted text-xs italic">NO ACTIVE EXPOSURE</div>
+            {% endif %}
+          </div>
+        </section>
+      </div>
     </div>
     {% endif %}
 
-    <!-- PANEL 7: NOTICE / REVIEW LOG -->
     <section class="hud-panel glass-panel mt-4">
-        <header class="hud-panel-header">
-            <h2 class="hud-panel-title">07 // NOTICE & INCIDENT LOG // AUDIT TRAIL</h2>
-        </header>
-        <div class="p-2 h-200 hud-scroll-body">
-            {% for incident in latest_incidents %}
-            <div class="mb-1 text-mini-mono border-b border-theme-soft pb-1">
-                <span class="text-muted">[{{ incident.created_at.strftime('%H:%M:%S') }}]</span>
-                <span class="text-cyan">[{{ incident.component }}]</span>
-                <span class="ml-2 {% if incident.severity == 'ERROR' %}text-sell{% elif incident.severity == 'WARN' %}text-warn{% else %}text-white{% endif %}">
-                    {{ incident.message }}
-                </span>
-            </div>
-            {% endfor %}
+      <header class="hud-panel-header">
+        <h2 class="hud-panel-title">07 // NOTICE & INCIDENT LOG // AUDIT TRAIL</h2>
+      </header>
+      <div class="p-2 h-200 hud-scroll-body">
+        {% for incident in latest_incidents %}
+        <div class="mb-1 text-mini-mono border-b border-theme-soft pb-1">
+          <span class="text-muted">[{{ incident.created_at.strftime('%H:%M:%S') }}]</span>
+          <span class="text-cyan">[{{ incident.component }}]</span>
+          <span class="ml-2 {% if incident.severity == 'ERROR' %}text-sell{% elif incident.severity == 'WARN' %}text-warn{% else %}text-white{% endif %}">{{ incident.message }}</span>
         </div>
+        {% endfor %}
+      </div>
     </section>
+  </div>
 
-    <!-- FOOTER LINK STRIP -->
-    <section class="mt-4 grid-bridge grid gap-4">
-        <div class="hud-panel glass-panel p-2">
-            <div class="text-micro text-muted text-upper mb-2">LIVE BRIDGE QUOTES</div>
-            <div class="flex gap-4 overflow-x-auto">
-                {% for q in live_quotes %}
-                <div class="bg-dark-overlay px-3 py-1 rounded border-theme flex gap-3 align-center">
-                    <span class="text-bold text-xxs">{{ q.symbol }}</span>
-                    <span class="text-mono text-cyan text-xs">{{ q.bid }}</span>
-                    <span class="badge badge-sm badge-cyan-dim">{{ q.spread }}</span>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-    </section>
+</div><!-- end jarvis-root -->
 
-    </div> <!-- END LEGACY HUD -->
-</div>
+<!-- ── TradingView + Jarvis JS Engine ──────────────────── -->
+<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+<script>
+/* ============================================================
+   JARVIS CLIENT INTELLIGENCE ENGINE
+   Polls /api/jarvis every 10s and reconciles all UI state.
+   ============================================================ */
 
+const PHX_STAGES = ['BIAS','SWEEP','DISPLACE','CHOCH_BOS','RETEST','TRIGGER'];
+const PHX_SUBLABELS = {
+  BIAS:      'Directional bias set',
+  SWEEP:     'Liquidity swept',
+  DISPLACE:  'Momentum confirmed',
+  CHOCH_BOS: 'Structure shifted',
+  RETEST:    'Level being tested',
+  TRIGGER:   'Entry conditions met',
+};
+
+const CHECK_LABELS = {
+  Direction:  'Bias Direction',
+  BiasState:  'Bias Freshness',
+  Events:     'News Window',
+  Session:    'Session Active',
+  EOD_Gap:    'EOD Blackout',
+  Staleness:  'Quote Freshness',
+};
+
+let activePair = 'XAUUSD';
+let tvWidget = null;
+let lastData = null;
+
+// ── TradingView Widget ───────────────────────────────
+function initChart(symbol) {
+  const el = document.getElementById('j-tv-chart');
+  if (!el) return;
+  // Clear previous
+  el.innerHTML = '';
+
+  tvWidget = new TradingView.widget({
+    autosize:          true,
+    symbol:            symbol === 'GBPJPY' ? 'OANDA:GBPJPY' : 'OANDA:XAUUSD',
+    interval:          '15',
+    timezone:          'Africa/Nairobi',
+    theme:             'dark',
+    style:             '1',
+    locale:            'en',
+    enable_publishing: false,
+    backgroundColor:   '#050b14',
+    gridColor:         'rgba(255,255,255,0.03)',
+    hide_top_toolbar:  false,
+    hide_legend:       false,
+    save_image:        false,
+    container_id:      'j-tv-chart',
+    studies:           [],
+    overrides: {
+      'paneProperties.background':          '#050b14',
+      'paneProperties.backgroundType':      'solid',
+      'scaleProperties.lineColor':          '#1a2535',
+      'scaleProperties.textColor':          '#5a6a7e',
+      'candleStyle.upColor':                '#00ff9f',
+      'candleStyle.downColor':              '#ff2d55',
+      'candleStyle.wickUpColor':            '#00b86c',
+      'candleStyle.wickDownColor':          '#c41e3a',
+      'candleStyle.borderUpColor':          '#00ff9f',
+      'candleStyle.borderDownColor':        '#ff2d55',
+    },
+    disabled_features: ['header_symbol_search'],
+    enabled_features:  ['hide_left_toolbar_by_default'],
+  });
+}
+
+function switchPair(pair, btn) {
+  activePair = pair;
+  document.querySelectorAll('.j-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  initChart(pair);
+  document.getElementById('j-pair-badge').textContent = pair;
+  if (lastData) renderAlignmentMatrix(lastData.alignment_data);
+}
+
+// ── Status CSS class mapping ─────────────────────────
+function statusClass(status) {
+  const map = {
+    'MONITORING': 'status-MONITORING',
+    'ALERT':      'status-ALERT',
+    'VALID TRADE':'status-VALID',
+    'NO TRADE':   'status-NO_TRADE',
+    'BLOCKED':    'status-BLOCKED',
+    'HARD_LOCK':  'status-HARD_LOCK',
+  };
+  return map[status] || 'status-MONITORING';
+}
+
+// ── Render Decision Engine ───────────────────────────
+function renderDecision(jarvis) {
+  const dec = document.getElementById('j-decision');
+  // Remove old status classes
+  dec.className = 'j-decision ' + statusClass(jarvis.status);
+
+  document.getElementById('j-verdict').textContent   = jarvis.status;
+  document.getElementById('j-reasoning').textContent = jarvis.reasoning;
+  document.getElementById('j-pair-badge').textContent = jarvis.pair || activePair;
+}
+
+// ── Render PHX State Machine ─────────────────────────
+function renderStateMachine(stage) {
+  const activeIdx = PHX_STAGES.indexOf(stage.toUpperCase());
+  const container = document.getElementById('j-stage-machine');
+  let html = '';
+
+  PHX_STAGES.forEach((s, i) => {
+    let cls = '';
+    if (i < activeIdx && activeIdx >= 0)      cls = 'done';
+    else if (i === activeIdx && activeIdx >= 0) cls = 'active';
+
+    html += `
+      <div class="j-stage-row ${cls}">
+        <span class="j-stage-num">${String(i+1).padStart(2,'0')}</span>
+        <div class="j-stage-dot"></div>
+        <span class="j-stage-name">${s.replace('_',' ')}</span>
+        <span class="j-stage-sublabel">${cls === 'active' ? '◀ NOW' : cls === 'done' ? '✓' : ''}</span>
+      </div>`;
+  });
+
+  container.innerHTML = html;
+}
+
+// ── Render Bias Section ──────────────────────────────
+function renderBias(biasStates) {
+  const el = document.getElementById('j-bias-section');
+  const pairs = Object.keys(biasStates);
+  if (!pairs.length) { el.innerHTML = '<div class="j-empty">NO BIAS DATA</div>'; return; }
+
+  let html = '';
+  pairs.forEach(pair => {
+    const b = biasStates[pair];
+    const score = parseFloat(b.bias_score || 0);
+    const cls = score > 0 ? 'bull' : score < 0 ? 'bear' : 'neut';
+    const label = score > 0 ? 'BULLISH' : score < 0 ? 'BEARISH' : 'NEUTRAL';
+    const inval = b.is_invalidated ? ' ⚠ INVALIDATED' : '';
+    html += `
+      <div class="j-bias-box">
+        <span class="j-bias-pair">${pair}</span>
+        <span class="j-bias-score ${cls}">${label}${inval}</span>
+        <span class="j-bias-age">Score: ${score.toFixed(2)} &nbsp;|&nbsp; Age: ${b.age_m}m${b.created_at ? ' @ ' + b.created_at : ''}</span>
+      </div>`;
+  });
+  el.innerHTML = html;
+}
+
+// ── Render Thought Stream ────────────────────────────
+function renderThoughtStream(thoughts) {
+  const container = document.getElementById('j-thought-list');
+  const countEl   = document.getElementById('j-stream-count');
+  if (!thoughts || !thoughts.length) {
+    container.innerHTML = '<div class="j-empty">MONITORING... NO RECENT EVENTS</div>';
+    countEl.textContent = '0 EVENTS';
+    return;
+  }
+  countEl.textContent = `${thoughts.length} EVENTS`;
+  container.innerHTML = thoughts.map(t => `
+    <div class="j-thought-item severity-${t.severity || 'INFO'}">
+      <span class="j-thought-time">[${t.time}]</span>
+      <span class="j-thought-msg">${escHtml(t.msg)}</span>
+    </div>`).join('');
+}
+
+// ── Render Alignment Matrix ──────────────────────────
+function renderAlignmentMatrix(alignmentData) {
+  const container = document.getElementById('j-align-checks');
+  const statusEl  = document.getElementById('j-align-status');
+  const data = alignmentData[activePair];
+
+  if (!data) {
+    container.innerHTML = '<div class="j-empty">NO ALIGNMENT DATA</div>';
+    return;
+  }
+
+  const aligned = data.is_aligned;
+  statusEl.textContent = aligned ? '✓ ALIGNED' : '✗ UNALIGNED';
+  statusEl.style.color = aligned ? 'var(--j-green)' : 'var(--j-red)';
+
+  const checks = data.checks || {};
+  const checkKeys = Object.keys(CHECK_LABELS);
+  let html = '';
+
+  checkKeys.forEach(key => {
+    const val = checks[key];
+    let cls = 'unknown';
+    let label = 'PENDING';
+    if (val === true)  { cls = 'pass'; label = 'PASS'; }
+    if (val === false) { cls = 'fail'; label = 'FAIL'; }
+
+    html += `
+      <div class="j-check-row">
+        <span class="j-check-name">${CHECK_LABELS[key]}</span>
+        <span class="j-check-status ${cls}">${label}</span>
+      </div>`;
+  });
+
+  // Show latest reason codes if unaligned
+  if (!aligned && data.reason_codes && data.reason_codes.length) {
+    html += `<div style="padding:0.5rem 0.75rem;font-family:var(--j-mono);font-size:0.6rem;color:var(--j-red);line-height:1.6;border-top:1px solid var(--j-border-dim);">
+      ${data.reason_codes.map(r => escHtml(r)).join('<br>')}
+    </div>`;
+  }
+
+  container.innerHTML = html;
+}
+
+// ── Render Risk Panel ────────────────────────────────
+function renderRisk(riskBudget, permState, permMsg, sessionLabel) {
+  const perm = document.getElementById('j-perm-state');
+  const sessVal = document.getElementById('j-session-val');
+  const lockBadge = document.getElementById('j-lock-state-badge');
+  const ddNum  = document.getElementById('j-dd-num');
+  const ddFill = document.getElementById('j-dd-fill');
+  const pipCont = document.getElementById('j-loss-pips');
+  const bannerWrap = document.getElementById('j-lock-banner-wrap');
+  const sessionLabel = document.getElementById('j-session-label');
+
+  // Permission state
+  const permClass = permState === 'TRADEABLE' ? 'ok' : permState === 'SOFT_LOCK' ? 'warn' : 'danger';
+  perm.textContent = permState;
+  perm.className = `j-risk-val ${permClass}`;
+  lockBadge.textContent = permState;
+  lockBadge.style.color = permClass === 'ok' ? 'var(--j-green)' : permClass === 'warn' ? 'var(--j-yellow)' : 'var(--j-red)';
+
+  // Session
+  sessVal.textContent = sessionLabel;
+  const isActive = !sessionLabel.includes('OUT');
+  sessVal.style.color = isActive ? 'var(--j-green)' : 'var(--j-red)';
+
+  // Session badge in header
+  if (sessionLabel) {
+    const sbEl = document.getElementById('j-session-label');
+    if (sbEl) {
+      sbEl.textContent = sessionLabel;
+      sbEl.className = `j-session-badge ${isActive ? 'active' : 'inactive'}`;
+    }
+  }
+
+  // Drawdown bar
+  const ddPct = riskBudget.daily_loss_pct || 0;
+  const ddMax = riskBudget.max_daily_loss_pct || 2;
+  const ddUsed = riskBudget.daily_loss_pct_used || 0;
+  ddNum.textContent = `${ddPct.toFixed(3)}% / ${ddMax}%`;
+  ddFill.style.width = Math.min(ddUsed, 100) + '%';
+  if (ddUsed > 75) ddFill.classList.add('danger');
+  else ddFill.classList.remove('danger');
+
+  // Consecutive loss pips
+  const maxL = riskBudget.max_consecutive_losses || 3;
+  const curL = riskBudget.consecutive_losses || 0;
+  let pipsHtml = '';
+  for (let i = 0; i < maxL; i++) {
+    pipsHtml += `<div class="j-loss-pip ${i < curL ? 'used' : ''}"></div>`;
+  }
+  pipCont.innerHTML = pipsHtml;
+
+  // Lock banner
+  if (permState === 'HARD_LOCK') {
+    bannerWrap.innerHTML = `<div class="j-lock-banner">⚠ HARD LOCK — ${escHtml(permMsg)}</div>`;
+  } else if (permState === 'SOFT_LOCK') {
+    bannerWrap.innerHTML = `<div class="j-lock-banner" style="border-color:rgba(255,214,10,0.3);color:var(--j-yellow);background:var(--j-yellow-dim);">⚡ SOFT LOCK — ${escHtml(permMsg)}</div>`;
+  } else {
+    bannerWrap.innerHTML = '';
+  }
+}
+
+// ── Render Quotes ────────────────────────────────────
+function renderQuotes(quotes) {
+  const container = document.getElementById('j-quotes');
+  if (!quotes || !quotes.length) {
+    container.innerHTML = '<div class="j-empty">NO BRIDGE DATA</div>';
+    return;
+  }
+  container.innerHTML = quotes.map(q => `
+    <div class="j-quote-row">
+      <span class="j-quote-sym">${q.symbol}</span>
+      <span class="j-quote-bid">${q.bid || '--'}</span>
+      ${q.spread ? `<span class="j-quote-spread">${q.spread} pts</span>` : ''}
+      <span class="j-quote-age">${q.age_s}s</span>
+    </div>`).join('');
+}
+
+// ── Render Setup Count ───────────────────────────────
+function renderSetupCount(setups) {
+  const el = document.getElementById('j-setup-count');
+  const active = (setups || []).filter(s => s.stage !== 'IDLE').length;
+  el.textContent = active ? `${active} ACTIVE SETUP${active > 1 ? 'S' : ''}` : '';
+}
+
+// ── Timestamp ────────────────────────────────────────
+function renderTs(ts) {
+  document.getElementById('j-ts').textContent = `LAST UPDATE: ${ts}`;
+}
+
+// ── Safety ───────────────────────────────────────────
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+// ── Master Refresh ───────────────────────────────────
+async function refreshJarvis() {
+  try {
+    const res = await fetch('/api/jarvis');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const d = await res.json();
+    lastData = d;
+
+    renderDecision(d.jarvis);
+    renderStateMachine(d.jarvis.stage || 'IDLE');
+    renderBias(d.bias_states || {});
+    renderThoughtStream(d.thought_stream || []);
+    renderAlignmentMatrix(d.alignment_data || {});
+    renderRisk(d.risk_budget || {}, d.permission_state, d.permission_msg, d.session_label);
+    renderQuotes(d.live_quotes || []);
+    renderSetupCount(d.latest_setups || []);
+    renderTs(d.ts || '--:--:--');
+
+  } catch (err) {
+    console.error('[JARVIS] Refresh error:', err);
+    // Show error state in verdict
+    const dec = document.getElementById('j-decision');
+    dec.className = 'j-decision status-BLOCKED';
+    document.getElementById('j-verdict').textContent = 'FEED ERROR';
+    document.getElementById('j-reasoning').textContent = `Cannot reach intelligence endpoint: ${err.message}`;
+  }
+}
+
+// ── Bootstrap ────────────────────────────────────────
+initChart(activePair);
+refreshJarvis();
+setInterval(refreshJarvis, 10000);
+</script>
 {% endblock %}

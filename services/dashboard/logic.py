@@ -354,7 +354,262 @@ async def get_tickets(pair: str | None = None) -> list[OrderTicketSchema]:
         db.close()
 
 
+def get_jarvis_data(db: Session) -> dict[str, Any]:
+    """
+    Standalone function to generate the JARVIS intelligence model JSON.
+    Powers the /api/jarvis endpoint for live frontend polling.
+    Returns a fully JSON-serializable dict.
+    """
+    now_nairobi = get_nairobi_time()
+    now_utc = datetime.now(timezone.utc)
+
+    # ── Permission & Lockout State ──────────────────────────────
+    lockout_config = {
+        "max_daily_loss_pct": 2.0,
+        "max_consecutive_losses": 3,
+        "account_balance": 100000.0,
+    }
+    account_state = {
+        "daily_loss": 0.0,
+        "consecutive_losses": 0,
+        "account_balance": 100000.0,
+    }
+    lockout_engine = LockoutEngine(lockout_config)
+    permission_state_enum, permission_msg = lockout_engine.evaluate(account_state, db=db)
+    permission_state = permission_state_enum.value
+
+    # ── Session ─────────────────────────────────────────────────
+    pairs = ["XAUUSD", "GBPJPY"]
+    session_label = get_session_label(now_nairobi, pairs[0])
+
+    # ── Bias States ──────────────────────────────────────────────
+    bias_states: dict[str, Any] = {}
+    for pair in pairs:
+        p_fund = (
+            db.query(Packet)
+            .filter(
+                Packet.packet_type == "PairFundamentalsPacket",
+                Packet.data["asset_pair"].as_string() == pair,
+            )
+            .order_by(Packet.created_at.desc())
+            .first()
+        )
+        if p_fund:
+            bias_states[pair] = {
+                "bias": p_fund.data.get("bias_label", "NEUTRAL"),
+                "bias_score": p_fund.data.get("bias_score", 0.0),
+                "is_invalidated": p_fund.data.get("is_invalidated", False),
+                "age_m": int(
+                    (now_utc - p_fund.created_at.replace(tzinfo=timezone.utc)).total_seconds() / 60
+                ),
+                "created_at": p_fund.created_at.strftime("%H:%M:%S"),
+            }
+        else:
+            bias_states[pair] = {
+                "bias": "NEUTRAL",
+                "bias_score": 0.0,
+                "is_invalidated": False,
+                "age_m": 0,
+                "created_at": None,
+            }
+
+    # ── Setup Packets (PHX state) ────────────────────────────────
+    setup_packets = (
+        db.query(Packet)
+        .filter(Packet.packet_type == "TechnicalSetupPacket")
+        .order_by(Packet.created_at.desc())
+        .limit(15)
+        .all()
+    )
+
+    # ── Alignment Logs (most recent per pair) ────────────────────
+    from shared.database.models import AlignmentLog
+    alignment_data: dict[str, Any] = {}
+    for pair in pairs:
+        alog = (
+            db.query(AlignmentLog)
+            .filter(AlignmentLog.pair == pair)
+            .order_by(AlignmentLog.created_at.desc())
+            .first()
+        )
+        if alog:
+            raw = alog.result_json or {}
+            checks = {k: bool(v) for k, v in raw.items() if isinstance(v, (bool, int))}
+            alignment_data[pair] = {
+                "is_aligned": alog.is_aligned,
+                "checks": checks,
+                "reason_codes": alog.reason_codes or [],
+                "age_m": int(
+                    (now_utc - alog.created_at.replace(tzinfo=timezone.utc)).total_seconds() / 60
+                ),
+            }
+        else:
+            alignment_data[pair] = {
+                "is_aligned": False,
+                "checks": {},
+                "reason_codes": ["No alignment data available"],
+                "age_m": 0,
+            }
+
+    # ── Latest Setups (per pair) ──────────────────────────────────
+    latest_setups: list[dict] = []
+    for p in setup_packets:
+        age_s = int((now_utc - p.created_at.replace(tzinfo=timezone.utc)).total_seconds())
+        latest_setups.append({
+            "asset_pair": p.data.get("asset_pair"),
+            "stage": p.data.get("stage", "IDLE"),
+            "is_aligned": p.data.get("is_aligned", False),
+            "reason_codes": p.data.get("reason_codes", []),
+            "age_s": age_s,
+            "age_str": f"{age_s}s" if age_s < 60 else f"{age_s // 60}m",
+            "is_fresh": age_s < 90,
+            "created_at": p.created_at.strftime("%H:%M:%S"),
+        })
+
+    # ── Incidents / Thought Stream ────────────────────────────────
+    latest_incidents = (
+        db.query(IncidentLog).order_by(IncidentLog.created_at.desc()).limit(15).all()
+    )
+
+    thought_stream: list[dict] = []
+    for inc in latest_incidents:
+        thought_stream.append({
+            "time": inc.created_at.strftime("%H:%M"),
+            "msg": f"{inc.message}",
+            "type": "incident",
+            "severity": inc.severity,
+        })
+    for p in setup_packets[:5]:
+        reasons = p.data.get("reason_codes", [])
+        stage = p.data.get("stage", "UNKNOWN")
+        pair = p.data.get("asset_pair", "?")
+        for r in reasons[-2:]:
+            thought_stream.append({
+                "time": p.created_at.strftime("%H:%M"),
+                "msg": f"[{pair}:{stage}] {r}",
+                "type": "setup",
+                "severity": "INFO",
+            })
+    thought_stream = sorted(thought_stream, key=lambda x: x["time"], reverse=True)[:18]
+
+    # ── Risk Budget ───────────────────────────────────────────────
+    daily_loss_pct = account_state["daily_loss"] / account_state["account_balance"] * 100
+    risk_budget = {
+        "daily_loss_pct": round(daily_loss_pct, 3),
+        "max_daily_loss_pct": lockout_config["max_daily_loss_pct"],
+        "daily_loss_pct_used": round(daily_loss_pct / lockout_config["max_daily_loss_pct"] * 100, 1),
+        "consecutive_losses": account_state["consecutive_losses"],
+        "max_consecutive_losses": lockout_config["max_consecutive_losses"],
+    }
+
+    # ── JARVIS INTELLIGENCE ENGINE ────────────────────────────────
+    # Determine the primary active setup (most recent, most advanced stage)
+    STAGE_RANK = {
+        "TRIGGER": 7, "RETEST": 6, "CHOCH_BOS": 5,
+        "DISPLACE": 4, "SWEEP": 3, "BIAS": 2, "IDLE": 1,
+    }
+
+    primary_pair = "XAUUSD"
+    primary_stage = "IDLE"
+    primary_aligned = False
+    primary_reasons: list[str] = []
+    primary_setup = None
+
+    for s in latest_setups:
+        rank = STAGE_RANK.get(str(s["stage"]).upper(), 0)
+        p_rank = STAGE_RANK.get(primary_stage.upper(), 0)
+        if rank > p_rank:
+            primary_stage = str(s["stage"]).upper()
+            primary_pair = str(s["asset_pair"] or "XAUUSD")
+            primary_aligned = bool(s["is_aligned"])
+            primary_reasons = list(s["reason_codes"])
+            primary_setup = s
+
+    # Generate authoritative Jarvis reasoning
+    def _build_reasoning(stage: str, aligned: bool, reasons: list, perm: str, session: str) -> tuple[str, str]:
+        """Returns (status_text, reasoning_text) pair."""
+        if perm == "HARD_LOCK":
+            return "NO TRADE", "Execution sealed. System-level intervention active. No entries permitted."
+
+        if session == "OUT_OF_SESSION":
+            return "NO TRADE", "Market closed for this strategy. Waiting for London or New York open."
+
+        if stage == "IDLE":
+            return "MONITORING", "No setup forming. System is scanning for liquidity sweep opportunity."
+
+        if stage == "BIAS":
+            bias = bias_states.get(primary_pair, {}).get("bias", "NEUTRAL")
+            return "MONITORING", f"Directional bias established: {bias}. Watching for sell-side / buy-side sweep to form."
+
+        if stage == "SWEEP":
+            return "MONITORING", "Liquidity has been swept. Monitoring for strong displacement candle to confirm intent."
+
+        if stage == "DISPLACE":
+            return "MONITORING", "Displacement confirmed. Waiting for structure shift (BOS/CHOCH) to validate the move."
+
+        if stage == "CHOCH_BOS":
+            return "ALERT", "Structure shift confirmed. Market has broken internal structure. Monitoring for retest of the level."
+
+        if stage == "RETEST":
+            return "ALERT", "Price retesting the broken structure level. Entry trigger imminent. Prepare to act."
+
+        if stage == "TRIGGER" and aligned:
+            return "VALID TRADE", "All conditions satisfied. Setup is triggered and fully aligned. Awaiting manual review."
+
+        if stage == "TRIGGER" and not aligned:
+            failed = [r.replace("FAILED: ", "") for r in reasons if "FAILED" in r]
+            if failed:
+                failed_str = " | ".join(failed)
+                return "BLOCKED", f"Setup triggered but blocked by alignment. Failed: {failed_str}."
+            return "BLOCKED", "Setup triggered but one or more alignment checks failed. Review guardrails."
+
+        return "MONITORING", f"System at {stage} stage. Continuing evaluation."
+
+    jarvis_status, jarvis_reasoning = _build_reasoning(
+        primary_stage, primary_aligned, primary_reasons, permission_state, session_label
+    )
+
+    # ── Live Quotes ───────────────────────────────────────────────
+    live_quotes = []
+    try:
+        from shared.database.models import LiveQuote
+        raw_quotes = db.query(LiveQuote).order_by(LiveQuote.captured_at.desc()).limit(4).all()
+        for q in raw_quotes:
+            live_quotes.append({
+                "symbol": q.symbol,
+                "bid": q.bid,
+                "ask": q.ask,
+                "spread": round((q.ask - q.bid) * 10000, 1) if q.ask and q.bid else None,
+                "age_s": int((now_utc - q.captured_at.replace(tzinfo=timezone.utc)).total_seconds()),
+            })
+    except Exception:
+        pass
+
+    return {
+        "ts": now_nairobi.strftime("%H:%M:%S"),
+        "permission_state": permission_state,
+        "permission_msg": permission_msg,
+        "session_label": session_label,
+        "bias_states": bias_states,
+        "alignment_data": alignment_data,
+        "latest_setups": latest_setups,
+        "primary_pair": primary_pair,
+        "primary_stage": primary_stage,
+        "risk_budget": risk_budget,
+        "thought_stream": thought_stream,
+        "live_quotes": live_quotes,
+        "jarvis": {
+            "status": jarvis_status,
+            "reasoning": jarvis_reasoning,
+            "stage": primary_stage,
+            "pair": primary_pair,
+            "is_aligned": primary_aligned,
+        },
+    }
+
+
 def get_briefings(db: Session, limit: int = 30) -> list[dict[str, Any]]:
+
     """Return briefing metadata for the list view."""
     records = (
         db.query(SessionBriefing)

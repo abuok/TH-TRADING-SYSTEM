@@ -28,6 +28,7 @@ import shared.database.session as db_session
 from services.dashboard.logic import (
     get_briefings,
     get_dashboard_data,
+    get_jarvis_data,
     get_latest_briefing,
     get_service_health,
     get_tickets,
@@ -530,6 +531,16 @@ async def briefing_print_view(
 @app.get("/health")
 async def health_check():
     return {"status": "healthy", "service": "dashboard"}
+
+
+@app.get("/api/jarvis")
+async def api_jarvis(db: Session = Depends(db_session.get_db)):
+    """Live intelligence endpoint — powers the Jarvis Command Center frontend."""
+    try:
+        return get_jarvis_data(db)
+    except Exception as e:
+        logger.exception("Jarvis API error")
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @app.get("/dashboard/fundamentals", response_class=HTMLResponse)
