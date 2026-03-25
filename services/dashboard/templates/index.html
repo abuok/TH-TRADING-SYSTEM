@@ -458,7 +458,7 @@ function renderAlignmentMatrix(alignmentData) {
 }
 
 // ── Render Risk Panel ────────────────────────────────
-function renderRisk(riskBudget, permState, permMsg, sessionLabel) {
+function renderRisk(riskBudget, permState, permMsg, sessionStr) {
   const perm = document.getElementById('j-perm-state');
   const sessVal = document.getElementById('j-session-val');
   const lockBadge = document.getElementById('j-lock-state-badge');
@@ -466,7 +466,7 @@ function renderRisk(riskBudget, permState, permMsg, sessionLabel) {
   const ddFill = document.getElementById('j-dd-fill');
   const pipCont = document.getElementById('j-loss-pips');
   const bannerWrap = document.getElementById('j-lock-banner-wrap');
-  const sessionLabel = document.getElementById('j-session-label');
+  const sessionBadgeEl = document.getElementById('j-session-label');
 
   // Permission state
   const permClass = permState === 'TRADEABLE' ? 'ok' : permState === 'SOFT_LOCK' ? 'warn' : 'danger';
@@ -476,17 +476,15 @@ function renderRisk(riskBudget, permState, permMsg, sessionLabel) {
   lockBadge.style.color = permClass === 'ok' ? 'var(--j-green)' : permClass === 'warn' ? 'var(--j-yellow)' : 'var(--j-red)';
 
   // Session
-  sessVal.textContent = sessionLabel;
-  const isActive = !sessionLabel.includes('OUT');
+  const sessionStr2 = String(sessionStr || '');
+  sessVal.textContent = sessionStr2;
+  const isActive = !sessionStr2.includes('OUT');
   sessVal.style.color = isActive ? 'var(--j-green)' : 'var(--j-red)';
 
   // Session badge in header
-  if (sessionLabel) {
-    const sbEl = document.getElementById('j-session-label');
-    if (sbEl) {
-      sbEl.textContent = sessionLabel;
-      sbEl.className = `j-session-badge ${isActive ? 'active' : 'inactive'}`;
-    }
+  if (sessionBadgeEl) {
+    sessionBadgeEl.textContent = sessionStr2;
+    sessionBadgeEl.className = `j-session-badge ${isActive ? 'active' : 'inactive'}`;
   }
 
   // Drawdown bar
@@ -509,9 +507,9 @@ function renderRisk(riskBudget, permState, permMsg, sessionLabel) {
 
   // Lock banner
   if (permState === 'HARD_LOCK') {
-    bannerWrap.innerHTML = `<div class="j-lock-banner">⚠ HARD LOCK — ${escHtml(permMsg)}</div>`;
+    bannerWrap.innerHTML = `<div class="j-lock-banner">⚠ HARD LOCK — ${escHtml(String(permMsg))}</div>`;
   } else if (permState === 'SOFT_LOCK') {
-    bannerWrap.innerHTML = `<div class="j-lock-banner" style="border-color:rgba(255,214,10,0.3);color:var(--j-yellow);background:var(--j-yellow-dim);">⚡ SOFT LOCK — ${escHtml(permMsg)}</div>`;
+    bannerWrap.innerHTML = `<div class="j-lock-banner" style="border-color:rgba(255,214,10,0.3);color:var(--j-yellow);background:var(--j-yellow-dim);">⚡ SOFT LOCK — ${escHtml(String(permMsg))}</div>`;
   } else {
     bannerWrap.innerHTML = '';
   }
