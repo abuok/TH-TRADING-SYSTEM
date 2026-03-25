@@ -4,14 +4,22 @@
 <div class="header-section">
     <div class="header-title">
         <h1>Weekly Review Pack</h1>
+        {% if report %}
         <p>Performance Audit & Quality Insights: {{ report.start_date.strftime('%b %d') }} - {{
             report.end_date.strftime('%b %d, %Y') }}</p>
+        {% else %}
+        <p>Performance Audit & Quality Insights</p>
+        {% endif %}
     </div>
+    {% if report %}
     <div class="header-clock">
         <div class="clock-display">{{ "%.2f"|format(report.total_realized_r) }}R</div>
         <div class="clock-label">Weekly P/L Proxy</div>
     </div>
+    {% endif %}
 </div>
+
+{% if report %}
 
 <div class="grid">
     <!-- performance card -->
@@ -113,6 +121,18 @@
             <div class="event-meta">No critical issues identified this week.</div>
             {%- endif -%}
         </div>
+        </div>
     </div>
 </div>
+{% else %}
+<div class="hud-grid mt-4">
+    <div class="hud-panel glass-panel col-span-12" data-hud-corner="top-left">
+        <div class="hud-scroll-body h-350 flex justify-center align-center">
+            <div class="hud-empty-state">
+                NO_WEEKLY_REPORT_FOUND // TELEMETRY PENDING
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 {% endblock %}

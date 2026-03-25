@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hud-grid">
+    <!-- System Health Status -->
+    <div class="hud-panel glass-panel col-span-8" data-hud-corner="top-left">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">NODE_HEALTH // INFRASTRUCTURE STATUS</div>
+        </header>
+        
+        <div class="p-4 grid gap-4 grid-autofit-180">
+            {% for node, status in health.items() %}
+            <div class="glass-panel m-0 hud-panel hud-scanline">
+                <header class="hud-panel-header p-0-5-0-75 bg-white-3">
+                    <div class="hud-panel-title text-xxs text-muted">{{ node | upper }} // SERVICE</div>
+                </header>
+                <div class="p-3">
+                    <div class="text-lg line-height-1 text-bold {{ 'text-green' if status == 'UP' else 'text-pink' }}">
+                        {{ status }}
+                    </div>
+                    {% set rt = response_times.get(node) %}
+                    <div class="mt-2 text-xs text-mono text-muted">
+                        LATENCY: {% if rt %}{{ "%.0f" | format(rt * 1000) }}ms{% else %}N/A{% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Active Incidents -->
+    <div class="hud-panel glass-panel col-span-12" data-hud-corner="bottom-left">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">INCIDENT_LOG // RECENT ALERTS</div>
+        </header>
+
+        <div class="hud-scroll-body h-350">
+            {% if incidents %}
+            <table class="hud-compact-table">
+                <thead>
+                    <tr>
+                        <th class="w-150">TIMESTAMP (UTC)</th>
+                        <th class="w-120">SEVERITY</th>
+                        <th class="w-150">COMPONENT</th>
+                        <th>MESSAGE</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for inc in incidents %}
+                    <tr>
+                        <td class="text-xxs text-mono text-muted">{{ inc.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        <td>
+                            <span class="badge badge-sm font-900 {{ 'bg-sell-dim text-sell border-sell' if inc.severity == 'ERROR' else ('bg-warn-dim text-warn border-warn' if inc.severity == 'WARN' else 'bg-cyan-dim text-cyan border-cyan-30') }} text-mini">
+                                {{ inc.severity }}
+                            </span>
+                        </td>
+                        <td class="text-xs text-mono text-cyan">{{ inc.component }}</td>
+                        <td class="text-sm text-main">{{ inc.message }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="hud-empty-state text-green">
+                ZERO_INCIDENTS_DETECTED
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

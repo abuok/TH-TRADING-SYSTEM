@@ -4,13 +4,21 @@
 <div class="header-section">
     <div class="header-title">
         <h1>Daily Ops Playbook</h1>
+        {% if report %}
         <p>System Intelligence & Actionable Insights for {{ report.timestamp.strftime('%Y-%m-%d') }}</p>
+        {% else %}
+        <p>System Intelligence & Actionable Insights</p>
+        {% endif %}
     </div>
+    {% if report %}
     <div class="header-clock">
         <div class="clock-display">{{ report.timestamp.strftime('%H:%M') }}</div>
         <div class="clock-label">Nairobi (EAT)</div>
     </div>
+    {% endif %}
 </div>
+
+{% if report %}
 
 <div class="grid">
     <!-- Health Card -->
@@ -108,4 +116,15 @@
         </div>
     </div>
 </div>
+{% else %}
+<div class="hud-grid mt-4">
+    <div class="hud-panel glass-panel col-span-12" data-hud-corner="top-left">
+        <div class="hud-scroll-body h-350 flex justify-center align-center">
+            <div class="hud-empty-state">
+                NO_DAILY_REPORT_FOUND // TELEMETRY PENDING
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 {% endblock %}

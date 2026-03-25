@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hud-grid">
+    <!-- Execution Prep Monitor -->
+    <div class="hud-panel glass-panel col-span-12" data-hud-corner="top-left">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">EXECUTION PREP // APPROVED PLANS</div>
+        </header>
+
+        <div class="hud-panel-desc text-xs border-divider">
+            ACTIVE AND HISTORICAL EXECUTION PLANS AWAITING ORCHESTRATOR HANDOFF
+        </div>
+
+        <div class="hud-scroll-body h-500">
+            {% if preps %}
+            <table class="hud-compact-table">
+                <thead>
+                    <tr>
+                        <th class="w-150">PREP_ID</th>
+                        <th class="w-150">TICKET_ID</th>
+                        <th class="text-center w-120">STATUS</th>
+                        <th class="text-right w-150">EXPIRES_AT</th>
+                        <th class="text-right">GENERATED_AT</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in preps %}
+                    <tr>
+                        <td class="text-xs text-bold text-cyan text-mono">{{ p.prep_id }}</td>
+                        <td class="text-xs text-mono text-muted">{{ p.ticket_id }}</td>
+                        <td class="text-center">
+                            <span class="badge badge-sm font-900 {{ 'bg-buy-dim text-buy border-buy' if p.status == 'ACTIVE' else 'bg-dark-overlay text-muted border-theme' }} text-mini">
+                                {{ p.status }}
+                            </span>
+                        </td>
+                        <td class="text-right text-mono text-xs {{ 'text-pink' if p.status == 'EXPIRED' else 'text-main' }}">
+                            {{ p.expires_at.strftime('%Y-%m-%d %H:%M:%S') if p.expires_at else 'N/A' }}
+                        </td>
+                        <td class="text-right text-mono text-xxs text-muted">
+                            {{ p.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="hud-empty-state">
+                NO_ACTIVE_PREPARATIONS
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

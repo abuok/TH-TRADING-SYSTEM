@@ -930,11 +930,10 @@ async def dashboard_daily_ops(
         .order_by(OpsReportLog.created_at.desc())
         .first()
     )
-    if not latest:
-        raise HTTPException(status_code=404, detail="No daily report found")
+    report_data = latest.report_data if latest else None
     return render_template(
         "ops_daily_template.html",
-        {"request": request, "report": latest.report_data, "active_page": "ops"},
+        {"request": request, "report": report_data, "active_page": "ops"},
     )
 
 
@@ -950,11 +949,10 @@ async def dashboard_weekly_review(
         .order_by(OpsReportLog.created_at.desc())
         .first()
     )
-    if not latest:
-        raise HTTPException(status_code=404, detail="No weekly report found")
+    report_data = latest.report_data if latest else None
     return render_template(
         "ops_weekly_template.html",
-        {"request": request, "report": latest.report_data, "active_page": "ops"},
+        {"request": request, "report": report_data, "active_page": "ops"},
     )
 
 
@@ -968,6 +966,41 @@ async def dashboard_action_items(
     return render_template(
         "action_items.html",
         {"request": request, "items": items, "active_page": "actions"},
+    )
+
+
+@app.get("/dashboard/execution-prep", response_class=HTMLResponse)
+async def dashboard_execution_prep(
+    request: Request,
+    db: Session = Depends(db_session.get_db),
+):
+    preps = (
+        db.query(ExecutionPrepLog)
+        .order_by(ExecutionPrepLog.created_at.desc())
+        .limit(50)
+        .all()
+    )
+    return render_template(
+        "execution_prep.html",
+        {"request": request, "active_page": "execution-prep", "preps": preps},
+    )
+
+
+@app.get("/dashboard/health", response_class=HTMLResponse)
+async def dashboard_health_view(request: Request, db: Session = Depends(db_session.get_db)):
+    from services.dashboard.logic import get_service_health
+    health, response_times = await get_service_health()
+    incidents = db.query(IncidentLog).order_by(IncidentLog.created_at.desc()).limit(20).all()
+    
+    return render_template(
+        "health.html",
+        {
+            "request": request,
+            "active_page": "health",
+            "health": health,
+            "response_times": response_times,
+            "incidents": incidents
+        },
     )
 
 
