@@ -121,7 +121,8 @@ class PHXDetector:
         self.history.append(candle)
 
         # 4. OBSERVE-only mode check
-        next_stage_func = getattr(self, f"_process_{self.stage.name.lower()}")
+        stage_name = str(self.stage.name).lower()
+        next_stage_func = getattr(self, f"_process_{stage_name}")
 
         # Capture stage before process to detect if we are trying to enter TRIGGER
         current_stage = self.stage
@@ -175,7 +176,7 @@ class PHXDetector:
         if len(self.history) < 3:
             return
         # Establish Bias: Look for 3 consecutive higher highs or lower lows
-        recent = self.history[-3:]
+        recent = list(self.history[-3:])
         if all(recent[i].high > recent[i - 1].high for i in range(1, 3)):
             self.stage = PHXStage.BIAS
             self.bias_direction = 1
@@ -192,7 +193,7 @@ class PHXDetector:
             return
         # Look for Sweep: Price takes out a recent (5-10 candle) High/Low and reverses
         # Use a slice that doesn't skip the first candle when len is 11
-        lookback = self.history[-11:-1]
+        lookback = list(self.history[-11:-1])
         if self.bias_direction == 1:
             min_low = min(c.low for c in lookback)
             if candle.low < min_low and candle.close > min_low:
@@ -214,7 +215,7 @@ class PHXDetector:
         if len(self.history) < 3:
             return
         # Look for Displacement: 2 out of 3 candles moving strongly in the trade direction
-        recent = self.history[-3:]
+        recent = list(self.history[-3:])
         if self.bias_direction == 1:
             green_count = sum(1 for c in recent if c.close > c.open)
             if green_count >= 2:

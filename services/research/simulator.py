@@ -289,7 +289,7 @@ def run_replay(
                 setup_score=float(setup_score),  # real PHX stage score, not hard-coded
                 bias_score=bias_score,
                 guardrails_status="FAIL" if not alignment_res.is_aligned else "PASS",
-                stage=detector.stage.name,  # real PHX stage name
+                stage=str(detector.stage.name),  # real PHX stage name
                 block_reason=ticket.block_reason,
             )
 

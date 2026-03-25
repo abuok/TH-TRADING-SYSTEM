@@ -36,12 +36,12 @@ def calculate_metrics(trades: list[SimulatedTrade]) -> ResearchMetrics:
     for t in executed:
         running_r += t.realized_r
         if running_r > peak_r:
-            peak_r = running_r
+            peak_r = float(running_r)
             current_dd = 0.0
         else:
-            current_dd = peak_r - running_r
+            current_dd = float(peak_r) - float(running_r)
             if current_dd > max_dd:
-                max_dd = current_dd
+                max_dd = float(current_dd)
 
     # Profit Factor: (Gross Winner R) / (Gross Loser R)
     gross_wins = sum(t.realized_r for t in wins)
@@ -55,10 +55,10 @@ def calculate_metrics(trades: list[SimulatedTrade]) -> ResearchMetrics:
         total_trades=total,
         executed_trades=len(executed),
         blocked_trades=blocked,
-        win_rate_pct=round(win_rate, 2),
-        avg_r=round(avg_r, 2),
-        expectancy_r=round(expectancy, 2),
-        max_drawdown_r=round(max_dd, 2),
-        profit_factor=round(pf, 2),
-        total_r=round(total_r, 2),
+        win_rate_pct=round(float(win_rate), 2),
+        avg_r=round(float(avg_r), 2),
+        expectancy_r=round(float(expectancy), 2),
+        max_drawdown_r=round(float(max_dd), 2),
+        profit_factor=round(float(pf), 2),
+        total_r=round(float(total_r), 2),
     )
