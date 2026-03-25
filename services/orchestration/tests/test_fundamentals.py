@@ -86,6 +86,7 @@ def test_evaluate_fundamentals_full_context():
     }
 
     movers, pair_packets = evaluate_fundamentals(ctx, datetime.now())
+    pair_packets: list[PairFundamentalsPacket] = pair_packets
 
     assert movers.packet_type == "MarketMoversPacket"
     assert "RISK_OFF" in movers.sentiment_flags

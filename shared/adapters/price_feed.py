@@ -6,6 +6,8 @@ from shared.types.packets import Candle
 
 
 class CSVPriceFeedAdapter:
+    data: pd.DataFrame | None
+
     def __init__(self, file_path: str):
         self.file_path = file_path
         self.data = None
@@ -17,6 +19,7 @@ class CSVPriceFeedAdapter:
             raise FileNotFoundError(f"CSV file not found: {self.file_path}")
 
         self.data = pd.read_csv(self.file_path)
+        assert self.data is not None
         self.data["timestamp"] = pd.to_datetime(self.data["timestamp"])
         self.data.set_index("timestamp", inplace=True)
         self.data.sort_index(inplace=True)

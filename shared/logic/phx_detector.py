@@ -18,6 +18,18 @@ class PHXStage(Enum):
 
 
 class PHXDetector:
+    asset_pair: str
+    stage: PHXStage
+    bias_direction: int
+    sweep_level: float | None
+    sweep_high_low: float | None
+    choch_level: float | None
+    history: list[Candle]
+    stage_timestamps: dict[PHXStage, datetime]
+    reason_codes: list[str]
+    current_session_label: str | None
+    is_invalidated: bool
+
     def __init__(self, asset_pair: str):
         self.asset_pair = asset_pair
         self.reset()

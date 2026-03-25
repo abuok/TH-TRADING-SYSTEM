@@ -7,7 +7,7 @@ class ProxyProvider(ABC):
     @abstractmethod
     def get_snapshots(self) -> dict[str, Any]:
         """Return a dictionary of market proxy snapshots with historical context."""
-        pass
+        ...
 
 
 class MockProxyProvider(ProxyProvider):
