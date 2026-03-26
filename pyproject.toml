@@ -33,22 +33,33 @@ line-ending = "auto"
 python_version = "3.10"
 warn_return_any = true
 warn_unused_configs = true
-disallow_untyped_defs = false
-disallow_incomplete_defs = false
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
 check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_no_return = true
 ignore_missing_imports = true
 explicit_package_bases = true
 mypy_path = "."
+# Remaining suppressions — cleared file-by-file as type annotations are added
 disable_error_code = [
-    "assignment", "attr-defined", "arg-type", "valid-type", "misc", 
-    "var-annotated", "operator", "union-attr", "return-value", "index", 
-    "call-arg", "import-untyped", "dict-item"
+    "assignment", "attr-defined", "arg-type", "union-attr", "return-value"
 ]
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 addopts = "-ra -q --cov=shared --cov=services --cov-report=term-missing"
+markers = [
+    "stress: marks tests as load/stress tests (deselect with -m 'not stress')",
+    "chaos: marks tests as chaos engineering tests (deselect with -m 'not chaos')",
+]
  
 [tool.pyright]
 include = ["shared", "services", "infra"]
