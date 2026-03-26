@@ -569,6 +569,8 @@ async def generate_ticket(pair: str, request: Request, db: Session = Depends(get
         setup_packet, risk_packet, db, alignment=alignment_result
     )
     metrics_registry.increment("tickets_generated_total")
+    metrics_registry.increment("alignment_evaluations_total")
+    metrics_registry.inc_gauge("open_tickets_count")
     ticket.setup_packet_id = setup_db.id
     ticket.risk_packet_id = risk_db.id
     db.commit()
@@ -779,6 +781,8 @@ async def confirm_ticket(ticket_id: str, request: Request, db: Session = Depends
         ticket.block_reason = reason
         ticket.reviewed_at = datetime.utcnow()
         db.commit()
+        metrics_registry.increment("tickets_rejected_jit_total")
+        metrics_registry.dec_gauge("open_tickets_count")
 
         # Log to Journal
         event_bus.publish(
@@ -810,5 +814,6 @@ async def confirm_ticket(ticket_id: str, request: Request, db: Session = Depends
 
     # In a real system, the ExecutionBridge would listen to this or we'd call it directly
     logger.info(f"Ticket {ticket.ticket_id} CONFIRMED and JIT-validated.")
+    metrics_registry.dec_gauge("open_tickets_count")
 
     return ticket

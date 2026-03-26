@@ -727,6 +727,8 @@ async def api_approve_ticket(ticket_id: str, request: Request, db: Session = Dep
             before_state=before, after_state={"status": t.status},
             request=request,
         )
+        metrics_registry.increment("tickets_approved_total")
+        metrics_registry.increment("audit_actions_total")
 
         # Generate Execution Prep
         generator = ExecutionPrepGenerator(db)
@@ -813,6 +815,8 @@ async def api_skip_ticket(
             before_state=before, after_state={"status": t.status},
             change_reason=payload.reason, request=request,
         )
+        metrics_registry.increment("tickets_skipped_total")
+        metrics_registry.increment("audit_actions_total")
         db.commit()
         return {"status": "success", "ticket": t.ticket_id}
     except Exception as e:
@@ -845,6 +849,8 @@ async def api_close_ticket(
             after_state={"status": t.status, "outcome": payload.outcome, "exit_price": payload.exit_price},
             request=request,
         )
+        metrics_registry.increment("tickets_closed_total")
+        metrics_registry.increment("audit_actions_total")
         db.commit()
         return {"status": "success", "ticket": t.ticket_id}
     except Exception as e:
