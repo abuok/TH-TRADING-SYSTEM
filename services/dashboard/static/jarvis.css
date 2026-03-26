@@ -327,7 +327,7 @@
 .j-thought-item.severity-ERROR .j-thought-msg { color: #ff6b7a; }
 .j-thought-item.severity-WARN  .j-thought-msg { color: var(--j-yellow); }
 .j-thought-item.severity-INFO  .j-thought-msg { color: var(--j-text); }
-.j-thought-scroll { max-height: 460px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--j-border) transparent; }
+.j-thought-scroll { max-height: 460px; overflow-y: auto; }
 
 /* ── Bottom Grid: Risk + Alignment + Quotes ─────────────── */
 .j-bottom-grid {
