@@ -8,34 +8,34 @@
 
 /* ── Root Variables ─────────────────────────────────────── */
 :root {
-  --j-bg: #050b14;
-  --j-surface: rgba(8, 16, 30, 0.95);
-  --j-panel: rgba(12, 20, 36, 0.90);
-  --j-border: rgba(0, 240, 255, 0.12);
-  --j-border-dim: rgba(255, 255, 255, 0.06);
+  --j-bg: var(--bg-deep);
+  --j-surface: var(--glass-bg);
+  --j-panel: var(--bg-orbit);
+  --j-border: var(--border-dim);
+  --j-border-dim: rgba(255, 255, 255, 0.03);
 
-  --j-cyan: #00f0ff;
-  --j-cyan-dim: rgba(0, 240, 255, 0.08);
-  --j-cyan-glow: rgba(0, 240, 255, 0.25);
+  --j-cyan: var(--blue);
+  --j-cyan-dim: rgba(0, 102, 255, 0.1);
+  --j-cyan-glow: rgba(0, 102, 255, 0.3);
 
-  --j-green: #00ff9f;
-  --j-green-dim: rgba(0, 255, 159, 0.08);
-  --j-green-glow: rgba(0, 255, 159, 0.35);
+  --j-green: var(--lime);
+  --j-green-dim: rgba(180, 255, 0, 0.1);
+  --j-green-glow: rgba(180, 255, 0, 0.35);
 
-  --j-red: #ff2d55;
-  --j-red-dim: rgba(255, 45, 85, 0.08);
-  --j-red-glow: rgba(255, 45, 85, 0.30);
+  --j-red: var(--red);
+  --j-red-dim: rgba(255, 59, 59, 0.1);
+  --j-red-glow: rgba(255, 59, 59, 0.3);
 
   --j-yellow: #ffd60a;
   --j-yellow-dim: rgba(255, 214, 10, 0.08);
 
   --j-orange: #ff9f0a;
-  --j-text: #cdd6e4;
-  --j-muted: #5a6a7e;
+  --j-text: var(--text-main);
+  --j-muted: var(--text-muted);
   --j-dim: #2d3a4a;
 
-  --j-font: 'Space Grotesk', 'Inter', sans-serif;
-  --j-mono: 'JetBrains Mono', 'Courier New', monospace;
+  --j-font: var(--font-heading);
+  --j-mono: var(--font-data);
 }
 
 /* ── Base Layout ────────────────────────────────────────── */

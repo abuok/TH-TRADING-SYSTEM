@@ -25,6 +25,7 @@
     /* ── Effects ────────────────────────────────────────── */
     --glass-bg: rgba(10, 16, 36, 0.75);
     --glass-blur: blur(12px);
+    --webkit-glass-blur: blur(12px);
     --panel-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     
     /* ── Fonts ─────────────────────────────────────────── */

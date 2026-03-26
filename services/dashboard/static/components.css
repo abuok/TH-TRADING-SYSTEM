@@ -131,15 +131,15 @@
 
 /* Semantic Colors & Backgrounds */
 .bg-buy {
-    background: var(--accent-green);
+    background: var(--lime);
 }
 
 .bg-sell {
-    background: var(--accent-pink);
+    background: var(--red);
 }
 
 .bg-warn {
-    background: var(--accent-yellow);
+    background: var(--blue);
 }
 
 .bg-black-dim {
@@ -248,19 +248,19 @@
 }
 
 .border-l-2-cyan {
-    border-left: 2px solid var(--accent-cyan);
+    border-left: 2px solid var(--blue);
 }
 
 .border-l-2-warn {
-    border-left: 2px solid var(--accent-yellow);
+    border-left: 2px solid var(--blue);
 }
 
 .border-l-2-green {
-    border-left: 2px solid var(--accent-green);
+    border-left: 2px solid var(--lime);
 }
 
 .border-l-2-sell {
-    border-left: 2px solid var(--accent-pink);
+    border-left: 2px solid var(--red);
 }
 
 .border-l-2-muted {

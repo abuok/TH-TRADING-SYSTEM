@@ -1,25 +1,25 @@
 @import url("theme.css");
 
 :root {
-    /* Main Background Elements */
-    --bg-primary: #0B1A12;   /* Deep Matrix */
-    --surface-dark: #0A1024; /* Orbit Navy */
-    --bg-secondary: #0A1024;
-    --border-dim: #11131A;   /* Space Charcoal */
+    /* Main Background Elements mapped to Theme tokens */
+    --bg-primary: var(--bg-deep);
+    --surface-dark: var(--bg-orbit);
+    --bg-secondary: var(--bg-orbit);
+    --border-dim: var(--border-dim);
 
     /* Typography */
-    --text-primary: #E2E8F0;
-    --text-muted: #64748B;
+    --text-primary: var(--text-main);
+    --text-muted: var(--text-muted);
     
     /* Strict Action Palette */
-    --accent-green: #B4FF00; /* Acid Lime */
-    --accent-cyan: #0066FF;  /* Electric Blue */
-    --accent-pink: #FF3B3B;  /* Mars Red */
+    --accent-green: var(--lime);
+    --accent-cyan: var(--blue);
+    --accent-pink: var(--red);
 
     /* Canonical TH Status Colors */
-    --color-buy: var(--accent-green);
-    --color-sell: var(--accent-pink);
-    --color-warn: var(--accent-cyan);
+    --color-buy: var(--lime);
+    --color-sell: var(--red);
+    --color-warn: var(--blue);
 }
 
 * {
@@ -279,6 +279,11 @@ footer {
     overflow-y: auto;
     padding: 2rem;
     background: var(--bg-primary);
+    background-image: 
+        linear-gradient(rgba(180, 255, 0, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(180, 255, 0, 0.02) 1px, transparent 1px);
+    background-size: 32px 32px;
+    position: relative;
 }
 
 .hud-grid {
@@ -290,7 +295,7 @@ footer {
 
 /* Cockpit Card overrides */
 .hud-panel {
-    background: var(--surface-dark);
+    background: linear-gradient(135deg, var(--surface-dark), var(--bg-primary));
     border: 1px solid var(--border-dim);
     border-radius: 4px;
     display: flex;
@@ -298,11 +303,16 @@ footer {
     padding: 0;
     position: relative;
     overflow: hidden;
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    transition: all 0.25s ease;
 }
 
-.hud-panel.glass-panel {
-    background: var(--surface-dark);
-    border: 1px solid var(--border-dim);
+.hud-panel:hover {
+    border-color: rgba(180, 255, 0, 0.15);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 10px rgba(180, 255, 0, 0.05);
+    transform: translateY(-2px);
 }
 
 .hud-panel-header {
@@ -310,16 +320,18 @@ footer {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1rem;
-    border-bottom: 1px solid rgba(86, 204, 242, 0.1);
-    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(0, 102, 255, 0.1);
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.02);
 }
 
 .hud-panel-title {
-    font-size: 0.75rem;
+    font-size: 0.65rem;
     text-transform: uppercase;
-    letter-spacing: 2px;
+    letter-spacing: 2.5px;
     color: var(--accent-cyan);
     font-weight: 700;
+    font-family: var(--font-heading);
 }
 
 .hud-scroll-body {
