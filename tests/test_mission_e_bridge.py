@@ -231,6 +231,7 @@ def test_pnl_calculation_on_close(db):
         db.query(OrderTicket).filter(OrderTicket.ticket_id == ticket_id).first()
     )
     assert updated_ticket.status == "CLOSED"
-    assert updated_ticket.hindsight_realized_r is not None
+    h_r = getattr(updated_ticket, "hindsight_realized_r", None)
+    assert h_r is not None
     # Tolerance for small float diffs
-    assert abs(updated_ticket.hindsight_realized_r - 1.5) < 0.01
+    assert abs(h_r - 1.5) < 0.01
