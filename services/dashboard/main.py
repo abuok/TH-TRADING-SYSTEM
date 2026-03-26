@@ -51,6 +51,7 @@ from shared.database.models import (
 from shared.database.models import (
     PositionSnapshot as PositionSnapshotModel,
 )
+from shared.logic.metrics import metrics_registry
 from shared.logic.sessions import get_nairobi_time
 
 security = HTTPBasic()
