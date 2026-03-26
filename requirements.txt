@@ -23,6 +23,7 @@ PyJWT==2.8.1
 cryptography==42.0.8
 pydantic-extra-types==2.3.0
 python-multipart==0.0.22
+slowapi==0.1.9
 
 # Secrets Management (optional backends)
 boto3==1.33.0
