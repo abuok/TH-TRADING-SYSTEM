@@ -1,0 +1,4 @@
+# file: C:\Users\Administrator\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\dialects\postgresql\ranges.py
+# hypothesis_version: 6.151.9
+
+['(', '()', '(]', ')', 'DATEMULTIRANGE', 'DATERANGE', 'INT4MULTIRANGE', 'INT4RANGE', 'INT8MULTIRANGE', 'INT8RANGE', 'NUMMULTIRANGE', 'NUMRANGE', 'TSMULTIRANGE', 'TSRANGE', 'TSTZMULTIRANGE', 'TSTZRANGE', 'Tuple[str, str]', '[', '[)', '[]', ']', '_T', '__visit_name__', 'bounds', 'empty', 'kw_only', 'lower', 'slots', 'upper']

@@ -1,0 +1,4 @@
+# file: C:\Users\Administrator\Desktop\TH\shared\utils\metadata.py
+# hypothesis_version: 6.151.9
+
+['--short', '..', '1.0', 'HEAD', 'VERSION', 'git', 'git_commit', 'guardrails_version', 'latest', 'policy_hash', 'rev-parse', 'unknown', 'unknown-commit', 'utf-8', 'version']

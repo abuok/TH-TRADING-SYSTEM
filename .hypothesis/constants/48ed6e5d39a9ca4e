@@ -1,0 +1,4 @@
+# file: C:\Users\Administrator\Desktop\TH\shared\logic\lockout_engine.py
+# hypothesis_version: 6.151.9
+
+[0.0, 0.5, 2.0, 100.0, 10000.0, 'account_balance', 'consecutive_losses', 'daily_loss', 'max_daily_loss_pct']

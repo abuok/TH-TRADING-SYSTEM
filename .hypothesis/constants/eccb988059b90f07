@@ -1,0 +1,4 @@
+# file: C:\Users\Administrator\AppData\Roaming\Python\Python313\site-packages\limits\storage\redis_cluster.py
+# hypothesis_version: 6.151.9
+
+[1000, '*', '2.5.0', '3.14.0', '4.2.0', '4.3', '6.0', 'max_connections', 'password', 'redis', 'redis+cluster', 'startup_nodes', 'username', 'utf-8', 'valkey', 'valkey+cluster']

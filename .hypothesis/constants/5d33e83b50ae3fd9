@@ -1,0 +1,4 @@
+# file: C:\Users\Administrator\Desktop\TH\shared\logic\notifications.py
+# hypothesis_version: 6.151.9
+
+['\x1b[0m', '\x1b[91m', '\x1b[92m', '\x1b[93m', '\x1b[94m', 'CRITICAL', 'ERROR', 'INFO', 'Notifications', 'SUCCESS', 'WARN', 'WARNING', 'severity', 'suggestion_type', 'ticket_id']

@@ -1,0 +1,4 @@
+# file: C:\Users\Administrator\Desktop\TH\shared\logic\metrics.py
+# hypothesis_version: 6.151.9
+
+[0.0, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0, '+Inf', ',', 'MetricsRegistry', '_Timer', 'audit_actions_total', 'buckets', 'count', 'counter', 'counters', 'db_pool_available', 'db_pool_checked_out', 'gauge', 'gauges', 'help', 'histogram', 'histogram_counts', 'incidents_total', 'inf', 'labels', 'open_tickets_count', 'sum', 'tickets_closed_total', 'type']

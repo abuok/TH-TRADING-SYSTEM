@@ -1,0 +1,4 @@
+# file: C:\Users\Administrator\Desktop\TH\shared\logic\sessions.py
+# hypothesis_version: 6.151.9
+
+['ASIA_SESSION', 'Africa/Nairobi', 'GBPJPY', 'LONDON_MID', 'LONDON_OPEN', 'NY_OPEN', 'OUT_OF_SESSION', 'POST_SESSION', 'PRE_SESSION', 'UNKNOWN', 'asia_high', 'asia_low', 'high', 'london_high', 'london_low', 'low']

@@ -1,0 +1,4 @@
+# file: C:\Users\Administrator\Desktop\TH\shared\logic\trade_lifecycle.py
+# hypothesis_version: 6.151.9
+
+[0.0, 'Bridge', 'CLOSE', 'CLOSED', 'EXECUTED', 'OPEN', 'PARTIAL', 'SELL', 'TRADE_CLOSED', 'TRADE_OPENED', 'TRADE_PARTIAL', 'WARNING', 'broker_trade_id', 'duplicate fill', 'fill', 'hindsight_realized_r', 'ignored', 'json', 'lots', 'matched', 'price', 'r_gain', 'reason', 'status', 'success', 'ticket_id']

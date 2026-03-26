@@ -1,0 +1,4 @@
+# file: C:\Users\Administrator\AppData\Roaming\Python\Python313\site-packages\psycopg2\extras.py
+# hypothesis_version: 6.151.9
+
+[b' => ', b'%', b'%s', b"''::hstore", b'(', b'(%.)', b')', b',', b', ', b'::inet', b';', b'NULL', b'hstore(', b's', b'||', 100, 512, 869, 1000, 1024, 1041, 2950, 2951, 80300, 90000, ' (', '(', '(["\\\\])\\1', ')', ', ', '.', '/', '0', '9', 'HSTORE', 'HSTOREARRAY', 'INET', 'INETARRAY', 'LOGICAL ', 'NULL', 'PHYSICAL', 'Record', 'START_REPLICATION ', 'UUID', 'UUID[]', '[', '\\1', '\\\\(.)', ']', '_', '_index', '_logobj', 'ascii', 'cursor_factory', 'execute', 'f', 'prepare', 'public', 'replace', 'replication_type', 'row_factory', 'typarray', 'utf8']

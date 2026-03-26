@@ -1,0 +1,4 @@
+# file: C:\Users\Administrator\Desktop\TH\shared\types\trading.py
+# hypothesis_version: 6.151.9
+
+['ALREADY_MOVED', 'BE', 'BLOCKED', 'LOSS', 'LOW_SCORE', 'MARKET', 'MAX_RISK_REACHED', 'NEWS_WINDOW', 'PENDING', 'PERSONAL_RULE', 'SPREAD_TOO_HIGH', 'STALE', 'WIN']

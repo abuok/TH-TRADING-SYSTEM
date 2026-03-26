@@ -1,0 +1,4 @@
+# file: C:\Users\Administrator\AppData\Roaming\Python\Python313\site-packages\limits\aio\storage\redis\coredis.py
+# hypothesis_version: 6.151.9
+
+[0.0, 1000, '*', '/', 'connection_pool', 'host', 'max_connections', 'port', 'startup_nodes']

@@ -1,0 +1,4 @@
+# file: C:\Users\Administrator\Desktop\TH\shared\security\rate_limiting.py
+# hypothesis_version: 6.151.9
+
+[429, '100/minute', '1000/minute', '300/minute', '500/minute', '5000/minute', '60/minute', '60s', 'Retry-After', 'dashboard', 'default', 'detail', 'error', 'evaluation', 'health', 'in ', 'internal', 'rate_limit_exceeded', 'retry_after', 'unknown', 'write']

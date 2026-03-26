@@ -1,0 +1,4 @@
+# file: C:\Users\Administrator\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\dialects\postgresql\psycopg2cffi.py
+# hypothesis_version: 6.151.9
+
+['extensions', 'extras', 'psycopg2cffi']

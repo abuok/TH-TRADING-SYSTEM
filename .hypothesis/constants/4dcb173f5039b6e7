@@ -1,0 +1,4 @@
+# file: C:\Users\Administrator\Desktop\TH\services\bridge\main.py
+# hypothesis_version: 6.151.9
+
+[0.01, 1.0, 403, 500, 8005, '/bridge/quote', '/bridge/spec', '/bridge/trades/fill', '/health', '0.0.0.0', 'BRIDGE_SECRET', 'BridgeService', 'Live Data Bridge', '__main__', 'bridge', 'healthy', 'ignored', 'internal', 'no change', 'processed', 'reason', 'results', 'service', 'spread', 'status', 'success', 'symbol', 'updated']

@@ -1,0 +1,4 @@
+# file: C:\Users\Administrator\Desktop\TH\services\orchestration\logic\jit_validator.py
+# hypothesis_version: 6.151.9
+
+[0.0, 10000.0, 'ALIGNED', 'MarketContextPacket', 'account_balance', 'asset_pair', 'bias_id', 'confirm_ts', 'consecutive_losses', 'ctx_id', 'daily_loss', 'entry_price', 'is_invalidated', 'lockout', 'session', 'take_profit', 'ticket_id']

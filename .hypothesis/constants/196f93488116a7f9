@@ -1,0 +1,4 @@
+# file: C:\Users\Administrator\Desktop\TH\shared\types\trade_management.py
+# hypothesis_version: 6.151.9
+
+['CLOSE_END_OF_SESSION', 'EXIT_BEFORE_NEWS', 'HOLD', 'MOVE_SL_TO_BE', 'NO_ACTION', 'REDUCE_RISK', 'TAKE_PARTIAL_CUSTOM', 'TAKE_PARTIAL_TP1']

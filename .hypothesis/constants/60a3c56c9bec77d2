@@ -1,0 +1,4 @@
+# file: C:\Users\Administrator\Desktop\TH\services\research\pilot.py
+# hypothesis_version: 6.151.9
+
+[-2.0, 0.0, 0.05, 0.1, 0.8, 10.0, 15.0, 30.0, 40.0, 100.0, 100, 300, 'APPROVED', 'BE', 'EXPIRED', 'FAIL', 'OPEN', 'OVERRIDE', 'PASS', 'PENDING', 'REJECT', 'SKIPPED', 'Win rate too low', 'approved', 'break_even_rate_pct', 'data', 'expired', 'expired_ticket_rate', 'hindsight_realized_r', 'manual_outcome_label', 'manual_outcome_r', 'max_drawdown_r', 'min_approved_trades', 'min_win_rate_pct', 'missed_r', 'net_realized_r', 'overrides', 'pair', 'passing_days', 'proposals', 'quote_freshness_pct', 'realized_r', 'skipped', 'staleness_violations', 'status', 'total_days', 'total_tickets', 'win_rate_pct']

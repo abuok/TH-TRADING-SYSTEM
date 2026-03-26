@@ -1,0 +1,4 @@
+# file: C:\Users\Administrator\Desktop\TH\shared\ui\theme.py
+# hypothesis_version: 6.151.9
+
+[0.05, 0.2, 0.3, 0.35, 0.6, '#', '#0B0B10', '#12121A', '#27AE60', '#2A2A35', '#56CCF2', '#9B51E0', '#A1A1B3', '#E6E6F0', '#EB2F96', '#F2994A', '#F2C94C', 'background', 'border', 'cyan', 'green', 'muted', 'orange', 'pink', 'purple', 'surface', 'text', 'yellow']

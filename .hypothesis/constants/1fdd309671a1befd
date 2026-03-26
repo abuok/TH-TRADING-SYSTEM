@@ -1,0 +1,4 @@
+# file: C:\Users\Administrator\Desktop\TH\shared\security\__init__.py
+# hypothesis_version: 6.151.9
+
+['LIMITS', 'limiter', 'setup_rate_limiting']

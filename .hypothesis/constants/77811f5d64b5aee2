@@ -1,0 +1,4 @@
+# file: C:\Users\Administrator\Desktop\TH\shared\logic\alignment.py
+# hypothesis_version: 6.151.9
+
+[-15.0, 15.0, 45.0, 60.0, 120, '%Y-%m-%d %H:%M', '+00:00', ':', 'Africa/Nairobi', 'AlignmentEngine', 'BUY', 'BiasState', 'Direction', 'EOD_Gap', 'Events', 'SELL', 'Session', 'Staleness', 'UNKNOWN', 'Z', 'asset_pair', 'bias_expiry_minutes', 'bias_score', 'config', 'created_at', 'entry_price', 'eod_gap_minutes', 'high_impact_events', 'is_invalidated', 'news_window', 'take_profit', 'time', 'utf-8']

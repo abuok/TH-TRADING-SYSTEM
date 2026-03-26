@@ -1,0 +1,4 @@
+# file: C:\Users\Administrator\Desktop\TH\services\research\hindsight.py
+# hypothesis_version: 6.151.9
+
+[-1.0, 0.0, 100, 1440, '%Y-%m-%d', 'BE', 'BUY', 'DONE', 'Dataset exhausted.', 'EXPIRED', 'HINDSIGHT_COMPUTED', 'HindsightEngine', 'LOSS', 'Max horizon reached.', 'NONE', 'PENDING', 'SKIPPED', 'SL', 'TP1', 'WIN', 'artifacts/hindsight', 'avg_r', 'close', 'costliest_miss', 'count', 'details', 'event_type', 'high', 'hindsight_outcome', 'hindsight_realized_r', 'journal_events', 'losses', 'low', 'missed_r', 'no tickets found', 'open', 'processed', 'reason', 'reasons', 'status', 'ticket_id', 'ticket_transition', 'timestamp', 'total', 'total_r', 'transition_type', 'volume', 'w', 'win_rate', 'wins']

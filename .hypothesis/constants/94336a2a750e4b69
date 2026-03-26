@@ -1,0 +1,4 @@
+# file: C:\Users\Administrator\Desktop\TH\shared\logic\execution_logic.py
+# hypothesis_version: 6.151.9
+
+[0.1, 3.0, 100, 300, '+00:00', 'Africa/Nairobi', 'ERROR', 'FAIL', 'Market Spread', 'MarketContextPacket', 'News Proximity', 'PASS', 'PreflightEngine', 'Price Tolerance', 'System Kill Switch', 'Ticket Expiry', 'Ticket is active', 'Unknown Event', 'WARN', 'WARNING', 'Z', 'end', 'event', 'expiry', 'kill_switch', 'max_spread_pips', 'news_window', 'no_trade_windows', 'price_deviation', 'price_tolerance_pct', 'spread', 'start']

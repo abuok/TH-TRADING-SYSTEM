@@ -1,0 +1,4 @@
+# file: C:\Users\Administrator\Desktop\TH\services\tickets\queue_logic.py
+# hypothesis_version: 6.151.9
+
+['APPROVE', 'APPROVED', 'CLOSED', 'EXPIRED', 'IN_REVIEW', 'SKIP', 'SKIPPED', 'TicketQueueLogic', 'closed_at', 'details', 'event_type', 'exit_price', 'expired_at', 'journal_events', 'notes', 'outcome', 'realized_r', 'reason', 'reviewed_at', 'ticket_id', 'ticket_transition', 'transition_type']

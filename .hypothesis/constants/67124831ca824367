@@ -1,0 +1,4 @@
+# file: C:\Users\Administrator\Desktop\TH\services\research\tuning.py
+# hypothesis_version: 6.151.9
+
+[0.0, 0.3, 0.4, 0.5, 'CRITICAL', 'EXPIRED', 'HIGH', 'LOW', 'MEDIUM', 'MOVE_SL_TO_BE', 'OPEN', 'RISK_OFF', 'TuningAssistant', 'avg_discipline_score', 'critical_alerts', 'end_date', 'expired_prep_logs', 'guardrails', 'guardrails_blocks', 'json', 'management', 'move_sl_suggestions', 'notifications', 'policy', 'queue', 'risk_off_policies', 'start_date', 'total_prep_logs', 'total_suggestions', 'total_tickets']

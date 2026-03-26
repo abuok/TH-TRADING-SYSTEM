@@ -1,0 +1,4 @@
+# file: C:\Users\Administrator\Desktop\TH\shared\logic\trade_management_engine.py
+# hypothesis_version: 6.151.9
+
+[0.0, 1e-05, 0.5, 1.0, '%H:%M', '00:30', '01:00', 'BUY', 'CRITICAL', 'GLOBAL', 'RISK_OFF', 'TRADING', 'WARN', 'currency', 'json', 'time']
