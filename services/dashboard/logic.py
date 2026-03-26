@@ -24,6 +24,7 @@ from shared.database.models import (
 )
 from shared.logic.lockout_engine import LockoutEngine
 from shared.logic.sessions import get_nairobi_time, get_session_label
+from shared.logic.caching import cached_data
 from shared.types.trading import OrderTicketSchema
 
 SERVICES = {
@@ -74,6 +75,25 @@ async def check_health(client, name, url):
         return name, "unhealthy", elapsed
 
 
+@cached_data("dashboard_account_state", ttl_seconds=60)
+def get_cached_account_state() -> dict:
+    """Mock account state. Cached for 1 min in Redis."""
+    return {
+        "daily_loss": 0.0,
+        "consecutive_losses": 0,
+        "account_balance": 100000.0,
+    }
+
+
+@cached_data("dashboard_market_context", ttl_seconds=300)
+def get_cached_market_context() -> dict:
+    """Mock market context. Cached for 5 min in Redis."""
+    return {
+        "volatility": "MODERATE",
+        "trend": "BULLISH",
+    }
+
+
 def get_dashboard_data(db: Session, asset_pairs: list[str] | None = None):
     # Nairobi Time
     if asset_pairs is None:
@@ -89,12 +109,8 @@ def get_dashboard_data(db: Session, asset_pairs: list[str] | None = None):
         "max_consecutive_losses": 3,
         "account_balance": 100000.0,  # Standard pilot balance
     }
-    # Mocking account state for now - in production, this pulls from a dedicated AccountState table/service
-    account_state = {
-        "daily_loss": 0.0,
-        "consecutive_losses": 0,
-        "account_balance": 100000.0,
-    }
+    account_state = get_cached_account_state()
+    market_context = get_cached_market_context()
 
     lockout_engine = LockoutEngine(lockout_config)
     permission_state, permission_msg = lockout_engine.evaluate(account_state, db=db)
@@ -369,11 +385,9 @@ def get_jarvis_data(db: Session) -> dict[str, Any]:
         "max_consecutive_losses": 3,
         "account_balance": 100000.0,
     }
-    account_state = {
-        "daily_loss": 0.0,
-        "consecutive_losses": 0,
-        "account_balance": 100000.0,
-    }
+    account_state = get_cached_account_state()
+    market_context = get_cached_market_context()
+    
     lockout_engine = LockoutEngine(lockout_config)
     permission_state_enum, permission_msg = lockout_engine.evaluate(account_state, db=db)
     permission_state = permission_state_enum.value
