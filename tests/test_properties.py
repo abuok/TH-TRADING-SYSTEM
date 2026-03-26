@@ -5,10 +5,9 @@ from unittest.mock import MagicMock
 from datetime import datetime, timezone
 
 from shared.database.models import OrderTicket
-from shared.types.packets import TechnicalSetupPacket, RiskApprovalPacket, AlignmentDecision
+from shared.types.packets import TechnicalSetupPacket, RiskApprovalPacket
 from shared.logic.trading_logic import generate_order_ticket
 
-# Helper strategy to generate valid reasonable floats for prices
 price_strategy = st.floats(min_value=0.1, max_value=100000.0, allow_nan=False, allow_infinity=False)
 
 
@@ -23,13 +22,11 @@ def test_rr_calculation_always_valid(entry_price, stop_loss, take_profit):
     Property: The risk-reward (RR) calculation should never crash
     with ZeroDivisionError and should always be non-negative.
     """
-    # Simulate the logic inline to avoid DB mock complexity for pure math
     dist = abs(entry_price - stop_loss)
     rr_tp1 = abs(take_profit - entry_price) / dist if dist > 0 else 0.0
 
     assert rr_tp1 >= 0.0
     assert not isinstance(rr_tp1, complex)
-    # Using python floats, standard division doesn't throw NaN for >0
 
 
 @given(
@@ -48,29 +45,32 @@ def test_evaluation_idempotent(pair, strategy_name, setup_ts, risk_ts):
     
     setup = TechnicalSetupPacket(
         schema_version="1.0",
-        timestamp=setup_ts,
+        timestamp=datetime.fromtimestamp(setup_ts, tz=timezone.utc),
         asset_pair=pair,
         strategy_name=strategy_name,
         timeframe="H1",
-        signal_type="LONG",
         entry_price=100.0,
         stop_loss=90.0,
         take_profit=110.0,
-        confidence_score=0.8,
-        market_context_id=0,
     )
+    
     risk = RiskApprovalPacket(
-        timestamp=risk_ts,
-        setup_id=0,
-        status="PASS",
+        schema_version="1.0",
+        timestamp=datetime.fromtimestamp(risk_ts, tz=timezone.utc),
+        request_id="req_123",
+        status="ALLOW",
+        is_approved=True,
+        risk_score=50.0,
+        max_position_size=1.0,
+        rr_ratio=2.0,
+        approver="test_suite"
     )
     
     # Setup mock to return an existing ticket when queried
     existing_ticket = OrderTicket(idempotency_key="mocked_key")
     db_mock.query().filter().first.return_value = existing_ticket
     
-    # Call generate_order_ticket
-    # The first call will hit the mocked existing ticket
+    # First call
     ticket1 = generate_order_ticket(setup, risk, db_mock)
     
     # Second call
