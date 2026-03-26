@@ -1,0 +1,4 @@
+# file: C:\Users\Administrator\Desktop\TH\shared\providers\price_quote.py
+# hypothesis_version: 6.151.9
+
+[2.0, 100.0, 10000.0, 'ENV', 'JPY', 'PRICE_PROVIDER', 'PriceQuoteProvider', 'db', 'dev', 'mock', 'prod', 'real']

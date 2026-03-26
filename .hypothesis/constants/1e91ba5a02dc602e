@@ -1,0 +1,4 @@
+# file: C:\Users\Administrator\Desktop\TH\shared\providers\calendar.py
+# hypothesis_version: 6.151.9
+
+['%H:%M', '%m-%d-%Y %I:%M%p', '?', 'Africa/Nairobi', 'CALENDAR_PROVIDER', 'CalendarProvider', 'ENV', 'High', 'Low', 'US/Eastern', 'USD', 'country', 'currency', 'date', 'dev', 'end', 'event', 'forexfactory', 'impact', 'mock', 'prod', 'start', 'time', 'title']

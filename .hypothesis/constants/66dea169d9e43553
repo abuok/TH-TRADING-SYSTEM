@@ -1,0 +1,4 @@
+# file: C:\Users\Administrator\Desktop\TH\shared\database\session.py
+# hypothesis_version: 6.151.9
+
+[3600, 'DATABASE_URL', 'active_connections', 'check_same_thread', 'close', 'connect', 'idle_connections', 'max_pool_size', 'overflow_used', 'sqlite://', 'sqlite:///:memory:', 'total_pool_size']

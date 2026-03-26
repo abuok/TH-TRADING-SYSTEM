@@ -1,0 +1,4 @@
+# file: C:\Users\Administrator\Desktop\TH\conftest.py
+# hypothesis_version: 6.151.9
+
+['DATABASE_URL', 'PRICE_PROVIDER', 'SPEC_PROVIDER', 'function', 'mock', 'session', 'sqlite:///:memory:']

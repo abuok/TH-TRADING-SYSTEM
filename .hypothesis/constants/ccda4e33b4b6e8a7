@@ -1,0 +1,4 @@
+# file: C:\Users\Administrator\Desktop\TH\shared\database\models.py
+# hypothesis_version: 6.151.9
+
+[0.01, 1.0, '1.0.0', 'ACTIVE', 'MARKET', 'MT5', 'OPEN', 'OrderTicket', 'PENDING', 'Packet', 'Run', '_broker_fill_uc', 'action_items', 'alignment_logs', 'audit_logs', 'broker_trade_id', 'discipline_lockouts', 'event_type', 'execution_prep_logs', 'incident_logs', 'journal_logs', 'kill_switches', 'live_quotes', 'ops_report_logs', 'order_tickets', 'packets', 'packets.id', 'pilot_scorecards_log', 'pilot_sessions_log', 'position_snapshots', 'quote_stale_logs', 'run', 'running', 'runs', 'runs.id', 'session_briefings', 'suggestion_type', 'symbol_specs', 'ticket_id', 'ticket_trade_link', 'time_bucket', 'time_utc', 'trade_fills_log', 'tuning_proposals_log']

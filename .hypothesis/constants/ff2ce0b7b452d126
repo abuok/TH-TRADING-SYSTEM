@@ -1,0 +1,4 @@
+# file: C:\Users\Administrator\Desktop\TH\shared\providers\proxy.py
+# hypothesis_version: 6.151.9
+
+[0.0, 4.1, 103.5, 5100.0, 'DXY', 'ENV', 'PROXY_PROVIDER', 'ProxyProvider', 'SPX', 'TWELVE_DATA_API_KEY', 'US10Y', 'current_value', 'delta_pct', 'dev', 'mock', 'previous_value', 'prod', 'real', 'symbol']

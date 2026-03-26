@@ -1,0 +1,4 @@
+# file: C:\Users\Administrator\Desktop\TH\shared\providers\symbol_spec.py
+# hypothesis_version: 6.151.9
+
+[1e-05, 0.0001, 0.001, 0.01, 1.0, 100.0, 100000.0, 'ENV', 'EURUSD', 'GBPJPY', 'SPEC_PROVIDER', 'SymbolSpecProvider', 'XAUUSD', 'dev', 'mock', 'prod']
