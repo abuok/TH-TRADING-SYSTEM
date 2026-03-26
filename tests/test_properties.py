@@ -47,6 +47,7 @@ def test_evaluation_idempotent(pair, strategy_name, setup_ts, risk_ts):
     db_mock = MagicMock()
     
     setup = TechnicalSetupPacket(
+        schema_version="1.0",
         timestamp=setup_ts,
         asset_pair=pair,
         strategy_name=strategy_name,
