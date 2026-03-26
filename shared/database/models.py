@@ -78,6 +78,33 @@ class IncidentLog(Base):
     )
 
 
+class AuditLog(Base):
+    """Immutable compliance trail for all critical state transitions."""
+
+    __tablename__ = "audit_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    timestamp = Column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+        index=True,
+    )
+    # Who performed the action
+    actor = Column(String, nullable=False, index=True)
+    # What happened
+    action = Column(String, nullable=False, index=True)  # e.g. "TICKET_APPROVED"
+    resource_type = Column(String, nullable=False)       # e.g. "OrderTicket"
+    resource_id = Column(String, nullable=False, index=True)
+    # State delta
+    before_state = Column(JSON, nullable=True)
+    after_state = Column(JSON, nullable=True)
+    change_reason = Column(String, nullable=True)
+    # Request context (optional)
+    ip_address = Column(String, nullable=True)
+    user_agent = Column(String, nullable=True)
+
+
 class OrderTicket(Base):
     __tablename__ = "order_tickets"
 
