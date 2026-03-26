@@ -1,21 +1,16 @@
-"""Security module for credential and authentication management."""
+"""Security module for credential and authentication management.
 
-from .auth import (
-    JWTAuthenticator,
-    get_jwt_authenticator,
-    verify_api_token,
-    verify_service_token,
-)
-from .secrets_manager import SecretsManager, get_secrets_manager
-from .validators import SecurityValidators, escape_html_output
+Submodule imports are intentionally deferred to avoid optional heavy
+dependencies (e.g. PyJWT, cryptography) being required at module-load
+time in environments where only rate_limiting is needed.
+
+Import sub-modules directly, e.g.:
+    from shared.security.rate_limiting import limiter, setup_rate_limiting
+    from shared.security.auth import JWTAuthenticator
+"""
 
 __all__ = [
-    "SecretsManager",
-    "get_secrets_manager",
-    "JWTAuthenticator",
-    "get_jwt_authenticator",
-    "verify_api_token",
-    "verify_service_token",
-    "SecurityValidators",
-    "escape_html_output",
+    "limiter",
+    "setup_rate_limiting",
+    "LIMITS",
 ]
