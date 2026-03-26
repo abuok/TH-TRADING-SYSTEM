@@ -1,0 +1,79 @@
+/* Canonical Deep Matrix Design System */
+:root {
+    /* ── Core Backgrounds ────────────────────────────────── */
+    --bg-deep: #0B1A12;      /* Deep Matrix: Absolute base */
+    --bg-orbit: #0A1024;     /* Orbit Navy: Panel surface */
+    --bg-surface: #11131A;   /* Space Charcoal: Elevated UI */
+    
+    /* ── Typography & Borders ────────────────────────────── */
+    --text-main: #E2E8F0;    /* High contrast text */
+    --text-muted: #64748B;   /* Low contrast subtext */
+    --border-dim: rgba(255, 255, 255, 0.05);
+    --border-bright: rgba(0, 102, 255, 0.2);
+    
+    /* ── Signal Palette ─────────────────────────────────── */
+    --lime: #B4FF00;         /* Acid Lime: Go / Approved / Profit */
+    --blue: #0066FF;         /* Electric Blue: Routine / Structure */
+    --red: #FF3B3B;          /* Mars Red: Locked / Rejected / Error */
+    
+    /* ── Semantic Mappings ──────────────────────────────── */
+    --color-buy: var(--lime);
+    --color-sell: var(--red);
+    --color-info: var(--blue);
+    --color-accent: var(--blue);
+
+    /* ── Effects ────────────────────────────────────────── */
+    --glass-bg: rgba(10, 16, 36, 0.75);
+    --glass-blur: blur(12px);
+    --panel-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    
+    /* ── Fonts ─────────────────────────────────────────── */
+    --font-heading: 'Outfit', 'Inter', sans-serif;
+    --font-data: 'JetBrains Mono', monospace;
+}
+
+/* Base resets & HUD system */
+.hud-panel {
+    background: var(--bg-orbit);
+    border: 1px solid var(--border-dim);
+    border-radius: 4px;
+    box-shadow: var(--panel-shadow);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.hud-panel:hover {
+    border-color: var(--border-bright);
+}
+
+.hud-panel-title {
+    font-family: var(--font-heading);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--blue);
+    font-weight: 700;
+}
+
+/* Animations */
+@keyframes scanline {
+  0%   { top: -10%; }
+  100% { top: 110%; }
+}
+
+@keyframes pulse-lime {
+  0%, 100% { box-shadow: 0 0 5px var(--lime); }
+  50%       { box-shadow: 0 0 15px var(--lime); }
+}
+
+.scanline-overlay::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(180, 255, 0, 0.1), transparent);
+    animation: scanline 6s linear infinite;
+    pointer-events: none;
+    z-index: 100;
+}
