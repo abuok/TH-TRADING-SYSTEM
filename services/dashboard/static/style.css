@@ -1734,3 +1734,33 @@ footer {
     color: #8b949e;
     line-height: 1.6;
 }
+
+/* --- Inline Style Utility Migrations --- */
+.text-cyan { color: var(--accent-cyan); }
+.text-green { color: var(--accent-green); }
+.text-pink { color: var(--accent-pink); }
+.text-primary { color: var(--text-primary); }
+.text-09 { font-size: 0.9rem; }
+
+.bg-primary { background: var(--bg-primary); }
+.border-dim { border: 1px solid var(--border-dim); }
+.border-pink { border: 1px solid var(--accent-pink); }
+.border-cyan { border: 1px solid var(--accent-cyan); }
+.border-t-dim { border-top: 1px solid var(--border-dim); }
+
+.badge-outline-pink { background: transparent; border: 1px solid var(--accent-pink); color: var(--accent-pink); }
+.badge-outline-cyan { background: transparent; border: 1px solid var(--accent-cyan); color: var(--accent-cyan); }
+
+.rounded-sm { border-radius: 4px; }
+.p-4 { padding: 1rem; }
+.p-6 { padding: 1.5rem; }
+.mb-6 { margin-bottom: 1.5rem; }
+.mt-1 { margin-top: 4px; }
+
+.grid-cols-2 { grid-template-columns: 1fr 1fr; }
+.grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+.pl-0 { padding-left: 0; }
+.list-none { list-style-type: none; }
+.inline-block { display: inline-block; }
+.tracking-wide { letter-spacing: 2px; }

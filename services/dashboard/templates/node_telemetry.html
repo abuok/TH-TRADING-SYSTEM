@@ -9,16 +9,16 @@
             <div class="hud-panel-title">TELEMETRY // INFRASTRUCTURE NODE STATUS</div>
         </header>
         
-        <div class="p-4 grid gap-4 grid-autofit-180" style="padding: 1.5rem;">
+        <div class="p-6 grid gap-4 grid-autofit-180">
             {% for node, status in health.items() %}
-            <div style="background: var(--bg-primary); padding: 1rem; border: 1px solid var(--border-dim); border-radius: 4px;">
+            <div class="bg-primary p-4 border-dim rounded-sm">
                 <div class="text-xxs text-muted mb-2 text-mono">{{ node | upper }}</div>
-                <div class="text-lg line-height-1 font-900" style="color: {{ 'var(--accent-green)' if status == 'UP' else 'var(--accent-pink)' }};">
+                <div class="text-lg line-height-1 font-900 {{ 'text-green' if status == 'UP' else 'text-pink' }}">
                     {{ status }}
                 </div>
                 {% set rt = response_times.get(node) %}
                 <div class="text-xs text-mono text-muted mt-2">
-                    LATENCY: {% if rt %}<span style="color: var(--accent-cyan);">{{ "%.0f" | format(rt * 1000) }}ms</span>{% else %}N/A{% endif %}
+                    LATENCY: {% if rt %}<span class="text-cyan">{{ "%.0f" | format(rt * 1000) }}ms</span>{% else %}N/A{% endif %}
                 </div>
             </div>
             {% endfor %}
@@ -31,33 +31,33 @@
             <div class="hud-panel-title">DAILY OPS // SHIFT HANDOVER</div>
         </header>
 
-        <div class="hud-scroll-body h-350" style="padding: 1.5rem;">
+        <div class="hud-scroll-body h-350 p-6">
             {% if daily_report %}
-            <div style="margin-bottom: 1.5rem;">
+            <div class="mb-6">
                 <span class="text-xs text-muted text-mono block mb-1">HANDOVER TIMESTAMP</span>
-                <span class="text-sm font-900" style="color: var(--accent-cyan);">{{ daily_report.timestamp }}</span>
+                <span class="text-sm font-900 text-cyan">{{ daily_report.timestamp }}</span>
             </div>
 
-            <div style="margin-bottom: 1.5rem;">
+            <div class="mb-6">
                 <span class="text-xs text-muted text-mono block mb-1">HEALTH STATE</span>
-                <span class="text-sm font-900" style="color: {{ 'var(--accent-green)' if daily_report.health_status == 'HEALTHY' else 'var(--accent-pink)' }};">{{ daily_report.health_status }}</span>
+                <span class="text-sm font-900 {{ 'text-green' if daily_report.health_status == 'HEALTHY' else 'text-pink' }}">{{ daily_report.health_status }}</span>
             </div>
 
             <div>
                 <span class="text-xs text-muted text-mono block mb-2">SYSTEM ALERTS</span>
                 {% if daily_report.alerts %}
-                    <ul style="list-style-type: none; padding-left: 0;">
+                    <div class="list-none pl-0">
                     {% for alert in daily_report.alerts %}
-                        <li class="text-xs text-mono" style="color: var(--accent-pink); margin-bottom: 0.5rem;">> {{ alert }}</li>
+                        <div class="text-xs text-mono text-pink mb-2">> {{ alert }}</div>
                     {% endfor %}
-                    </ul>
+                    </div>
                 {% else %}
-                    <div class="text-xs text-mono" style="color: var(--text-muted);">ZERO_ALERTS_DETECTED</div>
+                    <div class="text-xs text-mono text-muted border-none">ZERO_ALERTS_DETECTED</div>
                 {% endif %}
             </div>
             {% else %}
             <div class="hud-empty-state">
-                <span style="color: var(--accent-cyan); font-family: monospace;">AWAITING_SHIFT_DATA</span>
+                <span class="text-cyan text-mono">AWAITING_SHIFT_DATA</span>
             </div>
             {% endif %}
         </div>
@@ -84,13 +84,13 @@
                     <tr>
                         <td class="text-xxs text-mono text-muted">{{ inc.created_at.strftime('%m-%d %H:%M') }}</td>
                         <td>
-                            <span class="badge badge-sm font-900 text-mini" style="background: transparent; border: 1px solid {{ 'var(--accent-pink)' if inc.severity == 'ERROR' else 'var(--accent-cyan)' }}; color: {{ 'var(--accent-pink)' if inc.severity == 'ERROR' else 'var(--accent-cyan)' }};">
+                            <span class="badge badge-sm font-900 text-mini {{ 'badge-outline-pink' if inc.severity == 'ERROR' else 'badge-outline-cyan' }}">
                                 {{ inc.severity }}
                             </span>
                         </td>
                         <td class="text-xs">
-                            <span class="text-bold" style="color: var(--text-primary);">{{ inc.component }}</span><br>
-                            <span class="text-mono text-muted" style="margin-top: 4px; display: inline-block;">{{ inc.message }}</span>
+                            <span class="text-bold text-primary">{{ inc.component }}</span><br>
+                            <span class="text-mono text-muted mt-1 inline-block">{{ inc.message }}</span>
                         </td>
                     </tr>
                     {% endfor %}
@@ -98,7 +98,7 @@
             </table>
             {% else %}
             <div class="hud-empty-state">
-                <span style="color: var(--accent-green); font-family: monospace;">ZERO_FAULTS_DETECTED</span>
+                <span class="text-green text-mono">ZERO_FAULTS_DETECTED</span>
             </div>
             {% endif %}
         </div>

@@ -522,3 +522,18 @@
 .j-thought-scroll::-webkit-scrollbar { width: 4px; }
 .j-thought-scroll::-webkit-scrollbar-track { background: transparent; }
 .j-thought-scroll::-webkit-scrollbar-thumb { background: var(--j-border); border-radius: 2px; }
+
+/* ── Utility Classes (Migrated from Inline) ─────────────── */
+.flex-col { display: flex; flex-direction: column; }
+.gap-3 { gap: 0.75rem; }
+.flex-1 { flex: 1; }
+.w-full { width: 100%; }
+.h-full { height: 100%; }
+.h-fit { height: fit-content; }
+.hidden { display: none; }
+
+.j-setup-count-text { font-family: var(--j-mono); font-size: 0.62rem; color: var(--j-muted); align-self: center; }
+.j-stream-count-text { font-family: var(--j-mono); font-size: 0.58rem; color: var(--j-dim); }
+.j-badge-text { font-family: var(--j-mono); font-size: 0.6rem; letter-spacing: 1px; color: var(--j-muted); }
+.j-align-status-text { font-family: var(--j-mono); font-size: 0.6rem; }
+.j-legacy-wrap { text-align: center; margin: 1.5rem 0 0.5rem; }

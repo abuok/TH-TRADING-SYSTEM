@@ -42,7 +42,7 @@
             </table>
             {% else %}
             <div class="hud-empty-state">
-                <span style="color: var(--accent-cyan); font-family: monospace;">ZERO_ACTIVE_EXPOSURE_DETECTED</span>
+                <span class="text-cyan text-mono">ZERO_ACTIVE_EXPOSURE_DETECTED</span>
             </div>
             {% endif %}
         </div>
@@ -66,9 +66,9 @@
                 <tbody>
                     {% for p in preps %}
                     <tr>
-                        <td class="text-xs text-mono" style="color: var(--accent-cyan);">{{ p.prep_id }}</td>
+                        <td class="text-xs text-mono text-cyan">{{ p.prep_id }}</td>
                         <td class="text-center">
-                            <span style="color: {{ 'var(--accent-green)' if p.status == 'ACTIVE' else 'var(--text-muted)' }};">
+                            <span class="{{ 'text-green' if p.status == 'ACTIVE' else 'text-muted' }}">
                                 {{ p.status }}
                             </span>
                         </td>
@@ -81,7 +81,7 @@
             </table>
             {% else %}
             <div class="hud-empty-state">
-                <span style="color: var(--accent-cyan); font-family: monospace;">NO_ACTIVE_PREPARATIONS</span>
+                <span class="text-cyan text-mono">NO_ACTIVE_PREPARATIONS</span>
             </div>
             {% endif %}
         </div>
@@ -106,7 +106,7 @@
                     {% for t in tickets %}
                     <tr>
                         <td class="text-xs text-mono text-muted">{{ t.ticket_id[:8] }}...</td>
-                        <td class="text-xs text-bold" style="color: var(--accent-green);">{{ t.pair }}</td>
+                        <td class="text-xs text-bold text-green">{{ t.pair }}</td>
                         <td class="text-right text-mono">
                             {{ "%.1f"|format(t.guardrails_score) }}
                         </td>
@@ -116,7 +116,7 @@
             </table>
             {% else %}
             <div class="hud-empty-state">
-                <span style="color: var(--accent-cyan); font-family: monospace;">ZERO_TICKETS_FOUND // SCANNING NETWORK</span>
+                <span class="text-cyan text-mono">ZERO_TICKETS_FOUND // SCANNING NETWORK</span>
             </div>
             {% endif %}
         </div>
