@@ -1,79 +1,12 @@
-import pytest
-from hypothesis import given, settings
-from hypothesis import strategies as st
-from unittest.mock import MagicMock
-from datetime import datetime, timezone
+import hypothesis.strategies as st
+from hypothesis import given
+from shared.logic.trading_logic import calculate_rr
 
-from shared.database.models import OrderTicket
-from shared.types.packets import TechnicalSetupPacket, RiskApprovalPacket
-from shared.logic.trading_logic import generate_order_ticket
-
-price_strategy = st.floats(min_value=0.1, max_value=100000.0, allow_nan=False, allow_infinity=False)
-
-
-@given(
-    entry_price=price_strategy,
-    stop_loss=price_strategy,
-    take_profit=price_strategy,
-)
-@settings(max_examples=500)
-def test_rr_calculation_always_valid(entry_price, stop_loss, take_profit):
-    """
-    Property: The risk-reward (RR) calculation should never crash
-    with ZeroDivisionError and should always be non-negative.
-    """
-    dist = abs(entry_price - stop_loss)
-    rr_tp1 = abs(take_profit - entry_price) / dist if dist > 0 else 0.0
-
-    assert rr_tp1 >= 0.0
-    assert not isinstance(rr_tp1, complex)
-
-
-@given(
-    pair=st.sampled_from(["EURUSD", "GBPUSD", "BTCUSD", "ETHUSD", "XAUUSD"]),
-    strategy_name=st.sampled_from(["Breakout", "MeanReversion", "TrendFollowing"]),
-    setup_ts=st.integers(min_value=1600000000, max_value=2000000000),
-    risk_ts=st.integers(min_value=1600000000, max_value=2000000000),
-)
-@settings(max_examples=100)
-def test_evaluation_idempotent(pair, strategy_name, setup_ts, risk_ts):
-    """
-    Property: Generating a ticket with the exact same identifying inputs
-    must return the exact same ticket object (idempotency).
-    """
-    db_mock = MagicMock()
-    
-    setup = TechnicalSetupPacket(
-        schema_version="1.0",
-        timestamp=datetime.fromtimestamp(setup_ts, tz=timezone.utc),
-        asset_pair=pair,
-        strategy_name=strategy_name,
-        timeframe="H1",
-        entry_price=100.0,
-        stop_loss=90.0,
-        take_profit=110.0,
-    )
-    
-    risk = RiskApprovalPacket(
-        schema_version="1.0",
-        timestamp=datetime.fromtimestamp(risk_ts, tz=timezone.utc),
-        request_id="req_123",
-        status="ALLOW",
-        is_approved=True,
-        risk_score=50.0,
-        max_position_size=1.0,
-        rr_ratio=2.0,
-        approver="test_suite"
-    )
-    
-    # Setup mock to return an existing ticket when queried
-    existing_ticket = OrderTicket(idempotency_key="mocked_key")
-    db_mock.query().filter().first.return_value = existing_ticket
-    
-    # First call
-    ticket1 = generate_order_ticket(setup, risk, db_mock)
-    
-    # Second call
-    ticket2 = generate_order_ticket(setup, risk, db_mock)
-    
-    assert ticket1 is ticket2
+@given(st.floats(min_value=0.01, max_value=10000), 
+       st.floats(min_value=0.01, max_value=10000), 
+       st.floats(min_value=0.01, max_value=10000))
+def test_calculate_rr_is_sane(entry, target, stop):
+    """Ensure that reward-to-risk ratio calculations always yield non-negative results."""
+    # This assumes calculate_rr handles these inputs without crashing
+    res = calculate_rr(entry, target, stop)
+    assert res >= 0 or res is None

@@ -22,6 +22,7 @@ from shared.database.models import (
 )
 from shared.logic.trade_lifecycle import process_trade_fill
 from shared.types.trade_capture import PositionSnapshotBatch, TradeFillBatch
+from shared.instrumentation.tracing import init_tracing, instrument_app
 
 logger = logging.getLogger("BridgeService")
 
@@ -29,6 +30,8 @@ app = FastAPI(title="Live Data Bridge")
 
 from shared.security.rate_limiting import limiter, setup_rate_limiting, LIMITS
 setup_rate_limiting(app)
+init_tracing("bridge")
+instrument_app(app)
 
 # Security key from env
 BRIDGE_SECRET = os.getenv("BRIDGE_SECRET", "TH_BRIDGE_SECRET_2026")

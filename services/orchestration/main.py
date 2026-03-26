@@ -34,6 +34,9 @@ from shared.task_management import get_task_supervisor
 from shared.types.enums import TicketState
 from shared.types.packets import RiskApprovalPacket, TechnicalSetupPacket
 from shared.types.trading import OrderTicketSchema
+from shared.instrumentation.tracing import init_tracing, instrument_app, get_tracer
+
+tracer = get_tracer("orchestration")
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("OrchestrationAPI")
@@ -72,6 +75,8 @@ def get_db():
 
 @app.on_event("startup")
 async def startup_event():
+    init_tracing("orchestration")
+    instrument_app(app)
     if os.getenv("ENV") == "prod":
         setup_production_logging()
     logger.info("Orchestration Service starting up...")
@@ -102,6 +107,11 @@ async def startup_event():
         timeout_seconds=120,
         max_retries=3,
     )
+    await _task_supervisor.create_task(
+        "db_pool_metrics_sync",
+        db_pool_sync_task,
+        timeout_seconds=30,
+    )
     logger.info("Background task supervisors started")
 
 
@@ -109,6 +119,7 @@ async def startup_event():
 async def shutdown_event():
     logger.info("Orchestration Service shutting down...")
     await _task_supervisor.shutdown_all(timeout_seconds=10)
+    db_session.dispose_engine()
     logger.info("Shutdown complete")
 
 
@@ -137,7 +148,8 @@ async def fundamentals_scheduler(interval_minutes: int = 30):
 
 
 def _run_fundamentals_generation(db: Session, now: datetime | None = None):
-    now = now or get_nairobi_time()
+    with tracer.start_as_current_span("fundamentals_generation") as span:
+        now = now or get_nairobi_time()
 
     # 1. Fetch latest market context to get proxies and events
     ctx_db = (
@@ -192,8 +204,11 @@ async def briefing_scheduler(interval_minutes: int = 30):
             is_delta = session_key in generated_sessions
             try:
                 db = db_session.SessionLocal()
-                pack = assemble_briefing(db, now_nairobi=now, is_delta=is_delta)
-                persist_briefing(pack, db)
+                with tracer.start_as_current_span("briefing_generation") as span:
+                    span.set_attribute("session", label)
+                    span.set_attribute("is_delta", is_delta)
+                    pack = assemble_briefing(db, now_nairobi=now, is_delta=is_delta)
+                    persist_briefing(pack, db)
                 generated_sessions.add(session_key)
                 db.close()
 
@@ -417,6 +432,19 @@ async def ops_scheduler():
             logger.error(f"Error in ops_scheduler: {e}")
 
         await asyncio.sleep(60)  # check every minute
+
+
+async def db_pool_sync_task():
+    """Periodically push DB pool health to metrics."""
+    while True:
+        try:
+            stats = db_session.get_db_pool_health()
+            metrics_registry.set_gauge("db_pool_size", stats["max_pool_size"])
+            metrics_registry.set_gauge("db_pool_checked_out", stats["active_connections"])
+            metrics_registry.set_gauge("db_pool_overflow", stats["overflow_used"])
+        except Exception as e:
+            logger.error(f"Error syncing DB metrics: {e}")
+        await asyncio.sleep(15)
 
 
 async def management_loop():

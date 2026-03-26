@@ -56,6 +56,8 @@ from shared.logic.sessions import get_nairobi_time
 from services.dashboard.websocket import manager, websocket_event_listener
 from fastapi import WebSocket, WebSocketDisconnect
 from shared.instrumentation.tracing import init_tracing, instrument_app
+from shared.logic.metrics import metrics_registry
+from shared.logic.audit import audit_action
 
 security = HTTPBasic()
 
@@ -79,6 +81,13 @@ async def startup_event():
     logger.info("Dashboard starting up...")
     asyncio.create_task(websocket_event_listener())
     logger.info("WebSocket event listener started in background.")
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    logger.info("Dashboard Service shutting down...")
+    db_session.dispose_engine()
+    logger.info("Shutdown complete")
 
 
 def render_template(template_name: str, context: dict):
@@ -740,7 +749,6 @@ async def get_queue_stats(
 @app.post("/api/tickets/{ticket_id}/approve")
 @limiter.limit(LIMITS["write"])
 async def api_approve_ticket(ticket_id: str, request: Request, db: Session = Depends(db_session.get_db)):
-    from shared.logic.audit import audit_action
     try:
         before_status = (
             db.query(OrderTicket).filter(OrderTicket.ticket_id == ticket_id).first()
@@ -828,7 +836,6 @@ async def override_execution_prep(
 async def api_skip_ticket(
     ticket_id: str, payload: SkipPayload, request: Request, db: Session = Depends(db_session.get_db)
 ):
-    from shared.logic.audit import audit_action
     try:
         before_status = (
             db.query(OrderTicket).filter(OrderTicket.ticket_id == ticket_id).first()
@@ -854,7 +861,6 @@ async def api_skip_ticket(
 async def api_close_ticket(
     ticket_id: str, payload: ClosePayload, request: Request, db: Session = Depends(db_session.get_db)
 ):
-    from shared.logic.audit import audit_action
     try:
         before_status = (
             db.query(OrderTicket).filter(OrderTicket.ticket_id == ticket_id).first()

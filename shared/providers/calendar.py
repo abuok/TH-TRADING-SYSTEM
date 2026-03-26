@@ -24,6 +24,7 @@ class CalendarProvider(ABC):
         Each event: {"event": str, "time": ISO str, "currency": str, "impact": "High"|"Medium"}
         Must never raise — return [] and log on total failure.
         """
+        return []  # Base implementation for type safety
 
     def get_no_trade_windows(self, events: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """

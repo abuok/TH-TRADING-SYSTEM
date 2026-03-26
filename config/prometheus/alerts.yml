@@ -1,155 +1,46 @@
 groups:
-  - name: th_trading_system.business
-    interval: 30s
+  - name: tradehall_alerts
     rules:
-
-      # ─── Ticket Flow ───────────────────────────────────────────────────────
-
-      - alert: HighJITRejectionRate
-        expr: |
-          rate(tickets_rejected_jit_total[10m]) /
-          (rate(tickets_generated_total[10m]) + 0.001) > 0.30
-        for: 5m
-        labels:
-          severity: warning
-          team: trading-ops
-        annotations:
-          summary: "JIT rejection rate > 30% over 10 minutes"
-          description: >
-            More than 30% of generated tickets are being rejected by the JIT
-            validator. This may indicate stale market data, excessive lockouts,
-            or an alignment engine misconfiguration.
-
-      - alert: NoTicketsGeneratedInSession
-        expr: |
-          increase(tickets_generated_total[4h]) == 0
-          and hour() >= 7 and hour() <= 19
-        for: 30m
-        labels:
-          severity: warning
-          team: trading-ops
-        annotations:
-          summary: "No tickets generated in the last 4 hours during trading hours"
-          description: >
-            Zero order tickets have been generated in the past 4 hours during
-            expected trading hours (07:00–19:00 Nairobi). Check the orchestration
-            service logs and market data feeds.
-
-      - alert: OpenTicketsBacklog
-        expr: open_tickets_count > 10
-        for: 5m
-        labels:
-          severity: warning
-          team: trading-ops
-        annotations:
-          summary: "Ticket backlog — {{ $value }} open tickets"
-          description: >
-            More than 10 tickets are in IN_REVIEW status simultaneously.
-            Operator action may be required.
-
-      # ─── Incidents ─────────────────────────────────────────────────────────
-
-      - alert: CriticalIncidentsSpike
-        expr: rate(incidents_total{label="CRITICAL"}[5m]) > 0.1
-        for: 2m
-        labels:
-          severity: critical
-          team: trading-ops
-        annotations:
-          summary: "CRITICAL incidents fired at elevated rate"
-          description: >
-            CRITICAL-severity incidents are being logged faster than 0.1 per
-            second (≥ 6/minute). Investigate the orchestration service
-            immediately.
-
-      - alert: ErrorIncidentsElevated
-        expr: rate(incidents_total{label="ERROR"}[10m]) > 0.05
-        for: 5m
-        labels:
-          severity: warning
-          team: trading-ops
-        annotations:
-          summary: "Error incidents elevated over 10 minutes"
-          description: >
-            ERROR-severity incidents have exceeded 0.05/second (3/minute).
-
-      # ─── Rate limiting ─────────────────────────────────────────────────────
-
-      - alert: RateLimitHitsHigh
-        expr: rate(rate_limit_hits_total[5m]) > 1
-        for: 2m
-        labels:
-          severity: warning
-          team: platform
-        annotations:
-          summary: "Rate limiter rejecting > 1 req/sec"
-          description: >
-            The slowapi rate limiter is returning 429 Too Many Requests at more
-            than 1 per second. This may indicate a client loop, a scraper, or
-            an operational automation misconfiguration.
-
-  - name: th_trading_system.performance
-    interval: 30s
-    rules:
-
-      # ─── Latency ───────────────────────────────────────────────────────────
-
-      - alert: DashboardSlowP95
-        expr: |
-          histogram_quantile(0.95,
-            rate(http_request_duration_seconds_bucket{endpoint=~"/dashboard/.*"}[5m])
-          ) > 2.5
-        for: 5m
-        labels:
-          severity: warning
-          team: platform
-        annotations:
-          summary: "Dashboard P95 latency > 2.5s"
-          description: >
-            95th-percentile dashboard response time has exceeded 2.5 seconds
-            for the last 5 minutes.
-
-      - alert: DBQuerySlowP99
-        expr: |
-          histogram_quantile(0.99,
-            rate(db_query_duration_seconds_bucket[5m])
-          ) > 1.0
-        for: 5m
-        labels:
-          severity: warning
-          team: platform
-        annotations:
-          summary: "DB P99 query latency > 1s"
-          description: >
-            99th-percentile database query latency has exceeded 1 second.
-            Check for missing indexes or lock contention.
-
-      # ─── Database pool ─────────────────────────────────────────────────────
-
-      - alert: DBPoolExhaustion
-        expr: db_pool_available < 2
+      - alert: ServiceDown
+        expr: up == 0
         for: 1m
         labels:
           severity: critical
-          team: platform
         annotations:
-          summary: "Database connection pool nearly exhausted"
-          description: >
-            Fewer than 2 database connections are available in the pool.
-            New requests will block. Check for connection leaks.
+          summary: "Service {{ $labels.instance }} is down"
+          description: "The service has been unreachable for more than 1 minute."
 
-  - name: th_trading_system.audit
-    interval: 60s
-    rules:
-
-      - alert: AuditLogFailures
-        expr: rate(audit_actions_total[5m]) == 0 and rate(tickets_approved_total[5m]) > 0
+      - alert: DatabaseConnectionPoolHigh
+        expr: db_pool_checked_out / db_pool_size > 0.8
         for: 5m
         labels:
           severity: warning
-          team: compliance
         annotations:
-          summary: "Tickets being approved but no audit trail entries recorded"
-          description: >
-            Ticket approvals are occurring but no corresponding audit log
-            entries are being written. This is a compliance risk.
+          summary: "High DB pool utilization on {{ $labels.instance }}"
+          description: "Over 80% of the database connection pool is in use."
+
+      - alert: ExcessiveRateLimiting
+        expr: rate_limit_hits_total > 50
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High rate limit hit rate on {{ $labels.instance }}"
+          description: "More than 50 requests per minute are being rejected."
+
+      - alert: HighApprovalLatency
+        expr: histogram_quantile(0.95, sum(rate(ticket_approval_duration_seconds_bucket[5m])) by (le)) > 300
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High ticket approval latency"
+          description: "95% of tickets are taking longer than 5 minutes to be approved."
+
+      - alert: DailyLossLimitApproaching
+        expr: daily_loss_usd > 500
+        labels:
+          severity: warning
+        annotations:
+          summary: "Daily loss threshold approaching"
+          description: "Current realized daily loss has exceeded $500."

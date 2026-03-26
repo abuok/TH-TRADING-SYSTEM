@@ -50,14 +50,19 @@ class MetricsRegistry:
     # Default histogram bucket boundaries (seconds / generic)
     DEFAULT_BUCKETS = (0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0)
 
+    _counters: dict[str, dict[str, float] | float]
+    _gauges: dict[str, float]
+    _histograms: dict[str, dict[str, Any]]
+    _meta: dict[str, dict[str, str]]
+
     def __new__(cls) -> "MetricsRegistry":
         with cls._lock:
             if cls._instance is None:
                 inst = super().__new__(cls)
-                inst._counters: dict[str, dict[str, float] | float] = {}
-                inst._gauges: dict[str, float] = {}
-                inst._histograms: dict[str, dict[str, Any]] = {}
-                inst._meta: dict[str, dict[str, str]] = {}      # {name: {help, type}}
+                inst._counters = {}
+                inst._gauges = {}
+                inst._histograms = {}
+                inst._meta = {}      # {name: {help, type}}
                 cls._instance = inst
                 inst._init_defaults()
         return cls._instance  # type: ignore[return-value]
@@ -85,8 +90,9 @@ class MetricsRegistry:
         # System gauges
         self._define("open_tickets_count",         "gauge",   "Current tickets in IN_REVIEW status")
         self._define("active_positions_count",     "gauge",   "Broker positions currently open")
-        self._define("db_pool_available",          "gauge",   "Database connection pool available connections")
-        self._define("db_pool_checked_out",        "gauge",   "Database connection pool checked-out connections")
+        self._define("db_pool_size",               "gauge",   "Database connection pool total size")
+        self._define("db_pool_checked_out",        "gauge",   "Database connection pool active connections")
+        self._define("db_pool_overflow",           "gauge",   "Database connection pool overflow connections in use")
 
         # Performance histograms
         self._define("http_request_duration_seconds",  "histogram", "HTTP endpoint latency")

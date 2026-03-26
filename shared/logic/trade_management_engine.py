@@ -290,14 +290,18 @@ def generate_suggestions_for_position(
     return suggestions
 
 
-def run_management_cycle(db: Session):
+def run_management_cycle(db: Session) -> None:
     """Run the full management cycle for all open positions — optimized for bulk loading."""
-    from sqlalchemy.orm import joinedload
-    now_eat = get_nairobi_time()
-    quote_provider = get_price_quote_provider()
+    from shared.instrumentation.tracing import get_tracer
+    tracer = get_tracer("trade_management")
+    
+    with tracer.start_as_current_span("run_management_cycle") as span:
+        from sqlalchemy.orm import joinedload
+        now_eat = get_nairobi_time()
+        quote_provider = get_price_quote_provider()
 
-    # 1. Fetch active kill switches once per cycle
-    active_kill_switches = (
+        # 1. Fetch active kill switches once per cycle
+        active_kill_switches = (
         db.query(KillSwitch)
         .filter(KillSwitch.is_active == 1)
         .all()
