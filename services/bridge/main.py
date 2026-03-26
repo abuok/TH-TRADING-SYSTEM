@@ -7,7 +7,7 @@ import logging
 import os
 from datetime import datetime, timezone
 
-from fastapi import Depends, FastAPI, Header, HTTPException
+from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -26,6 +26,9 @@ from shared.types.trade_capture import PositionSnapshotBatch, TradeFillBatch
 logger = logging.getLogger("BridgeService")
 
 app = FastAPI(title="Live Data Bridge")
+
+from shared.security.rate_limiting import limiter, setup_rate_limiting, LIMITS
+setup_rate_limiting(app)
 
 # Security key from env
 BRIDGE_SECRET = os.getenv("BRIDGE_SECRET", "TH_BRIDGE_SECRET_2026")
@@ -54,8 +57,10 @@ def verify_secret(x_bridge_secret: str = Header(...)):
 
 
 @app.post("/bridge/quote")
+@limiter.limit(LIMITS["internal"])
 async def post_quote(
     payload: QuotePayload,
+    request: Request,
     db: Session = Depends(db_session.get_db),
     authenticated: bool = Depends(verify_secret),
 ):
@@ -109,8 +114,10 @@ async def post_quote(
 
 
 @app.post("/bridge/spec")
+@limiter.limit(LIMITS["internal"])
 async def post_spec(
     payload: SpecPayload,
+    request: Request,
     db: Session = Depends(db_session.get_db),
     authenticated: bool = Depends(verify_secret),
 ):
@@ -150,8 +157,10 @@ async def post_spec(
 
 
 @app.post("/bridge/trades/fill")
+@limiter.limit(LIMITS["internal"])
 async def post_trades_fill(
     batch: TradeFillBatch,
+    request: Request,
     db: Session = Depends(db_session.get_db),
     authenticated: bool = Depends(verify_secret),
 ):
@@ -166,8 +175,10 @@ async def post_trades_fill(
 
 
 @app.post("/bridge/trades/positions")
+@limiter.limit(LIMITS["internal"])
 async def post_trades_positions(
     batch: PositionSnapshotBatch,
+    request: Request,
     db: Session = Depends(db_session.get_db),
     authenticated: bool = Depends(verify_secret),
 ):

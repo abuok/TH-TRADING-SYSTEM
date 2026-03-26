@@ -10,7 +10,7 @@ import os
 from datetime import datetime
 from typing import Any
 
-from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
@@ -39,6 +39,9 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("OrchestrationAPI")
 
 app = FastAPI(title="Orchestration Service API")
+
+from shared.security.rate_limiting import limiter, setup_rate_limiting, LIMITS
+setup_rate_limiting(app)
 notifier = NotificationService([ConsoleNotificationAdapter()])
 event_bus = EventBus()
 _alignment_engine = AlignmentEngine()
@@ -273,8 +276,9 @@ def metrics():
 
 
 @app.post("/briefings/generate")
+@limiter.limit(LIMITS["internal"])
 async def generate_briefing_now(
-    is_delta: bool = False, db: Session = Depends(get_db)
+    is_delta: bool = False, request: Request = None, db: Session = Depends(get_db)
 ) -> dict[str, Any]:
     """Manually trigger a briefing generation."""
     _run_fundamentals_generation(db)  # Ensure valid fundamentals before briefing
@@ -290,7 +294,8 @@ from shared.types.incident import IncidentSchema
 
 
 @app.post("/incidents/log")
-async def log_incident(incident_data: IncidentSchema, db: Session = Depends(get_db)):
+@limiter.limit(LIMITS["internal"])
+async def log_incident(incident_data: IncidentSchema, request: Request, db: Session = Depends(get_db)):
     """Logs a new incident and triggers alerts."""
     incident = IncidentLog(**incident_data.model_dump())
     db.add(incident)
@@ -444,7 +449,8 @@ async def management_loop():
 
 
 @app.post("/tickets/generate", response_model=OrderTicketSchema)
-async def generate_ticket(pair: str, db: Session = Depends(get_db)):
+@limiter.limit(LIMITS["evaluation"])
+async def generate_ticket(pair: str, request: Request, db: Session = Depends(get_db)):
     """Finds the latest setup + risk packet for a pair and creates an OrderTicket."""
     setup_db = (
         db.query(Packet)
@@ -607,8 +613,9 @@ async def get_alignment(
 
 
 @app.post("/alignment/evaluate")
+@limiter.limit(LIMITS["evaluation"])
 async def evaluate_alignment(
-    pair: str, db: Session = Depends(get_db)
+    pair: str, request: Request, db: Session = Depends(get_db)
 ) -> dict[str, Any]:
     """Evaluate alignment for the latest setup of a pair without generating a ticket."""
     setup_db = (
@@ -747,7 +754,8 @@ async def update_ticket_status(
 
 
 @app.post("/tickets/{ticket_id}/confirm", response_model=OrderTicketSchema)
-async def confirm_ticket(ticket_id: str, db: Session = Depends(get_db)):
+@limiter.limit(LIMITS["write"])
+async def confirm_ticket(ticket_id: str, request: Request, db: Session = Depends(get_db)):
     """
     Operator confirms a PENDING ticket.
     Performs synchronous JIT validation before emission to bridge.

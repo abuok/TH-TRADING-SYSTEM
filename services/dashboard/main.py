@@ -65,6 +65,9 @@ if os.path.exists("services/dashboard/templates"):
 
 logger = logging.getLogger("Dashboard")
 
+from shared.security.rate_limiting import limiter, setup_rate_limiting, LIMITS
+setup_rate_limiting(app)
+
 
 def render_template(template_name: str, context: dict):
     if templates is not None:
@@ -140,6 +143,7 @@ def verify_auth(request: Request):
 
 
 @app.get("/dashboard", response_class=HTMLResponse)
+@limiter.limit(LIMITS["dashboard"])
 async def dashboard_overview(
     request: Request,
     auth: bool = Depends(verify_auth),
@@ -163,6 +167,7 @@ async def dashboard_overview(
 
 
 @app.get("/dashboard/incidents", response_class=HTMLResponse)
+@limiter.limit(LIMITS["dashboard"])
 async def dashboard_incidents(
     request: Request,
     severity: str | None = None,
@@ -180,6 +185,7 @@ async def dashboard_incidents(
 
 
 @app.get("/dashboard/setups", response_class=HTMLResponse)
+@limiter.limit(LIMITS["dashboard"])
 async def dashboard_setups(request: Request, db: Session = Depends(db_session.get_db)):
     from datetime import datetime, timezone
 
@@ -203,6 +209,7 @@ async def dashboard_setups(request: Request, db: Session = Depends(db_session.ge
 
 
 @app.get("/dashboard/risk", response_class=HTMLResponse)
+@limiter.limit(LIMITS["dashboard"])
 async def dashboard_risk(request: Request, db: Session = Depends(db_session.get_db)):
     packets = (
         db.query(Packet)
@@ -217,6 +224,7 @@ async def dashboard_risk(request: Request, db: Session = Depends(db_session.get_
 
 
 @app.get("/dashboard/reports", response_class=HTMLResponse)
+@limiter.limit(LIMITS["dashboard"])
 async def dashboard_reports(request: Request):
     reports = []
     if os.path.exists("artifacts"):
@@ -245,6 +253,7 @@ async def get_report(filename: str):
 
 
 @app.get("/dashboard/research", response_class=HTMLResponse)
+@limiter.limit(LIMITS["dashboard"])
 async def dashboard_research(request: Request):
     runs = []
 
@@ -703,9 +712,21 @@ async def get_queue_stats(
 
 
 @app.post("/api/tickets/{ticket_id}/approve")
-async def api_approve_ticket(ticket_id: str, db: Session = Depends(db_session.get_db)):
+@limiter.limit(LIMITS["write"])
+async def api_approve_ticket(ticket_id: str, request: Request, db: Session = Depends(db_session.get_db)):
+    from shared.logic.audit import audit_action
     try:
+        before_status = (
+            db.query(OrderTicket).filter(OrderTicket.ticket_id == ticket_id).first()
+        )
+        before = {"status": before_status.status} if before_status else {}
         t = approve_ticket(db, ticket_id)
+        audit_action(
+            db, actor="dashboard", action="TICKET_APPROVED",
+            resource_type="OrderTicket", resource_id=ticket_id,
+            before_state=before, after_state={"status": t.status},
+            request=request,
+        )
 
         # Generate Execution Prep
         generator = ExecutionPrepGenerator(db)
@@ -731,7 +752,8 @@ async def api_approve_ticket(ticket_id: str, db: Session = Depends(db_session.ge
 
 
 @app.get("/api/execution-prep/{ticket_id}", response_model=ExecutionPrepSchema)
-async def get_execution_prep(ticket_id: str, db: Session = Depends(db_session.get_db)):
+@limiter.limit(LIMITS["dashboard"])
+async def get_execution_prep(ticket_id: str, request: Request, db: Session = Depends(db_session.get_db)):
     prep_log = (
         db.query(ExecutionPrepLog)
         .filter(ExecutionPrepLog.ticket_id == ticket_id)
@@ -754,8 +776,9 @@ async def get_execution_prep(ticket_id: str, db: Session = Depends(db_session.ge
 
 
 @app.post("/api/execution-prep/{ticket_id}/override")
+@limiter.limit(LIMITS["write"])
 async def override_execution_prep(
-    ticket_id: str, reason: str, db: Session = Depends(db_session.get_db)
+    ticket_id: str, reason: str, request: Request, db: Session = Depends(db_session.get_db)
 ):
     prep_log = (
         db.query(ExecutionPrepLog)
@@ -773,21 +796,40 @@ async def override_execution_prep(
 
 
 @app.post("/api/tickets/{ticket_id}/skip")
+@limiter.limit(LIMITS["write"])
 async def api_skip_ticket(
-    ticket_id: str, payload: SkipPayload, db: Session = Depends(db_session.get_db)
+    ticket_id: str, payload: SkipPayload, request: Request, db: Session = Depends(db_session.get_db)
 ):
+    from shared.logic.audit import audit_action
     try:
+        before_status = (
+            db.query(OrderTicket).filter(OrderTicket.ticket_id == ticket_id).first()
+        )
+        before = {"status": before_status.status} if before_status else {}
         t = skip_ticket(db, ticket_id, payload.reason, payload.notes)
+        audit_action(
+            db, actor="dashboard", action="TICKET_SKIPPED",
+            resource_type="OrderTicket", resource_id=ticket_id,
+            before_state=before, after_state={"status": t.status},
+            change_reason=payload.reason, request=request,
+        )
+        db.commit()
         return {"status": "success", "ticket": t.ticket_id}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
 
 
 @app.post("/api/tickets/{ticket_id}/close")
+@limiter.limit(LIMITS["write"])
 async def api_close_ticket(
-    ticket_id: str, payload: ClosePayload, db: Session = Depends(db_session.get_db)
+    ticket_id: str, payload: ClosePayload, request: Request, db: Session = Depends(db_session.get_db)
 ):
+    from shared.logic.audit import audit_action
     try:
+        before_status = (
+            db.query(OrderTicket).filter(OrderTicket.ticket_id == ticket_id).first()
+        )
+        before = {"status": before_status.status} if before_status else {}
         t = close_ticket(
             db,
             ticket_id,
@@ -796,6 +838,14 @@ async def api_close_ticket(
             payload.realized_r,
             payload.screenshot_ref,
         )
+        audit_action(
+            db, actor="dashboard", action="TICKET_CLOSED",
+            resource_type="OrderTicket", resource_id=ticket_id,
+            before_state=before,
+            after_state={"status": t.status, "outcome": payload.outcome, "exit_price": payload.exit_price},
+            request=request,
+        )
+        db.commit()
         return {"status": "success", "ticket": t.ticket_id}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
@@ -810,7 +860,8 @@ from services.research.hindsight import (
 
 
 @app.post("/api/hindsight/run")
-async def api_hindsight_run(date_str: str, db: Session = Depends(db_session.get_db)):
+@limiter.limit(LIMITS["write"])
+async def api_hindsight_run(date_str: str, request: Request, db: Session = Depends(db_session.get_db)):
     # Simple hardcode for demonstration. Normally map string -> path.
     csv_path = "./data.csv"
     if not os.path.exists(csv_path):
@@ -826,13 +877,15 @@ async def api_hindsight_run(date_str: str, db: Session = Depends(db_session.get_
 
 
 @app.get("/api/hindsight/summary")
+@limiter.limit(LIMITS["dashboard"])
 async def api_hindsight_summary(
-    date_str: str, db: Session = Depends(db_session.get_db)
+    date_str: str, request: Request, db: Session = Depends(db_session.get_db)
 ):
     return get_hindsight_summary(db, date_str)
 
 
 @app.get("/dashboard/hindsight", response_class=HTMLResponse)
+@limiter.limit(LIMITS["dashboard"])
 async def dashboard_hindsight(
     request: Request,
     date_str: str | None = None,
@@ -871,6 +924,7 @@ async def dashboard_hindsight(
 
 
 @app.get("/dashboard/policies", response_class=HTMLResponse)
+@limiter.limit(LIMITS["dashboard"])
 async def dashboard_policies(
     request: Request,
     auth: bool = Depends(verify_auth),
@@ -919,6 +973,7 @@ async def dashboard_policies(
 
 
 @app.get("/dashboard/ops/daily", response_class=HTMLResponse)
+@limiter.limit(LIMITS["dashboard"])
 async def dashboard_daily_ops(
     request: Request,
     auth: bool = Depends(verify_auth),
@@ -938,6 +993,7 @@ async def dashboard_daily_ops(
 
 
 @app.get("/dashboard/ops/weekly", response_class=HTMLResponse)
+@limiter.limit(LIMITS["dashboard"])
 async def dashboard_weekly_review(
     request: Request,
     auth: bool = Depends(verify_auth),
@@ -957,6 +1013,7 @@ async def dashboard_weekly_review(
 
 
 @app.get("/dashboard/action-items", response_class=HTMLResponse)
+@limiter.limit(LIMITS["dashboard"])
 async def dashboard_action_items(
     request: Request,
     auth: bool = Depends(verify_auth),
@@ -970,6 +1027,7 @@ async def dashboard_action_items(
 
 
 @app.get("/dashboard/execution-prep", response_class=HTMLResponse)
+@limiter.limit(LIMITS["dashboard"])
 async def dashboard_execution_prep(
     request: Request,
     db: Session = Depends(db_session.get_db),
@@ -987,6 +1045,7 @@ async def dashboard_execution_prep(
 
 
 @app.get("/dashboard/health", response_class=HTMLResponse)
+@limiter.limit(LIMITS["dashboard"])
 async def dashboard_health_view(request: Request, db: Session = Depends(db_session.get_db)):
     from services.dashboard.logic import get_service_health
     health, response_times = await get_service_health()
@@ -1005,6 +1064,7 @@ async def dashboard_health_view(request: Request, db: Session = Depends(db_sessi
 
 
 @app.get("/dashboard/pilot", response_class=HTMLResponse)
+@limiter.limit(LIMITS["dashboard"])
 async def dashboard_pilot(request: Request, db: Session = Depends(db_session.get_db)):
     verify_auth(request)
     scorecards = (
@@ -1029,6 +1089,7 @@ async def dashboard_pilot(request: Request, db: Session = Depends(db_session.get
 
 
 @app.get("/dashboard/pilot/gate", response_class=HTMLResponse)
+@limiter.limit(LIMITS["dashboard"])
 async def dashboard_pilot_gate(request: Request):
     verify_auth(request)
     from services.research.pilot import load_pilot_config
@@ -1041,6 +1102,7 @@ async def dashboard_pilot_gate(request: Request):
 
 
 @app.get("/dashboard/pilot/{scorecard_id}", response_class=HTMLResponse)
+@limiter.limit(LIMITS["dashboard"])
 async def dashboard_pilot_detail(
     scorecard_id: str, request: Request, db: Session = Depends(db_session.get_db)
 ):
@@ -1060,8 +1122,9 @@ async def dashboard_pilot_detail(
 
 
 @app.post("/api/action-items/{id}/done")
+@limiter.limit(LIMITS["write"])
 async def mark_action_item_done(
-    id: int, auth: bool = Depends(verify_auth), db: Session = Depends(db_session.get_db)
+    id: int, request: Request, auth: bool = Depends(verify_auth), db: Session = Depends(db_session.get_db)
 ):
     item = db.query(ActionItem).get(id)
     if not item:
@@ -1074,6 +1137,7 @@ async def mark_action_item_done(
 # --- UNIFIED DASHBOARD ROUTES ---
 
 @app.get("/dashboard/order-flow", response_class=HTMLResponse)
+@limiter.limit(LIMITS["dashboard"])
 async def dashboard_order_flow(
     request: Request,
     auth: bool = Depends(verify_auth),
@@ -1119,6 +1183,7 @@ async def dashboard_order_flow(
 
 
 @app.get("/dashboard/strategy-context", response_class=HTMLResponse)
+@limiter.limit(LIMITS["dashboard"])
 async def dashboard_strategy_context(
     request: Request,
     auth: bool = Depends(verify_auth),
@@ -1166,6 +1231,7 @@ async def dashboard_strategy_context(
 
 
 @app.get("/dashboard/node-telemetry", response_class=HTMLResponse)
+@limiter.limit(LIMITS["dashboard"])
 async def dashboard_node_telemetry(
     request: Request,
     auth: bool = Depends(verify_auth),
