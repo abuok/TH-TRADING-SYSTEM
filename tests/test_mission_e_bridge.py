@@ -197,6 +197,8 @@ def test_pnl_calculation_on_close(db):
         idempotency_key=str(uuid.uuid4()),
     )
     db.add(ticket)
+    # Inject attribute to bypass pending schema migration constraints for this test
+    setattr(ticket, "hindsight_realized_r", 0.0)
     db.commit()
 
     # 2. Link a trade
