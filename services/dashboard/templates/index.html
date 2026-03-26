@@ -580,9 +580,52 @@ async function refreshJarvis() {
   }
 }
 
+// ── WebSocket Integration ────────────────────────────
+let refreshInterval = null;
+let socket = null;
+
+function initWebSocket() {
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const wsUrl = `${protocol}//${window.location.host}/ws/jarvis`;
+  
+  socket = new WebSocket(wsUrl);
+  
+  socket.onopen = () => {
+    console.log('[JARVIS] WebSocket Connected — High Frequency Push enabled');
+    if (refreshInterval) clearInterval(refreshInterval);
+    // Slow down polling to 60s as a safety fallback, while relying on push
+    refreshInterval = setInterval(refreshJarvis, 60000);
+  };
+  
+  socket.onmessage = (event) => {
+    try {
+      const msg = JSON.parse(event.data);
+      if (msg.type === 'stream_update') {
+        console.log(`[JARVIS] Real-time push: ${msg.stream}`);
+        refreshJarvis(); // Refresh full state on any relevant backend event
+      }
+    } catch (e) {
+      console.error('[JARVIS] WS message error:', e);
+    }
+  };
+  
+  socket.onclose = () => {
+    console.warn('[JARVIS] WebSocket Disconnected. Resuming 10s polling.');
+    if (refreshInterval) clearInterval(refreshInterval);
+    refreshInterval = setInterval(refreshJarvis, 10000);
+    // Attempt reconnect in 5s
+    setTimeout(initWebSocket, 5000);
+  };
+
+  socket.onerror = (err) => {
+    console.error('[JARVIS] WebSocket Error:', err);
+    socket.close();
+  };
+}
+
 // ── Bootstrap ────────────────────────────────────────
 initChart(activePair);
 refreshJarvis();
-setInterval(refreshJarvis, 10000);
+initWebSocket();
 </script>
 {% endblock %}

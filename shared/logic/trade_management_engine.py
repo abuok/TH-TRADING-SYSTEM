@@ -43,22 +43,20 @@ def generate_suggestions_for_position(
     snapshot: PositionSnapshot,
     quote_provider: PriceQuoteProvider,
     now_eat: datetime,
+    active_kill_switches: list[KillSwitch] = None,
+    latest_policy: PolicySelectionLog = None,
 ) -> list[PositionManagementSuggestion]:
-    """Generate rule-based suggestions for a single position snapshot."""
-    # 1. Find the linked ticket
-    link = (
-        db.query(TicketTradeLink)
-        .filter(TicketTradeLink.broker_trade_id == snapshot.position_id)
-        .first()
-    )
-    if not link:
-        return []
-
-    ticket = (
-        db.query(OrderTicket).filter(OrderTicket.ticket_id == link.ticket_id).first()
-    )
-    if not ticket:
-        return []
+    """Generate rule-based suggestions for a single position snapshot. Improved with pre-fetched state."""
+    # 1. Access the eagerly loaded ticket via relationship
+    link = snapshot.trade_link
+    if not link or not link.ticket:
+        # Fallback for safety if not eagerly loaded or link missing
+        if not link:
+            link = db.query(TicketTradeLink).filter(TicketTradeLink.broker_trade_id == snapshot.position_id).first()
+        if not link or not link.ticket:
+            return []
+    
+    ticket = link.ticket
 
     # 2. Get current quote
     quote = quote_provider.get_quote(snapshot.symbol)
@@ -73,39 +71,35 @@ def generate_suggestions_for_position(
 
     suggestions = []
 
-    # Rule: Kill Switch Active
-    active_ks = (
-        db.query(KillSwitch)
-        .filter(KillSwitch.is_active, KillSwitch.switch_type.in_(["GLOBAL", "TRADING"]))
-        .first()
-    )
-
-    if active_ks:
-        suggestions.append(
-            PositionManagementSuggestion(
-                created_at_eat=now_eat,
-                ticket_id=ticket.id,
-                broker_trade_id=snapshot.position_id,
-                symbol=snapshot.symbol,
-                side=snapshot.side,
-                lots=snapshot.lots,
-                entry_price=snapshot.avg_price,
-                sl=snapshot.sl,
-                tp1=ticket.take_profit_1,
-                tp2=ticket.take_profit_2,
-                current_price=current_price,
-                current_r=current_r,
-                suggestion_type=SuggestionType.NO_ACTION,
-                severity="CRITICAL",
-                reasons=[
-                    f"Kill Switch Active: {active_ks.switch_type} - Manually Manage"
-                ],
-                expires_at_eat=now_eat + timedelta(minutes=15),
-                instruction="Halt Trading - Manage manually",
+    # Rule: Kill Switch Active (Using pre-fetched list)
+    if active_kill_switches:
+        # Filter for global/trading halts
+        halt = next((ks for ks in active_kill_switches if ks.switch_type in ["GLOBAL", "TRADING"]), None)
+        if halt:
+            suggestions.append(
+                PositionManagementSuggestion(
+                    created_at_eat=now_eat,
+                    ticket_id=ticket.id,
+                    broker_trade_id=snapshot.position_id,
+                    symbol=snapshot.symbol,
+                    side=snapshot.side,
+                    lots=snapshot.lots,
+                    entry_price=snapshot.avg_price,
+                    sl=snapshot.sl,
+                    tp1=ticket.take_profit_1,
+                    tp2=ticket.take_profit_2,
+                    current_price=current_price,
+                    current_r=current_r,
+                    suggestion_type=SuggestionType.NO_ACTION,
+                    severity="CRITICAL",
+                    reasons=[
+                        f"Kill Switch Active: {halt.switch_type} - Manually Manage"
+                    ],
+                    expires_at_eat=now_eat + timedelta(minutes=15),
+                    instruction="Halt Trading - Manage manually",
+                )
             )
-        )
-        # If kill switch is active, don't generate other suggestions
-        return suggestions
+            return suggestions
 
     # Rule: End of NY Session (00:30 to 01:00 EAT)
     current_time = now_eat.time()
@@ -135,14 +129,8 @@ def generate_suggestions_for_position(
             )
         )
 
-    # Rule: Strict Risk Policy Checks
-    policy_log = (
-        db.query(PolicySelectionLog)
-        .filter(PolicySelectionLog.pair == ticket.pair)
-        .order_by(PolicySelectionLog.created_at.desc())
-        .first()
-    )
-    if policy_log and policy_log.policy_name == "RISK_OFF" and current_r >= 0.5:
+    # Rule: Strict Risk Policy Checks (using pre-fetched policy)
+    if latest_policy and latest_policy.policy_name == "RISK_OFF" and current_r >= 0.5:
         suggestions.append(
             PositionManagementSuggestion(
                 created_at_eat=now_eat,
@@ -260,33 +248,19 @@ def generate_suggestions_for_position(
                 )
             )
 
-    # Rule: News warning
+    # Rule: News warning (Potentially can also be pre-fetched, but providers often cache internally)
     calendar = get_calendar_provider()
     events = calendar.fetch_events()
     now_utc = datetime.now(timezone.utc)
     for ev in events:
-        # Calendar events store time as HH:MM (same contract used in guardrails.py).
-        # Reconstruct a full UTC datetime by placing the HH:MM on today or tomorrow.
         try:
             ev_time_str = ev.get("time", "")
             ev_naive = datetime.strptime(ev_time_str, "%H:%M")
-            # Build today's candidate in UTC
-            ev_today_utc = now_utc.replace(
-                hour=ev_naive.hour,
-                minute=ev_naive.minute,
-                second=0,
-                microsecond=0,
-            )
-            # If that time has already passed, use tomorrow
-            ev_time = (
-                ev_today_utc
-                if ev_today_utc >= now_utc
-                else ev_today_utc + timedelta(days=1)
-            )
+            ev_today_utc = now_utc.replace(hour=ev_naive.hour, minute=ev_naive.minute, second=0, microsecond=0)
+            ev_time = ev_today_utc if ev_today_utc >= now_utc else ev_today_utc + timedelta(days=1)
         except (ValueError, AttributeError):
             continue
         if now_utc < ev_time < now_utc + timedelta(minutes=60):
-            # Check if currency relates to symbol
             if ev["currency"] in snapshot.symbol:
                 suggestions.append(
                     PositionManagementSuggestion(
@@ -317,65 +291,87 @@ def generate_suggestions_for_position(
 
 
 def run_management_cycle(db: Session):
-    """Run the full management cycle for all open positions."""
+    """Run the full management cycle for all open positions — optimized for bulk loading."""
+    from sqlalchemy.orm import joinedload
     now_eat = get_nairobi_time()
     quote_provider = get_price_quote_provider()
 
-    # Filter to recently-updated snapshots only.
-    # PositionSnapshot has no explicit status column; positions that have not
-    # been updated in the last 4 hours are treated as closed/gone.
+    # 1. Fetch active kill switches once per cycle
+    active_kill_switches = (
+        db.query(KillSwitch)
+        .filter(KillSwitch.is_active == 1)
+        .all()
+    )
+
+    # 2. Fetch snapshots with tickets eagerly loaded
     cutoff = datetime.now(timezone.utc) - timedelta(hours=4)
     snapshots = (
         db.query(PositionSnapshot)
+        .options(joinedload(PositionSnapshot.trade_link).joinedload(TicketTradeLink.ticket))
         .filter(PositionSnapshot.updated_at_utc >= cutoff)
         .all()
     )
 
+    if not snapshots:
+        return
+
+    # 3. Fetch latest PolicySelectionLog for all unique pairs in the snapshot set
+    pairs = list(set(s.symbol for s in snapshots))
+    recent_policies = (
+        db.query(PolicySelectionLog)
+        .filter(PolicySelectionLog.pair.in_(pairs))
+        .order_by(PolicySelectionLog.created_at.desc())
+        .limit(10)
+        .all()
+    )
+    policy_map = {}
+    for p in recent_policies:
+        if p.pair not in policy_map:
+            policy_map[p.pair] = p
+
+    # 4. Fetch all existing suggestions for the current time bucket to avoid duplicate queries inside loop
+    time_bucket = f"{now_eat.strftime('%Y-%m-%d-%H')}"
+    existing_suggestions = (
+        db.query(ManagementSuggestionLog)
+        .filter(ManagementSuggestionLog.time_bucket == time_bucket)
+        .all()
+    )
+    # Create lookup key: (ticket_id_str, suggestion_type_str)
+    existing_set = set((s.ticket_id, s.suggestion_type) for s in existing_suggestions)
+
     for snapshot in snapshots:
         suggestions = generate_suggestions_for_position(
-            db, snapshot, quote_provider, now_eat
+            db, 
+            snapshot, 
+            quote_provider, 
+            now_eat,
+            active_kill_switches=active_kill_switches,
+            latest_policy=policy_map.get(snapshot.symbol)
         )
 
         for sug in suggestions:
-            # Create time bucket for hourly dedup (or similar)
-            time_bucket = f"{now_eat.strftime('%Y-%m-%d-%H')}"
+            # Check for existing in bulk pre-fetched set
+            if (str(sug.ticket_id), sug.suggestion_type.value) in existing_set:
+                continue
 
-            # Persist if not already exists in this bucket
             try:
-                # Check for existing
-                existing = (
-                    db.query(ManagementSuggestionLog)
-                    .filter(
-                        ManagementSuggestionLog.ticket_id == str(sug.ticket_id),
-                        ManagementSuggestionLog.suggestion_type
-                        == sug.suggestion_type.value,
-                        ManagementSuggestionLog.time_bucket == time_bucket,
-                    )
-                    .first()
+                log_entry = ManagementSuggestionLog(
+                    ticket_id=str(sug.ticket_id),
+                    broker_trade_id=sug.broker_trade_id,
+                    suggestion_type=sug.suggestion_type.value,
+                    severity=sug.severity,
+                    data=sug.model_dump(mode="json"),
+                    time_bucket=time_bucket,
+                    expires_at=sug.expires_at_eat,
                 )
+                db.add(log_entry)
+                db.commit()
+                logger.info(f"Generated suggestion {sug.suggestion_type} for ticket {sug.ticket_id}")
+                existing_set.add((str(sug.ticket_id), sug.suggestion_type.value))
 
-                if not existing:
-                    log_entry = ManagementSuggestionLog(
-                        ticket_id=str(sug.ticket_id),
-                        broker_trade_id=sug.broker_trade_id,
-                        suggestion_type=sug.suggestion_type.value,
-                        severity=sug.severity,
-                        data=sug.model_dump(mode="json"),
-                        time_bucket=time_bucket,
-                        expires_at=sug.expires_at_eat,
-                    )
-                    db.add(log_entry)
-                    db.commit()
-                    logger.info(
-                        f"Generated suggestion {sug.suggestion_type} for ticket {sug.ticket_id}"
-                    )
-
-                    # Notify
-                    from shared.logic.notifications import (
-                        notify_suggestion as send_notif,
-                    )
-
-                    send_notif(sug.model_dump(mode="json"))
+                # Notify
+                from shared.logic.notifications import notify_suggestion as send_notif
+                send_notif(sug.model_dump(mode="json"))
             except Exception as e:
                 db.rollback()
                 logger.error(f"Failed to log suggestion: {e}")

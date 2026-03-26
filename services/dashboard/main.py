@@ -10,6 +10,7 @@ from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+import asyncio
 
 # Load environment variables
 load_dotenv()
@@ -51,8 +52,9 @@ from shared.database.models import (
 from shared.database.models import (
     PositionSnapshot as PositionSnapshotModel,
 )
-from shared.logic.metrics import metrics_registry
 from shared.logic.sessions import get_nairobi_time
+from services.dashboard.websocket import manager, websocket_event_listener
+from fastapi import WebSocket, WebSocketDisconnect
 
 security = HTTPBasic()
 
@@ -68,6 +70,12 @@ logger = logging.getLogger("Dashboard")
 
 from shared.security.rate_limiting import limiter, setup_rate_limiting, LIMITS
 setup_rate_limiting(app)
+
+@app.on_event("startup")
+async def startup_event():
+    logger.info("Dashboard starting up...")
+    asyncio.create_task(websocket_event_listener())
+    logger.info("WebSocket event listener started in background.")
 
 
 def render_template(template_name: str, context: dict):
@@ -551,6 +559,20 @@ async def api_jarvis(db: Session = Depends(db_session.get_db)):
     except Exception as e:
         logger.exception("Jarvis API error")
         raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+@app.websocket("/ws/jarvis")
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        while True:
+            # Keep connection alive
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+    except Exception as e:
+        logger.error(f"WS Error: {e}")
+        manager.disconnect(websocket)
 
 
 @app.get("/dashboard/fundamentals", response_class=HTMLResponse)
