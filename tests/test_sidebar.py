@@ -11,7 +11,7 @@ def test_sidebar_renders_on_dashboard():
     content = response.text
 
     # Verify sidebar section heading (consolidated architecture)
-    assert "TACTICAL HUBS" in content
+    assert "Tactical Hubs" in content
 
     # Verify the 4 consolidated hub links are present
     assert "Command Center" in content

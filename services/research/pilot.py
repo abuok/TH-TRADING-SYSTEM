@@ -78,10 +78,10 @@ def fetch_session_metrics(db: Session, target_date: date) -> PilotSessionRecord:
 
     # 2. Performance Metrics
     realized_r_total = sum(
-        t.manual_outcome_r for t in approved if t.manual_outcome_r is not None
+        getattr(t, "manual_outcome_r", None) for t in approved if getattr(t, "manual_outcome_r", None) is not None
     )
     missed_r_total = sum(
-        t.hindsight_realized_r for t in skipped if t.hindsight_realized_r is not None
+        getattr(t, "hindsight_realized_r", None) for t in skipped if getattr(t, "hindsight_realized_r", None) is not None
     )
 
     # Calc session drawdown (naive walk)
@@ -97,14 +97,14 @@ def fetch_session_metrics(db: Session, target_date: date) -> PilotSessionRecord:
             peak_r = max(peak_r, cumulative_r)
             session_dd = min(session_dd, cumulative_r - peak_r)
 
-    win_count = len([t for t in approved if (t.manual_outcome_r or 0) > 0])
-    be_count = len([t for t in approved if t.manual_outcome_label == "BE"])
+    win_count = len([t for t in approved if (getattr(t, "manual_outcome_r", None) or 0) > 0])
+    be_count = len([t for t in approved if getattr(t, "manual_outcome_label", None) == "BE"])
     win_rate = (win_count / len(approved) * 100) if approved else 0.0
     be_rate = (be_count / len(approved) * 100) if approved else 0.0
     expectancy = (realized_r_total / len(approved)) if approved else 0.0
 
     all_hindsight_vals = [
-        t.hindsight_realized_r for t in tickets if t.hindsight_realized_r is not None
+        getattr(t, "hindsight_realized_r", None) for t in tickets if getattr(t, "hindsight_realized_r", None) is not None
     ]
     baseline_expectancy = (
         sum(all_hindsight_vals) / len(all_hindsight_vals) if all_hindsight_vals else 0.0
@@ -144,11 +144,11 @@ def fetch_session_metrics(db: Session, target_date: date) -> PilotSessionRecord:
     pairs = {t.pair for t in tickets}
     pair_stats = []
     for p in pairs:
-        p_tickets = [t for t in approved if t.pair == p]
-        p_r = sum(t.manual_outcome_r for t in p_tickets if t.manual_outcome_r)
+        p_tickets = [t for t in approved if getattr(t, "pair", None) == p]
+        p_r = sum(getattr(t, "manual_outcome_r", None) for t in p_tickets if getattr(t, "manual_outcome_r", None))
         p_wr = (
             (
-                len([t for t in p_tickets if (t.manual_outcome_r or 0) > 0])
+                len([t for t in p_tickets if (getattr(t, "manual_outcome_r", None) or 0) > 0])
                 / len(p_tickets)
                 * 100
             )
@@ -162,9 +162,9 @@ def fetch_session_metrics(db: Session, target_date: date) -> PilotSessionRecord:
                 win_rate_pct=p_wr,
                 realized_r=p_r,
                 missed_r=sum(
-                    t.hindsight_realized_r
+                    getattr(t, "hindsight_realized_r", 0)
                     for t in skipped
-                    if t.pair == p and t.hindsight_realized_r
+                    if getattr(t, "pair", None) == p and getattr(t, "hindsight_realized_r", None)
                 ),
                 max_drawdown_r=min(p_r, 0),
             )

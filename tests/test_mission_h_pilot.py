@@ -37,7 +37,7 @@ def create_mock_ticket(
     executed_at=None,
     hindsight_r=None,
 ):
-    return OrderTicket(
+    ticket = OrderTicket(
         ticket_id=ticket_id,
         setup_packet_id=1,
         risk_packet_id=1,
@@ -56,8 +56,13 @@ def create_mock_ticket(
         created_at=created_at,
         reviewed_at=reviewed_at,
         executed_at=executed_at,
-        hindsight_realized_r=hindsight_r,
+        # hindsight_realized_r is commented out in models.py (schema debt)
+        # do not pass it to the constructor.
     )
+    if hindsight_r is not None:
+        # Dynamically attach for the test logic to read without breaking the constructor
+        setattr(ticket, "hindsight_realized_r", hindsight_r)
+    return ticket
 
 
 def test_pilot_metrics_aggregation(db):

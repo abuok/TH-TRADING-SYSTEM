@@ -142,8 +142,14 @@ class OpsEngine:
 
     def render_html(self, report: DailyOpsReport) -> str:
         if self.jinja_env is not None:
+            # The base.html template expects a FastAPI request object for sidebar highlighting
+            class MockRequest:
+                class URL:
+                    path = "/dashboard/ops-daily"
+                url = URL()
+            
             template = self.jinja_env.get_template("ops_daily_template.html")
-            return template.render(report=report)
+            return template.render(report=report, request=MockRequest())
 
         return (
             f"<html><body><h1>Daily Ops Report</h1>"
