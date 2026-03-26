@@ -158,6 +158,9 @@ class OrderTicket(Base):
 
     setup_packet = relationship("Packet", foreign_keys=[setup_packet_id])
     risk_packet = relationship("Packet", foreign_keys=[risk_packet_id])
+    trade_links = relationship("TicketTradeLink", back_populates="ticket", cascade="all, delete-orphan")
+    journal_entries = relationship("JournalLog", back_populates="ticket", cascade="all, delete-orphan")
+    alignment_logs = relationship("AlignmentLog", back_populates="ticket")
 
 
 class SessionBriefing(Base):
@@ -182,7 +185,7 @@ class AlignmentLog(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     setup_packet_id = Column(Integer, ForeignKey("packets.id"), nullable=True)
-    ticket_id = Column(String, nullable=True)  # filled when ticket is created
+    ticket_id = Column(String, ForeignKey("order_tickets.ticket_id"), nullable=True)  # filled when ticket is created
     pair = Column(String, nullable=False)
     alignment_score = Column(Integer, nullable=False)
     is_aligned = Column(Boolean, default=False)
@@ -194,6 +197,8 @@ class AlignmentLog(Base):
     created_at = Column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
+
+    ticket = relationship("OrderTicket", back_populates="alignment_logs")
 
 
 class HindsightOutcomeLog(Base):
@@ -349,6 +354,13 @@ class PositionSnapshot(Base):
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
 
+    # Note: Link is via broker_trade_id string, not a formal FK for flexibility
+    trade_link = relationship(
+        "TicketTradeLink",
+        primaryjoin="foreign(PositionSnapshot.position_id) == TicketTradeLink.broker_trade_id",
+        viewonly=True,
+    )
+
 
 class TicketTradeLink(Base):
     __tablename__ = "ticket_trade_link"
@@ -364,7 +376,7 @@ class TicketTradeLink(Base):
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
 
-    ticket = relationship("OrderTicket", foreign_keys=[ticket_id])
+    ticket = relationship("OrderTicket", back_populates="trade_links")
 
 
 class JournalLog(Base):
@@ -385,7 +397,7 @@ class JournalLog(Base):
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
 
-    ticket = relationship("OrderTicket", foreign_keys=[ticket_id])
+    ticket = relationship("OrderTicket", back_populates="journal_entries")
 
 
 class ManagementSuggestionLog(Base):

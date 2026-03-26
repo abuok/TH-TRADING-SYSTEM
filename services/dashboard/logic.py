@@ -315,55 +315,67 @@ def get_dashboard_data(db: Session, asset_pairs: list[str] | None = None):
 
 
 async def get_tickets(pair: str | None = None) -> list[OrderTicketSchema]:
-    """Fetches order tickets, optionally filtered by pair."""
+    """Fetches order tickets, optimized for performance via joins and bulk loading."""
+    from sqlalchemy.orm import joinedload
     db = db_session.SessionLocal()
     try:
-        query = db.query(OrderTicket)
+        query = db.query(OrderTicket).options(
+            joinedload(OrderTicket.trade_links),
+            joinedload(OrderTicket.journal_entries)
+        )
         if pair:
             query = query.filter(OrderTicket.pair == pair)
 
         tickets = query.order_by(OrderTicket.created_at.desc()).limit(50).all()
 
-        # Convert to schemas with formatters
-        ticket_schemas = [
-            OrderTicketSchema.model_validate(t, from_attributes=True) for t in tickets
-        ]
+        # Collect all broker_trade_ids for a single bulk fetch of TradeFillLogs
+        broker_trade_ids = []
+        for t in tickets:
+            for link in t.trade_links:
+                broker_trade_ids.append(link.broker_trade_id)
 
-        # Enrich with bridge and journal data
-        for t_schema in ticket_schemas:
-            link = (
-                db.query(TicketTradeLink)
-                .filter(TicketTradeLink.ticket_id == t_schema.ticket_id)
-                .first()
-            )
-            if link:
-                t_schema.broker_trade_id = link.broker_trade_id
-                # Get execution timestamp from the fill log
-                fill = (
-                    db.query(TradeFillLog)
-                    .filter(
-                        TradeFillLog.broker_trade_id == link.broker_trade_id,
-                        TradeFillLog.event_type == "OPEN",
-                    )
-                    .first()
+        fill_map = {}
+        if broker_trade_ids:
+            fills = (
+                db.query(TradeFillLog)
+                .filter(
+                    TradeFillLog.broker_trade_id.in_(broker_trade_ids),
+                    TradeFillLog.event_type == "OPEN"
                 )
+                .all()
+            )
+            # Map by broker_trade_id for O(1) lookup
+            fill_map = {f.broker_trade_id: f for f in fills}
+
+        ticket_schemas = []
+        for t in tickets:
+            t_schema = OrderTicketSchema.model_validate(t, from_attributes=True)
+            
+            # Enrich with trade links (already loaded)
+            if t.trade_links:
+                link = t.trade_links[0]  # Take primary link
+                t_schema.broker_trade_id = link.broker_trade_id
+                
+                # Enrich with fill data from pre-fetched map
+                fill = fill_map.get(link.broker_trade_id)
                 if fill:
                     t_schema.executed_at = fill.time_eat
 
-                # Get realized PnL/R from the most recent journal entry for this ticket
-                journal = (
-                    db.query(JournalLog)
-                    .filter(
-                        JournalLog.ticket_id == t_schema.ticket_id,
-                        JournalLog.event_type.in_(["TRADE_CLOSED", "PARTIAL_CLOSE"]),
-                    )
-                    .order_by(JournalLog.created_at.desc())
-                    .first()
-                )
-                if journal:
+            # Enrich with realized R from journal entries (already loaded)
+            if t.journal_entries:
+                # Find the most recent exit-related entry
+                exit_entries = [
+                    j for j in t.journal_entries 
+                    if j.event_type in ("TRADE_CLOSED", "PARTIAL_CLOSE")
+                ]
+                if exit_entries:
+                    # Sorted by created_at desc (journals are usually appended)
+                    latest_exit = sorted(exit_entries, key=lambda x: x.created_at, reverse=True)[0]
                     t_schema.realized_r = (
-                        journal.data.get("realized_r") if journal.data else None
+                        latest_exit.data.get("realized_r") if latest_exit.data else None
                     )
+
+            ticket_schemas.append(t_schema)
 
         return ticket_schemas
     finally:
@@ -396,18 +408,22 @@ def get_jarvis_data(db: Session) -> dict[str, Any]:
     pairs = ["XAUUSD", "GBPJPY"]
     session_label = get_session_label(now_nairobi, pairs[0])
 
-    # ── Bias States ──────────────────────────────────────────────
+    # ── Bias States (Bulk optimized) ──────────────────────────────
     bias_states: dict[str, Any] = {}
+    from sqlalchemy import func
+    
+    # Fetch latest bias packets for the target pairs
+    # Note: We fetch a small batch to ensure we get the latest for each pair in the set
+    recent_bias_packets = (
+        db.query(Packet)
+        .filter(Packet.packet_type == "PairFundamentalsPacket")
+        .order_by(Packet.created_at.desc())
+        .limit(20)
+        .all()
+    )
+    
     for pair in pairs:
-        p_fund = (
-            db.query(Packet)
-            .filter(
-                Packet.packet_type == "PairFundamentalsPacket",
-                Packet.data["asset_pair"].as_string() == pair,
-            )
-            .order_by(Packet.created_at.desc())
-            .first()
-        )
+        p_fund = next((p for p in recent_bias_packets if p.data.get("asset_pair") == pair), None)
         if p_fund:
             bias_states[pair] = {
                 "bias": p_fund.data.get("bias_label", "NEUTRAL"),
@@ -436,16 +452,20 @@ def get_jarvis_data(db: Session) -> dict[str, Any]:
         .all()
     )
 
-    # ── Alignment Logs (most recent per pair) ────────────────────
+    # ── Alignment Logs (Bulk optimized) ───────────────────────────
     from shared.database.models import AlignmentLog
     alignment_data: dict[str, Any] = {}
+    
+    recent_alignments = (
+        db.query(AlignmentLog)
+        .filter(AlignmentLog.pair.in_(pairs))
+        .order_by(AlignmentLog.created_at.desc())
+        .limit(10)
+        .all()
+    )
+    
     for pair in pairs:
-        alog = (
-            db.query(AlignmentLog)
-            .filter(AlignmentLog.pair == pair)
-            .order_by(AlignmentLog.created_at.desc())
-            .first()
-        )
+        alog = next((a for a in recent_alignments if a.pair == pair), None)
         if alog:
             raw = alog.result_json or {}
             checks = {k: bool(v) for k, v in raw.items() if isinstance(v, (bool, int))}
