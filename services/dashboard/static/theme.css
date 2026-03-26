@@ -6,10 +6,11 @@
     --bg-surface: #11131A;   /* Space Charcoal: Elevated UI */
     
     /* ── Typography & Borders ────────────────────────────── */
-    --text-main: #E2E8F0;    /* High contrast text */
-    --text-muted: #64748B;   /* Low contrast subtext */
-    --border-dim: rgba(255, 255, 255, 0.05);
-    --border-bright: rgba(0, 102, 255, 0.2);
+    --text-main: #0066FF;    /* Electric Blue: Primary Text */
+    --text-high: #B4FF00;    /* Acid Lime: High Emphasis / Headers */
+    --text-muted: rgba(0, 102, 255, 0.6);
+    --border-dim: rgba(0, 102, 255, 0.15);
+    --border-bright: var(--blue);
     
     /* ── Signal Palette ─────────────────────────────────── */
     --lime: #B4FF00;         /* Acid Lime: Go / Approved / Profit */

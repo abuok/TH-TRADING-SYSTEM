@@ -130,6 +130,13 @@ h3 {
     text-shadow: 0 0 10px rgba(86, 204, 242, 0.4);
 }
 
+.status-marker {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--text-muted);
+}
+
 .sidebar-dot {
     width: 6px;
     height: 6px;
@@ -322,7 +329,7 @@ footer {
     margin-bottom: 1rem;
     border-bottom: 1px solid rgba(0, 102, 255, 0.1);
     padding: 0.75rem 1rem;
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(0, 102, 255, 0.02);
 }
 
 .hud-panel-title {
@@ -434,9 +441,17 @@ footer {
 
 .hud-compact-table td {
     padding: 0.5rem;
-    background: rgba(255, 255, 255, 0.02);
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background: transparent;
+    border-top: 1px solid var(--border-dim);
+    border-bottom: 1px solid var(--border-dim);
+    color: var(--text-main);
+}
+
+.nav-item.active {
+    background: rgba(0, 102, 255, 0.08);
+    border-top: 1px solid rgba(0, 102, 255, 0.1);
+    border-bottom: 1px solid rgba(0, 102, 255, 0.1);
+    color: var(--lime);
 }
 
 .hud-compact-table tr:hover td {
@@ -444,13 +459,13 @@ footer {
 }
 
 .hud-compact-table td:first-child {
-    border-left: 1px solid rgba(255, 255, 255, 0.05);
+    border-left: 1px solid var(--border-dim);
     border-top-left-radius: 2px;
     border-bottom-left-radius: 2px;
 }
 
 .hud-compact-table td:last-child {
-    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    border-right: 1px solid var(--border-dim);
     border-top-right-radius: 2px;
     border-bottom-right-radius: 2px;
 }
@@ -725,6 +740,13 @@ footer {
 .util-87ccbb {
     color: var(--text-muted);
     font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.tuning-label {
+    font-size: 0.6rem;
+    color: var(--text-main);
     text-transform: uppercase;
     letter-spacing: 1px;
 }
@@ -1223,10 +1245,15 @@ footer {
     gap: 0.5rem;
 }
 
+.tag.tag-new {
+    background: rgba(0, 102, 255, 0.12);
+    border: 1px solid var(--blue);
+    color: var(--blue);
+}
 .util-922919 {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--border-color);
-    color: white;
+    background: rgba(0, 102, 255, 0.05);
+    border: 1px solid var(--blue);
+    color: var(--blue);
     padding: 0.5rem;
     border-radius: 4px;
 }
@@ -1274,7 +1301,7 @@ footer {
 }
 
 .util-a93da3 {
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(0, 0, 0, 0.03);
     padding: 1rem;
     border-radius: 8px;
     text-align: center;
@@ -1606,9 +1633,14 @@ footer {
     margin-bottom: 1rem;
 }
 
+.briefing-card h4 {
+    color: var(--text-main);
+    margin: 0;
+}
 .tuning-title {
-    color: #fff;
+    color: var(--text-high);
     margin-bottom: 0.25rem;
+    font-weight: 700;
 }
 
 .tuning-input {

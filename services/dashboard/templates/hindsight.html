@@ -119,13 +119,13 @@
         <div class="hud-scroll-body p-4">
             <div class="gap-4 grid grid-cols-tickets">
                 {% for t in tickets %}
-                <div class="glass-panel bg-darker-overlay hud-panel border-theme p-0">
-                    <header class="justify-between align-center flex border-divider bg-white-3 p-2">
+                <div class="bg-glass-light hud-scanline border-blue-5 border-1 p-4">
+                    <header class="justify-between align-center flex border-divider bg-blue-3 p-2">
                         <div class="text-black text-main text-xxs text-mono">
                             ID: {{ t.ticket_id[:12] }}...</div>
                         {% set h_class = 'text-hs-neutral' %}
                         {% if t.hindsight_outcome_label == 'WIN' %}{% set h_class = 'text-hs-win' %}
-                        {% elif t.hindsight_outcome_label == 'LOSS' %}{% set h_class = 'text-hs-loss' %}
+                        {% elif t.hindsight_outcome_label == 'LOSS' %{% set h_class = 'text-hs-loss' %}
                         {% elif t.hindsight_outcome_label == 'STALE' %}{% set h_class = 'text-hs-stale' %}
                         {% endif %}
                         <span class="badge badge-mini font-900 border-1 bg-transparent {{ h_class }}">RESULT_{{
@@ -141,12 +141,12 @@
                         {% if t.skip_reason %}
                         <div class="justify-between align-center flex mb-3">
                             <span class="text-mini text-muted text-upper">BIAS_VECTOR</span>
-                            <span class="bg-black-50 border-white-5 p-1 px-2 rounded text-mini text-mono text-yellow">{{
-                                t.skip_reason }}</span>
+                            <div class="bg-blue-2 border-l-2-cyan p-3 text-mini text-mono text-yellow">{{
+                                t.skip_reason }}</div>
                         </div>
                         {% endif %}
                         <div
-                            class="justify-between align-center flex hud-scanline border-t-1 border-white-5 pt-2-4 bg-black-15 m-0-1 pl-2 pr-2 rounded">
+                            class="justify-between align-center flex hud-scanline border-t-1 border-blue-5 pt-2-4 bg-black-15 m-0-1 pl-2 pr-2 rounded">
                             <span class="text-black text-main text-xxs">IMAGINARY_YIELD</span>
                             <span class="text-lg font-900 text-mono {{ h_class }}">{{
                                 "{:+.2f}".format(t.hindsight_realized_r) }}R</span>

@@ -21,7 +21,7 @@
         <div class="gap-4 grid p-3 grid-autofit-180">
             {% for sym, proxy in (movers.data.get('proxies', {})).items() %}
             <div class="glass-panel m-0 hud-panel hud-scanline">
-                <header class="hud-panel-header p-0-5-0-75 bg-white-3">
+                <header class="hud-panel-header p-0-5-0-75 bg-blue-3">
                     <div class="hud-panel-title text-xxs text-muted">{{ sym }} //
                         PROXY</div>
                 </header>
@@ -45,7 +45,7 @@
             </div>
             {% endfor %}
         </div>
-        <div class="p-0-5-1 border-t-white-5 text-mini text-muted text-upper">
+        <div class="p-0-5-1 border-t-1 border-blue-5 text-mini text-muted text-upper">
             SNAPSHOT GENERATED: {{ movers.created_at.strftime('%Y-%m-%d %H:%M:%S') }} EAT // DETERMINISTIC MACRO OVERLAY
         </div>
         {% endif %}
@@ -64,7 +64,7 @@
                 {{ bias }}
             </span>
             {% else %}
-            <span class="text-mini text-muted badge bg-white-10 border-theme">NULL_STATE</span>
+            <span class="text-mini text-muted badge bg-blue-10 border-theme">NULL_STATE</span>
             {% endif %}
         </header>
 
@@ -83,12 +83,12 @@
                             latest.data.conviction_label }}</strong></div>
                 </div>
 
-                <div class="h-0-5 bg-white-5 mt-3 relative w-full">
+                <div class="h-0-5 bg-blue-5 mt-3 relative w-full">
                     {% set pct = ((latest.data.bias_score + 5) / 10) * 100 %}
                     <div class="js-progress-bar h-full absolute left-0 top-0 transition-width-1-cubic-bezier {{ 'bg-buy' if latest.data.bias_score > 0 else ('bg-sell' if latest.data.bias_score < 0 else 'bg-muted') }} w-0"
                         data-pct="{{ pct }}">
                     </div>
-                    <div class="absolute left-center top-n4 h-10 w-px-1 bg-white-3">
+                    <div class="absolute left-center top-n4 h-10 w-px-1 bg-blue-3">
                     </div>
                 </div>
             </div>
@@ -100,7 +100,7 @@
                 <div class="gap-2 flex-col flex">
                     {%- for drv in latest.data.get('drivers', []) -%}
                     <div
-                        class="bg-white-2 p-2 {{ 'border-l-2-green' if drv.impact > 0 else ('border-l-2-sell' if drv.impact < 0 else 'border-l-2-muted') }}">
+                        class="bg-blue-2 p-2 {{ 'border-l-2-green' if drv.impact > 0 else ('border-l-2-sell' if drv.impact < 0 else 'border-l-2-muted') }}">
                         <div class="text-bold text-main text-xs line-height-relaxed">{{
                             drv.text }}</div>
                         <div class="text-mini text-muted text-mono mt-1">
@@ -123,7 +123,7 @@
             </div>
         </div>
 
-        <footer class="p-0-5-1 border-t-white-5 text-mini text-right text-muted text-upper">
+        <footer class="p-0-5-1 border-t-1 border-blue-5 text-mini text-right text-muted text-upper">
             TELEMETRY_SYNCED: {{ latest.created_at.strftime('%H:%M:%S') }} EAT
         </footer>
         {% else %}

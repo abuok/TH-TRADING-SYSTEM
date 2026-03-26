@@ -238,7 +238,7 @@
         <div class="mb-1 text-mini-mono border-b border-theme-soft pb-1">
           <span class="text-muted">[{{ incident.created_at.strftime('%H:%M:%S') }}]</span>
           <span class="text-cyan">[{{ incident.component }}]</span>
-          <span class="ml-2 {% if incident.severity == 'ERROR' %}text-sell{% elif incident.severity == 'WARN' %}text-warn{% else %}text-white{% endif %}">{{ incident.message }}</span>
+          <span class="ml-2 {% if incident.severity == 'ERROR' %}text-sell{% elif incident.severity == 'WARN' %}text-warn{% else %}text-main{% endif %}">{{ incident.message }}</span>
         </div>
         {% endfor %}
       </div>

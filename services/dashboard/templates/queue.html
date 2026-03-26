@@ -144,8 +144,8 @@
                             <span class="text-muted text-xxs text-mono">IDENT: ${t.ticket_id}</span>
                         </div>
                         <div class="flex align-center gap-5">
-                            <div class="text-muted text-xxs text-upper">SCORE: <span class="text-black text-xxs badge bg-white-5 border-1">${t.guardrails_score || '---'}</span></div>
-                            <span data-expiry="${t.expires_at}" id="timer-${t.ticket_id}" class="text-xxs border-yellow badge text-black text-yellow bg-white-5">TTL_SYNC...</span>
+                            <div class="text-muted text-xxs text-upper">SCORE: <span class="text-main text-xxs badge bg-blue-5 border-1">${t.guardrails_score || '---'}</span></div>
+                            <span data-expiry="${t.expires_at}" id="timer-${t.ticket_id}" class="text-xxs border-yellow badge text-yellow bg-blue-5">TTL_SYNC...</span>
                         </div>
                     </header>
                     
@@ -153,7 +153,7 @@
                         ${blockWarning}
                         
                         <div class="mb-4 grid gap-5 grid-cols-4">
-                            <div class="border-theme p-2 hud-scanline bg-black-25">
+                            <div class="p-3 border-theme rounded bg-blue-2 hud-scanline bg-black-25">
                                 <div class="text-upper text-muted text-mini mb-1 letter-spacing-1">ENTRY_PRICE</div>
                                 <div class="text-black text-lg text-main text-mono">${t.entry_price}</div>
                             </div>
@@ -171,7 +171,7 @@
                             </div>
                         </div>
 
-                        <div class="justify-end border-t-1 border-white-5 pt-4 gap-4 flex">
+                        <div class="justify-end border-t-1 border-blue-5 pt-4 gap-4 flex">
                             <button onclick="openSkipModal('${t.ticket_id}')" class="btn btn-secondary btn-tiny">ABORT_SIGNAL</button>
                             <button onclick="approveTicket('${t.ticket_id}')" class="bg-green btn text-black-color text-black btn-tiny border-green btn-primary">AUTHORIZE_EXECUTION_PLAN</button>
                         </div>
