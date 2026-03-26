@@ -97,15 +97,19 @@ def process_trade_fill(db: Session, fill: TradeFillEvent):
         elif fill.event_type in ["CLOSE", "PARTIAL"]:
             # Calculate Realized R
             r_gain = calculate_realized_r(ticket, fill)
-            if ticket.hindsight_realized_r is None:
-                ticket.hindsight_realized_r = 0.0
-            ticket.hindsight_realized_r += r_gain
+            # Guard: hindsight_realized_r column may not exist yet (schema debt)
+            current_r = getattr(ticket, "hindsight_realized_r", None)
+            if current_r is None:
+                current_r = 0.0
+            new_r = current_r + r_gain
+            if hasattr(ticket, "hindsight_realized_r"):
+                ticket.hindsight_realized_r = new_r
 
             if fill.event_type == "CLOSE":
                 ticket.status = "CLOSED"
                 ticket.closed_at = fill.time_utc
                 journal_type = "TRADE_CLOSED"
-                msg = f"Trade fully closed on MT5. Realized R: {ticket.hindsight_realized_r:.2f}"
+                msg = f"Trade fully closed on MT5. Realized R: {new_r:.2f}"
             else:
                 journal_type = "TRADE_PARTIAL"
                 msg = f"Partial close on MT5. Lots: {fill.lots}. R gain: {r_gain:.2f}"

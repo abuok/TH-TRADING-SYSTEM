@@ -9,21 +9,16 @@ def test_sidebar_renders_on_dashboard():
     response = client.get("/dashboard")
     assert response.status_code == 200
     content = response.text
-    # Verify sidebar sections
-    assert "Operations" in content
-    assert "Trading" in content
-    assert "Analytics" in content
-    assert "System" in content
 
-    # Verify specific links
-    assert "Queue" in content
-    assert "Pilot" in content
-    assert "Queue" in content
-    assert "Pilot" in content
-    assert "Fundamentals" in content
-    assert "Ops Daily" in content
-    assert "Execution Prep" in content
+    # Verify sidebar section heading (consolidated architecture)
+    assert "TACTICAL HUBS" in content
 
-    # Verify sidebar structure
+    # Verify the 4 consolidated hub links are present
+    assert "Command Center" in content
+    assert "Order Flow" in content
+    assert "Strategy Context" in content
+    assert "Node Telemetry" in content
+
+    # Verify sidebar structural classes
     assert 'class="sidebar"' in content
     assert 'class="sidebar-nav"' in content

@@ -108,11 +108,9 @@ def generate_order_ticket(
         block_reason=block_reason,
         idempotency_key=idempotency_key,
         expires_at=expires_at,
-        alignment_score=100 if (alignment and alignment.is_aligned) else 0,
-        is_aligned=alignment.is_aligned if alignment else False,
-        alignment_summary=[
-            {"code": r} for r in (alignment.reason_codes if alignment else [])
-        ],
+        # NOTE: alignment_score / is_aligned / alignment_summary columns are
+        # currently commented out in models.py (schema debt — pending migration).
+        # Do NOT pass them here until schema is aligned.
         active_policy_name=None,
         active_policy_hash=None,
     )
