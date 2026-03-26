@@ -1095,7 +1095,7 @@ async def dashboard_order_flow(
         .all()
     )
     # 3. Trades (Active Positions)
-    from shared.database.models import PositionSnapshotModel, TradeFillLog
+    from shared.database.models import PositionSnapshot, TradeFillLog
     positions = (
         db.query(PositionSnapshotModel)
         .order_by(PositionSnapshotModel.updated_at_utc.desc())

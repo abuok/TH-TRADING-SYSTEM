@@ -33,7 +33,7 @@
   <div class="j-main-grid">
 
     <!-- ── LEFT: State Machine + Bias ─────────────────────── -->
-    <div style="display:flex;flex-direction:column;gap:0.75rem;">
+    <div class="flex-col gap-3">
 
       <!-- PHX State Machine -->
       <div class="j-panel">
@@ -62,19 +62,19 @@
       <div class="j-pair-tabs">
         <button class="j-tab active" onclick="switchPair('XAUUSD', this)">XAUUSD</button>
         <button class="j-tab" onclick="switchPair('GBPJPY', this)">GBPJPY</button>
-        <div style="flex:1;"></div>
-        <span id="j-setup-count" style="font-family:var(--j-mono);font-size:0.62rem;color:var(--j-muted);align-self:center;"></span>
+        <div class="flex-1"></div>
+        <span id="j-setup-count" class="j-setup-count-text"></span>
       </div>
       <div class="j-chart-frame">
-        <div id="j-tv-chart" style="width:100%;height:100%;"></div>
+        <div id="j-tv-chart" class="w-full h-full"></div>
       </div>
     </div>
 
     <!-- ── RIGHT: Thought Stream ───────────────────────────── -->
-    <div class="j-panel" style="height:fit-content;">
+    <div class="j-panel h-fit">
       <div class="j-panel-header">
         <span class="j-panel-title">LIVE THOUGHT STREAM</span>
-        <span id="j-stream-count" style="font-family:var(--j-mono);font-size:0.58rem;color:var(--j-dim);">0 EVENTS</span>
+        <span id="j-stream-count" class="j-stream-count-text">0 EVENTS</span>
       </div>
       <div class="j-thought-scroll">
         <div id="j-thought-list" class="j-thought-stream">
@@ -94,7 +94,7 @@
     <div class="j-panel">
       <div class="j-panel-header">
         <span class="j-panel-title">RISK CONTROL PANEL</span>
-        <span id="j-lock-state-badge" style="font-family:var(--j-mono);font-size:0.6rem;letter-spacing:1px;color:var(--j-muted);">--</span>
+        <span id="j-lock-state-badge" class="j-badge-text">--</span>
       </div>
       <div id="j-lock-banner-wrap"></div>
       <div class="j-risk-rows" id="j-risk-rows">
@@ -112,7 +112,7 @@
             <span id="j-dd-num">0.00% / 2.00%</span>
           </div>
           <div class="j-drawdown-track">
-            <div id="j-dd-fill" class="j-drawdown-fill" style="width:0%;"></div>
+            <div id="j-dd-fill" class="j-drawdown-fill"></div>
           </div>
         </div>
         <div class="j-risk-row">
@@ -126,7 +126,7 @@
     <div class="j-panel">
       <div class="j-panel-header">
         <span class="j-panel-title">ALIGNMENT MATRIX // GUARDRAILS</span>
-        <span id="j-align-status" style="font-family:var(--j-mono);font-size:0.6rem;"> </span>
+        <span id="j-align-status" class="j-align-status-text"> </span>
       </div>
       <div id="j-align-checks" class="j-align-checks">
         <!-- populated by JS -->
@@ -148,14 +148,14 @@
   <!-- ═══════════════════════════════════════════════════════════
        LEGACY PANEL TOGGLE
   ═══════════════════════════════════════════════════════════ -->
-  <div style="text-align:center;margin:1.5rem 0 0.5rem;">
+  <div class="j-legacy-wrap">
     <button class="legacy-toggle-btn"
       onclick="const e=document.getElementById('legacy-hud');e.style.display=e.style.display==='none'?'block':'none';">
       SHOW / HIDE LEGACY PANELS
     </button>
   </div>
 
-  <div id="legacy-hud" style="display:none;">
+  <div id="legacy-hud" class="hidden">
     <!-- PANEL 1: PERMISSION STATE -->
     <section class="hud-hero-panel {% if permission_state == 'HARD_LOCK' %}bg-sell-dim border-sell{% elif permission_state == 'SOFT_LOCK' %}bg-warn-dim border-warn{% else %}bg-buy-dim border-buy{% endif %}">
       <div class="hud-hero-content">
