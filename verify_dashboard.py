@@ -11,14 +11,9 @@ os.environ["DASHBOARD_AUTH_ENABLED"] = "false" # bypass auth for test
 
 routes_to_test = [
     "/dashboard",
-    "/dashboard/ops/daily",
-    "/dashboard/ops/weekly",
-    "/dashboard/execution-prep",
-    "/dashboard/health",
-    "/dashboard/queue",
-    "/dashboard/trades",
-    "/dashboard/pilot",
-    "/dashboard/fundamentals"
+    "/dashboard/order-flow",
+    "/dashboard/strategy-context",
+    "/dashboard/node-telemetry"
 ]
 
 failed = False

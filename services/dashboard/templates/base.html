@@ -59,66 +59,30 @@
 
             <div class="sidebar-content">
                 <section class="sidebar-section">
-                    <h4 class="sidebar-section-title">Operations</h4>
+                    <h4 class="sidebar-section-title">Tactical Hubs</h4>
                     <ul class="sidebar-nav">
                         <li class="sidebar-item">
-                            <a href="/dashboard" class="sidebar-link active">
-                                <span class="sidebar-dot"></span>Overview
+                            <a href="/dashboard" class="sidebar-link {{ 'active' if request.url.path == '/dashboard' else '' }}">
+                                <span class="sidebar-dot"></span>Command Center
                             </a>
                         </li>
                         <li class="sidebar-item">
-                            <a href="/dashboard/ops/daily" class="sidebar-link">
-                                <span class="sidebar-dot"></span>Ops Daily
+                            <a href="/dashboard/order-flow" class="sidebar-link {{ 'active' if '/order-flow' in request.url.path else '' }}">
+                                <span class="sidebar-dot"></span>Order Flow
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="/dashboard/strategy-context" class="sidebar-link {{ 'active' if '/strategy-context' in request.url.path else '' }}">
+                                <span class="sidebar-dot"></span>Strategy Context
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="/dashboard/node-telemetry" class="sidebar-link {{ 'active' if '/node-telemetry' in request.url.path else '' }}">
+                                <span class="sidebar-dot"></span>Node Telemetry
                             </a>
                         </li>
                     </ul>
                 </section>
-
-                <section class="sidebar-section">
-                    <h4 class="sidebar-section-title">Trading</h4>
-                    <ul class="sidebar-nav">
-                        <li class="sidebar-item">
-                            <a href="/dashboard/queue" class="sidebar-link">
-                                <span class="sidebar-dot"></span>Queue
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="/dashboard/trades" class="sidebar-link">
-                                <span class="sidebar-dot"></span>Trades
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="/dashboard/execution-prep" class="sidebar-link">
-                                <span class="sidebar-dot"></span>Execution Prep
-                            </a>
-                        </li>
-                    </ul>
-                </section>
-
-                <section class="sidebar-section">
-                    <h4 class="sidebar-section-title">Analytics</h4>
-                    <ul class="sidebar-nav">
-                        <li class="sidebar-item">
-                            <a href="/dashboard/pilot" class="sidebar-link">
-                                <span class="sidebar-dot"></span>Pilot
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="/dashboard/fundamentals" class="sidebar-link">
-                                <span class="sidebar-dot"></span>Fundamentals
-                            </a>
-                        </li>
-                    </ul>
-                </section>
-
-                <section class="sidebar-section">
-                    <h4 class="sidebar-section-title">System</h4>
-                    <ul class="sidebar-nav">
-                        <li class="sidebar-item">
-                            <a href="/dashboard/health" class="sidebar-link">
-                                <span class="sidebar-dot"></span>Health
-                            </a>
-                        </li>
                     </ul>
                 </section>
             </div>

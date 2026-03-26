@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hud-grid">
+    
+    <!-- PRIMARY: LIVE POSITIONS -->
+    <div class="hud-panel glass-panel col-span-12" data-hud-corner="top-left">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">ACTIVE EXPOSURE // LIVE POSITIONS</div>
+        </header>
+        <div class="hud-scroll-body h-350">
+            {% if positions %}
+            <table class="hud-compact-table">
+                <thead>
+                    <tr>
+                        <th class="w-100">SYMBOL</th>
+                        <th class="w-80">TYPE</th>
+                        <th class="text-right w-100">VOLUME</th>
+                        <th class="text-right w-120">ENTRY</th>
+                        <th class="text-right w-120">CURRENT</th>
+                        <th class="text-right">FLOATING PNL</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in positions %}
+                    <tr>
+                        <td class="text-mono text-bold util-20f3a9">{{ p.symbol }}</td>
+                        <td>
+                            <span class="badge badge-sm font-900 {{ 'bg-buy-dim text-buy border-buy' if p.position_type == 'POSITION_TYPE_BUY' else 'bg-sell-dim text-sell border-sell' }} text-mini">
+                                {{ "BUY" if p.position_type == 'POSITION_TYPE_BUY' else "SELL" }}
+                            </span>
+                        </td>
+                        <td class="text-right text-mono">{{ "%.2f"|format(p.volume) }}</td>
+                        <td class="text-right text-mono text-muted">{{ "%.5f"|format(p.price_open) }}</td>
+                        <td class="text-right text-mono text-muted">{{ "%.5f"|format(p.price_current) }}</td>
+                        <td class="text-right text-mono text-bold {{ 'text-buy' if p.profit > 0 else 'text-sell' }}">
+                            {{ "%.2f"|format(p.profit) }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="hud-empty-state">
+                <span style="color: var(--accent-cyan); font-family: monospace;">ZERO_ACTIVE_EXPOSURE_DETECTED</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- SECONDARY: EXECUTION PREP -->
+    <div class="hud-panel glass-panel col-span-6" data-hud-corner="bottom-left">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">EXECUTION PLANNED // PRE-FLIGHT</div>
+        </header>
+        <div class="hud-scroll-body h-350">
+            {% if preps %}
+            <table class="hud-compact-table">
+                <thead>
+                    <tr>
+                        <th>PREP_ID</th>
+                        <th class="text-center">STATUS</th>
+                        <th class="text-right">EXPIRES_AT</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in preps %}
+                    <tr>
+                        <td class="text-xs text-mono" style="color: var(--accent-cyan);">{{ p.prep_id }}</td>
+                        <td class="text-center">
+                            <span style="color: {{ 'var(--accent-green)' if p.status == 'ACTIVE' else 'var(--text-muted)' }};">
+                                {{ p.status }}
+                            </span>
+                        </td>
+                        <td class="text-right text-mono text-xxs text-muted">
+                            {{ p.expires_at.strftime('%H:%M:%S') if p.expires_at else 'N/A' }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="hud-empty-state">
+                <span style="color: var(--accent-cyan); font-family: monospace;">NO_ACTIVE_PREPARATIONS</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- TERTIARY: QUEUE -->
+    <div class="hud-panel glass-panel col-span-6" data-hud-corner="bottom-right">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">SCANNER QUEUE // PENDING REVIEW</div>
+        </header>
+        <div class="hud-scroll-body h-350">
+            {% if tickets %}
+            <table class="hud-compact-table">
+                <thead>
+                    <tr>
+                        <th>TICKET</th>
+                        <th>PAIR</th>
+                        <th class="text-right">SCORE</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in tickets %}
+                    <tr>
+                        <td class="text-xs text-mono text-muted">{{ t.ticket_id[:8] }}...</td>
+                        <td class="text-xs text-bold" style="color: var(--accent-green);">{{ t.pair }}</td>
+                        <td class="text-right text-mono">
+                            {{ "%.1f"|format(t.guardrails_score) }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="hud-empty-state">
+                <span style="color: var(--accent-cyan); font-family: monospace;">ZERO_TICKETS_FOUND // SCANNING NETWORK</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

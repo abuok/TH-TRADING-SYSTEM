@@ -1,24 +1,25 @@
 @import url("theme.css");
 
 :root {
-    --bg-primary: var(--bg-dark);
-    --bg-secondary: var(--surface-dark);
-    --bg-tertiary: #1e293b;
-    --text-primary: var(--text-main);
-    --text-secondary: var(--text-muted);
-    --border-color: var(--border-dim);
-    --accent-blue: var(--accent-cyan);
-    --accent-green: var(--accent-green);
-    --accent-red: var(--accent-pink);
-    --accent-orange: var(--accent-orange);
-    --warning-color: var(--accent-yellow);
-    --success-color: var(--accent-green);
-    --danger-color: var(--accent-pink);
+    /* Main Background Elements */
+    --bg-primary: #0B1A12;   /* Deep Matrix */
+    --surface-dark: #0A1024; /* Orbit Navy */
+    --bg-secondary: #0A1024;
+    --border-dim: #11131A;   /* Space Charcoal */
+
+    /* Typography */
+    --text-primary: #E2E8F0;
+    --text-muted: #64748B;
     
+    /* Strict Action Palette */
+    --accent-green: #B4FF00; /* Acid Lime */
+    --accent-cyan: #0066FF;  /* Electric Blue */
+    --accent-pink: #FF3B3B;  /* Mars Red */
+
     /* Canonical TH Status Colors */
     --color-buy: var(--accent-green);
     --color-sell: var(--accent-pink);
-    --color-warn: var(--accent-yellow);
+    --color-warn: var(--accent-cyan);
 }
 
 * {
@@ -265,9 +266,7 @@ footer {
 .hud-top-bar {
     grid-column: 2 / -1;
     height: 60px;
-    background: rgba(18, 18, 26, 0.8);
-    -webkit-backdrop-filter: blur(8px);
-    backdrop-filter: blur(8px);
+    background: var(--surface-dark);
     border-bottom: 1px solid var(--border-dim);
     display: flex;
     align-items: center;
@@ -278,8 +277,8 @@ footer {
 .hud-main {
     grid-column: 2 / -1;
     overflow-y: auto;
-    padding: 1.5rem;
-    background: radial-gradient(circle at center, #1a1a2e 0%, #0b0b10 100%);
+    padding: 2rem;
+    background: var(--bg-primary);
 }
 
 .hud-grid {
@@ -291,8 +290,8 @@ footer {
 
 /* Cockpit Card overrides */
 .hud-panel {
-    background: rgba(18, 18, 26, 0.4);
-    border: 1px solid rgba(86, 204, 242, 0.2);
+    background: var(--surface-dark);
+    border: 1px solid var(--border-dim);
     border-radius: 4px;
     display: flex;
     flex-direction: column;
@@ -302,10 +301,8 @@ footer {
 }
 
 .hud-panel.glass-panel {
-    background: rgba(18, 18, 26, 0.6);
-    -webkit-backdrop-filter: blur(12px);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(86, 204, 242, 0.15);
+    background: var(--surface-dark);
+    border: 1px solid var(--border-dim);
 }
 
 .hud-panel-header {

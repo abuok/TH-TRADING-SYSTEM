@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hud-grid">
+    
+    <!-- PRIMARY: MACRO SENTIMENT & BIAS -->
+    <div class="hud-panel glass-panel col-span-12" data-hud-corner="top-left">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">GLOBAL MACRO // STRATEGIC ALIGNMENT</div>
+        </header>
+
+        {% if movers and movers.data %}
+        <div class="grid gap-4 mt-2" style="grid-template-columns: repeat(4, 1fr);">
+            {% for asset, data in movers.data.get('top_movers', {}).items() %}
+            <div style="background: var(--bg-primary); padding: 1rem; border: 1px solid var(--border-dim); border-radius: 4px;">
+                <div class="text-xs text-mono text-muted">{{ asset }}</div>
+                <div class="text-lg font-900" style="color: {{ 'var(--accent-green)' if data.get('change_pct', 0) > 0 else 'var(--accent-pink)' }};">
+                    {{ "+%.2f"|format(data.get('change_pct', 0)) if data.get('change_pct', 0) > 0 else "%.2f"|format(data.get('change_pct', 0)) }}%
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="hud-empty-state">
+            <span style="color: var(--accent-cyan); font-family: monospace;">AWAITING_MACRO_TELEMETRY</span>
+        </div>
+        {% endif %}
+
+        <div class="grid gap-4 mt-4" style="grid-template-columns: 1fr 1fr;">
+            {% for pair, data_list in pairs_data.items() %}
+            <div style="padding: 1rem; border-top: 1px solid var(--border-dim);">
+                <div class="text-sm font-900 mb-2" style="color: var(--accent-cyan); letter-spacing: 2px;">{{ pair }} BIAS MATRIX</div>
+                {% if data_list %}
+                    {% set latest = data_list[0].data %}
+                    <div style="color: var(--text-primary); font-size: 0.9rem;">
+                        <strong>Score:</strong> <span style="color: {{ 'var(--accent-green)' if latest.get('total_score', 0) > 5 else ('var(--accent-pink)' if latest.get('total_score', 0) < -5 else 'var(--text-muted)') }}">{{ latest.get('total_score', 0) }}</span><br>
+                        <span class="text-xs text-muted text-mono">{{ latest.get('bias_narrative', 'No narrative available') }}</span>
+                    </div>
+                {% else %}
+                    <span class="text-xs text-mono" style="color: var(--text-muted);">ZERO_BIAS_SIGNALS</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- SECONDARY: PILOT SCORECARDS -->
+    <div class="hud-panel glass-panel col-span-12" data-hud-corner="bottom-left">
+        <header class="hud-panel-header">
+            <div class="hud-panel-title">SYSTEM EXPECTANCY // PILOT SCORECARDS</div>
+        </header>
+
+        <div class="hud-scroll-body h-350">
+            {% if scorecards %}
+            <table class="hud-compact-table">
+                <thead>
+                    <tr>
+                        <th class="w-120">TIMESTAMP</th>
+                        <th class="w-100">WIN RATE</th>
+                        <th class="w-100 text-right">TOTAL EV</th>
+                        <th class="text-right">R_PROXY</th>
+                        <th class="text-right">G_SCORE</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sc in scorecards %}
+                    <tr>
+                        <td class="text-xxs text-mono text-muted">{{ sc.created_at.strftime('%m-%d %H:%M') }}</td>
+                        <td class="text-xs font-900" style="color: var(--text-primary);">{{ "%.1f"|format(sc.aggregate_metrics.get('win_rate_pct', 0)) }}%</td>
+                        <td class="text-xs text-right text-mono" style="color: var(--accent-cyan);">{{ "%.2f"|format(sc.aggregate_metrics.get('total_ev', 0)) }}</td>
+                        <td class="text-right font-900" style="color: {{ 'var(--accent-green)' if sc.aggregate_metrics.get('net_r_proxy', 0) > 0 else 'var(--accent-pink)' }};">
+                            {{ "%.2f"|format(sc.aggregate_metrics.get('net_r_proxy', 0)) }}R
+                        </td>
+                        <td class="text-right text-xs text-mono" style="color: var(--text-muted);">
+                            {{ "%.1f"|format(sc.aggregate_metrics.get('avg_guardrails', 0)) }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="hud-empty-state">
+                <span style="color: var(--accent-cyan); font-family: monospace;">ZERO_SCORECARDS_GENERATED</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1071,6 +1071,139 @@ async def mark_action_item_done(
     return {"status": "success"}
 
 
+# --- UNIFIED DASHBOARD ROUTES ---
+
+@app.get("/dashboard/order-flow", response_class=HTMLResponse)
+async def dashboard_order_flow(
+    request: Request,
+    auth: bool = Depends(verify_auth),
+    db: Session = Depends(db_session.get_db),
+):
+    # 1. Queue Tickets
+    tickets = (
+        db.query(OrderTicket)
+        .filter(OrderTicket.status == "IN_REVIEW")
+        .order_by(OrderTicket.expires_at.asc())
+        .limit(20)
+        .all()
+    )
+    # 2. Execution Preps
+    preps = (
+        db.query(ExecutionPrepLog)
+        .order_by(ExecutionPrepLog.created_at.desc())
+        .limit(20)
+        .all()
+    )
+    # 3. Trades (Active Positions)
+    from shared.database.models import PositionSnapshotModel, TradeFillLog
+    positions = (
+        db.query(PositionSnapshotModel)
+        .order_by(PositionSnapshotModel.updated_at_utc.desc())
+        .all()
+    )
+    fills = (
+        db.query(TradeFillLog).order_by(TradeFillLog.time_utc.desc()).limit(15).all()
+    )
+    
+    return render_template(
+        "order_flow.html",
+        {
+            "request": request,
+            "active_page": "order-flow",
+            "tickets": tickets,
+            "preps": preps,
+            "positions": positions,
+            "fills": fills,
+        },
+    )
+
+
+@app.get("/dashboard/strategy-context", response_class=HTMLResponse)
+async def dashboard_strategy_context(
+    request: Request,
+    auth: bool = Depends(verify_auth),
+    db: Session = Depends(db_session.get_db),
+):
+    # Fundamentals
+    movers = (
+        db.query(Packet)
+        .filter(Packet.packet_type == "MarketMoversPacket")
+        .order_by(Packet.created_at.desc())
+        .first()
+    )
+    pairs_data = {}
+    for pair in ["XAUUSD", "GBPJPY"]:
+        recent = (
+            db.query(Packet)
+            .filter(
+                Packet.packet_type == "PairFundamentalsPacket",
+                Packet.data["asset_pair"].as_string() == pair,
+            )
+            .order_by(Packet.created_at.desc())
+            .limit(5)
+            .all()
+        )
+        pairs_data[pair] = recent
+
+    # Pilot
+    scorecards = (
+        db.query(PilotScorecardLog)
+        .order_by(PilotScorecardLog.created_at.desc())
+        .limit(10)
+        .all()
+    )
+
+    return render_template(
+        "strategy_context.html",
+        {
+            "request": request,
+            "active_page": "strategy-context",
+            "movers": movers,
+            "pairs_data": pairs_data,
+            "scorecards": scorecards,
+        },
+    )
+
+
+@app.get("/dashboard/node-telemetry", response_class=HTMLResponse)
+async def dashboard_node_telemetry(
+    request: Request,
+    auth: bool = Depends(verify_auth),
+    db: Session = Depends(db_session.get_db),
+):
+    from services.dashboard.logic import get_service_health
+    
+    health, response_times = await get_service_health()
+    incidents = db.query(IncidentLog).order_by(IncidentLog.created_at.desc()).limit(20).all()
+    
+    daily_latest = (
+        db.query(OpsReportLog)
+        .filter(OpsReportLog.report_type == "daily")
+        .order_by(OpsReportLog.created_at.desc())
+        .first()
+    )
+    
+    weekly_latest = (
+        db.query(OpsReportLog)
+        .filter(OpsReportLog.report_type == "weekly")
+        .order_by(OpsReportLog.created_at.desc())
+        .first()
+    )
+
+    return render_template(
+        "node_telemetry.html",
+        {
+            "request": request,
+            "active_page": "node-telemetry",
+            "health": health,
+            "response_times": response_times,
+            "incidents": incidents,
+            "daily_report": daily_latest.report_data if daily_latest else None,
+            "weekly_report": weekly_latest.report_data if weekly_latest else None,
+        },
+    )
+
+
 if __name__ == "__main__":
     import uvicorn
 
