@@ -54,4 +54,13 @@ pytest-asyncio==0.23.5
 types-redis
 types-pytz
 types-requests
+types-setuptools
+types-PyYAML
+
+# Distributed Tracing
+opentelemetry-api
+opentelemetry-sdk
+opentelemetry-instrumentation-fastapi
+opentelemetry-instrumentation-sqlalchemy
+opentelemetry-exporter-otlp
 

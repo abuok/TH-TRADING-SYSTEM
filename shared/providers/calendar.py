@@ -9,6 +9,7 @@ import logging
 import os
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
+from typing import Any
 
 logger = logging.getLogger("CalendarProvider")
 
@@ -17,14 +18,14 @@ class CalendarProvider(ABC):
     """Abstract base for economic calendar providers."""
 
     @abstractmethod
-    def fetch_events(self) -> list[dict]:
+    def fetch_events(self) -> list[dict[str, Any]]:
         """
         Return a list of high-impact economic events for the current/next day.
         Each event: {"event": str, "time": ISO str, "currency": str, "impact": "High"|"Medium"}
         Must never raise — return [] and log on total failure.
         """
 
-    def get_no_trade_windows(self, events: list[dict]) -> list[dict]:
+    def get_no_trade_windows(self, events: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """
         Derive no-trade windows from event list (±15 min around each event).
         Returns list of {"event", "start", "end", "impact"} dicts with ISO timestamps.
@@ -61,7 +62,7 @@ class MockCalendarProvider(CalendarProvider):
     Tests can subclass and override fetch_events to inject scenarios.
     """
 
-    def fetch_events(self) -> list[dict]:
+    def fetch_events(self) -> list[dict[str, Any]]:
         return []
 
 
@@ -73,7 +74,7 @@ class ForexFactoryCalendarProvider(CalendarProvider):
 
     RSS_URL = "https://www.forexfactory.com/ff_calendar_thisweek.xml"
 
-    def fetch_events(self) -> list[dict]:
+    def fetch_events(self) -> list[dict[str, Any]]:
         try:
             import feedparser
             import pytz
@@ -89,7 +90,7 @@ class ForexFactoryCalendarProvider(CalendarProvider):
                     feed.bozo_exception,
                 )
 
-            events: list[dict] = []
+            events: list[dict[str, Any]] = []
             skipped = 0
             for entry in feed.entries:
                 impact = getattr(entry, "impact", "Low")

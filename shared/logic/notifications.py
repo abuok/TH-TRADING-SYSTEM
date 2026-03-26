@@ -6,12 +6,12 @@ logger = logging.getLogger("Notifications")
 
 class NotificationAdapter(ABC):
     @abstractmethod
-    def send(self, message: str, level: str = "INFO"):
+    def send(self, message: str, level: str = "INFO") -> None:
         pass
 
 
 class ConsoleNotificationAdapter(NotificationAdapter):
-    def send(self, message: str, level: str = "INFO"):
+    def send(self, message: str, level: str = "INFO") -> None:
         color = ""
         reset = "\033[0m"
         if level == "SUCCESS":
@@ -30,7 +30,7 @@ class NotificationService:
     def __init__(self, adapters: list[NotificationAdapter]):
         self.adapters = adapters
 
-    def notify(self, message: str, level: str = "INFO"):
+    def notify(self, message: str, level: str = "INFO") -> None:
         for adapter in self.adapters:
             try:
                 adapter.send(message, level)
@@ -41,11 +41,12 @@ class NotificationService:
 
 
 # Global singleton or helper
+from typing import Any
 _service = NotificationService([ConsoleNotificationAdapter()])
-_last_notified = {}
+_last_notified: dict[str, Any] = {}
 
 
-def notify_suggestion(suggestion: dict):
+def notify_suggestion(suggestion: dict[str, Any]) -> None:
     """Notify about a trade management suggestion with 1h rate limit per ticket+type."""
     from datetime import datetime, timedelta
 

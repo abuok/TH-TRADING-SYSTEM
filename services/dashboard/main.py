@@ -55,6 +55,7 @@ from shared.database.models import (
 from shared.logic.sessions import get_nairobi_time
 from services.dashboard.websocket import manager, websocket_event_listener
 from fastapi import WebSocket, WebSocketDisconnect
+from shared.instrumentation.tracing import init_tracing, instrument_app
 
 security = HTTPBasic()
 
@@ -73,6 +74,8 @@ setup_rate_limiting(app)
 
 @app.on_event("startup")
 async def startup_event():
+    init_tracing("dashboard")
+    instrument_app(app)
     logger.info("Dashboard starting up...")
     asyncio.create_task(websocket_event_listener())
     logger.info("WebSocket event listener started in background.")

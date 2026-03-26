@@ -19,16 +19,24 @@ class JsonFormatter(logging.Formatter):
         }
 
         # Include extra attributes
-        if hasattr(record, "extra_data"):
-            log_record.update(record.extra_data)
+        extra_data = getattr(record, "extra_data", {})
+        if extra_data:
+            log_record.update(extra_data)
 
         if record.exc_info:
-            log_record["exception"] = self.formatException(record.exc_info)
+            from typing import cast, TYPE_CHECKING
+            if TYPE_CHECKING:
+                from types import TracebackType
+                exc_info_type = tuple[type[BaseException], BaseException, TracebackType | None] | tuple[None, None, None]
+            else:
+                exc_info_type = Any
+            
+            log_record["exception"] = self.formatException(cast(exc_info_type, record.exc_info))
 
         return json.dumps(log_record)
 
 
-def setup_production_logging(level: int = logging.INFO):
+def setup_production_logging(level: int = logging.INFO) -> None:
     """
     Configs logging to use JSON formatting for production environments.
     """
@@ -37,7 +45,7 @@ def setup_production_logging(level: int = logging.INFO):
 
     # Sanitize: Remove root handlers if they exist to avoid duplicate logs
     root = logging.getLogger()
-    for h in root.handlers[:]:
+    for h in list(root.handlers):
         root.removeHandler(h)
 
     root.addHandler(handler)
