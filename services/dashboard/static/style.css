@@ -133,10 +133,10 @@ h3 {
 }
 
 .sidebar-link.active {
-    background: rgba(86, 204, 242, 0.05);
-    color: var(--accent-cyan);
-    border-left-color: var(--accent-cyan);
-    text-shadow: 0 0 10px rgba(86, 204, 242, 0.4);
+    background: rgba(180, 255, 0, 0.05);
+    color: var(--accent-green);
+    border-left-color: var(--accent-green);
+    text-shadow: 0 0 10px rgba(180, 255, 0, 0.4);
 }
 
 .status-marker {

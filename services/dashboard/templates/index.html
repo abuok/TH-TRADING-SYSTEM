@@ -145,17 +145,7 @@
 
   </div>
 
-  <!-- ═══════════════════════════════════════════════════════════
-       LEGACY PANEL TOGGLE
-  ═══════════════════════════════════════════════════════════ -->
-  <div class="j-legacy-wrap">
-    <button class="legacy-toggle-btn"
-      onclick="const e=document.getElementById('legacy-hud');e.style.display=e.style.display==='none'?'block':'none';">
-      SHOW / HIDE LEGACY PANELS
-    </button>
-  </div>
-
-  <div id="legacy-hud" class="hidden">
+  <div id="legacy-hud">
     <!-- PANEL 1: PERMISSION STATE -->
     <section class="hud-hero-panel {% if permission_state == 'HARD_LOCK' %}bg-sell-dim border-sell{% elif permission_state == 'SOFT_LOCK' %}bg-warn-dim border-warn{% else %}bg-buy-dim border-buy{% endif %}">
       <div class="hud-hero-content">

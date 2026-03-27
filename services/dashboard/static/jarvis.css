@@ -536,4 +536,3 @@
 .j-stream-count-text { font-family: var(--j-mono); font-size: 0.58rem; color: var(--j-dim); }
 .j-badge-text { font-family: var(--j-mono); font-size: 0.6rem; letter-spacing: 1px; color: var(--j-muted); }
 .j-align-status-text { font-family: var(--j-mono); font-size: 0.6rem; }
-.j-legacy-wrap { text-align: center; margin: 1.5rem 0 0.5rem; }
