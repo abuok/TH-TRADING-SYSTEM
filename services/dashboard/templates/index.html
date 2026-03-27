@@ -33,7 +33,7 @@
   <div class="j-main-grid">
 
     <!-- ── LEFT: State Machine + Bias ─────────────────────── -->
-    <div class="flex-col gap-3">
+    <div class="flex-col gap-3 h-full">
 
       <!-- PHX State Machine -->
       <div class="j-panel">
@@ -55,10 +55,23 @@
         </div>
       </div>
 
+      <!-- ── MOVED FROM RIGHT: Thought Stream ──────────────── -->
+      <div class="j-panel flex-col flex-1 overflow-hidden">
+        <div class="j-panel-header">
+          <span class="j-panel-title">LIVE THOUGHT STREAM</span>
+          <span id="j-stream-count" class="j-stream-count-text">0 EVENTS</span>
+        </div>
+        <div class="j-thought-scroll flex-1 overflow-y-auto">
+          <div id="j-thought-list" class="j-thought-stream">
+            <div class="j-empty">AWAITING SIGNAL FEED...</div>
+          </div>
+        </div>
+      </div>
+
     </div>
 
-    <!-- ── CENTER: Chart ───────────────────────────────────── -->
-    <div class="j-chart-section">
+    <!-- ── CENTER / RIGHT: Chart ───────────────────────────── -->
+    <div class="j-chart-section h-full">
       <div class="j-pair-tabs">
         <button class="j-tab active" onclick="switchPair('XAUUSD', this)">XAUUSD</button>
         <button class="j-tab" onclick="switchPair('GBPJPY', this)">GBPJPY</button>
@@ -67,19 +80,6 @@
       </div>
       <div class="j-chart-frame">
         <div id="j-tv-chart" class="w-full h-full"></div>
-      </div>
-    </div>
-
-    <!-- ── RIGHT: Thought Stream ───────────────────────────── -->
-    <div class="j-panel h-fit">
-      <div class="j-panel-header">
-        <span class="j-panel-title">LIVE THOUGHT STREAM</span>
-        <span id="j-stream-count" class="j-stream-count-text">0 EVENTS</span>
-      </div>
-      <div class="j-thought-scroll">
-        <div id="j-thought-list" class="j-thought-stream">
-          <div class="j-empty">AWAITING SIGNAL FEED...</div>
-        </div>
       </div>
     </div>
 
