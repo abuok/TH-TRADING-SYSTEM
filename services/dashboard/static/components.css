@@ -739,27 +739,27 @@
 }
 
 .p-1-2-5 {
-    padding: 1.25rem;
+    padding: 0.75rem;
 }
 
 .p-4-8 {
-    padding: 1rem 2rem;
+    padding: 0.75rem 1.25rem;
 }
 
 .p-6 {
-    padding: 1.5rem;
+    padding: 1rem;
 }
 
 .p-8 {
-    padding: 2rem;
+    padding: 1.25rem;
 }
 
 .p-10 {
-    padding: 2.5rem;
+    padding: 1.5rem;
 }
 
 .p-12 {
-    padding: 3rem;
+    padding: 2rem;
 }
 
 .p-0 {
@@ -775,7 +775,7 @@
 }
 
 .p-24 {
-    padding: 6rem;
+    padding: 4rem;
 }
 
 .pl-3 {

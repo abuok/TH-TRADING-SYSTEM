@@ -56,7 +56,7 @@ h3 {
     position: fixed;
     left: 0;
     top: 0;
-    width: 260px;
+    width: 220px;
     height: 100vh;
     background-color: var(--surface-dark);
     border-right: 1px solid var(--border-dim);
@@ -67,7 +67,7 @@ h3 {
 }
 
 .sidebar-header {
-    padding: 2rem 1.5rem;
+    padding: 1rem 1.25rem;
     border-bottom: 1px solid var(--border-dim);
 }
 
@@ -99,8 +99,8 @@ h3 {
 }
 
 .sidebar-section-title {
-    padding: 0 1.5rem 0.75rem;
-    font-size: 0.7rem;
+    padding: 0 1.25rem 0.5rem;
+    font-size: 0.65rem;
     font-weight: 700;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -118,11 +118,11 @@ h3 {
 .sidebar-link {
     display: flex;
     align-items: center;
-    padding: 0.75rem 1.5rem;
+    padding: 0.5rem 1.25rem;
     color: var(--text-muted);
     text-decoration: none;
     font-weight: 500;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     border-left: 3px solid transparent;
     transition: all 0.2s ease;
 }
@@ -156,7 +156,7 @@ h3 {
 }
 
 .main-content {
-    margin-left: 260px;
+    margin-left: 220px;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -164,8 +164,8 @@ h3 {
 
 .container {
     max-width: 1400px;
-    margin: 2rem auto;
-    padding: 0 2rem;
+    margin: 1rem auto;
+    padding: 0 1rem;
     flex-grow: 1;
 }
 
@@ -273,7 +273,7 @@ footer {
 /* --- High-Density Cockpit Grid --- */
 .hud-layout {
     display: grid;
-    grid-template-columns: 260px 1fr;
+    grid-template-columns: 220px 1fr;
     grid-template-rows: auto 1fr;
     height: 100vh;
     overflow: hidden;
@@ -293,7 +293,7 @@ footer {
 .hud-main {
     grid-column: 2 / -1;
     overflow-y: auto;
-    padding: 2rem;
+    padding: 1rem;
     background: var(--bg-primary);
     background-image: 
         linear-gradient(rgba(180, 255, 0, 0.02) 1px, transparent 1px),
@@ -306,7 +306,7 @@ footer {
     display: grid;
     grid-template-columns: repeat(12, 1fr);
     grid-auto-rows: minmax(150px, auto);
-    gap: 1.5rem;
+    gap: 0.75rem;
 }
 
 /* Cockpit Card overrides */
@@ -335,9 +335,9 @@ footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
-    border-bottom: 1px solid rgba(0, 102, 255, 0.1);
-    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-dim);
+    padding: 0.5rem 0.75rem;
     background: rgba(0, 102, 255, 0.02);
 }
 
@@ -895,7 +895,7 @@ footer {
 .hud-main-grid {
     display: grid;
     grid-template-columns: repeat(12, 1fr);
-    gap: 1rem;
+    gap: 0.75rem;
 }
 
 .hud-vertical-flow {
