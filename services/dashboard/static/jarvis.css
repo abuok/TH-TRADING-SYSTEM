@@ -26,10 +26,10 @@
   --j-red-dim: rgba(255, 59, 59, 0.1);
   --j-red-glow: rgba(255, 59, 59, 0.3);
 
-  --j-yellow: #ffd60a;
-  --j-yellow-dim: rgba(255, 214, 10, 0.08);
+  --j-yellow: var(--lime); /* Acid Lime overrides yellow */
+  --j-yellow-dim: rgba(180, 255, 0, 0.1);
 
-  --j-orange: #ff9f0a;
+  --j-orange: var(--blue); /* Electric Blue overrides orange */
   --j-text: var(--text-main);
   --j-muted: var(--text-muted);
   --j-dim: #2d3a4a;

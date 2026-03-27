@@ -1,25 +1,34 @@
 @import url("theme.css");
 
 :root {
-    /* Main Background Elements mapped to Theme tokens */
+    /* ── Foundational Palette (Hardcoded for Reliability) ── */
+    --bg-deep: #0B1A12;
+    --bg-orbit: #0A1024;
+    --bg-charcoal: #11131A;
+    --lime: #B4FF00;
+    --blue: #0066FF;
+    --red: #FF3B3B;
+
+    /* ── Semantic Mappings ─────────────────────────────── */
     --bg-primary: var(--bg-deep);
     --surface-dark: var(--bg-orbit);
     --bg-secondary: var(--bg-orbit);
-    --border-dim: var(--border-dim);
-
-    /* Typography */
-    --text-primary: var(--text-main);
-    --text-muted: var(--text-muted);
     
-    /* Strict Action Palette */
+    --text-primary: var(--blue); /* Electric Blue */
+    --text-high: var(--lime);    /* Acid Lime */
+    --text-muted: rgba(0, 102, 255, 0.6);
+    --border-dim: rgba(0, 102, 255, 0.15);
+    
     --accent-green: var(--lime);
     --accent-cyan: var(--blue);
     --accent-pink: var(--red);
 
-    /* Canonical TH Status Colors */
     --color-buy: var(--lime);
     --color-sell: var(--red);
     --color-warn: var(--blue);
+
+    --font-heading: 'Outfit', sans-serif;
+    --font-data: 'JetBrains Mono', monospace;
 }
 
 * {
