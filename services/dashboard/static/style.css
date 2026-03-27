@@ -7,7 +7,12 @@
     --bg-charcoal: #11131A;
     --lime: #B4FF00;
     --blue: #0066FF;
-    --red: #FF3B3B;
+    --mars-red: #FF3B3B;
+    --plasma-orange: #FF5E00;
+
+    /* Semantic Aliases */
+    --red: var(--mars-red);
+    --orange: var(--plasma-orange);
 
     /* ── Semantic Mappings ─────────────────────────────── */
     --bg-primary: var(--bg-deep);
@@ -21,11 +26,12 @@
     
     --accent-green: var(--lime);
     --accent-cyan: var(--blue);
-    --accent-pink: var(--red);
+    --accent-pink: var(--mars-red);
+    --accent-orange: var(--plasma-orange);
 
     --color-buy: var(--lime);
-    --color-sell: var(--red);
-    --color-warn: var(--blue);
+    --color-sell: var(--mars-red);
+    --color-warn: var(--plasma-orange);
 
     --font-heading: 'Outfit', sans-serif;
     --font-data: 'JetBrains Mono', monospace;

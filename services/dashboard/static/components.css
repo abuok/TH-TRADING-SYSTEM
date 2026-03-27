@@ -139,7 +139,7 @@
 }
 
 .bg-warn {
-    background: var(--blue);
+    background: var(--plasma-orange);
 }
 
 .bg-black-dim {
@@ -252,7 +252,7 @@
 }
 
 .border-l-2-warn {
-    border-left: 2px solid var(--blue);
+    border-left: 2px solid var(--plasma-orange);
 }
 
 .border-l-2-green {
@@ -288,7 +288,7 @@
 }
 
 .border-l-4-orange {
-    border-left: 4px solid var(--accent-orange);
+    border-left: 4px solid var(--plasma-orange);
 }
 
 .border-main-1 {
@@ -444,7 +444,7 @@
 }
 
 .text-warn {
-    color: var(--accent-yellow);
+    color: var(--plasma-orange);
 }
 
 .text-cyan {
@@ -460,7 +460,7 @@
 }
 
 .border-warn {
-    border: 1px solid var(--accent-yellow);
+    border: 1px solid var(--plasma-orange);
 }
 
 .border-cyan {
