@@ -24,9 +24,33 @@ class TechnicalWorker:
         self.detectors: Dict[str, PHXDetector] = {pair: PHXDetector(pair) for pair in pairs}
         self.last_quote_time: Optional[datetime] = None
         self.is_running = False
+        self.redis_prefix = "technical:detector"
+
+    def _load_persisted_states(self):
+        """Loads detector states from Redis on startup."""
+        for symbol in self.detectors:
+            try:
+                key = f"{self.redis_prefix}:{symbol}"
+                data = self.event_bus.client.get(key)
+                if data:
+                    serialized = json.loads(data)
+                    self.detectors[symbol] = PHXDetector.from_dict(serialized)
+                    logger.info("Restored persisted state for %s: %s", symbol, self.detectors[symbol].stage.name)
+            except Exception as e:
+                logger.error("Failed to restore state for %s: %s", symbol, e)
+
+    def _save_state(self, symbol: str):
+        """Persists a detector's state to Redis."""
+        try:
+            key = f"{self.redis_prefix}:{symbol}"
+            serialized = self.detectors[symbol].to_dict()
+            self.event_bus.client.set(key, json.dumps(serialized))
+        except Exception as e:
+            logger.error("Failed to persist state for %s: %s", symbol, e)
 
     async def run(self):
         """Main loop: consume quotes and update detectors."""
+        self._load_persisted_states()
         self.is_running = True
         logger.info("Technical Worker started. Monitoring: %s", list(self.detectors.keys()))
         
@@ -59,9 +83,10 @@ class TechnicalWorker:
                                 prev_stage = self.detectors[symbol].stage
                                 self.detectors[symbol].update(candle)
                                 
-                                # If stage advanced, publish a setup packet
+                                # If stage advanced, publish a setup packet and persist
                                 if self.detectors[symbol].stage != prev_stage:
-                                    self._publish_setup(symbol)
+                                    self._publish_setup(symbol, prev_stage)
+                                    self._save_state(symbol)
 
                         # Acknowledge message
                         self.event_bus.client.xack("quote", "technical_group", msg_id)
@@ -70,9 +95,10 @@ class TechnicalWorker:
                 logger.error("Error in Technical Worker loop: %s", e, exc_info=True)
                 await asyncio.sleep(1.0)
 
-    def _publish_setup(self, symbol: str):
+    def _publish_setup(self, symbol: str, prev_stage: Optional[PHXStage] = None):
         detector = self.detectors[symbol]
-        logger.info("PHX Setup Transition [%s]: %s -> %s", symbol, detector.stage.name, detector.stage.name)
+        prev_name = prev_stage.name if prev_stage else "UNKNOWN"
+        logger.info("PHX Setup Transition [%s]: %s -> %s", symbol, prev_name, detector.stage.name)
         
         # Build packet
         packet = TechnicalSetupPacket(

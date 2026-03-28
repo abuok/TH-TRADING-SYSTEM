@@ -47,21 +47,54 @@ class PHXDetector:
         self.is_invalidated = False
 
     def reset_if_triggered(self) -> bool:
-        """Reset the detector back to IDLE if it has reached TRIGGER.
-
-        Call this when a ticket generated from this detector is skipped or
-        expires, so the detector can detect the next valid setup on the same
-        pair.  The reset is intentionally explicit (not automatic) so the
-        caller controls the lifecycle.
-
-        Returns:
-            True  — a reset was performed (detector was at TRIGGER).
-            False — no reset needed (detector was not yet at TRIGGER).
-        """
         if self.stage == PHXStage.TRIGGER:
             self.reset()
             return True
         return False
+
+    def to_dict(self) -> dict:
+        """Serializes the detector state for persistence."""
+        return {
+            "asset_pair": self.asset_pair,
+            "stage": self.stage.name,
+            "bias_direction": self.bias_direction,
+            "sweep_level": self.sweep_level,
+            "sweep_high_low": self.sweep_high_low,
+            "choch_level": self.choch_level,
+            "history": [c.model_dump(mode="json") for c in self.history],
+            "stage_timestamps": {
+                s.name: t.isoformat() for s, t in self.stage_timestamps.items()
+            },
+            "reason_codes": self.reason_codes,
+            "current_session_label": self.current_session_label,
+            "is_invalidated": self.is_invalidated,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "PHXDetector":
+        """Restores a detector from a serialized state."""
+        detector = cls(data["asset_pair"])
+        detector.stage = PHXStage[data["stage"]]
+        detector.bias_direction = data["bias_direction"]
+        detector.sweep_level = data.get("sweep_level")
+        detector.sweep_high_low = data.get("sweep_high_low")
+        detector.choch_level = data.get("choch_level")
+        
+        from shared.types.packets import Candle
+        from datetime import datetime
+        
+        detector.history = [Candle(**c) for c in data["history"]]
+        
+        detector.stage_timestamps = {
+            PHXStage[s]: datetime.fromisoformat(t) 
+            for s, t in data["stage_timestamps"].items()
+        }
+        
+        detector.reason_codes = data.get("reason_codes", [])
+        detector.current_session_label = data.get("current_session_label")
+        detector.is_invalidated = data.get("is_invalidated", False)
+        
+        return detector
 
     def get_score(self) -> int:
         """Calculate a basic setup score (0-100)."""
