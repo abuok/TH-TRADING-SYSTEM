@@ -31,11 +31,9 @@ class JITValidator:
         now_nairobi = get_nairobi_time()
 
         # Step 1: Lockout Check
-        account_state = {
-            "daily_loss": 0.0,  # Placeholder
-            "account_balance": 10000.0,  # Placeholder
-            "consecutive_losses": 0,  # Placeholder
-        }
+        from shared.logic.accounts import calculate_account_state
+        account_state = calculate_account_state(db, self.lockout_engine.config)
+        
         lockout_state, lockout_msg = self.lockout_engine.evaluate(account_state, db=db)
         if lockout_state == LockoutState.HARD_LOCK:
             return False, f"REJECTED_JIT: HARD_LOCK - {lockout_msg}", ""

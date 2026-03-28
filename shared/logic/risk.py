@@ -32,6 +32,11 @@ class RiskEngine:
             return 0.0
         return round(reward / risk, 2)
 
+    def calculate_account_state(self, db: Session) -> dict:
+        """DEPRECATED: Use shared.logic.accounts.calculate_account_state"""
+        from shared.logic.accounts import calculate_account_state as shared_calc
+        return shared_calc(db, self.config)
+
     def evaluate(
         self,
         setup: TechnicalSetupPacket,

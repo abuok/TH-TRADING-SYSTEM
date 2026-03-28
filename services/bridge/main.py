@@ -24,7 +24,10 @@ from shared.logic.trade_lifecycle import process_trade_fill
 from shared.types.trade_capture import PositionSnapshotBatch, TradeFillBatch
 from shared.instrumentation.tracing import init_tracing, instrument_app
 
+from shared.messaging.event_bus import EventBus
+
 logger = logging.getLogger("BridgeService")
+event_bus = EventBus()
 
 from shared.security.middleware import setup_exception_handlers
 from shared.security.rate_limiting import LIMITS, limiter, setup_rate_limiting
@@ -113,6 +116,15 @@ async def post_quote(
             db.add(new_quote)
 
         db.commit()
+
+        # Publish to EventBus for reactive services (Technical, Risk)
+        event_bus.publish("quote", {
+            "symbol": payload.symbol,
+            "bid": payload.bid,
+            "ask": payload.ask,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        })
+
         return {"status": "success", "symbol": payload.symbol, "spread": spread}
     except Exception as e:
         logger.error(f"Error posting quote: {e}")
