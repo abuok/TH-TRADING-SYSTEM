@@ -35,14 +35,18 @@ class SymbolSpecProvider(ABC):
 
 class DBSymbolSpecProvider(SymbolSpecProvider):
     """
-    Fetches symbol specs from the database.
-    Specs are populated via the /bridge/spec endpoint from MT5.
+    Fetches symbol specs from the database, wrapped in an in-memory cache 
+    to prevent redundant SQL hits for static contract modifiers.
     """
+    _cache: dict[str, SymbolSpec] = {}
 
     def __init__(self, db: Session | None = None):
         self._db = db
 
     def get_spec(self, symbol: str) -> SymbolSpec | None:
+        if symbol in self._cache:
+            return self._cache[symbol]
+
         db = self._db or db_session.SessionLocal()
         try:
             model = (
@@ -52,7 +56,8 @@ class DBSymbolSpecProvider(SymbolSpecProvider):
             )
             if not model:
                 return None
-            return SymbolSpec(
+            
+            spec = SymbolSpec(
                 symbol=model.symbol,
                 contract_size=model.contract_size,
                 tick_size=model.tick_size,
@@ -61,6 +66,8 @@ class DBSymbolSpecProvider(SymbolSpecProvider):
                 min_lot=model.min_lot,
                 lot_step=model.lot_step,
             )
+            self._cache[symbol] = spec
+            return spec
         finally:
             if not self._db:
                 db.close()
