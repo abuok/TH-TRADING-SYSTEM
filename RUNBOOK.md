@@ -19,7 +19,7 @@ This single command orchestrates:
 4. UI Node (`dashboard`)
 
 ### Health Verification
-Navigate to `http://localhost:8005/command` to view the Command Center. Ensure all 8 service indicators show **ONLINE**. If any node shows OFFLINE, click the module to inspect its localized Trace ID and error JSON.
+Navigate to `http://localhost:8005/dashboard` to view the Command Center. Ensure all 8 service indicators show **ONLINE**. If any node shows OFFLINE, click the module to inspect its localized Trace ID and error JSON.
 
 ---
 
