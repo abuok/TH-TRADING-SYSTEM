@@ -1,7 +1,7 @@
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
-from services.bridge.logic.matching import match_fill_to_ticket
+from shared.logic.matching import match_fill_to_ticket
 from shared.database.models import (
     IncidentLog,
     JournalLog,
