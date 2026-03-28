@@ -34,9 +34,8 @@ SERVICES = {
     "Journal": os.getenv("JOURNAL_URL", "http://localhost:8004/health"),
     "Dashboard": os.getenv("DASHBOARD_URL", "http://localhost:8005/health"),
     "Orchestrator": os.getenv("ORCHESTRATOR_URL", "http://localhost:8006/health"),
-    # Bridge is not included in the default compose stack.
-    # Set BRIDGE_URL env var to enable health checking when bridge is running.
-    "Bridge": os.getenv("BRIDGE_URL", ""),
+    "Research": os.getenv("RESEARCH_URL", "http://localhost:8007/health"),
+    "Bridge": os.getenv("BRIDGE_URL", "http://localhost:8008/health"),
 }
 
 
