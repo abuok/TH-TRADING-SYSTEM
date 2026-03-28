@@ -98,10 +98,31 @@ class DBPriceQuoteProvider(PriceQuoteProvider):
 
 
 class RealPriceQuoteProvider(PriceQuoteProvider):
-    """Stub for future direct broker integration."""
+    """
+    Production integration: fetches live quotes directly from Redis in O(1) time.
+    Bypasses the database entirely to prevent Postgres lock contention under high load.
+    The Bridge (services/bridge/main.py) pushes to quote:{symbol} on every tick.
+    """
+    def __init__(self):
+        from shared.messaging.event_bus import EventBus
+        self.bus = EventBus()
 
     def get_quote(self, symbol: str) -> PriceQuote | None:
-        raise NotImplementedError("RealPriceQuoteProvider is a stub.")
+        import json
+        raw = self.bus.client.get(f"quote:{symbol}")
+        if not raw:
+            return None
+            
+        try:
+            data = json.loads(raw)
+            return PriceQuote(
+                symbol=data["symbol"], 
+                bid=float(data["bid"]), 
+                ask=float(data["ask"])
+            )
+        except Exception as e:
+            logger.error(f"Failed to parse quote from Redis for {symbol}: {e}")
+            return None
 
 
 _global_provider: PriceQuoteProvider | None = None

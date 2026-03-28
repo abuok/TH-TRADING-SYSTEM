@@ -117,13 +117,19 @@ async def post_quote(
 
         db.commit()
 
-        # Publish to EventBus for reactive services (Technical, Risk)
-        event_bus.publish("quote", {
+        payload_dict = {
             "symbol": payload.symbol,
             "bid": payload.bid,
             "ask": payload.ask,
             "timestamp": datetime.now(timezone.utc).isoformat()
-        })
+        }
+        
+        # Publish to EventBus for reactive services (Technical, Risk)
+        event_bus.publish("quote", payload_dict)
+        
+        # Cache in Redis directly for O(1) synchronous lookups
+        import json
+        event_bus.client.set(f"quote:{payload.symbol}", json.dumps(payload_dict))
 
         return {"status": "success", "symbol": payload.symbol, "spread": spread}
     except Exception as e:
