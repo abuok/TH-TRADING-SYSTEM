@@ -517,6 +517,16 @@ async def generate_ticket(pair: str, request: Request, db: Session = Depends(get
             status_code=404, detail="No risk decision found for this setup."
         )
 
+    # Idempotency Check: Ensure this risk decision hasn't already been processed
+    from shared.database.models import ProcessedApproval
+    request_id = risk_db.data.get("request_id")
+    if request_id:
+        existing = db.query(ProcessedApproval).filter(ProcessedApproval.request_id == request_id).first()
+        if existing:
+            raise HTTPException(
+                status_code=409, detail=f"Risk decision {request_id} has already been processed."
+            )
+
     # Fetch latest market context for news-window check
     ctx_db = (
         db.query(Packet)
@@ -605,6 +615,15 @@ async def generate_ticket(pair: str, request: Request, db: Session = Depends(get
     ticket.setup_packet_id = setup_db.id
     ticket.risk_packet_id = risk_db.id
     db.commit()
+
+    # Record processing for idempotency
+    if request_id:
+        processed = ProcessedApproval(
+            request_id=request_id,
+            status="EXECUTED" if ticket.status in ("OPEN", "CONFIRMED") else "REJECTED"
+        )
+        db.add(processed)
+        db.commit()
 
     # Decentralized Journal Logging via Event Bus
     try:
