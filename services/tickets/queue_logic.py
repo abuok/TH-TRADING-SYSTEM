@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 
-from shared.database.models import OrderTicket
+from shared.database.models import OrderTicket, AuditLog
 from shared.messaging.event_bus import EventBus
 from shared.types.trading import SkipReasonEnum, TicketOutcomeEnum
 
@@ -29,7 +29,7 @@ def _log_transition(ticket_id: str, transition_type: str, details: dict):
         )
 
 
-def approve_ticket(db: Session, ticket_id: str) -> OrderTicket:
+def approve_ticket(db: Session, ticket_id: str, actor: str = "system") -> OrderTicket:
     """Marks a ticket as APPROVED and active."""
     ticket = db.query(OrderTicket).filter(OrderTicket.ticket_id == ticket_id).first()
     if not ticket:
@@ -50,11 +50,24 @@ def approve_ticket(db: Session, ticket_id: str) -> OrderTicket:
     _log_transition(
         ticket.ticket_id, "APPROVED", {"reviewed_at": ticket.reviewed_at.isoformat()}
     )
+    
+    # NEW: Institutional Audit Log
+    audit = AuditLog(
+        actor=actor,
+        action="TICKET_APPROVED",
+        resource_type="OrderTicket",
+        resource_id=ticket.ticket_id,
+        after_state={"status": "APPROVED", "reviewed_at": ticket.reviewed_at.isoformat()},
+        change_reason="Manual Operator Approval from Dashboard"
+    )
+    db.add(audit)
+    db.commit()
+
     return ticket
 
 
 def skip_ticket(
-    db: Session, ticket_id: str, reason: SkipReasonEnum, notes: str | None = None
+    db: Session, ticket_id: str, reason: SkipReasonEnum, notes: str | None = None, actor: str = "system"
 ) -> OrderTicket:
     """Marks a ticket as SKIPPED with a reason."""
     ticket = db.query(OrderTicket).filter(OrderTicket.ticket_id == ticket_id).first()
@@ -84,6 +97,23 @@ def skip_ticket(
             "notes": notes,
         },
     )
+
+    # NEW: Institutional Audit Log
+    audit = AuditLog(
+        actor=actor,
+        action="TICKET_SKIPPED",
+        resource_type="OrderTicket",
+        resource_id=ticket.ticket_id,
+        after_state={
+            "status": "SKIPPED",
+            "reason": reason.value,
+            "reviewed_at": ticket.reviewed_at.isoformat()
+        },
+        change_reason=f"Manual Operator Skip: {reason.value}"
+    )
+    db.add(audit)
+    db.commit()
+
     return ticket
 
 

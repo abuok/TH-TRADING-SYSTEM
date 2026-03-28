@@ -716,18 +716,19 @@ async def get_queue_stats(
 
 @app.post("/api/tickets/{ticket_id}/approve")
 @limiter.limit(LIMITS["write"])
-async def api_approve_ticket(ticket_id: str, request: Request, db: Session = Depends(db_session.get_db)):
+async def api_approve_ticket(ticket_id: str, request: Request, db: Session = Depends(db_session.get_db), username: str = Depends(verify_auth)):
     try:
         before_status = (
             db.query(OrderTicket).filter(OrderTicket.ticket_id == ticket_id).first()
         )
         before = {"status": before_status.status} if before_status else {}
-        t = approve_ticket(db, ticket_id)
+        t = approve_ticket(db, ticket_id, actor=username)
         audit_action(
-            db, actor="dashboard", action="TICKET_APPROVED",
+            db, actor=username, action="TICKET_APPROVED",
             resource_type="OrderTicket", resource_id=ticket_id,
-            before_state=before, after_state={"status": t.status},
-            request=request,
+            before=before, after={"status": t.status},
+            change_reason="Manual Operator Approval from Dashboard",
+            ip_address=request.client.host if request.client else None
         )
         metrics_registry.increment("tickets_approved_total")
         metrics_registry.increment("audit_actions_total")

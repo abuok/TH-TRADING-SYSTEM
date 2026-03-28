@@ -44,4 +44,4 @@ def verify_auth(request: Request):
             headers={"WWW-Authenticate": "Basic"},
         ) from None
         
-    return True
+    return username

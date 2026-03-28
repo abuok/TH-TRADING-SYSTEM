@@ -8,6 +8,7 @@ from sqlalchemy import (
     DateTime,
     Float,
     ForeignKey,
+    Index,
     Integer,
     String,
     Text,
@@ -33,6 +34,9 @@ class Run(Base):
 
 class Packet(Base):
     __tablename__ = "packets"
+    __table_args__ = (
+        Index("ix_packets_type_created", "packet_type", "created_at"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     run_id = Column(Integer, ForeignKey("runs.id"), nullable=False)
@@ -64,6 +68,9 @@ class KillSwitch(Base):
 
 class IncidentLog(Base):
     __tablename__ = "incident_logs"
+    __table_args__ = (
+        Index("ix_incidents_severity_created", "severity", "created_at"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     severity = Column(
