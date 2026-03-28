@@ -85,27 +85,42 @@ class LockoutEngine:
                 f"Daily loss {daily_loss_pct:.1f}% >= limit {max_daily_pct}%",
             )
 
-        # 3. Consecutive Loss Limit
+        # 3. Consecutive Loss Limit (with Time-Decay Recovery)
         max_consecutive = int(self.config.get("max_consecutive_losses", 3))
-        consecutive = account_state.get("consecutive_losses", 0)
+        actual_consecutive = account_state.get("consecutive_losses", 0)
+        last_loss_time = account_state.get("last_loss_time")
+        
+        cool_off_mins = float(self.config.get("consecutive_loss_cool_off_mins", 60.0))
+        effective_consecutive = actual_consecutive
 
-        if consecutive >= max_consecutive:
+        if actual_consecutive > 0 and last_loss_time:
+            from datetime import datetime, timezone
+            now = datetime.now(timezone.utc)
+            # Ensure last_loss_time is aware
+            if last_loss_time.tzinfo is None:
+                last_loss_time = last_loss_time.replace(tzinfo=timezone.utc)
+            
+            elapsed_mins = (now - last_loss_time).total_seconds() / 60.0
+            decay = int(elapsed_mins // cool_off_mins)
+            effective_consecutive = max(0, actual_consecutive - decay)
+
+        if effective_consecutive >= max_consecutive:
             return (
                 LockoutState.HARD_LOCK,
-                f"Consecutive losses {consecutive} >= limit {max_consecutive}",
+                f"Consecutive losses {effective_consecutive} (Actual: {actual_consecutive}) >= limit {max_consecutive}. Cool-off required.",
             )
 
-        # 4. Soft Locks (Approaching limits - e.g. within 0.5% or 1 loss away)
+        # 4. Soft Locks (Approaching limits)
         if daily_loss_pct >= max_daily_pct - 0.5:
             return (
                 LockoutState.SOFT_LOCK,
                 f"Daily loss {daily_loss_pct:.1f}% approaching limit {max_daily_pct}%",
             )
 
-        if consecutive >= max_consecutive - 1 and max_consecutive > 1:
+        if effective_consecutive >= max_consecutive - 1 and max_consecutive > 1:
             return (
                 LockoutState.SOFT_LOCK,
-                f"Consecutive losses {consecutive} approaching limit {max_consecutive}",
+                f"Consecutive losses {effective_consecutive} approaching limit {max_consecutive}",
             )
 
-        return LockoutState.TRADEABLE, "Budget and Kill Switches OK"
+        return LockoutState.TRADEABLE, "Budget and Kill Switches OK | Decay Active" if effective_consecutive < actual_consecutive else "Budget and Kill Switches OK"

@@ -493,3 +493,18 @@ class DisciplineLockout(Base):
     is_resolved = Column(Boolean, default=False)
     resolved_at = Column(DateTime(timezone=True), nullable=True)
     operator_id = Column(String, nullable=True)
+
+
+class ProcessedApproval(Base):
+    """
+    Ensures Orchestrator idempotency by tracking which request_ids have 
+    already resulted in a trade command being issued.
+    """
+    __tablename__ = "processed_approvals"
+
+    id = Column(Integer, primary_key=True, index=True)
+    request_id = Column(String, unique=True, index=True, nullable=False)
+    processed_at = Column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
+    status = Column(String, nullable=False)  # e.g., "EXECUTED", "REJECTED"

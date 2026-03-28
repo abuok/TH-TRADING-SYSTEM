@@ -316,8 +316,7 @@ def get_dashboard_data(db: Session, asset_pairs: list[str] | None = None):
 async def get_tickets(pair: str | None = None) -> list[OrderTicketSchema]:
     """Fetches order tickets, optimized for performance via joins and bulk loading."""
     from sqlalchemy.orm import joinedload
-    db = db_session.SessionLocal()
-    try:
+    with db_session.get_transactional_db() as db:
         query = db.query(OrderTicket).options(
             joinedload(OrderTicket.trade_links),
             joinedload(OrderTicket.journal_entries)
@@ -377,8 +376,6 @@ async def get_tickets(pair: str | None = None) -> list[OrderTicketSchema]:
             ticket_schemas.append(t_schema)
 
         return ticket_schemas
-    finally:
-        db.close()
 
 
 def get_jarvis_data(db: Session) -> dict[str, Any]:

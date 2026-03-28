@@ -28,9 +28,13 @@ def calculate_account_state(db: Session, config: Optional[dict[str, Any]] = None
     ).order_by(OrderTicket.closed_at.desc()).limit(10).all()
     
     consecutive_losses = 0
-    for t in last_trades:
+    last_loss_time = None
+    
+    for i, t in enumerate(last_trades):
         if (t.manual_outcome_r or 0) < 0:
             consecutive_losses += 1
+            if i == 0:
+                last_loss_time = t.closed_at
         else:
             break
             
@@ -38,5 +42,6 @@ def calculate_account_state(db: Session, config: Optional[dict[str, Any]] = None
         "daily_loss": abs(net_r) if net_r < 0 else 0.0,
         "net_r": net_r,
         "consecutive_losses": consecutive_losses,
+        "last_loss_time": last_loss_time,
         "account_balance": config.get("account_balance", 10000.0)
     }
