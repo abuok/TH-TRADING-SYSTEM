@@ -1,9 +1,13 @@
 import asyncio
 import os
 import time
+import json
 from datetime import datetime, timezone
 from datetime import time as dt_time
 from typing import Any
+
+from shared.config.settings import settings
+from shared.messaging.event_bus import EventBus
 
 import httpx
 from sqlalchemy.orm import Session
@@ -108,16 +112,36 @@ def get_dashboard_data(db: Session, asset_pairs: list[str] | None = None):
     
     # Static config for now, in Stage 2 this will be unified
     lockout_config = {
-        "max_daily_loss_pct": 2.0,
-        "max_consecutive_losses": 3,
-        "account_balance": account_state.get("account_balance", 100000.0),
+        "max_daily_loss_pct": settings.MAX_DAILY_LOSS_PCT,
+        "max_consecutive_losses": settings.MAX_CONSECUTIVE_LOSSES,
+        "account_balance": account_state.get("account_balance", settings.DEFAULT_ACCOUNT_BALANCE),
     }
 
     lockout_engine = LockoutEngine(lockout_config)
     permission_state, permission_msg = lockout_engine.evaluate(account_state, db=db)
 
+    # 3. MARKET CONTEXT STALENESS
+    bus = EventBus()
+    is_stale = False
+    last_context_time = None
+    try:
+        raw_context = bus.client.get("market:context:latest")
+        if raw_context:
+            context_data = json.loads(raw_context)
+            ts_str = context_data.get("timestamp")
+            if ts_str:
+                last_context_time = datetime.fromisoformat(ts_str)
+                if last_context_time.tzinfo is None:
+                    last_context_time = last_context_time.replace(tzinfo=timezone.utc)
+                age = (datetime.now(timezone.utc) - last_context_time).total_seconds()
+                if age > settings.STALENESS_THRESHOLD_SECONDS:
+                    is_stale = True
+        else:
+            is_stale = True
+    except Exception:
+        is_stale = True
+
     # 2. SESSION STATE PANEL
-    # Compute session for a primary pair or return a map
     primary_pair = asset_pairs[0]
     session_label = get_session_label(now_nairobi, primary_pair)
 
@@ -311,6 +335,8 @@ def get_dashboard_data(db: Session, asset_pairs: list[str] | None = None):
         "latest_incidents": latest_incidents,
         "live_quotes": live_quotes,
         "now_nairobi_str": now_nairobi.strftime("%H:%M:%S"),
+        "is_stale": is_stale,
+        "last_context_time": last_context_time.strftime("%H:%M:%S") if last_context_time else "NEVER",
         "jarvis_model": jarvis_model,
     }
 
@@ -391,9 +417,9 @@ def get_jarvis_data(db: Session) -> dict[str, Any]:
 
     # ── Permission & Lockout State ──────────────────────────────
     lockout_config = {
-        "max_daily_loss_pct": 2.0,
-        "max_consecutive_losses": 3,
-        "account_balance": 100000.0,
+        "max_daily_loss_pct": settings.MAX_DAILY_LOSS_PCT,
+        "max_consecutive_losses": settings.MAX_CONSECUTIVE_LOSSES,
+        "account_balance": settings.DEFAULT_ACCOUNT_BALANCE,
     }
     account_state = get_cached_account_state()
     market_context = get_cached_market_context()
@@ -637,6 +663,7 @@ def get_jarvis_data(db: Session) -> dict[str, Any]:
             "pair": primary_pair,
             "is_aligned": primary_aligned,
         },
+        "is_stale": is_stale,
     }
 
 

@@ -19,7 +19,9 @@ from shared.messaging.event_bus import EventBus
 from shared.providers.calendar import get_calendar_provider
 from shared.providers.proxy import get_proxy_provider
 from shared.security.middleware import setup_exception_handlers
-from shared.security.rate_limiting import LIMITS, limiter, setup_rate_limiting
+from shared.security.rate_limiting import LIMITS, limiter, setup_rate_limiting, rate_limit
+from shared.security.auth import verify_auth
+from shared.config.settings import settings
 from shared.types.errors import TradingSystemError
 from shared.types.packets import MarketContextPacket
 
@@ -140,11 +142,9 @@ async def health_check(request: Request):
         )
 
 
-from shared.security.auth import verify_auth
-
-@app.get("/trigger")
-@limiter.limit(LIMITS["write"])
-async def trigger_ingestion(request: Request, background_tasks: BackgroundTasks, _=Depends(verify_auth)):
+@app.post("/trigger")
+@rate_limit("ingestion_trigger")
+async def trigger_ingestion(background_tasks: BackgroundTasks, _=Depends(verify_auth)):
     """Manually trigger a calendar refresh."""
     background_tasks.add_task(ingest_calendar)
     return {"message": "Ingestion triggered"}
