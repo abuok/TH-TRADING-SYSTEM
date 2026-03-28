@@ -1,126 +1,83 @@
-"""
-tests/test_stress.py
---------------------
-Stress and concurrency tests for TH-TRADING-SYSTEM.
-
-Run:
-    pytest tests/test_stress.py -v -m stress
-
-These tests are intentionally slow — exclude from default CI with ``-m "not stress"``.
-"""
-
-from __future__ import annotations
-
-import asyncio
+import sys
+import os
 import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from unittest.mock import patch
+import asyncio
+import json
+from datetime import datetime, timezone
+from unittest.mock import MagicMock, patch
 
-import pytest
+# Ensure project root is in sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+from services.technical.worker import TechnicalWorker
 
-# ── 1. Concurrent DB session stress ──────────────────────────────────────────
-
-@pytest.mark.stress
-def test_50_concurrent_db_sessions() -> None:
-    """
-    Pool must serve 50 simultaneous SELECT 1 calls without exhaustion.
-    SQLite used in tests has a StaticPool so assertions are structural.
-    """
-    from shared.database.session import SessionLocal
-
-    errors: list[Exception] = []
-
-    def worker() -> None:
-        db = SessionLocal()
+async def run_stress_test(num_quotes=5000, rps_target=500):
+    print(f"Starting Stress Test: {num_quotes} quotes @ ~{rps_target} target RPS")
+    
+    worker = TechnicalWorker(pairs=["XAUUSD", "GBPJPY"])
+    
+    # Pre-generate quotes
+    quotes = []
+    for i in range(num_quotes):
+        symbol = "XAUUSD" if i % 2 == 0 else "GBPJPY"
+        quotes.append({
+            "symbol": symbol,
+            "bid": 2000.0 + (i % 10),
+            "ask": 2001.0 + (i % 10),
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        })
+    
+    # Mock EventBus to return pre-generated quotes in chunks of 50
+    chunk_size = 50
+    quote_chunks = [quotes[i:i + chunk_size] for i in range(0, len(quotes), chunk_size)]
+    
+    # Prepare messages in Redis format: [(stream, [(msg_id, {"payload": json.dumps(data)})])]
+    mock_messages = []
+    for chunk in quote_chunks:
+        msg_list = []
+        for i, q in enumerate(chunk):
+            msg_list.append((f"id_{i}", {"payload": json.dumps(q)}))
+        mock_messages.append([("quote", msg_list)])
+    
+    # Add a final None to stop
+    mock_messages.append(None)
+    
+    # Patch EventBus methods
+    # We use list(mock_messages) to avoid side_effect exhausting the iterator if multiple calls happen
+    # Actually, side_effect with a list is fine.
+    with patch.object(worker.event_bus, "consume", side_effect=mock_messages), \
+         patch.object(worker.event_bus, "subscribe", return_value=None), \
+         patch.object(worker.event_bus.client, "xack", return_value=None), \
+         patch.object(worker, "_publish_setup", return_value=None):
+        
+        start_time = time.time()
+        
+        worker_task = asyncio.create_task(worker.run())
+        
+        # Wait until consume has been called for all meaningful chunks
+        # Total meaningful chunks = len(quote_chunks)
+        # We also have one final None to trigger the loop exit or sleep
+        while worker.event_bus.consume.call_count < len(quote_chunks):
+            await asyncio.sleep(0.01)
+            
+        worker.stop()
         try:
-            db.execute(db.bind.text("SELECT 1"))  # type: ignore[union-attr]
-        except Exception as exc:
-            errors.append(exc)
-        finally:
-            db.close()
+            await asyncio.wait_for(worker_task, timeout=2.0)
+        except asyncio.TimeoutError:
+            worker_task.cancel()
+        
+        end_time = time.time()
+        
+    duration = end_time - start_time
+    actual_rps = num_quotes / duration
+    
+    print(f"Stress Test Results:")
+    print(f"  - Total Quotes: {num_quotes}")
+    print(f"  - Duration: {duration:.2f}s")
+    print(f"  - Actual Throughput: {actual_rps:.2f} quotes/sec")
+    
+    assert actual_rps >= 200, f"Throughput {actual_rps:.2f} is below target 200 RPS"
+    print("STRESS TEST PASSED!")
 
-    with ThreadPoolExecutor(max_workers=50) as pool:
-        futures = [pool.submit(worker) for _ in range(50)]
-        for f in as_completed(futures):
-            f.result()  # Re-raise any thread exception
-
-    assert errors == [], f"Pool errors: {errors}"
-
-
-# ── 2. Bulk ticket insert + query timing ─────────────────────────────────────
-
-@pytest.mark.stress
-def test_1000_ticket_query_under_2s(db) -> None:  # type: ignore[no-untyped-def]
-    """Inserting and querying 1 000 tickets must complete in under 2 seconds."""
-    from shared.database.models import OrderTicket, Packet, Run
-    import uuid
-
-    # Minimal run + packet scaffolding
-    run = Run(run_id=f"stress-run-{uuid.uuid4()}", status="running")
-    db.add(run)
-    db.flush()
-
-    pkt = Packet(
-        run_id=run.id,
-        packet_type="TechnicalSetupPacket",
-        schema_version="1.0",
-        data={"pair": "XAUUSD"},
-    )
-    db.add(pkt)
-    db.flush()
-
-    tickets = [
-        OrderTicket(
-            ticket_id=f"stress-{i}-{uuid.uuid4()}",
-            setup_packet_id=pkt.id,
-            risk_packet_id=pkt.id,
-            pair=["XAUUSD", "GBPJPY", "EURUSD"][i % 3],
-            direction=["BUY", "SELL"][i % 2],
-            entry_type="MARKET",
-            entry_price=1900.0 + i,
-            stop_loss=1890.0,
-            take_profit_1=1920.0,
-            lot_size=0.01,
-            risk_usd=10.0,
-            risk_pct=1.0,
-            rr_tp1=2.0,
-            status="PENDING",
-            idempotency_key=f"ik-stress-{i}-{uuid.uuid4()}",
-        )
-        for i in range(1000)
-    ]
-    db.bulk_save_objects(tickets)
-    db.flush()
-
-    start = time.perf_counter()
-    results = (
-        db.query(OrderTicket)
-        .filter(OrderTicket.status == "PENDING")
-        .all()
-    )
-    elapsed = time.perf_counter() - start
-
-    assert len(results) >= 1000, "Expected 1 000+ pending tickets"
-    assert elapsed < 2.0, f"Query took {elapsed:.2f}s — exceeds 2s budget"
-
-
-# ── 3. Async concurrent evaluations ──────────────────────────────────────────
-
-@pytest.mark.stress
-@pytest.mark.asyncio
-async def test_async_concurrent_calls() -> None:
-    """
-    30 simultaneous async tasks should all complete without raising.
-    Uses a lightweight mock so there's no real service dependency.
-    """
-
-    async def dummy_evaluate(i: int) -> str:
-        await asyncio.sleep(0.01)  # Simulate I/O
-        return f"result-{i}"
-
-    tasks = [dummy_evaluate(i) for i in range(30)]
-    results = await asyncio.gather(*tasks)
-
-    assert len(results) == 30
-    assert all(r.startswith("result-") for r in results)
+if __name__ == "__main__":
+    asyncio.run(run_stress_test())

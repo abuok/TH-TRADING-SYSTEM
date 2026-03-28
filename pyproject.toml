@@ -42,10 +42,7 @@ warn_no_return = true
 ignore_missing_imports = true
 explicit_package_bases = true
 mypy_path = "."
-# Remaining suppressions — cleared file-by-file as type annotations are added
-disable_error_code = [
-    "assignment", "attr-defined", "arg-type", "union-attr", "return-value"
-]
+# phase 2: strict enforcement enabled
 
 [[tool.mypy.overrides]]
 module = "tests.*"

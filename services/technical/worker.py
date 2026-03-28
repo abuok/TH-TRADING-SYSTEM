@@ -8,7 +8,7 @@ import asyncio
 import json
 import logging
 from datetime import datetime, timezone
-from typing import Dict
+from typing import Dict, Optional
 
 from shared.logic.candle_aggregator import CandleAggregator
 from shared.logic.phx_detector import PHXDetector, PHXStage
@@ -22,6 +22,7 @@ class TechnicalWorker:
         self.event_bus = EventBus()
         self.aggregator = CandleAggregator(timeframes=["1m", "5m", "15m", "1h"])
         self.detectors: Dict[str, PHXDetector] = {pair: PHXDetector(pair) for pair in pairs}
+        self.last_quote_time: Optional[datetime] = None
         self.is_running = False
 
     async def run(self):
@@ -49,6 +50,8 @@ class TechnicalWorker:
                         ask = data["ask"]
                         ts_str = data.get("timestamp")
                         ts = datetime.fromisoformat(ts_str) if ts_str else datetime.now(timezone.utc)
+                        self.last_quote_time = datetime.now(timezone.utc) # Receive time
+                        self._check_staleness()
 
                         if symbol in self.detectors:
                             completed_candles = self.aggregator.update(symbol, bid, ask, ts)
@@ -90,6 +93,19 @@ class TechnicalWorker:
         data["score"] = detector.get_score()
 
         self.event_bus.publish("technical_setup", data)
+
+    def _check_staleness(self):
+        """Check if market data is too old and invalidate detectors."""
+        if not self.last_quote_time:
+            return
+            
+        now = datetime.now(timezone.utc)
+        if self.last_quote_time and (now - self.last_quote_time).total_seconds() > 300:
+            logger.warning("Market data STALE (>300s). Invalidating all detectors.")
+            for detector in self.detectors.values():
+                if not detector.is_invalidated:
+                    detector.invalidate()
+                    detector.reason_codes.append("STALE_DATA_OUTAGE")
 
     def stop(self):
         self.is_running = False
