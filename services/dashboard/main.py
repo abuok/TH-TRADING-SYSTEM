@@ -58,6 +58,7 @@ from fastapi import WebSocket, WebSocketDisconnect
 from shared.instrumentation.tracing import init_tracing, instrument_app
 from shared.logic.metrics import metrics_registry
 from shared.logic.audit import audit_action
+from shared.security.auth import verify_auth
 
 security = HTTPBasic()
 
@@ -124,54 +125,15 @@ if os.path.exists("services/dashboard/static"):
     )
 
 
-def verify_auth(request: Request):
-    if not os.getenv("DASHBOARD_AUTH_ENABLED", "false").lower() == "true":
-        return True
-
-    # Manually get credentials to avoid Mandatory Basic Auth popup when disabled
-    auth_header = request.headers.get("Authorization")
-    if not auth_header:
-        raise HTTPException(
-            status_code=401,
-            detail="Authentication required",
-            headers={"WWW-Authenticate": "Basic"},
-        )
-
-    import base64
-
-    try:
-        scheme, credentials = auth_header.split()
-        if scheme.lower() != "basic":
-            raise ValueError()
-        decoded = base64.b64decode(credentials).decode("ascii")
-        username, _, password = decoded.partition(":")
-    except Exception:
-        raise HTTPException(status_code=401, detail="Invalid auth header") from None
-
-    correct_username = os.getenv("DASHBOARD_USERNAME", "admin")
-    correct_password = os.getenv("DASHBOARD_PASSWORD")
-
-    if not correct_password:
-        return True
-
-    is_correct_username = secrets.compare_digest(username, correct_username)
-    is_correct_password = secrets.compare_digest(password, correct_password)
-
-    if not (is_correct_username and is_correct_password):
-        raise HTTPException(
-            status_code=401,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Basic"},
-        )
-    return True
+# --- Auth removed and moved to shared.security.auth ---
 
 
 @app.get("/dashboard", response_class=HTMLResponse)
 @limiter.limit(LIMITS["dashboard"])
 async def dashboard_overview(
     request: Request,
-    auth: bool = Depends(verify_auth),
     db: Session = Depends(db_session.get_db),
+    _=Depends(verify_auth),
 ):
     health, response_times = await get_service_health()
     data = get_dashboard_data(db)
@@ -196,6 +158,7 @@ async def dashboard_incidents(
     request: Request,
     severity: str | None = None,
     db: Session = Depends(db_session.get_db),
+    _=Depends(verify_auth),
 ):
     query = db.query(IncidentLog).order_by(IncidentLog.created_at.desc())
     if severity:
@@ -210,7 +173,7 @@ async def dashboard_incidents(
 
 @app.get("/dashboard/setups", response_class=HTMLResponse)
 @limiter.limit(LIMITS["dashboard"])
-async def dashboard_setups(request: Request, db: Session = Depends(db_session.get_db)):
+async def dashboard_setups(request: Request, db: Session = Depends(db_session.get_db), _=Depends(verify_auth)):
     from datetime import datetime, timezone
 
     packets = (
@@ -383,6 +346,7 @@ def review_proposal(
     payload: ReviewPayload,
     request: Request,
     db: Session = Depends(db_session.get_db),
+    _=Depends(verify_auth),
 ):
     verify_auth(request)
     log = (
@@ -932,6 +896,7 @@ async def dashboard_hindsight(
     request: Request,
     date_str: str | None = None,
     db: Session = Depends(db_session.get_db),
+    _=Depends(verify_auth),
 ):
     date_val = date_str or datetime.now(timezone.utc).strftime("%Y-%m-%d")
     summary = get_hindsight_summary(db, date_val)
@@ -971,6 +936,7 @@ async def dashboard_policies(
     request: Request,
     auth: bool = Depends(verify_auth),
     db: Session = Depends(db_session.get_db),
+    _=Depends(verify_auth),
 ):
     from sqlalchemy import func
 
@@ -1020,6 +986,7 @@ async def dashboard_daily_ops(
     request: Request,
     auth: bool = Depends(verify_auth),
     db: Session = Depends(db_session.get_db),
+    _=Depends(verify_auth),
 ):
     latest = (
         db.query(OpsReportLog)
@@ -1040,6 +1007,7 @@ async def dashboard_weekly_review(
     request: Request,
     auth: bool = Depends(verify_auth),
     db: Session = Depends(db_session.get_db),
+    _=Depends(verify_auth),
 ):
     latest = (
         db.query(OpsReportLog)
@@ -1060,6 +1028,7 @@ async def dashboard_action_items(
     request: Request,
     auth: bool = Depends(verify_auth),
     db: Session = Depends(db_session.get_db),
+    _=Depends(verify_auth),
 ):
     items = db.query(ActionItem).order_by(ActionItem.created_at.desc()).all()
     return render_template(
@@ -1073,6 +1042,7 @@ async def dashboard_action_items(
 async def dashboard_execution_prep(
     request: Request,
     db: Session = Depends(db_session.get_db),
+    _=Depends(verify_auth),
 ):
     preps = (
         db.query(ExecutionPrepLog)
@@ -1184,6 +1154,7 @@ async def dashboard_order_flow(
     request: Request,
     auth: bool = Depends(verify_auth),
     db: Session = Depends(db_session.get_db),
+    _=Depends(verify_auth),
 ):
     # 1. Queue Tickets
     tickets = (
@@ -1230,6 +1201,7 @@ async def dashboard_strategy_context(
     request: Request,
     auth: bool = Depends(verify_auth),
     db: Session = Depends(db_session.get_db),
+    _=Depends(verify_auth),
 ):
     # Fundamentals
     movers = (
@@ -1278,6 +1250,7 @@ async def dashboard_node_telemetry(
     request: Request,
     auth: bool = Depends(verify_auth),
     db: Session = Depends(db_session.get_db),
+    _=Depends(verify_auth),
 ):
     from services.dashboard.logic import get_service_health
     

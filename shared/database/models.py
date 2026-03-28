@@ -148,13 +148,13 @@ class OrderTicket(Base):
     manual_outcome_label = Column(String, nullable=True)  # WIN, LOSS, BE
     manual_screenshot_ref = Column(String, nullable=True)
 
-    # alignment_score = Column(Integer, nullable=True)  # 0–100 quality metric
-    # is_aligned = Column(Boolean, default=False)
-    # alignment_summary = Column(JSON, nullable=True)  # top issues list
+    alignment_score = Column(Integer, nullable=True)  # 0–100 quality metric
+    is_aligned = Column(Boolean, default=False)
+    alignment_summary = Column(JSON, nullable=True)  # top issues list
 
-    # hindsight_status = Column(String, default="PENDING")  # PENDING, DONE, UNAVAILABLE
-    # hindsight_outcome_label = Column(String, nullable=True)  # WIN, LOSS, BE, NONE
-    # hindsight_realized_r = Column(Float, nullable=True)
+    hindsight_status = Column(String, default="PENDING")  # PENDING, DONE, UNAVAILABLE
+    hindsight_outcome_label = Column(String, nullable=True)  # WIN, LOSS, BE, NONE
+    hindsight_realized_r = Column(Float, nullable=True)
 
     setup_packet = relationship("Packet", foreign_keys=[setup_packet_id])
     risk_packet = relationship("Packet", foreign_keys=[risk_packet_id])

@@ -10,7 +10,7 @@ Provider selection:
 import asyncio
 import logging
 
-from fastapi import BackgroundTasks, FastAPI, Request
+from fastapi import BackgroundTasks, Depends, FastAPI, Request
 
 import shared.database.session as db_session
 from shared.database.models import IncidentLog
@@ -140,9 +140,11 @@ async def health_check(request: Request):
         )
 
 
+from shared.security.auth import verify_auth
+
 @app.get("/trigger")
 @limiter.limit(LIMITS["write"])
-async def trigger_ingestion(request: Request, background_tasks: BackgroundTasks):
+async def trigger_ingestion(request: Request, background_tasks: BackgroundTasks, _=Depends(verify_auth)):
     """Manually trigger a calendar refresh."""
     background_tasks.add_task(ingest_calendar)
     return {"message": "Ingestion triggered"}
