@@ -126,11 +126,10 @@ def process_trade_fill(db: Session, fill: TradeFillEvent):
                 },
             )
             db.add(journal)
-    else:
         # Unmatched fill - log as incident
         incident = IncidentLog(
             severity="WARNING",
-            component="Bridge",
+            component="TradeLifecycle",
             message=f"UNMATCHED {fill.event_type} fill for {fill.symbol} {fill.side} (ID: {fill.broker_trade_id})",
             context={"fill": fill.model_dump(mode="json")},
         )

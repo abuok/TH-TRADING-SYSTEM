@@ -124,6 +124,7 @@ def close_ticket(
     exit_price: float | None = None,
     realized_r: float | None = None,
     screenshot_ref: str | None = None,
+    actor: str = "system",
 ) -> OrderTicket:
     """Marks an APPROVED ticket as CLOSED with final outcome attributes."""
     ticket = db.query(OrderTicket).filter(OrderTicket.ticket_id == ticket_id).first()
@@ -155,6 +156,24 @@ def close_ticket(
             "exit_price": exit_price,
         },
     )
+
+    # NEW: Institutional Audit Log
+    audit = AuditLog(
+        actor=actor,
+        action="TICKET_CLOSED",
+        resource_type="OrderTicket",
+        resource_id=ticket.ticket_id,
+        after_state={
+            "status": "CLOSED",
+            "outcome": outcome.value,
+            "realized_r": realized_r,
+            "closed_at": ticket.closed_at.isoformat()
+        },
+        change_reason=f"Manual Ticket Closure: {outcome.value}"
+    )
+    db.add(audit)
+    db.commit()
+
     return ticket
 
 

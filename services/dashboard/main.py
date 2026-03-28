@@ -803,19 +803,20 @@ async def override_execution_prep(
 @app.post("/api/tickets/{ticket_id}/skip")
 @limiter.limit(LIMITS["write"])
 async def api_skip_ticket(
-    ticket_id: str, payload: SkipPayload, request: Request, db: Session = Depends(db_session.get_db)
+    ticket_id: str, payload: SkipPayload, request: Request, db: Session = Depends(db_session.get_db), username: str = Depends(verify_auth)
 ):
     try:
         before_status = (
             db.query(OrderTicket).filter(OrderTicket.ticket_id == ticket_id).first()
         )
         before = {"status": before_status.status} if before_status else {}
-        t = skip_ticket(db, ticket_id, payload.reason, payload.notes)
+        t = skip_ticket(db, ticket_id, payload.reason, payload.notes, actor=username)
         audit_action(
-            db, actor="dashboard", action="TICKET_SKIPPED",
+            db, actor=username, action="TICKET_SKIPPED",
             resource_type="OrderTicket", resource_id=ticket_id,
-            before_state=before, after_state={"status": t.status},
-            change_reason=payload.reason, request=request,
+            before=before, after={"status": t.status, "reason": payload.reason.value},
+            change_reason=f"Manual Operator Skip: {payload.reason.value}",
+            ip_address=request.client.host if request.client else None
         )
         metrics_registry.increment("tickets_skipped_total")
         metrics_registry.increment("audit_actions_total")
@@ -828,7 +829,7 @@ async def api_skip_ticket(
 @app.post("/api/tickets/{ticket_id}/close")
 @limiter.limit(LIMITS["write"])
 async def api_close_ticket(
-    ticket_id: str, payload: ClosePayload, request: Request, db: Session = Depends(db_session.get_db)
+    ticket_id: str, payload: ClosePayload, request: Request, db: Session = Depends(db_session.get_db), username: str = Depends(verify_auth)
 ):
     try:
         before_status = (
@@ -842,11 +843,13 @@ async def api_close_ticket(
             payload.exit_price,
             payload.realized_r,
             payload.screenshot_ref,
+            actor=username
         )
         audit_action(
-            db, actor="dashboard", action="TICKET_CLOSED",
+            db, actor=username, action="TICKET_CLOSED",
             resource_type="OrderTicket", resource_id=ticket_id,
-            before_state=before,
+            before=before,
+            after={"status": t.status, "outcome": payload.outcome.value, "exit_price": payload.exit_price},
             after_state={"status": t.status, "outcome": payload.outcome, "exit_price": payload.exit_price},
             request=request,
         )
