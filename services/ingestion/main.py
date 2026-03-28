@@ -53,12 +53,8 @@ def _log_incident(severity: str, component: str, message: str) -> None:
     """Write an incident to the DB and log it."""
     logger.error("[INCIDENT][%s] %s — %s", severity, component, message)
     try:
-        db = db_session.SessionLocal()
-        try:
+        with db_session.get_transactional_db() as db:
             db.add(IncidentLog(severity=severity, component=component, message=message))
-            db.commit()
-        finally:
-            db.close()
     except Exception as exc:
         logger.error("Failed to persist incident: %s", exc)
 

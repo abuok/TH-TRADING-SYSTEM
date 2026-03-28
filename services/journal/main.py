@@ -69,23 +69,21 @@ async def mark_missed_setups():
     """Background task to mark un-taken setups as MISSED after 15 minutes."""
     while True:
         try:
-            db = db_session.SessionLocal()
-            timeout_limit = datetime.now(timezone.utc) - timedelta(minutes=15)
-            # Mark PENDING setups older than 15 mins as MISSED
-            pending = (
-                db.query(JournalSetup)
-                .filter(
-                    JournalSetup.status == "PENDING",
-                    JournalSetup.timestamp < timeout_limit,
+            with db_session.get_transactional_db() as db:
+                timeout_limit = datetime.now(timezone.utc) - timedelta(minutes=15)
+                # Mark PENDING setups older than 15 mins as MISSED
+                pending = (
+                    db.query(JournalSetup)
+                    .filter(
+                        JournalSetup.status == "PENDING",
+                        JournalSetup.timestamp < timeout_limit,
+                    )
+                    .all()
                 )
-                .all()
-            )
-            for setup in pending:
-                setup.status = "MISSED"
-            db.commit()
-            db.close()
+                for setup in pending:
+                    setup.status = "MISSED"
         except Exception as e:
-            print(f"Error marking missed setups: {e}")
+            logger.error(f"Error marking missed setups: {e}")
         await asyncio.sleep(60)
 
 
