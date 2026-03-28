@@ -24,6 +24,8 @@ from shared.security.auth import verify_auth
 from shared.config.settings import settings
 from shared.types.errors import TradingSystemError
 from shared.types.packets import MarketContextPacket
+from shared.security.health import check_service_health
+from shared.database.session import get_db
 
 logger = logging.getLogger("IngestionService")
 
@@ -122,20 +124,13 @@ async def startup_event():
 
 @app.get("/health")
 @limiter.limit(LIMITS["health"])
-async def health_check(request: Request):
-    try:
-        return {
-            "status": "healthy",
-            "service": "ingestion",
-            "proxy_provider": type(_proxy_provider).__name__
-            if _proxy_provider
-            else "uninitialised",
-            "calendar_provider": type(_calendar_provider).__name__
-            if _calendar_provider
-            else "uninitialised",
-        }
-    except Exception as exc:
-        from fastapi.responses import JSONResponse
+async def health_check(request: Request, db: Session = Depends(db_session.get_db)):
+    bus = EventBus()
+    health = await check_service_health(db, bus)
+    health["service"] = "ingestion"
+    health["proxy_provider"] = type(_proxy_provider).__name__ if _proxy_provider else "uninitialised"
+    health["calendar_provider"] = type(_calendar_provider).__name__ if _calendar_provider else "uninitialised"
+    return health
 
         return JSONResponse(
             status_code=503, content={"status": "unhealthy", "error": str(exc)}

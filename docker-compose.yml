@@ -180,6 +180,7 @@ services:
       - ./artifacts:/app/artifacts
     environment:
       - SERVICE_NAME=dashboard
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-trading_journal}
     env_file: .env
     depends_on:
       postgres:
@@ -189,14 +190,29 @@ services:
     command: uvicorn services.dashboard.main:app --host 0.0.0.0 --port 8000 --reload
     networks:
       - trading-network
-    develop:
-      watch:
-        - action: sync
-          path: ./services/dashboard
-          target: /app/services/dashboard
-        - action: sync
-          path: ./shared
-          target: /app/shared
+
+  # Dashboard Worker (Metrics Aggregator)
+  dashboard-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: trading-dashboard-worker-dev
+    volumes:
+      - ./services/dashboard:/app/services/dashboard
+      - ./shared:/app/shared
+      - ./config:/app/config
+    environment:
+      - SERVICE_NAME=dashboard-worker
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-trading_journal}
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: python services/dashboard/worker.py
+    networks:
+      - trading-network
 
   # Orchestration Service
   orchestration:
@@ -212,6 +228,7 @@ services:
       - ./config:/app/config
     environment:
       - SERVICE_NAME=orchestration
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-trading_journal}
     env_file: .env
     depends_on:
       postgres:
@@ -221,14 +238,6 @@ services:
     command: uvicorn services.orchestration.main:app --host 0.0.0.0 --port 8000 --reload
     networks:
       - trading-network
-    develop:
-      watch:
-        - action: sync
-          path: ./services/orchestration
-          target: /app/services/orchestration
-        - action: sync
-          path: ./shared
-          target: /app/shared
 
 volumes:
   postgres_data:

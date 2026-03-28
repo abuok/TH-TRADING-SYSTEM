@@ -4,6 +4,8 @@ from services.technical.worker import TechnicalWorker
 from shared.instrumentation.tracing import init_tracing, instrument_app
 from shared.security.middleware import setup_exception_handlers
 from shared.security.rate_limiting import LIMITS, limiter, setup_rate_limiting
+from shared.security.health import check_service_health
+from shared.database.session import db_session
 
 app = FastAPI(title="PHX Technical Service")
 
@@ -26,11 +28,11 @@ async def shutdown_event():
 @app.get("/health")
 @limiter.limit(LIMITS["health"])
 async def health_check(request: Request):
-    return {
-        "status": "healthy",
-        "service": "technical",
-        "worker_running": getattr(worker, "is_running", False)
-    }
+    db = next(db_session.get_db())
+    health = await check_service_health(db, worker.event_bus)
+    health["service"] = "technical"
+    health["worker_running"] = getattr(worker, "is_running", False)
+    return health
 
 @app.get("/setups")
 @limiter.limit(LIMITS["dashboard"])

@@ -59,6 +59,8 @@ from shared.instrumentation.tracing import init_tracing, instrument_app
 from shared.logic.metrics import metrics_registry
 from shared.logic.audit import audit_action
 from shared.security.auth import verify_auth
+from shared.security.health import check_service_health
+from shared.messaging.event_bus import EventBus
 
 security = HTTPBasic()
 
@@ -527,8 +529,11 @@ async def briefing_print_view(
 
 @app.get("/health")
 @limiter.limit(LIMITS["health"])
-async def health_check(request: Request):
-    return {"status": "healthy", "service": "dashboard"}
+async def health_check(request: Request, db: Session = Depends(db_session.get_db)):
+    bus = EventBus()
+    health = await check_service_health(db, bus)
+    health["service"] = "dashboard"
+    return health
 
 
 @app.get("/api/jarvis")
