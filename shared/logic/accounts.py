@@ -16,9 +16,11 @@ def calculate_account_state(db: Session, config: Optional[dict[str, Any]] = None
         
     today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
     
-    # 1. Daily Loss (Sum of manual_outcome_r for today where < 0)
-    # Note: We sum all R to get net daily performance
-    net_r = db.query(func.sum(OrderTicket.manual_outcome_r)).filter(
+    # 1. Daily Loss (Sum of outcomes for today where < 0)
+    # Priority: manual_outcome_r -> hindsight_realized_r
+    from sqlalchemy.sql import coalesce
+    
+    net_r = db.query(func.sum(coalesce(OrderTicket.manual_outcome_r, OrderTicket.hindsight_realized_r))).filter(
         OrderTicket.closed_at >= today_start
     ).scalar() or 0.0
     
@@ -31,7 +33,8 @@ def calculate_account_state(db: Session, config: Optional[dict[str, Any]] = None
     last_loss_time = None
     
     for i, t in enumerate(last_trades):
-        if (t.manual_outcome_r or 0) < 0:
+        effective_r = t.manual_outcome_r if t.manual_outcome_r is not None else t.hindsight_realized_r
+        if (effective_r or 0) < 0:
             consecutive_losses += 1
             if i == 0:
                 last_loss_time = t.closed_at

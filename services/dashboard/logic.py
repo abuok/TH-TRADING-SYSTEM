@@ -100,16 +100,18 @@ def get_dashboard_data(db: Session, asset_pairs: list[str] | None = None):
     now_nairobi = get_nairobi_time()
     now_utc = datetime.now(timezone.utc)
 
+    from shared.logic.accounts import calculate_account_state
+    
     # 1. PERMISSION STATE PANEL
-    # In a real scenario, these would come from a real sync with Risk/MT5.
-    # For the HUD, we'll pull latest logs or static defaults if missing.
+    # Pull real account state from DB
+    account_state = calculate_account_state(db)
+    
+    # Static config for now, in Stage 2 this will be unified
     lockout_config = {
         "max_daily_loss_pct": 2.0,
         "max_consecutive_losses": 3,
-        "account_balance": 100000.0,  # Standard pilot balance
+        "account_balance": account_state.get("account_balance", 100000.0),
     }
-    account_state = get_cached_account_state()
-    market_context = get_cached_market_context()
 
     lockout_engine = LockoutEngine(lockout_config)
     permission_state, permission_msg = lockout_engine.evaluate(account_state, db=db)

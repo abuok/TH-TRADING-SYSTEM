@@ -97,13 +97,13 @@ def process_trade_fill(db: Session, fill: TradeFillEvent):
         elif fill.event_type in ["CLOSE", "PARTIAL"]:
             # Calculate Realized R
             r_gain = calculate_realized_r(ticket, fill)
-            # Guard: hindsight_realized_r column may not exist yet (schema debt)
-            current_r = getattr(ticket, "hindsight_realized_r", None)
-            if current_r is None:
-                current_r = 0.0
-            new_r = current_r + r_gain
-            if hasattr(ticket, "hindsight_realized_r"):
-                ticket.hindsight_realized_r = new_r
+            
+            # Update hindsight tracking
+            if ticket.hindsight_realized_r is None:
+                ticket.hindsight_realized_r = 0.0
+            
+            ticket.hindsight_realized_r += r_gain
+            new_r = ticket.hindsight_realized_r
 
             if fill.event_type == "CLOSE":
                 ticket.status = "CLOSED"
