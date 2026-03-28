@@ -279,12 +279,12 @@ class ExecutionPrepLog(Base):
 class LiveQuote(Base):
     __tablename__ = "live_quotes"
 
-    id = Column(Integer, primary_key=True, index=True)
-    symbol = Column(String, unique=True, index=True, nullable=False)
-    bid = Column(Float, nullable=False)
-    ask = Column(Float, nullable=False)
-    spread = Column(Float, nullable=False)
-    raw_timestamp = Column(String, nullable=True)  # UTC from MT5
+    id: int = Column(Integer, primary_key=True, index=True)  # type: ignore[assignment]
+    symbol: str = Column(String, unique=True, index=True, nullable=False)  # type: ignore[assignment]
+    bid: float = Column(Float, nullable=False)  # type: ignore[assignment]
+    ask: float = Column(Float, nullable=False)  # type: ignore[assignment]
+    spread: float = Column(Float, nullable=False)  # type: ignore[assignment]
+    raw_timestamp: str | None = Column(String, nullable=True)  # type: ignore[assignment]
     captured_at = Column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )

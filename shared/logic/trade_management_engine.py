@@ -43,8 +43,8 @@ def generate_suggestions_for_position(
     snapshot: PositionSnapshot,
     quote_provider: PriceQuoteProvider,
     now_eat: datetime,
-    active_kill_switches: list[KillSwitch] = None,
-    latest_policy: PolicySelectionLog = None,
+    active_kill_switches: list[KillSwitch] | None = None,
+    latest_policy: PolicySelectionLog | None = None,
 ) -> list[PositionManagementSuggestion]:
     """Generate rule-based suggestions for a single position snapshot. Improved with pre-fetched state."""
     # 1. Access the eagerly loaded ticket via relationship
