@@ -31,7 +31,7 @@ class JsonFormatter(logging.Formatter):
             else:
                 exc_info_type = Any
             
-            log_record["exception"] = self.formatException(cast(exc_info_type, record.exc_info))
+            log_record["exception"] = self.formatException(record.exc_info)  # type: ignore[arg-type]
 
         return json.dumps(log_record)
 

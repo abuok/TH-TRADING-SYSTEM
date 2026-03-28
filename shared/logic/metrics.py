@@ -166,7 +166,7 @@ class MetricsRegistry:
 
     # ─── Context manager for timing ──────────────────────────────────────────
 
-    def time(self, name: str, labels: dict[str, str] | None = None):
+    def time(self, name: str, labels: dict[str, str] | None = None) -> "_Timer":
         """Use as a context manager to time a block and record to histogram."""
         return _Timer(self, name, labels)
 

@@ -338,19 +338,19 @@ class TradeFillLog(Base):
 class PositionSnapshot(Base):
     __tablename__ = "position_snapshots"
 
-    id = Column(Integer, primary_key=True)
-    position_id = Column(String, unique=True, index=True, nullable=False)
-    symbol = Column(String, nullable=False)
-    side = Column(String, nullable=False)
-    lots = Column(Float, nullable=False)
-    avg_price = Column(Float, nullable=False)
-    floating_pnl = Column(Float, nullable=False)
-    sl = Column(Float, nullable=True)
-    tp = Column(Float, nullable=True)
-    updated_at_utc = Column(DateTime(timezone=True), nullable=False)
-    updated_at_eat = Column(DateTime(timezone=True), nullable=False)
-    account_id = Column(String, nullable=False)
-    captured_at = Column(
+    id: int = Column(Integer, primary_key=True)  # type: ignore[assignment]
+    position_id: str = Column(String, unique=True, index=True, nullable=False)  # type: ignore[assignment]
+    symbol: str = Column(String, nullable=False)  # type: ignore[assignment]
+    side: str = Column(String, nullable=False)  # type: ignore[assignment]
+    lots: float = Column(Float, nullable=False)  # type: ignore[assignment]
+    avg_price: float = Column(Float, nullable=False)  # type: ignore[assignment]
+    floating_pnl: float = Column(Float, nullable=False)  # type: ignore[assignment]
+    sl: float = Column(Float, nullable=True)  # type: ignore[assignment]
+    tp: float = Column(Float, nullable=True)  # type: ignore[assignment]
+    updated_at_utc: datetime = Column(DateTime(timezone=True), nullable=False)  # type: ignore[assignment]
+    updated_at_eat: datetime = Column(DateTime(timezone=True), nullable=False)  # type: ignore[assignment]
+    account_id: str = Column(String, nullable=False)  # type: ignore[assignment]
+    captured_at: datetime = Column(  # type: ignore[assignment]
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
 
