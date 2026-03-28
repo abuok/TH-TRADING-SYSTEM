@@ -1,0 +1,31 @@
+# config/policies/selection_rules.yaml
+# Selection priority is top-to-bottom. First matching rule wins.
+
+rules:
+  - name: "Risk Off"
+    conditions:
+      - field: "sentiment_flags"
+        operator: "contains"
+        value: "RISK_OFF"
+    reasons: ["Market sentiment flagged as RISK_OFF."]
+
+  - name: "Event Heavy"
+    conditions:
+      - field: "event_count"
+        operator: "gte"
+        value: 3
+    reasons: ["High event density detected ({event_count} red-folder events)."]
+
+  - name: "Best Conditions"
+    conditions:
+      - field: "session"
+        operator: "in"
+        value: ["LONDON", "NEW YORK"]
+      - field: "bias_score"
+        operator: "abs_gte"
+        value: 4.0
+    reasons: ["Strong confluence: {session} session + High conviction bias ({bias_score})."]
+
+  - name: "Default"
+    conditions: [] # Always matches
+    reasons: ["No specialized market regime detected. Using baseline policy."]

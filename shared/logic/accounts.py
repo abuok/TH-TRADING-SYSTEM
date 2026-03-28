@@ -9,10 +9,22 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 from shared.database.models import OrderTicket
 
-def calculate_account_state(db: Session, config: Optional[dict[str, Any]] = None) -> dict[str, Any]:
-    """Fetch current daily loss and consecutive losses from DB."""
+import json
+from shared.messaging.event_bus import EventBus
+
+def calculate_account_state(db: Session, config: Optional[dict[str, Any]] = None, force_refresh: bool = False) -> dict[str, Any]:
+    """Fetch current daily loss and consecutive losses. Checks Redis cache first."""
     if config is None:
         config = {}
+    
+    if not force_refresh:
+        try:
+            bus = EventBus()
+            cached = bus.client.get("account:state:latest")
+            if cached:
+                return json.loads(cached)
+        except Exception:
+            pass # Fallback to DB on Redis error
         
     today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
     
