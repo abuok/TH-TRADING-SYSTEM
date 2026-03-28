@@ -18,7 +18,7 @@ from shared.types.packets import (
     DecisionPacket,
 )
 from services.technical.worker import TechnicalWorker
-from services.risk.worker import RiskWorker
+from shared.logic.risk import RiskEngine
 
 class TestE2EWorkflow(unittest.IsolatedAsyncioTestCase):
     async def test_full_pipeline_flow(self):
@@ -31,7 +31,14 @@ class TestE2EWorkflow(unittest.IsolatedAsyncioTestCase):
 
         # 1. SETUP WORKERS (Mocks for external dependencies)
         tech_worker = TechnicalWorker(pairs=["XAUUSD"])
-        risk_worker = RiskWorker()
+        risk_engine = RiskEngine({
+            "max_daily_loss": 30.0,
+            "max_total_loss": 100.0,
+            "max_consecutive_losses": 2,
+            "min_rr_threshold": 2.0,
+            "lot_size_limit": 0.1,
+            "account_balance": 1000.0,
+        })
         
         # Override the event_bus client if needed, or just let them use the shared local Redis
         # We'll use mock consumers to watch what they produce.
@@ -81,7 +88,7 @@ class TestE2EWorkflow(unittest.IsolatedAsyncioTestCase):
         mock_db.query().filter().order_by().limit().all.return_value = []
         mock_db.query().filter().scalar.return_value = 0.0
 
-        approval = risk_worker.engine.evaluate(setup, context, {"daily_loss": 0.0, "consecutive_losses": 0}, mock_db)
+        approval = risk_engine.evaluate(setup, context, {"daily_loss": 0.0, "consecutive_losses": 0}, mock_db)
         
         self.assertTrue(approval.is_approved, "Risk Engine should approve the valid test setup")
         
