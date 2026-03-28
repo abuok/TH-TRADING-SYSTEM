@@ -71,8 +71,11 @@ if os.path.exists("services/dashboard/templates"):
 
 logger = logging.getLogger("Dashboard")
 
-from shared.security.rate_limiting import limiter, setup_rate_limiting, LIMITS
+from shared.security.middleware import setup_exception_handlers
+from shared.security.rate_limiting import LIMITS, limiter, setup_rate_limiting
+
 setup_rate_limiting(app)
+setup_exception_handlers(app)
 
 @app.on_event("startup")
 async def startup_event():
@@ -559,7 +562,8 @@ async def briefing_print_view(
 
 
 @app.get("/health")
-async def health_check():
+@limiter.limit(LIMITS["health"])
+async def health_check(request: Request):
     return {"status": "healthy", "service": "dashboard"}
 
 

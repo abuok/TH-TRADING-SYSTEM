@@ -43,8 +43,12 @@ logger = logging.getLogger("OrchestrationAPI")
 
 app = FastAPI(title="Orchestration Service API")
 
-from shared.security.rate_limiting import limiter, setup_rate_limiting, LIMITS
+from shared.security.middleware import setup_exception_handlers
+from shared.security.rate_limiting import LIMITS, limiter, setup_rate_limiting
+
 setup_rate_limiting(app)
+setup_exception_handlers(app)
+
 notifier = NotificationService([ConsoleNotificationAdapter()])
 event_bus = EventBus()
 _alignment_engine = AlignmentEngine()
@@ -245,7 +249,8 @@ async def briefing_scheduler(interval_minutes: int = 30):
 
 
 @app.get("/health")
-def health(db: Session = Depends(get_db)):
+@limiter.limit(LIMITS["health"])
+def health(request: Request, db: Session = Depends(get_db)):
     """Service health check endpoint.
 
     Returns:
@@ -280,7 +285,8 @@ def health(db: Session = Depends(get_db)):
 
 
 @app.get("/metrics")
-def metrics():
+@limiter.limit(LIMITS["health"])
+def metrics(request: Request):
     """Prometheus-style metrics endpoint for monitoring."""
     return metrics_registry.get_metrics_text()
 
@@ -325,7 +331,8 @@ async def log_incident(incident_data: IncidentSchema, request: Request, db: Sess
 
 
 @app.post("/fundamentals/generate")
-async def generate_fundamentals_now(db: Session = Depends(get_db)):
+@limiter.limit(LIMITS["internal"])
+async def generate_fundamentals_now(request: Request, db: Session = Depends(get_db)):
     """Manually trigger a fundamentals evaluation."""
     _run_fundamentals_generation(db)
     return {"status": "generated"}

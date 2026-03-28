@@ -26,12 +26,16 @@ from shared.instrumentation.tracing import init_tracing, instrument_app
 
 logger = logging.getLogger("BridgeService")
 
+from shared.security.middleware import setup_exception_handlers
+from shared.security.rate_limiting import LIMITS, limiter, setup_rate_limiting
+
 app = FastAPI(title="Live Data Bridge")
 
-from shared.security.rate_limiting import limiter, setup_rate_limiting, LIMITS
-setup_rate_limiting(app)
+# Initialize v1.3 Core Logic
 init_tracing("bridge")
+setup_rate_limiting(app)
 instrument_app(app)
+setup_exception_handlers(app)
 
 # Security key from env
 BRIDGE_SECRET = os.getenv("BRIDGE_SECRET", "TH_BRIDGE_SECRET_2026")
@@ -220,11 +224,12 @@ async def post_trades_positions(
 
 
 @app.get("/health")
-async def health():
+@limiter.limit(LIMITS["health"])
+async def health(request: Request):
     return {"status": "healthy", "service": "bridge"}
 
 
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8005)
+    uvicorn.run(app, host="0.0.0.0", port=8008)

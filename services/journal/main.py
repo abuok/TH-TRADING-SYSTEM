@@ -5,14 +5,17 @@ import os
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 
-from fastapi import Depends, FastAPI, status
+from fastapi import Depends, FastAPI, Request, status
 from fastapi.responses import HTMLResponse, JSONResponse
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 import shared.database.session as db_session
+from shared.instrumentation.tracing import init_tracing, instrument_app
 from shared.logic.notifications import ConsoleNotificationAdapter, NotificationService
 from shared.messaging.event_bus import EventBus
+from shared.security.middleware import setup_exception_handlers
+from shared.security.rate_limiting import LIMITS, limiter, setup_rate_limiting
 from shared.types.packets import RiskApprovalPacket, TechnicalSetupPacket
 from shared.types.trading import OrderTicketSchema
 
@@ -25,6 +28,15 @@ from .models import (
 )
 
 notifier = NotificationService([ConsoleNotificationAdapter()])
+
+app = FastAPI(title="Journal Service")
+
+# Initialize v1.3 Core Logic
+init_tracing("journal")
+setup_rate_limiting(app)
+instrument_app(app)
+setup_exception_handlers(app)
+
 event_bus = EventBus()
 
 
@@ -40,7 +52,8 @@ app = FastAPI(title="Journal Service", lifespan=lifespan)
 
 
 @app.get("/health")
-def health_check(db: Session = Depends(db_session.get_db)):
+@limiter.limit(LIMITS["health"])
+def health_check(request: Request, db: Session = Depends(db_session.get_db)):
     try:
         # Check DB
         db.execute(text("SELECT 1"))
@@ -85,8 +98,12 @@ def get_score_label(score: float) -> str:
 
 
 @app.post("/log/setup")
+@limiter.limit(LIMITS["write"])
 def log_setup(
-    setup: TechnicalSetupPacket, score: float, db: Session = Depends(db_session.get_db)
+    request: Request,
+    setup: TechnicalSetupPacket,
+    score: float,
+    db: Session = Depends(db_session.get_db),
 ):
     db_setup = JournalSetup(
         request_id=f"setup_{datetime.now().timestamp()}",
@@ -108,7 +125,9 @@ def log_setup(
 
 
 @app.post("/log/risk_decision")
+@limiter.limit(LIMITS["write"])
 def log_risk_decision(
+    request: Request,
     decision: RiskApprovalPacket,
     setup_id: int | None = None,
     db: Session = Depends(db_session.get_db),
@@ -127,7 +146,9 @@ def log_risk_decision(
 
 
 @app.post("/log/outcome")
+@limiter.limit(LIMITS["write"])
 def log_outcome(
+    request: Request,
     setup_id: int,
     is_win: bool,
     r_multiple: float,
@@ -150,7 +171,9 @@ def log_outcome(
 
 
 @app.post("/log/ticket")
+@limiter.limit(LIMITS["write"])
 def log_ticket(
+    request: Request,
     ticket: OrderTicketSchema,
     setup_id: int | None = None,
     risk_decision_id: int | None = None,
@@ -169,7 +192,9 @@ def log_ticket(
 
 
 @app.post("/log/ticket_transition")
+@limiter.limit(LIMITS["write"])
 def log_ticket_transition(
+    request: Request,
     ticket_id: str,
     transition_type: str,
     details: dict,
@@ -197,7 +222,8 @@ def log_ticket_transition(
 
 
 @app.get("/report/daily", response_class=HTMLResponse)
-def daily_report(db: Session = Depends(db_session.get_db)):
+@limiter.limit(LIMITS["dashboard"])
+def daily_report(request: Request, db: Session = Depends(db_session.get_db)):
     notifier.notify(
         "Daily Trading Journal Report is ready for review.", level="SUCCESS"
     )
@@ -272,7 +298,8 @@ def daily_report(db: Session = Depends(db_session.get_db)):
 
 
 @app.get("/report/weekly", response_class=HTMLResponse)
-def weekly_report(db: Session = Depends(db_session.get_db)):
+@limiter.limit(LIMITS["dashboard"])
+def weekly_report(request: Request, db: Session = Depends(db_session.get_db)):
     now = datetime.now(timezone.utc)
     one_week_ago = now - timedelta(days=7)
     outcomes = (
