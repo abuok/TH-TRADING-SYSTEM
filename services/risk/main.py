@@ -87,8 +87,7 @@ async def risk_worker():
                         setup = TechnicalSetupPacket(**data)
 
                         # A. Fetch dynamic account state
-                        db = db_session.SessionLocal()
-                        try:
+                        with db_session.get_transactional_db() as db:
                             account_state = risk_engine.calculate_account_state(db)
                             
                             # B. Lockout Check
@@ -123,8 +122,6 @@ async def risk_worker():
                                 approval = risk_engine.evaluate(
                                     setup, context_packet, account_state, db=db
                                 )
-                        finally:
-                            db.close()
 
                         # Publish result
                         event_bus.publish("risk_approval", approval.model_dump(mode="json"))

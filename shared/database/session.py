@@ -127,6 +127,25 @@ def get_db():
         db.close()
 
 
+from contextlib import contextmanager
+
+@contextmanager
+def get_transactional_db() -> Generator[Session, None, None]:
+    """Provide a strictly-managed transactional scope around a series of operations.
+    Ensures that background workers don't leave hanging locks or uncommitted transactions.
+    """
+    db = SessionLocal()
+    try:
+        yield db
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Transaction failed, rolling back: {e}", exc_info=True)
+        raise
+    finally:
+        db.close()
+
+
 class TransactionDecorator:
     """Decorator for automatic transaction management in functions."""
 

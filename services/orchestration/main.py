@@ -207,14 +207,13 @@ async def briefing_scheduler(interval_minutes: int = 30):
             session_key = f"{now.date()}-{label}"
             is_delta = session_key in generated_sessions
             try:
-                db = db_session.SessionLocal()
-                with tracer.start_as_current_span("briefing_generation") as span:
-                    span.set_attribute("session", label)
-                    span.set_attribute("is_delta", is_delta)
-                    pack = assemble_briefing(db, now_nairobi=now, is_delta=is_delta)
-                    persist_briefing(pack, db)
-                generated_sessions.add(session_key)
-                db.close()
+                with db_session.get_transactional_db() as db:
+                    with tracer.start_as_current_span("briefing_generation") as span:
+                        span.set_attribute("session", label)
+                        span.set_attribute("is_delta", is_delta)
+                        pack = assemble_briefing(db, now_nairobi=now, is_delta=is_delta)
+                        persist_briefing(pack, db)
+                    generated_sessions.add(session_key)
 
                 # Console notification summary
                 top_windows = (
@@ -467,11 +466,8 @@ async def management_loop():
             ) or SessionEngine.is_in_range(t, *SessionEngine.NY_RANGE)
 
             if is_active:
-                db = db_session.SessionLocal()
-                try:
+                with db_session.get_transactional_db() as db:
                     run_management_cycle(db)
-                finally:
-                    db.close()
         except Exception as e:
             logger.error(f"Error in management_loop: {e}")
 
