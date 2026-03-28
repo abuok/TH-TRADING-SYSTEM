@@ -17,6 +17,7 @@ from shared.types.packets import (
     TechnicalSetupPacket,
 )
 
+from shared.logic.config_watcher import ConfigWatcher
 from shared.logic.lockout_engine import LockoutEngine
 from shared.types.enums import LockoutState
 
@@ -35,6 +36,14 @@ event_bus = EventBus()
 # Global state for context
 current_context: dict = {}
 
+# Configuration Overrides
+config_watcher = ConfigWatcher(channel="risk_config_updates")
+
+def on_config_update(new_overrides: dict[str, Any]):
+    logger.info(f"Applying risk config overrides: {new_overrides}")
+    risk_engine.config.update(new_overrides)
+    lockout_engine.config.update(new_overrides)
+
 risk_engine = RiskEngine(
     {
         "max_daily_loss": 30.0,
@@ -49,7 +58,8 @@ risk_engine = RiskEngine(
 lockout_engine = LockoutEngine({
     "max_daily_loss_pct": 3.0,
     "max_consecutive_losses": 3,
-    "account_balance": 1000.0
+    "account_balance": 1000.0,
+    "consecutive_loss_cool_off_mins": 60.0
 })
 
 
@@ -138,8 +148,16 @@ async def risk_worker():
 
 @app.on_event("startup")
 async def startup_event():
+    # Start the config watcher
+    config_watcher.start(callback=on_config_update)
     # Start the worker in the background
     asyncio.create_task(risk_worker())
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    logger.info("Risk Service shutting down...")
+    config_watcher.stop()
 
 
 @app.get("/health")

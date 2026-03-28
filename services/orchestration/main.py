@@ -49,6 +49,12 @@ from shared.security.rate_limiting import LIMITS, limiter, setup_rate_limiting
 setup_rate_limiting(app)
 setup_exception_handlers(app)
 
+from shared.logic.config_watcher import ConfigWatcher
+from shared.messaging.event_bus import EventBus
+from shared.task_management import get_task_supervisor
+from shared.types.enums import LockoutState
+from shared.types.packets import RiskApprovalPacket, TechnicalSetupPacket
+
 notifier = NotificationService([ConsoleNotificationAdapter()])
 event_bus = EventBus()
 _alignment_engine = AlignmentEngine()
@@ -57,6 +63,14 @@ _task_supervisor = get_task_supervisor(timeout_seconds=30)
 _jit_validator = JITValidator(
     lockout_config={"max_daily_loss_pct": 2.0, "max_consecutive_losses": 3}
 )
+
+# Configuration Overrides
+config_watcher = ConfigWatcher(channel="orchestrator_config_updates")
+
+def on_config_update(new_overrides: dict[str, Any]):
+    logger.info(f"Applying orchestrator config overrides: {new_overrides}")
+    if "_jit_validator" in globals():
+        _jit_validator.lockout_config.update(new_overrides)
 
 
 # ──────────────────────────────────────────────
@@ -85,6 +99,9 @@ async def startup_event():
         setup_production_logging()
     logger.info("Orchestration Service starting up...")
     db_session.init_db()
+
+    # Start the config watcher
+    config_watcher.start(callback=on_config_update)
 
     # Start background tasks with supervision
     await _task_supervisor.create_task(
@@ -122,6 +139,7 @@ async def startup_event():
 @app.on_event("shutdown")
 async def shutdown_event():
     logger.info("Orchestration Service shutting down...")
+    config_watcher.stop()
     await _task_supervisor.shutdown_all(timeout_seconds=10)
     db_session.dispose_engine()
     logger.info("Shutdown complete")
