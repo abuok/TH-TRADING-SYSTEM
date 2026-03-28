@@ -3,11 +3,14 @@ import json
 import logging
 import os
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 
 import shared.database.session as db_session
+from shared.instrumentation.tracing import init_tracing, instrument_app
 from shared.logic.risk import RiskEngine
 from shared.messaging.event_bus import EventBus
+from shared.security.middleware import setup_exception_handlers
+from shared.security.rate_limiting import LIMITS, limiter, setup_rate_limiting
 from shared.types.packets import (
     MarketContextPacket,
     RiskApprovalPacket,
@@ -17,6 +20,13 @@ from shared.types.packets import (
 logger = logging.getLogger("RiskService")
 
 app = FastAPI(title="Risk Service")
+
+# Initialize v1.3 Core Logic
+init_tracing("risk")
+setup_rate_limiting(app)
+instrument_app(app)
+setup_exception_handlers(app)
+
 event_bus = EventBus()
 
 # Global state for context and account
@@ -117,7 +127,8 @@ async def startup_event():
 
 
 @app.get("/health")
-async def health_check():
+@limiter.limit(LIMITS["health"])
+async def health_check(request: Request):
     return {
         "status": "healthy",
         "service": "risk",

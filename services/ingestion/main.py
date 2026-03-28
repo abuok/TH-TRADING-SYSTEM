@@ -10,18 +10,29 @@ Provider selection:
 import asyncio
 import logging
 
-from fastapi import BackgroundTasks, FastAPI
+from fastapi import BackgroundTasks, FastAPI, Request
 
 import shared.database.session as db_session
 from shared.database.models import IncidentLog
+from shared.instrumentation.tracing import init_tracing, instrument_app
 from shared.messaging.event_bus import EventBus
 from shared.providers.calendar import get_calendar_provider
 from shared.providers.proxy import get_proxy_provider
+from shared.security.middleware import setup_exception_handlers
+from shared.security.rate_limiting import LIMITS, limiter, setup_rate_limiting
+from shared.types.errors import TradingSystemError
 from shared.types.packets import MarketContextPacket
 
 logger = logging.getLogger("IngestionService")
 
 app = FastAPI(title="Ingestion Service")
+
+# Initialize v1.3 Core Logic
+init_tracing("ingestion")
+setup_rate_limiting(app)
+instrument_app(app)
+setup_exception_handlers(app)
+
 event_bus = EventBus()
 
 # Singletons — created at startup so env vars are already loaded
@@ -112,7 +123,8 @@ async def startup_event():
 
 
 @app.get("/health")
-async def health_check():
+@limiter.limit(LIMITS["health"])
+async def health_check(request: Request):
     try:
         return {
             "status": "healthy",
@@ -133,7 +145,8 @@ async def health_check():
 
 
 @app.get("/trigger")
-async def trigger_ingestion(background_tasks: BackgroundTasks):
+@limiter.limit(LIMITS["write"])
+async def trigger_ingestion(request: Request, background_tasks: BackgroundTasks):
     """Manually trigger a calendar refresh."""
     background_tasks.add_task(ingest_calendar)
     return {"message": "Ingestion triggered"}
