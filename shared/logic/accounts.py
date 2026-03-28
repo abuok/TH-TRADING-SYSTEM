@@ -4,11 +4,12 @@ Shared logic for fetching and calculating account-level stats (PnL, R, losses).
 """
 
 from datetime import datetime, timezone
+from typing import Any, Optional
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from shared.database.models import OrderTicket
 
-def calculate_account_state(db: Session, config: dict = None) -> dict:
+def calculate_account_state(db: Session, config: Optional[dict[str, Any]] = None) -> dict[str, Any]:
     """Fetch current daily loss and consecutive losses from DB."""
     if config is None:
         config = {}

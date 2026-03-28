@@ -42,7 +42,7 @@ class RiskEngine:
         setup: TechnicalSetupPacket,
         context: MarketContextPacket,
         account_state: dict,
-        db: Session = None,
+        db: Session | None = None,
     ) -> RiskApprovalPacket:
         """
         account_state example:

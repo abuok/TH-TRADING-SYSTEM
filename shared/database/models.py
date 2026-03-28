@@ -293,15 +293,15 @@ class LiveQuote(Base):
 class SymbolSpec(Base):
     __tablename__ = "symbol_specs"
 
-    id = Column(Integer, primary_key=True, index=True)
-    symbol = Column(String, unique=True, index=True, nullable=False)
-    contract_size = Column(Float, nullable=False)
-    tick_size = Column(Float, nullable=False)
-    tick_value = Column(Float, nullable=False)
-    pip_size = Column(Float, nullable=False)
-    min_lot = Column(Float, default=0.01)
-    lot_step = Column(Float, default=0.01)
-    captured_at = Column(
+    id: int = Column(Integer, primary_key=True, index=True)  # type: ignore[assignment]
+    symbol: str = Column(String, unique=True, index=True, nullable=False)  # type: ignore[assignment]
+    contract_size: float = Column(Float, nullable=False)  # type: ignore[assignment]
+    tick_size: float = Column(Float, nullable=False)  # type: ignore[assignment]
+    tick_value: float = Column(Float, nullable=False)  # type: ignore[assignment]
+    pip_size: float = Column(Float, nullable=False)  # type: ignore[assignment]
+    min_lot: float = Column(Float, default=0.01)  # type: ignore[assignment]
+    lot_step: float = Column(Float, default=0.01)  # type: ignore[assignment]
+    captured_at: datetime = Column(  # type: ignore[assignment]
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
 
